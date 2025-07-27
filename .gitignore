@@ -27,7 +27,7 @@ dist-ssr
 .history
 
 # Custom
-package-lock.json
+./package-lock.json
 
 # TypeScript
 *.tsbuildinfo
