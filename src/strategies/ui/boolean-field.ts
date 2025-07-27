@@ -1,6 +1,6 @@
-import { FieldElement } from "@/extensions";
-import { html, css } from "lit";
+import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { FieldElement } from "@/extensions";
 
 @customElement("boolean-field")
 export class BooleanField extends FieldElement<string> {

@@ -1,4 +1,4 @@
-import { css, LitElement, type CSSResultGroup, type TemplateResult } from "lit";
+import { type CSSResultGroup, css, LitElement, type TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 
 export type FieldState = "empty" | "success" | "error";
@@ -10,7 +10,7 @@ export abstract class FieldElement<V = unknown> extends LitElement {
     }
   `;
 
-  @state() declare protected value: V;
+  @state() protected declare value: V;
 
   connectedCallback(): void {
     super.connectedCallback();

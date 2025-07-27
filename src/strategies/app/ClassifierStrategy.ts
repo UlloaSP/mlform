@@ -1,6 +1,6 @@
 import type { Infer } from "@/core";
-import { ClassifierModelSchema, ModelTypes } from "@/strategies/domain";
 import { ReportStrategy } from "@/extensions/app";
+import { ClassifierModelSchema, ModelTypes } from "@/strategies/domain";
 
 export class ClassifierStrategy extends ReportStrategy<
   typeof ClassifierModelSchema

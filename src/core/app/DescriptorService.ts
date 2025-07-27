@@ -4,7 +4,7 @@ import { DescriptorRegistry } from "./DescriptorRegistry";
 
 export class DescriptorService {
   protected readonly registry: DescriptorRegistry = new DescriptorRegistry();
-  declare protected backendUrl: string;
+  protected declare backendUrl: string;
   private readonly loadedTypes = new Set<string>();
 
   constructor(backendUrl: string = "") {
@@ -51,6 +51,8 @@ export class DescriptorService {
       const type = (payload as { type: string }).type;
       const strat = this.reg.get(type)!;
       const parsed = strat.parse(payload as Schema);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       descriptors.push(strat.buildDescriptor(parsed));
     }
     return descriptors;

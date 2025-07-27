@@ -1,6 +1,6 @@
 import type { Infer } from "@/core";
-import { CategoryFieldSchema, FieldTypes } from "@/strategies/domain";
 import { FieldStrategy } from "@/extensions/app";
+import { CategoryFieldSchema, FieldTypes } from "@/strategies/domain";
 
 export class CategoryStrategy extends FieldStrategy<
   typeof CategoryFieldSchema

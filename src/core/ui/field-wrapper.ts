@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 @customElement("field-wrapper")
@@ -94,7 +94,7 @@ export class FieldWrapper extends LitElement {
 
   @property({ type: String }) declare title: string;
   @property({ type: String }) declare description: string;
-  @state() declare private descriptionVisible: boolean;
+  @state() private declare descriptionVisible: boolean;
   @state() private stateClass: "empty" | "success" | "error" = "empty";
   @state() declare feedback: string;
   @state() declare value: string;
