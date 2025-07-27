@@ -1,4 +1,4 @@
-import type { Infer } from "@/core";
+import type { Infer } from "@/core/domain";
 import { ReportStrategy } from "@/extensions/app";
 import { ClassifierModelSchema, ModelTypes } from "@/strategies/domain";
 

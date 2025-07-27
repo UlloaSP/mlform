@@ -1,21 +1,28 @@
-import { z } from "zod";
-import { BaseFieldSchema } from "@/extensions";
+import * as z from "zod";
+import { BaseFieldSchema } from "@/extensions/domain";
 import { FieldTypes } from "./FieldTypes";
 
-export const CategoryFieldSchema = BaseFieldSchema.merge(
-  z.object({
+const VALUE_NOT_IN_OPTIONS_MESSAGE =
+  "The value must match one of the allowed options";
+
+const valueNotInOptions = (options: string[], value?: string): boolean => {
+  return !(value === undefined || options.includes(value));
+};
+
+export const CategoryFieldSchema = z
+  .strictObject({
+    ...BaseFieldSchema.shape,
     type: z.literal(FieldTypes.CATEGORY),
-    value: z.string().optional(),
-    options: z.array(z.string()).nonempty(),
+    value: z.optional(z.string()),
+    options: z.array(z.string()).min(1),
   })
-)
-  .strict()
-  .superRefine(({ value, options }, ctx) => {
-    if (value !== undefined && !options.includes(value)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["value"],
-        message: "El valor debe coincidir con una de las opciones permitidas",
+  .check((ctx) => {
+    if (valueNotInOptions(ctx.value.options, ctx.value.value)) {
+      ctx.issues.push({
+        code: "custom",
+        message: VALUE_NOT_IN_OPTIONS_MESSAGE,
+        input: ctx.value,
+        continue: true,
       });
     }
   });
