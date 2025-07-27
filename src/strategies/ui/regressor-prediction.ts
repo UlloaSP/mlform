@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 /**
@@ -140,8 +140,8 @@ export class RegressorPrediction extends LitElement {
     },
   })
   declare interval: [number, number];
-  declare private min: number;
-  declare private max: number;
+  private declare min: number;
+  private declare max: number;
 
   protected firstUpdated(): void {
     if (this.interval !== undefined) {

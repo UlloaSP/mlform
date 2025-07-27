@@ -1,15 +1,15 @@
-import { defineConfig } from "vite";
 import { resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
-import dts from "vite-plugin-dts";
 import { visualizer } from "rollup-plugin-visualizer";
+import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
 export default defineConfig(() => {
   return {
     build: {
       lib: {
         entry: {
-          mlform: resolve(__dirname, "src/index.ts"),
+          mlform: resolve(__dirname, "src/mlform/index.ts"),
           "mlform/extensions": resolve(__dirname, "src/extensions/index.ts"),
           "mlform/strategies": resolve(__dirname, "src/strategies/index.ts"),
         },

@@ -1,6 +1,6 @@
 import type { Infer } from "@/core";
-import { TextFieldSchema, FieldTypes } from "@/strategies/domain";
 import { FieldStrategy } from "@/extensions/app";
+import { FieldTypes, TextFieldSchema } from "@/strategies/domain";
 
 export class TextStrategy extends FieldStrategy<typeof TextFieldSchema> {
   constructor() {

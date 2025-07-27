@@ -1,7 +1,7 @@
-export { DateStrategy } from "./DateStrategy";
 export { BooleanStrategy } from "./BooleanStrategy";
-export { NumberStrategy } from "./NumberStrategy";
-export { TextStrategy } from "./TextStrategy";
 export { CategoryStrategy } from "./CategoryStrategy";
-export { RegressorStrategy } from "./RegressorStrategy";
 export { ClassifierStrategy } from "./ClassifierStrategy";
+export { DateStrategy } from "./DateStrategy";
+export { NumberStrategy } from "./NumberStrategy";
+export { RegressorStrategy } from "./RegressorStrategy";
+export { TextStrategy } from "./TextStrategy";

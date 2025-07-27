@@ -9,11 +9,21 @@ beforeAll(() => {
       matches: false,
       media: query,
       onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      dispatchEvent: () => {},
+      addListener: () => {
+        "";
+      },
+      removeListener: () => {
+        "";
+      },
+      addEventListener: () => {
+        "";
+      },
+      removeEventListener: () => {
+        "";
+      },
+      dispatchEvent: () => {
+        "";
+      },
     }),
   });
 });

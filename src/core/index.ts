@@ -1,3 +1,3 @@
 export { DescriptorService } from "@/core/app";
-export { union, array, never } from "@/core/domain";
-export type { Schema, Infer } from "@/core/domain";
+export type { Infer, Schema } from "@/core/domain";
+export { array, never, union } from "@/core/domain";

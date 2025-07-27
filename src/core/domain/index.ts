@@ -1,9 +1,9 @@
 import {
+  type ZodTypeAny,
   array as zArray,
+  type infer as zInfer,
   never as zNever,
   union as zUnion,
-  type ZodTypeAny,
-  type infer as zInfer,
 } from "zod";
 
 export const array = zArray;

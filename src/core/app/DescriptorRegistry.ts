@@ -1,4 +1,4 @@
-import { array, never, union, type Schema } from "@/core/domain";
+import { array, never, type Schema, union } from "@/core/domain";
 import { DescriptorStrategy } from "./DescriptorStrategy";
 
 export class DescriptorRegistry {
