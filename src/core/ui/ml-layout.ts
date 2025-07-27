@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DescriptorService } from "@/core/app";
-import type { Schema } from "../domain";
+import type { Output } from "../domain";
 
 @customElement("ml-layout")
 export class MLLayout extends LitElement {
@@ -193,7 +193,7 @@ export class MLLayout extends LitElement {
       });
       if (!res.ok) throw new Error(res.statusText);
       json = await res.json();
-      this.modelService.render(json as Schema);
+      this.modelService.render(json as Output);
     } catch (err) {
       console.error("Error en fetch:", err);
     } finally {

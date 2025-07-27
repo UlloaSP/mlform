@@ -32,7 +32,7 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "link": "vite build && npm link",
-    "ci": "npm run lint && npm run lint && npm run type && npm run test && npm run build"
+    "ci": "npm run lint && npm run type && npm run test && npm run build"
   },
   "dependencies": {
     "lit": "3.3.1",

@@ -1,14 +1,36 @@
 import {
-  type ZodTypeAny,
+  literal,
+  looseObject,
+  strictObject,
+  type ZodType,
   array as zArray,
   type infer as zInfer,
-  never as zNever,
   union as zUnion,
 } from "zod";
 
+import { FieldTypes, ModelTypes } from "@/strategies/domain";
+
 export const array = zArray;
-export const never = zNever;
 export const union = zUnion;
 
-export type Schema = ZodTypeAny;
-export type Infer<T extends ZodTypeAny> = zInfer<T>;
+export type Schema = ZodType;
+export type Infer<T extends ZodType> = zInfer<T>;
+
+const BaseSchema = zArray(
+  looseObject({
+    type: zUnion(Object.values(FieldTypes).map((v) => literal(v))),
+  })
+);
+
+const OutputSchema = looseObject({
+  type: zUnion(Object.values(ModelTypes).map((v) => literal(v))),
+});
+
+const Signature = strictObject({
+  inputs: BaseSchema,
+  outputs: BaseSchema,
+});
+
+export type Base = Infer<typeof BaseSchema>;
+export type Output = Infer<typeof OutputSchema>;
+export type Signature = Infer<typeof Signature>;

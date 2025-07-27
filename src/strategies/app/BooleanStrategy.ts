@@ -1,5 +1,5 @@
-import type { Infer } from "@/core";
-import { FieldStrategy } from "@/extensions";
+import type { Infer } from "@/core/domain";
+import { FieldStrategy } from "@/extensions/app";
 import { BooleanFieldSchema, FieldTypes } from "@/strategies/domain";
 
 export class BooleanStrategy extends FieldStrategy<typeof BooleanFieldSchema> {

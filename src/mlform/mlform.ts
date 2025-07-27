@@ -1,5 +1,6 @@
-import type { Schema } from "@/core";
+import type { Signature } from "@/core";
 import { DescriptorService } from "@/core";
+import type { Base } from "@/core/domain";
 import { FieldStrategy, ReportStrategy } from "@/extensions/app";
 import type { IMLForm } from "./mlform.types";
 
@@ -54,12 +55,16 @@ export class MLForm implements IMLForm {
   }
 
   public async toHTMLElement(
-    data: Schema,
+    data: Signature,
     container: HTMLElement
   ): Promise<HTMLElement> {
-    const parsedInput = this.fieldService.reg.schema.parse(data.input);
-    await this.fieldService.mount(parsedInput, container);
-    container.firstChild!.modelService = this.modelService;
+    const parsedInput = this.fieldService.reg.schema.parse(data.inputs);
+    await this.fieldService.mount(parsedInput as Base, container);
+    (
+      container.firstChild! as HTMLElement & {
+        modelService?: DescriptorService;
+      }
+    ).modelService = this.modelService;
 
     container.firstChild!.addEventListener(
       "mlform-submit",
@@ -79,7 +84,7 @@ export class MLForm implements IMLForm {
     return container;
   }
 
-  public async validateSchema(data: Schema): Promise<unknown> {
-    return this.fieldService.reg.schema.safeParseAsync(data.input);
+  public async validateSchema(data: Signature): Promise<unknown> {
+    return this.fieldService.reg.schema.safeParseAsync(data.inputs);
   }
 }

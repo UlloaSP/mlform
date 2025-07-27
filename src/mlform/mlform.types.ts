@@ -1,4 +1,4 @@
-import type { Schema } from "@/core";
+import type { Signature } from "@/core/domain";
 import type { FieldStrategy, ReportStrategy } from "@/extensions/app";
 
 export interface IMLForm {
@@ -11,5 +11,5 @@ export interface IMLForm {
   unregister(descriptor: FieldStrategy): void;
   unregister(descriptor: ReportStrategy): void;
 
-  toHTMLElement(data: Schema, container: HTMLElement): Promise<HTMLElement>;
+  toHTMLElement(data: Signature, container: HTMLElement): Promise<HTMLElement>;
 }
