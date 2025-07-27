@@ -1,4 +1,4 @@
-import type { Infer } from "@/core";
+import type { Infer } from "@/core/domain";
 import { FieldStrategy } from "@/extensions/app";
 import { FieldTypes, NumberFieldSchema } from "@/strategies/domain";
 

@@ -1,14 +1,13 @@
-import { z } from "zod";
-import { BaseModelSchema } from "@/extensions";
+import * as z from "zod";
+import { BaseModelSchema } from "@/extensions/domain";
 import { ModelTypes } from "./ModelTypes";
 
-export const RegressorModelSchema = BaseModelSchema.merge(
-  z.object({
-    type: z.literal(ModelTypes.REGRESSOR),
-    values: z.array(z.number()).nonempty(),
-    unit: z.string().optional(),
-    interval: z.tuple([z.number(), z.number()]).optional(),
-  })
-).strict();
+export const RegressorModelSchema = z.strictObject({
+  ...BaseModelSchema.shape,
+  type: z.literal(ModelTypes.REGRESSOR),
+  values: z.array(z.number()).min(1),
+  unit: z.optional(z.string()),
+  interval: z.optional(z.tuple([z.number(), z.number()])),
+});
 
 export type RegressorModel = z.infer<typeof RegressorModelSchema>;

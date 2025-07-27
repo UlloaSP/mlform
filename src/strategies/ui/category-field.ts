@@ -1,6 +1,6 @@
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { FieldElement } from "@/extensions";
+import { FieldElement } from "@/extensions/ui";
 
 @customElement("category-field")
 export class CategoryField extends FieldElement<string> {
