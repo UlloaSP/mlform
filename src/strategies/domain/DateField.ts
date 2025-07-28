@@ -1,53 +1,56 @@
-import { z } from "zod";
-import { BaseFieldSchema } from "@/extensions";
+import * as z from "zod";
+import { BaseFieldSchema } from "@/extensions/domain";
 import { FieldTypes } from "./FieldTypes";
 
-export const DateFieldSchema = BaseFieldSchema.merge(
-  z.object({
+const DATE_MIN_MAX_MESSAGE: string =
+  "The minimum date must be earlier than or equal to the maximum date";
+
+const DATE_VALUE_MIN_MESSAGE: string =
+  "The selected date must be later than or equal to the minimum date";
+
+const DATE_VALUE_MAX_MESSAGE: string =
+  "The selected date must be earlier than or equal to the maximum date";
+
+const isNotBeforeOrEqual = (date1?: string, date2?: string): boolean => {
+  return !(
+    date1 === undefined ||
+    date2 === undefined ||
+    new Date(date1) <= new Date(date2)
+  );
+};
+
+export const DateFieldSchema = z
+  .strictObject({
+    ...BaseFieldSchema.shape,
     type: z.literal(FieldTypes.DATE),
-    value: z
-      .string()
-      .optional()
-      .refine((val) => !val || !isNaN(Date.parse(val)), {
-        message: "El valor debe ser una fecha válida en formato ISO",
-      }),
-    min: z
-      .string()
-      .optional()
-      .refine((val) => !val || !isNaN(Date.parse(val)), {
-        message: "La fecha mínima debe ser válida en formato ISO",
-      }),
-    max: z
-      .string()
-      .optional()
-      .refine((val) => !val || !isNaN(Date.parse(val)), {
-        message: "La fecha máxima debe ser válida en formato ISO",
-      }),
-    step: z.number().int().positive().default(1),
+    value: z.optional(z.iso.datetime()),
+    min: z.optional(z.iso.datetime()),
+    max: z.optional(z.iso.datetime()),
+    step: z.int().min(1).default(1),
   })
-)
-  .strict()
-  .superRefine((data, ctx) => {
-    const { min, max, value } = data;
-    if (min && max && min > max) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["min"],
-        message: "La fecha mínima debe ser anterior o igual a la fecha máxima",
+  .check((ctx) => {
+    if (isNotBeforeOrEqual(ctx.value.min, ctx.value.max)) {
+      ctx.issues.push({
+        code: "custom",
+        message: DATE_MIN_MAX_MESSAGE,
+        input: ctx.value,
+        continue: true,
       });
     }
-    if (value && min && value < min) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["value"],
-        message: "La fecha debe ser posterior o igual a la fecha mínima",
+    if (isNotBeforeOrEqual(ctx.value.value, ctx.value.max)) {
+      ctx.issues.push({
+        code: "custom",
+        message: DATE_VALUE_MAX_MESSAGE,
+        input: ctx.value,
+        continue: true,
       });
     }
-    if (value && max && value > max) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["value"],
-        message: "La fecha debe ser anterior o igual a la fecha máxima",
+    if (isNotBeforeOrEqual(ctx.value.min, ctx.value.value)) {
+      ctx.issues.push({
+        code: "custom",
+        message: DATE_VALUE_MIN_MESSAGE,
+        input: ctx.value,
+        continue: true,
       });
     }
   });

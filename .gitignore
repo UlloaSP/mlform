@@ -28,6 +28,7 @@ dist-ssr
 
 # Custom
 package-lock.json
+.vscode
 
 # TypeScript
 *.tsbuildinfo

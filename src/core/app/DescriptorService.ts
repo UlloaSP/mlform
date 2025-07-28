@@ -1,10 +1,12 @@
-import type { Schema } from "@/core/domain";
+import type { Base, Output } from "@/core/domain";
 import type { DescriptorItem } from "./DescriptorItem";
 import { DescriptorRegistry } from "./DescriptorRegistry";
 
+const UNSUPPORTED_TYPE_ERROR = "[DescriptorService] Unsupported <<type>>";
+
 export class DescriptorService {
   protected readonly registry: DescriptorRegistry = new DescriptorRegistry();
-  declare protected backendUrl: string;
+  protected declare backendUrl: string;
   private readonly loadedTypes = new Set<string>();
 
   constructor(backendUrl: string = "") {
@@ -15,13 +17,13 @@ export class DescriptorService {
     return this.registry;
   }
 
-  public async mount(data: unknown[], host: HTMLElement): Promise<void> {
+  public async mount(data: Base, host: HTMLElement): Promise<void> {
     await this.ensureComponents(data); // 1⃣ componentes listos
     const descriptors = this.renderDescriptors(data); // 2⃣ datos validados
     host.innerHTML = this.descriptorsToInnerHtml(descriptors); // 3⃣ render
   }
 
-  protected async ensureComponents(data: unknown[]): Promise<void> {
+  protected async ensureComponents(data: Base): Promise<void> {
     const pending: Promise<unknown>[] = [
       import("@/core/ui/ml-layout"),
       import("@/core/ui/field-wrapper"),
@@ -29,10 +31,10 @@ export class DescriptorService {
 
     // 2. Componentes específicos declarados por cada Strategy
     for (const payload of data) {
-      const type = (payload as { type: string }).type;
+      const type = payload.type;
       const strat = this.reg.get(type);
       if (!strat) {
-        throw new Error(`[DescriptorService] Tipo no soportado: ${type}`);
+        throw new Error(UNSUPPORTED_TYPE_ERROR.replace("type", type));
       }
       if (!this.loadedTypes.has(type)) {
         this.loadedTypes.add(type);
@@ -43,15 +45,17 @@ export class DescriptorService {
     await Promise.all(pending);
   }
 
-  protected renderDescriptors(data: unknown[]): DescriptorItem[] {
+  protected renderDescriptors(data: Base): DescriptorItem[] {
     this.reg.schema.parse(data);
     const descriptors: DescriptorItem[] = [];
 
     for (const payload of data) {
-      const type = (payload as { type: string }).type;
+      const type = payload.type;
       const strat = this.reg.get(type)!;
-      const parsed = strat.parse(payload as Schema);
-      descriptors.push(strat.buildDescriptor(parsed));
+      const parsed = strat.parse(payload as unknown as typeof strat.schema);
+      descriptors.push(
+        strat.buildDescriptor(parsed as unknown as typeof payload)
+      );
     }
     return descriptors;
   }
@@ -62,7 +66,7 @@ export class DescriptorService {
       .map((d) => this.renderDescriptor(d))
       .join("");
 
-    return `<ml-layout backendUrl="${this.backendUrl}">
+    return `<ml-layout>
   <div slot="inputs">${inputs}</div>
   <div slot="report"></div>
 </ml-layout>`;
@@ -77,15 +81,15 @@ export class DescriptorService {
       .join("");
   }
 
-  public async render(data: Schema): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore – el DTO raíz expone .output: unknown[]
-    const parsed = this.reg.schema.parse(data.output);
+  public async render(data: Output): Promise<void> {
+    const parsed: unknown = this.reg.schema.parse(data.outputs);
 
     // 1⃣  Lazy-load de los Web Components implicados
+    // @ts-ignore
     await this.ensureComponents(parsed);
 
     // 2⃣  Construcción de DescriptorItem
+    // @ts-ignore
     const descriptors = this.renderDescriptors(parsed);
 
     // 3⃣  Inyección en el slot del layout maestro
@@ -94,6 +98,27 @@ export class DescriptorService {
     if (reportSlot) {
       reportSlot.innerHTML = this.reportDescriptorsToInnerHtml(descriptors);
     }
+  }
+
+  public async submit(data: Record<string, unknown>): Promise<Output> {
+    let json: Output;
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(data));
+    try {
+      const res = await fetch(this.backendUrl, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      json = await res.json();
+      this.render(json);
+
+      
+    } catch (err) {
+      console.error("Error en fetch:", err);
+    }
+    return json!;
   }
 
   private renderDescriptor(d: DescriptorItem): string {

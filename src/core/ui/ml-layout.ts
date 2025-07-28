@@ -1,6 +1,7 @@
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DescriptorService } from "@/core/app";
+import type { Output } from "../domain";
 
 @customElement("ml-layout")
 export class MLLayout extends LitElement {
@@ -131,13 +132,13 @@ export class MLLayout extends LitElement {
     }
   `;
 
-  @property({ type: String }) declare backendUrl: string;
   @state() private inputs: Record<
     string,
-    [string, "empty" | "success" | "error"]
+    [unknown, "empty" | "success" | "error"]
   > = {};
 
   @property({ attribute: false }) declare modelService: DescriptorService;
+
   private label: string = "Predict";
 
   connectedCallback(): void {
@@ -172,21 +173,20 @@ export class MLLayout extends LitElement {
   }
 
   private async _onSubmit() {
-    const data: Record<string, string> = Object.fromEntries(
-      Object.entries(this.inputs).map(([name, [value]]) => [name, value])
+    const data: Record<string, unknown> = Object.fromEntries(
+      Object.entries(this.inputs).map(([name, [value]]) => [
+        name,
+        value instanceof Date ? value.toISOString() : value,
+      ])
     );
-    try {
-      const res = await fetch(this.backendUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(res.statusText);
-      const json = await res.json();
-      this.modelService.render(json);
-    } catch (err) {
-      console.error("Error en fetch:", err);
-    }
+    const json: Output = await this.modelService.submit(data);
+    this.dispatchEvent(
+      new CustomEvent("ml-submit", {
+        detail: { inputs: data, response: json },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   render() {
@@ -194,7 +194,6 @@ export class MLLayout extends LitElement {
       <section class="left-section">
         <form
           id="dynamic-form"
-          action="${this.backendUrl}"
           method="post"
           enctype="multipart/form-data"
           style="display:flex;flex-direction:column;height:100%"
