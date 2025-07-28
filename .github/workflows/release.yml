@@ -12,7 +12,7 @@ on:
         type: string
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '22.14.0'
 
 jobs:
   release:
@@ -39,9 +39,6 @@ jobs:
 
       - name: 🔍 Run full CI pipeline
         run: npm run ci
-
-      - name: 📚 Generate documentation
-        run: npm run docs
 
       - name: 🏷️ Get version
         id: version
