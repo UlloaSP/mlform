@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { FieldElement } from "@/extensions/ui";
 
 @customElement("number-field")
-export class NumberField extends FieldElement<string> {
+export class NumberField extends FieldElement<number> {
   static styles = [
     FieldElement.baseStyles,
     css`
@@ -51,7 +51,7 @@ export class NumberField extends FieldElement<string> {
       this.placeholder = this.step;
     }
     if (this.defaultValue) {
-      this.value = this.defaultValue;
+      this.value = Number(this.defaultValue);
       const mockEvent = new InputEvent("input", {
         bubbles: true,
         composed: true,
@@ -62,7 +62,7 @@ export class NumberField extends FieldElement<string> {
       });
       this.onInput(mockEvent);
     } else {
-      this.value = "";
+      this.value = NaN;
     }
   }
 
@@ -78,7 +78,7 @@ export class NumberField extends FieldElement<string> {
           .min=${Number(this.min)}
           .max=${Number(this.max)}
           .placeholder=${this.placeholder}
-          .value=${this.value}
+          .value=${!Number.isNaN(this.value) ? this.value : ""}
         />
         <span class="unit">${this.unit}</span>
       </div>
@@ -86,14 +86,14 @@ export class NumberField extends FieldElement<string> {
   }
 
   private onInput(e: InputEvent) {
-    this.value = (e.target as HTMLInputElement).value.trim();
+    this.value = Number((e.target as HTMLInputElement).value.trim());
     if (!this.value) {
       this.dispatchState("empty");
       return;
     }
 
     const ALLOWED = /^[0-9.,\s-]+$/;
-    if (!ALLOWED.test(this.value)) {
+    if (!ALLOWED.test(this.value.toString())) {
       this.dispatchState(
         "error",
         "Only digits, comma, dot, space, and a leading minus are allowed."
@@ -101,8 +101,11 @@ export class NumberField extends FieldElement<string> {
       return;
     }
 
-    const minusCount = (this.value.match(/-/g) || []).length;
-    if (minusCount > 1 || (minusCount === 1 && !this.value.startsWith("-"))) {
+    const minusCount = (this.value.toString().match(/-/g) || []).length;
+    if (
+      minusCount > 1 ||
+      (minusCount === 1 && !this.value.toString().startsWith("-"))
+    ) {
       this.dispatchState(
         "error",
         "Minus sign must appear once and only at the beginning."
@@ -112,7 +115,7 @@ export class NumberField extends FieldElement<string> {
 
     const numberPattern =
       /^-?(?:\d{1,3}(?:([,\s])\d{3}(?:\1\d{3})*)|\d+)(?:[.]\d+)?$/;
-    if (!numberPattern.test(this.value)) {
+    if (!numberPattern.test(this.value.toString())) {
       this.dispatchState(
         "error",
         "Invalid number format (check grouping or decimal separator)."
@@ -120,7 +123,7 @@ export class NumberField extends FieldElement<string> {
       return;
     }
 
-    const num = this.parseLocaleNumber(this.value);
+    const num = this.parseLocaleNumber(this.value.toString());
 
     if (
       this.min &&

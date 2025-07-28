@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { FieldElement } from "@/extensions/ui";
 
 @customElement("boolean-field")
-export class BooleanField extends FieldElement<string> {
+export class BooleanField extends FieldElement<boolean> {
   static styles = [
     FieldElement.baseStyles,
     css`
@@ -62,9 +62,16 @@ export class BooleanField extends FieldElement<string> {
 
   firstUpdated() {
     if (this.defaultValue) {
-      this.value = this.defaultValue;
+      this.value = this.defaultValue === "true";
       this.dispatchState("success", `Status set to: ${this.value}.`);
     }
+  }
+
+  private onChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.value = target.value === "true";
+    if (!target.checked) return;
+    this.dispatchState("success", `Status set to: ${this.value}.`);
   }
 
   render() {
@@ -76,7 +83,7 @@ export class BooleanField extends FieldElement<string> {
           name="bool"
           @change=${this.onChange}
           .value=${true}
-          .checked=${this.value === "true"}
+          .checked=${this.value === true}
         />
         <label class="opt" for="opt_yes"><span>True</span></label>
 
@@ -86,18 +93,11 @@ export class BooleanField extends FieldElement<string> {
           name="bool"
           @change=${this.onChange}
           .value=${false}
-          .checked=${this.value === "false"}
+          .checked=${this.value === false}
         />
         <label class="opt" for="opt_no"><span>False</span></label>
       </fieldset>
     `;
-  }
-
-  private onChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.value = target.value;
-    if (!target.checked) return;
-    this.dispatchState("success", `Status set to: ${target.value}.`);
   }
 }
 
