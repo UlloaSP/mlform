@@ -1,22 +1,26 @@
 import type { Signature } from "@/core";
 import { DescriptorService } from "@/core";
-import type { Base } from "@/core/domain";
+import type { Base, Output } from "@/core/domain";
 import { FieldStrategy, ReportStrategy } from "@/extensions/app";
 import type { IMLForm } from "./mlform.types";
 
-type SubmitCallback = (data: Record<string, string>) => void;
+type SubmitCallback = (
+  inputs: Record<string, unknown>,
+  response: Output
+) => void;
 
 export class MLForm implements IMLForm {
   private readonly backendUrl: string;
   private readonly fieldService: DescriptorService;
   private readonly modelService: DescriptorService;
-  private _lastInputs: Record<string, string> | null = null;
+  private _lastInputs: Record<string, unknown> | null = null;
+  private _lastResponse: Output | null = null;
   private readonly _listeners = new Set<SubmitCallback>();
 
   constructor(backendUrl: string) {
     this.backendUrl = backendUrl;
-    this.fieldService = new DescriptorService(this.backendUrl);
-    this.modelService = new DescriptorService();
+    this.fieldService = new DescriptorService();
+    this.modelService = new DescriptorService(this.backendUrl);
   }
 
   public register(descriptor: FieldStrategy | ReportStrategy): void {
@@ -44,8 +48,12 @@ export class MLForm implements IMLForm {
   }
 
   /** Lectura sincrónica del último envío */
-  public get lastInputs(): Record<string, string> | null {
+  public get lastInputs(): Record<string, unknown> | null {
     return this._lastInputs;
+  }
+
+  public get lastResponse(): Output | null {
+    return this._lastResponse;
   }
 
   /** Suscripción reactiva; devuelve la función para des‑suscribirse */
@@ -67,16 +75,17 @@ export class MLForm implements IMLForm {
     ).modelService = this.modelService;
 
     container.firstChild!.addEventListener(
-      "mlform-submit",
+      "ml-submit",
       (ev: Event) => {
-        const { inputs } = (
+        const { inputs, response } = (
           ev as CustomEvent<{
-            inputs: Record<string, string>;
-            response: unknown;
+            inputs: Record<string, unknown>;
+            response: Output;
           }>
         ).detail;
         this._lastInputs = inputs;
-        this._listeners.forEach((cb) => cb(inputs));
+        this._lastResponse = response;
+        this._listeners.forEach((cb) => cb(inputs, response));
       },
       { passive: true }
     );

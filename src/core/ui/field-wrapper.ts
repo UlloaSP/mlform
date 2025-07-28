@@ -97,7 +97,7 @@ export class FieldWrapper extends LitElement {
   @state() private declare descriptionVisible: boolean;
   @state() private stateClass: "empty" | "success" | "error" = "empty";
   @state() declare feedback: string;
-  @state() declare value: string;
+  @state() declare value: unknown;
 
   @property({ type: String, reflect: true }) declare name: string;
 
@@ -131,13 +131,13 @@ export class FieldWrapper extends LitElement {
     e: CustomEvent<{
       state: "empty" | "success" | "error";
       message?: string;
-      value?: string;
+      value?: unknown;
     }>
   ) => {
     e.stopPropagation();
     this.stateClass = e.detail.state;
     this.feedback = e.detail.message ?? "";
-    this.value = e.detail.value ?? "";
+    this.value = e.detail.value;
     if (this.stateClass !== "empty" && this.name) {
       this.dispatchState();
     }
