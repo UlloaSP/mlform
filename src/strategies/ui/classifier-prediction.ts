@@ -1,4 +1,4 @@
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 /**
@@ -198,9 +198,10 @@ export class ClassifierPrediction extends LitElement {
         <div class="title">${this.title}</div>
         ${this._predictions.map(
           (pred) => html`
-            ${this.details
-              ? pred.items.map(
-                  (it) => html`
+            ${
+              this.details
+                ? pred.items.map(
+                    (it) => html`
                     <div class="item">
                       <div class="label">${it.label}</div>
                       <div
@@ -210,8 +211,9 @@ export class ClassifierPrediction extends LitElement {
                       <div class="pct">${it.prob.toFixed(2)}</div>
                     </div>
                   `
-                )
-              : html` <div class="prea">${pred.main.label}</div>`}
+                  )
+                : html` <div class="prea">${pred.main.label}</div>`
+            }
             ${this.details ? html`<br />` : ""}
           `
         )}

@@ -1,6 +1,6 @@
-import type { Infer } from "@/core";
-import { NumberFieldSchema, FieldTypes } from "@/strategies/domain";
+import type { Infer } from "@/core/domain";
 import { FieldStrategy } from "@/extensions/app";
+import { FieldTypes, NumberFieldSchema } from "@/strategies/domain";
 
 export class NumberStrategy extends FieldStrategy<typeof NumberFieldSchema> {
   constructor() {

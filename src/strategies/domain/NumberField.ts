@@ -1,43 +1,55 @@
-import { z } from "zod";
-import { BaseFieldSchema } from "@/extensions";
+import * as z from "zod";
+import { BaseFieldSchema } from "@/extensions/domain";
 import { FieldTypes } from "./FieldTypes";
 
-export const NumberFieldSchema = BaseFieldSchema.merge(
-  z.object({
+const NUMBER_MIN_MAX_MESSAGE: string =
+  "The minimum value must be less than or equal to the maximum value";
+
+const NUMBER_VALUE_MIN_MESSAGE: string =
+  "The selected value must be greater than or equal to the minimum value";
+
+const NUMBER_VALUE_MAX_MESSAGE: string =
+  "The selected value must be less than or equal to the maximum value";
+
+const isNotLessThanOrEqual = (a?: number, b?: number): boolean => {
+  return !(a === undefined || b === undefined || a <= b);
+};
+
+export const NumberFieldSchema = z
+  .strictObject({
+    ...BaseFieldSchema.shape,
     type: z.literal(FieldTypes.NUMBER),
-    min: z.number().optional(),
-    max: z.number().optional(),
-    step: z.number().optional(),
-    placeholder: z.string().optional(),
-    value: z.number().optional(),
-    unit: z.string().optional(),
+    min: z.optional(z.number()),
+    max: z.optional(z.number()),
+    step: z.number().positive().default(1),
+    placeholder: z.optional(z.string()),
+    value: z.optional(z.number()),
+    unit: z.optional(z.string()),
   })
-)
-  .strict()
-  .superRefine((data, ctx) => {
-    const { min, max, value } = data;
-    if (min != null && max != null && min > max) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["min"],
-        message: `${min} debe ser ≤ ${max}`,
+  .check((ctx) => {
+    if (isNotLessThanOrEqual(ctx.value.min, ctx.value.max)) {
+      ctx.issues.push({
+        code: "custom",
+        message: NUMBER_MIN_MAX_MESSAGE,
+        input: ctx.value,
+        continue: true,
       });
     }
-    if (value != null) {
-      if (min != null && value < min) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["value"],
-          message: `${value} debe ser ≥ ${min}`,
-        });
-      }
-      if (max != null && value > max) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["value"],
-          message: `${value} debe ser ≤ ${max}`,
-        });
-      }
+    if (isNotLessThanOrEqual(ctx.value.min, ctx.value.value)) {
+      ctx.issues.push({
+        code: "custom",
+        message: NUMBER_VALUE_MIN_MESSAGE,
+        input: ctx.value,
+        continue: true,
+      });
+    }
+    if (isNotLessThanOrEqual(ctx.value.value, ctx.value.max)) {
+      ctx.issues.push({
+        code: "custom",
+        message: NUMBER_VALUE_MAX_MESSAGE,
+        input: ctx.value,
+        continue: true,
+      });
     }
   });
 

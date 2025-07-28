@@ -1,6 +1,7 @@
-import { LitElement, html, css } from "lit";
+import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DescriptorService } from "@/core/app";
+import type { Output } from "../domain";
 
 @customElement("ml-layout")
 export class MLLayout extends LitElement {
@@ -132,12 +133,14 @@ export class MLLayout extends LitElement {
   `;
 
   @property({ type: String }) declare backendUrl: string;
+
   @state() private inputs: Record<
     string,
     [string, "empty" | "success" | "error"]
   > = {};
 
   @property({ attribute: false }) declare modelService: DescriptorService;
+
   private label: string = "Predict";
 
   connectedCallback(): void {
@@ -175,17 +178,32 @@ export class MLLayout extends LitElement {
     const data: Record<string, string> = Object.fromEntries(
       Object.entries(this.inputs).map(([name, [value]]) => [name, value])
     );
+    let json: unknown = {};
     try {
+      const formData = new FormData();
+      const modelFile = null;
+      if (modelFile) {
+        formData.append("model", modelFile);
+      }
+      formData.append("data", JSON.stringify(data));
       const res = await fetch(this.backendUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        credentials: "include",
+        body: formData,
       });
       if (!res.ok) throw new Error(res.statusText);
-      const json = await res.json();
-      this.modelService.render(json);
+      json = await res.json();
+      this.modelService.render(json as Output);
     } catch (err) {
       console.error("Error en fetch:", err);
+    } finally {
+      this.dispatchEvent(
+        new CustomEvent("ml-submit", {
+          detail: { inputs: data, response: json },
+          bubbles: true,
+          composed: true,
+        })
+      );
     }
   }
 

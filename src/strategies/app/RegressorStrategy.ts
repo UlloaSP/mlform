@@ -1,6 +1,6 @@
-import type { Infer } from "@/core";
-import { RegressorModelSchema, ModelTypes } from "@/strategies/domain";
+import type { Infer } from "@/core/domain";
 import { ReportStrategy } from "@/extensions/app";
+import { ModelTypes, RegressorModelSchema } from "@/strategies/domain";
 
 export class RegressorStrategy extends ReportStrategy<
   typeof RegressorModelSchema

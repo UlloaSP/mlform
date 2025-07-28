@@ -1,12 +1,17 @@
-import type { IMLForm } from "./mlform.types";
-import type { Schema } from "@/core";
-import { FieldStrategy, ReportStrategy } from "@/extensions/app";
+import type { Signature } from "@/core";
 import { DescriptorService } from "@/core";
+import type { Base } from "@/core/domain";
+import { FieldStrategy, ReportStrategy } from "@/extensions/app";
+import type { IMLForm } from "./mlform.types";
+
+type SubmitCallback = (data: Record<string, string>) => void;
 
 export class MLForm implements IMLForm {
   private readonly backendUrl: string;
   private readonly fieldService: DescriptorService;
   private readonly modelService: DescriptorService;
+  private _lastInputs: Record<string, string> | null = null;
+  private readonly _listeners = new Set<SubmitCallback>();
 
   constructor(backendUrl: string) {
     this.backendUrl = backendUrl;
@@ -38,17 +43,48 @@ export class MLForm implements IMLForm {
     }
   }
 
+  /** Lectura sincrónica del último envío */
+  public get lastInputs(): Record<string, string> | null {
+    return this._lastInputs;
+  }
+
+  /** Suscripción reactiva; devuelve la función para des‑suscribirse */
+  public onSubmit(cb: SubmitCallback): () => void {
+    this._listeners.add(cb);
+    return () => this._listeners.delete(cb);
+  }
+
   public async toHTMLElement(
-    data: Schema,
+    data: Signature,
     container: HTMLElement
   ): Promise<HTMLElement> {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    const parsedInput = this.fieldService.reg.schema.parse(data.input);
-    await this.fieldService.mount(parsedInput, container);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    container.firstChild!.modelService = this.modelService;
+    const parsedInput = this.fieldService.reg.schema.parse(data.inputs);
+    await this.fieldService.mount(parsedInput as Base, container);
+    (
+      container.firstChild! as HTMLElement & {
+        modelService?: DescriptorService;
+      }
+    ).modelService = this.modelService;
+
+    container.firstChild!.addEventListener(
+      "mlform-submit",
+      (ev: Event) => {
+        const { inputs } = (
+          ev as CustomEvent<{
+            inputs: Record<string, string>;
+            response: unknown;
+          }>
+        ).detail;
+        this._lastInputs = inputs;
+        this._listeners.forEach((cb) => cb(inputs));
+      },
+      { passive: true }
+    );
+
     return container;
+  }
+
+  public async validateSchema(data: Signature): Promise<unknown> {
+    return this.fieldService.reg.schema.safeParseAsync(data.inputs);
   }
 }

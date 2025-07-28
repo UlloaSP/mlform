@@ -1,9 +1,9 @@
 export {
   BooleanStrategy,
-  DateStrategy,
   CategoryStrategy,
-  NumberStrategy,
-  TextStrategy,
   ClassifierStrategy,
+  DateStrategy,
+  NumberStrategy,
   RegressorStrategy,
+  TextStrategy,
 } from "./app";
