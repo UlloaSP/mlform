@@ -15,7 +15,12 @@
     "expand": "auto",
     "useEditorconfig": true,
     "includes": [
-      "**",
+      "biome.json",
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts",
+      "src/**/*.ts",
+      "test/**/*.ts",
       "!**/node_modules/",
       "!**/dist/",
       "!**/docs/",
@@ -104,7 +109,24 @@
         "useNamespaceKeyword": "error"
       }
     },
-    "includes": ["**", "!**/dist/**", "!**/node_modules/**"]
+    "includes": [
+      "biome.json",
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts",
+      "src/**/*.ts",
+      "test/**/*.ts",
+      "!**/node_modules/",
+      "!**/dist/",
+      "!**/docs/",
+      "!**/coverage/",
+      "!**/*.min.js",
+      "!**/*.min.css",
+      "!**/package-lock.json",
+      "!**/.github/",
+      "!**/stats/",
+      "!**/*.md"
+    ]
   },
   "javascript": {
     "formatter": {

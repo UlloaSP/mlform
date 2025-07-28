@@ -35,7 +35,7 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 🔍 Run Biome
         run: npm run lint
@@ -55,7 +55,7 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 📝 Run TypeScript compiler
         run: npm run type
@@ -64,21 +64,18 @@ jobs:
   test:
     name: 🧪 Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: ['18', '20', '22']
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js ${{ matrix.node-version }}
+      - name: 📦 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 🧪 Run tests
         run: npm run test
@@ -87,7 +84,6 @@ jobs:
         run: npm run coverage
 
       - name: 🎯 Check coverage threshold (80%)
-        if: matrix.node-version == '18'
         run: |
           npm run coverage:check || {
             echo "❌ Coverage is below 80% threshold"
@@ -110,7 +106,7 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 🏗️ Build project
         run: npm run build
