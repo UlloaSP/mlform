@@ -27,7 +27,6 @@ dist-ssr
 .history
 
 # Custom
-package-lock.json
 .vscode
 
 # TypeScript
