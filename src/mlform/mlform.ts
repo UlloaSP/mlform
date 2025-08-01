@@ -3,6 +3,7 @@ import { DescriptorService } from "@/core";
 import type { Base, Output } from "@/core/domain";
 import { FieldStrategy, ReportStrategy } from "@/extensions/app";
 import type { IMLForm } from "./mlform.types";
+import * as z from "zod";
 
 type SubmitCallback = (
   inputs: Record<string, unknown>,
@@ -67,7 +68,9 @@ export class MLForm implements IMLForm {
     container: HTMLElement
   ): Promise<HTMLElement> {
     const parsedInput = this.fieldService.reg.schema.parse(data.inputs);
+    const parsedOutput = this.modelService.reg.schema.parse(data.outputs);
     await this.fieldService.mount(parsedInput as Base, container);
+    await this.modelService.render(parsedOutput as Output);
     (
       container.firstChild! as HTMLElement & {
         modelService?: DescriptorService;
@@ -95,5 +98,15 @@ export class MLForm implements IMLForm {
 
   public async validateSchema(data: Signature): Promise<unknown> {
     return this.fieldService.reg.schema.safeParseAsync(data.inputs);
+  }
+
+  public schema() {
+    return z.toJSONSchema(
+      z.strictObject({
+        inputs: this.fieldService.reg.schema,
+        outputs: z.optional(this.modelService.reg.schema),
+      }),
+      { target: "draft-2020-12" }
+    );
   }
 }

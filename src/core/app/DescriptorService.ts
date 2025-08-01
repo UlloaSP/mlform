@@ -25,6 +25,7 @@ export class DescriptorService {
 
   protected async ensureComponents(data: Base): Promise<void> {
     const pending: Promise<unknown>[] = [
+      import("@/core/ui/error-card"),
       import("@/core/ui/ml-layout"),
       import("@/core/ui/field-wrapper"),
     ];
@@ -69,6 +70,7 @@ export class DescriptorService {
     return `<ml-layout>
   <div slot="inputs">${inputs}</div>
   <div slot="report"></div>
+  <div slot="error"></div>
 </ml-layout>`;
   }
 
@@ -82,8 +84,7 @@ export class DescriptorService {
   }
 
   public async render(data: Output): Promise<void> {
-    const parsed: unknown = this.reg.schema.parse(data.outputs);
-
+    const parsed = this.reg.schema.parse(data);
     // 1⃣  Lazy-load de los Web Components implicados
     // @ts-ignore
     await this.ensureComponents(parsed);
@@ -112,11 +113,12 @@ export class DescriptorService {
       });
       if (!res.ok) throw new Error(await res.text());
       json = await res.json();
-      this.render(json);
-
-      
+      // @ts-ignore
+      this.render(json.outputs);
     } catch (err) {
-      console.error("Error en fetch:", err);
+      throw new Error(
+        `Error al enviar los datos al backend: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
     return json!;
   }
