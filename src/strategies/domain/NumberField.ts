@@ -21,7 +21,7 @@ export const NumberFieldSchema = z
     type: z.literal(FieldTypes.NUMBER),
     min: z.optional(z.number()),
     max: z.optional(z.number()),
-    step: z.number().positive().default(1),
+    step: z.optional(z.number().positive().default(1)),
     placeholder: z.optional(z.string()),
     value: z.optional(z.number()),
     unit: z.optional(z.string()),
@@ -30,6 +30,7 @@ export const NumberFieldSchema = z
     if (isNotLessThanOrEqual(ctx.value.min, ctx.value.max)) {
       ctx.issues.push({
         code: "custom",
+        path: ["min"],
         message: NUMBER_MIN_MAX_MESSAGE,
         input: ctx.value,
         continue: true,
@@ -38,6 +39,7 @@ export const NumberFieldSchema = z
     if (isNotLessThanOrEqual(ctx.value.min, ctx.value.value)) {
       ctx.issues.push({
         code: "custom",
+        path: ["min"],
         message: NUMBER_VALUE_MIN_MESSAGE,
         input: ctx.value,
         continue: true,
@@ -46,6 +48,7 @@ export const NumberFieldSchema = z
     if (isNotLessThanOrEqual(ctx.value.value, ctx.value.max)) {
       ctx.issues.push({
         code: "custom",
+        path: ["value"],
         message: NUMBER_VALUE_MAX_MESSAGE,
         input: ctx.value,
         continue: true,

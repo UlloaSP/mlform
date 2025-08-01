@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { FieldElement } from "@/extensions/ui";
 
 @customElement("range-field")
-export class RangeField extends FieldElement<string> {
+export class RangeField extends FieldElement<number> {
   static styles = [
     FieldElement.baseStyles,
     css`
@@ -22,7 +22,7 @@ export class RangeField extends FieldElement<string> {
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: var(--range-thumb, var(--color-accent, #1e40af));
+        background: var(--range-thumb, var(--ml-color-accent, #1e40af));
         cursor: pointer;
         border: 2px solid #fff;
         box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
@@ -32,7 +32,7 @@ export class RangeField extends FieldElement<string> {
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: var(--range-thumb, var(--color-accent, #1e40af));
+        background: var(--range-thumb, var(--ml-color-accent, #1e40af));
         cursor: pointer;
         border: 2px solid #fff;
       }
@@ -46,7 +46,7 @@ export class RangeField extends FieldElement<string> {
   @property({ type: String }) declare defaultValue: string;
 
   protected firstUpdated(): void {
-    this.value = this.defaultValue;
+    this.value = Number(this.defaultValue);
     const mockEvent = new InputEvent("input", {
       bubbles: true,
       composed: true,
@@ -74,12 +74,10 @@ export class RangeField extends FieldElement<string> {
   }
 
   private onInput(e: InputEvent) {
-    this.value = (e.target as HTMLInputElement).value;
+    this.value = Number((e.target as HTMLInputElement).value);
     this.dispatchState(
       "success",
-      `Selected Value: ${Number(this.value).toLocaleString("en-US")} ${
-        this.unit
-      }`
+      `Selected Value: ${this.value.toLocaleString("en-US")} ${this.unit}`
     );
   }
 }

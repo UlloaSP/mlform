@@ -11,9 +11,9 @@ export class CategoryField extends FieldElement<string> {
         width: 100%;
         padding: 0.75rem 1rem;
         font-size: 1rem;
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--ml-color-border);
         border-radius: var(--radius);
-        background: var(--color-surface)
+        background: var(--ml-color-surface)
           url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="%23475569"><path d="M5.516 7.548a.75.75 0 0 1 1.06-.032L10 10.79l3.424-3.274a.75.75 0 0 1 1.029 1.09l-3.955 3.787a.75.75 0 0 1-1.029 0L5.548 8.606a.75.75 0 0 1-.032-1.058z"/></svg>')
           no-repeat right 0.75rem center;
         background-size: 14px 14px;
@@ -23,7 +23,7 @@ export class CategoryField extends FieldElement<string> {
       }
 
       select:focus {
-        border-color: var(--color-accent);
+        border-color: var(--ml-color-accent);
       }
     `,
   ];

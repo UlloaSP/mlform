@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { FieldElement } from "@/extensions/ui";
 
 @customElement("boolean-field")
-export class BooleanField extends FieldElement<string> {
+export class BooleanField extends FieldElement<boolean> {
   static styles = [
     FieldElement.baseStyles,
     css`
@@ -27,9 +27,9 @@ export class BooleanField extends FieldElement<string> {
         padding: 0.65rem 0.25rem;
         font-size: 0.9rem;
         font-weight: 500;
-        color: var(--color-primary);
-        background: var(--color-accent-bg);
-        border: 1px solid var(--color-border);
+        color: var(--ml-color-primary);
+        background: var(--ml-color-accent-bg);
+        border: 1px solid var(--ml-color-border);
         cursor: pointer;
         user-select: none;
         transition:
@@ -47,13 +47,13 @@ export class BooleanField extends FieldElement<string> {
       }
 
       .opt:hover {
-        background: var(--color-hv-light);
+        background: var(--ml-color-hv-light);
       }
 
       input[type="radio"]:checked + label.opt {
-        background: var(--color-success);
-        border-color: var(--color-success);
-        color: var(--color-surface);
+        background: var(--ml-color-success);
+        border-color: var(--ml-color-success);
+        color: var(--ml-color-surface);
       }
     `,
   ];
@@ -62,9 +62,16 @@ export class BooleanField extends FieldElement<string> {
 
   firstUpdated() {
     if (this.defaultValue) {
-      this.value = this.defaultValue;
+      this.value = this.defaultValue === "true";
       this.dispatchState("success", `Status set to: ${this.value}.`);
     }
+  }
+
+  private onChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.value = target.value === "true";
+    if (!target.checked) return;
+    this.dispatchState("success", `Status set to: ${this.value}.`);
   }
 
   render() {
@@ -76,7 +83,7 @@ export class BooleanField extends FieldElement<string> {
           name="bool"
           @change=${this.onChange}
           .value=${true}
-          .checked=${this.value === "true"}
+          .checked=${this.value === true}
         />
         <label class="opt" for="opt_yes"><span>True</span></label>
 
@@ -86,18 +93,11 @@ export class BooleanField extends FieldElement<string> {
           name="bool"
           @change=${this.onChange}
           .value=${false}
-          .checked=${this.value === "false"}
+          .checked=${this.value === false}
         />
         <label class="opt" for="opt_no"><span>False</span></label>
       </fieldset>
     `;
-  }
-
-  private onChange(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.value = target.value;
-    if (!target.checked) return;
-    this.dispatchState("success", `Status set to: ${target.value}.`);
   }
 }
 

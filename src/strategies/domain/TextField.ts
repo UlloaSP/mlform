@@ -46,6 +46,7 @@ export const TextFieldSchema = z
     if (isNotLessThanOrEqual(ctx.value.minLength, ctx.value.maxLength)) {
       ctx.issues.push({
         code: "custom",
+        path: ["minLength"],
         message: TEXT_MIN_MAX_MESSAGE,
         input: ctx.value,
         continue: true,
@@ -54,6 +55,7 @@ export const TextFieldSchema = z
     if (isNotLessThanOrEqual(ctx.value.minLength, ctx.value.value?.length)) {
       ctx.issues.push({
         code: "custom",
+        path: ["minLength"],
         message: TEXT_VALUE_MIN_MESSAGE.replace(
           "<<minLength>>",
           ctx.value.minLength?.toString() || "0"
@@ -65,6 +67,7 @@ export const TextFieldSchema = z
     if (isNotLessThanOrEqual(ctx.value.value?.length, ctx.value.maxLength)) {
       ctx.issues.push({
         code: "custom",
+        path: ["value"],
         message: TEXT_VALUE_MAX_MESSAGE.replace(
           "<<maxLength>>",
           ctx.value.maxLength?.toString() || "infinity"
