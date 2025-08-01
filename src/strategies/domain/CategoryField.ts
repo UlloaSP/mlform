@@ -20,6 +20,7 @@ export const CategoryFieldSchema = z
     if (valueNotInOptions(ctx.value.options, ctx.value.value)) {
       ctx.issues.push({
         code: "custom",
+        path: ["value"],
         message: VALUE_NOT_IN_OPTIONS_MESSAGE,
         input: ctx.value,
         continue: true,
