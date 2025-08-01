@@ -27,9 +27,9 @@ export class BooleanField extends FieldElement<boolean> {
         padding: 0.65rem 0.25rem;
         font-size: 0.9rem;
         font-weight: 500;
-        color: var(--color-primary);
-        background: var(--color-accent-bg);
-        border: 1px solid var(--color-border);
+        color: var(--ml-color-primary);
+        background: var(--ml-color-accent-bg);
+        border: 1px solid var(--ml-color-border);
         cursor: pointer;
         user-select: none;
         transition:
@@ -47,13 +47,13 @@ export class BooleanField extends FieldElement<boolean> {
       }
 
       .opt:hover {
-        background: var(--color-hv-light);
+        background: var(--ml-color-hv-light);
       }
 
       input[type="radio"]:checked + label.opt {
-        background: var(--color-success);
-        border-color: var(--color-success);
-        color: var(--color-surface);
+        background: var(--ml-color-success);
+        border-color: var(--ml-color-success);
+        color: var(--ml-color-surface);
       }
     `,
   ];
