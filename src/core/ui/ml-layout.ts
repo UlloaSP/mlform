@@ -1,4 +1,4 @@
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, render } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DescriptorService } from "@/core/app";
 import type { Output } from "../domain";
@@ -7,22 +7,22 @@ import type { Output } from "../domain";
 export class MLLayout extends LitElement {
   static styles = css`
     :host {
-      --color-bg: #f5f7fa;
-      --color-surface: #ffffff;
-      --color-primary: #0f172a;
-      --color-secondary: #475569;
-      --color-accent: #1e40af;
-      --color-accent-h: #1d4ed8;
-      --color-accent-bg: rgb(178, 178, 178);
-      --color-bg-light: #f5f7fa;
-      --color-bg-panel: #ffffff;
-      --color-bg-header: rgba(0, 0, 0, 0.06);
-      --color-border: #e2e8f0;
-      --color-hv-light: #c7d2fe;
-      --color-shadow: rgba(0, 0, 0, 0.04);
-      --color-hv-shadow: rgba(0, 0, 0, 0.06);
-      --color-error: #dc2626;
-      --color-success: #059669;
+      --ml-color-bg: #f5f7fa;
+      --ml-color-surface: #ffffff;
+      --ml-color-primary: #0f172a;
+      --ml-color-secondary: #475569;
+      --ml-color-accent: #1e40af;
+      --ml-color-accent-h: #1d4ed8;
+      --ml-color-accent-bg: rgb(178, 178, 178);
+      --ml-color-bg-light: #f5f7fa;
+      --ml-color-bg-panel: #ffffff;
+      --ml-color-bg-header: rgba(0, 0, 0, 0.06);
+      --ml-color-border: #e2e8f0;
+      --ml-color-hv-light: #c7d2fe;
+      --ml-color-shadow: rgba(0, 0, 0, 0.04);
+      --ml-color-hv-shadow: rgba(0, 0, 0, 0.06);
+      --ml-color-error: #dc2626;
+      --ml-color-success: #059669;
       --radius: 12px;
       --skew: -12deg;
       --unit-w: 1rem;
@@ -33,7 +33,7 @@ export class MLLayout extends LitElement {
       width: 100%;
       overflow: hidden;
       margin: 0;
-      background: var(--color-primary);
+      background: var(--ml-color-primary);
     }
 
     .scroll-y {
@@ -47,9 +47,9 @@ export class MLLayout extends LitElement {
       z-index: 10;
       backdrop-filter: blur(var(--blur-header));
       -webkit-backdrop-filter: blur(var(--blur-header));
-      background: var(--color-bg-header);
+      background: var(--ml-color-bg-header);
       padding: 0.5rem 2rem;
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--ml-color-border);
     }
     .sticky-header h2 {
       margin: 0;
@@ -62,8 +62,8 @@ export class MLLayout extends LitElement {
       overflow: hidden;
       min-width: 22rem;
       max-width: 48rem;
-      background: var(--color-bg-panel);
-      border-right: 1px solid var(--color-border);
+      background: var(--ml-color-bg-panel);
+      border-right: 1px solid var(--ml-color-border);
       display: flex;
       flex-direction: column;
     }
@@ -72,8 +72,8 @@ export class MLLayout extends LitElement {
       flex: 1 1 0%;
       min-width: 24rem;
       overflow: hidden;
-      background: var(--color-bg-panel);
-      border-left: 1px solid var(--color-border);
+      background: var(--ml-color-bg-panel);
+      border-left: 1px solid var(--ml-color-border);
       display: flex;
       flex-direction: column;
     }
@@ -83,7 +83,7 @@ export class MLLayout extends LitElement {
     }
     .form-actions {
       padding: 1rem 2rem;
-      border-top: 1px solid var(--color-border);
+      border-top: 1px solid var(--ml-color-border);
       background: #e7e9ec;
       align-items: center;
     }
@@ -132,11 +132,9 @@ export class MLLayout extends LitElement {
     }
   `;
 
-  @property({ type: String }) declare backendUrl: string;
-
   @state() private inputs: Record<
     string,
-    [string, "empty" | "success" | "error"]
+    [unknown, "empty" | "success" | "error"]
   > = {};
 
   @property({ attribute: false }) declare modelService: DescriptorService;
@@ -174,37 +172,80 @@ export class MLLayout extends LitElement {
     return !(allValid && expectedCount === actualCount);
   }
 
-  private async _onSubmit() {
-    const data: Record<string, string> = Object.fromEntries(
-      Object.entries(this.inputs).map(([name, [value]]) => [name, value])
+  private async _onSubmit(): Promise<void> {
+    /** 1. Preparación de la carga útil */
+    const data: Record<string, unknown> = Object.fromEntries(
+      Object.entries(this.inputs).map(([name, [value]]) => [
+        name,
+        value instanceof Date ? value.toISOString() : value,
+      ])
     );
-    let json: unknown = {};
+
+    this._hideError();
     try {
-      const formData = new FormData();
-      const modelFile = null;
-      if (modelFile) {
-        formData.append("model", modelFile);
+      /** 2. Envío al servicio */
+      const json: Output | undefined = await this.modelService.submit(data);
+      if (json === undefined) {
+        throw new Error(
+          "La respuesta del servicio no es válida o llegó vacía."
+        );
+      } else {
+        /** 3. Publicamos el evento con éxito */
+        this.dispatchEvent(
+          new CustomEvent("ml-submit", {
+            detail: { inputs: data, response: json },
+            bubbles: true,
+            composed: true,
+          })
+        );
       }
-      formData.append("data", JSON.stringify(data));
-      const res = await fetch(this.backendUrl, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      if (!res.ok) throw new Error(res.statusText);
-      json = await res.json();
-      this.modelService.render(json as Output);
     } catch (err) {
-      console.error("Error en fetch:", err);
-    } finally {
-      this.dispatchEvent(
-        new CustomEvent("ml-submit", {
-          detail: { inputs: data, response: json },
-          bubbles: true,
-          composed: true,
-        })
+      this._clearSlot();
+      this._showError(err as Error);
+    }
+  }
+
+  private _clearSlot(): void {
+    const reportSlot =
+      document.querySelector<HTMLDivElement>('div[slot="report"]');
+    if (reportSlot) {
+      reportSlot.innerHTML = "";
+    }
+  }
+
+  private _showError(error: Error): void {
+    const resultsArea = this.shadowRoot?.querySelector<HTMLElement>(
+      "div[id='results-area']"
+    );
+    if (resultsArea) resultsArea.classList.remove("scroll-y");
+
+    // Hide the right-section and show the error-section
+    const rightSection = this.querySelector<HTMLElement>("div[slot='report']");
+    const errorSection = this.querySelector<HTMLElement>("div[slot='error']");
+
+    if (rightSection) rightSection.style.display = "none";
+    if (errorSection) errorSection.style.display = "block";
+
+    if (errorSection) {
+      // Clear previous content
+      errorSection.innerHTML = "";
+      render(
+        html`<error-card .error=${error.message}></error-card>`,
+        errorSection
       );
     }
+  }
+  private _hideError(): void {
+    const resultsArea = this.shadowRoot?.querySelector<HTMLElement>(
+      "div[id='results-area']"
+    );
+    if (resultsArea) resultsArea.classList.add("scroll-y");
+
+    // Hide the right-section and show the error-section
+    const rightSection = this.querySelector<HTMLElement>("div[slot='report']");
+    const errorSection = this.querySelector<HTMLElement>("div[slot='error']");
+    if (rightSection) rightSection.style.display = "block";
+    if (errorSection) errorSection.style.display = "none";
   }
 
   render() {
@@ -212,7 +253,6 @@ export class MLLayout extends LitElement {
       <section class="left-section">
         <form
           id="dynamic-form"
-          action="${this.backendUrl}"
           method="post"
           enctype="multipart/form-data"
           style="display:flex;flex-direction:column;height:100%"
@@ -233,10 +273,12 @@ export class MLLayout extends LitElement {
           </div>
         </form>
       </section>
+
       <section class="right-section">
-        <div class="results-area scroll-y">
+        <div id="results-area" class="results-area scroll-y">
           <div class="sticky-header"><h2>Report</h2></div>
             <slot name="report"></slot>
+            <slot name="error"></slot>
           </div>
         </div>
       </section>

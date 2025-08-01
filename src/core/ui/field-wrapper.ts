@@ -13,8 +13,8 @@ export class FieldWrapper extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
+      background: var(--ml-color-surface);
+      border: 1px solid var(--ml-color-border);
       border-radius: var(--radius);
       overflow: hidden;
       padding: 1.5rem 2rem;
@@ -31,14 +31,14 @@ export class FieldWrapper extends LitElement {
       top: 0;
       width: 6px;
       height: 100%;
-      background: var(--color-accent);
+      background: var(--ml-color-accent);
       transition: background 0.2s ease;
     }
     .tile.success::before {
-      background: var(--color-success);
+      background: var(--ml-color-success);
     }
     .tile.error::before {
-      background: var(--color-error);
+      background: var(--ml-color-error);
     }
     header {
       display: flex;
@@ -49,7 +49,7 @@ export class FieldWrapper extends LitElement {
     label {
       font-weight: 600;
       font-size: 1rem;
-      color: var(--color-primary);
+      color: var(--ml-color-primary);
     }
     .help-btn {
       display: inline-flex;
@@ -59,23 +59,23 @@ export class FieldWrapper extends LitElement {
       height: 28px;
       border: none;
       border-radius: 50%;
-      background: var(--color-accent);
+      background: var(--ml-color-accent);
       color: #fff;
       font-size: 1rem;
       cursor: pointer;
       transition: background 0.2s ease;
     }
     .help-btn:hover {
-      background: var(--color-accent-h);
+      background: var(--ml-color-accent-h);
     }
     .help-btn:disabled {
-      background: var(--color-secondary);
+      background: var(--ml-color-secondary);
       cursor: not-allowed;
     }
     .description {
       display: none;
       font-size: 0.875rem;
-      color: var(--color-secondary);
+      color: var(--ml-color-secondary);
     }
     .description.show {
       display: block;
@@ -85,10 +85,10 @@ export class FieldWrapper extends LitElement {
       margin-top: 0.25rem;
     }
     .feedback.error {
-      color: var(--color-error);
+      color: var(--ml-color-error);
     }
     .feedback.success {
-      color: var(--color-success);
+      color: var(--ml-color-success);
     }
   `;
 
@@ -97,7 +97,7 @@ export class FieldWrapper extends LitElement {
   @state() private declare descriptionVisible: boolean;
   @state() private stateClass: "empty" | "success" | "error" = "empty";
   @state() declare feedback: string;
-  @state() declare value: string;
+  @state() declare value: unknown;
 
   @property({ type: String, reflect: true }) declare name: string;
 
@@ -131,13 +131,13 @@ export class FieldWrapper extends LitElement {
     e: CustomEvent<{
       state: "empty" | "success" | "error";
       message?: string;
-      value?: string;
+      value?: unknown;
     }>
   ) => {
     e.stopPropagation();
     this.stateClass = e.detail.state;
     this.feedback = e.detail.message ?? "";
-    this.value = e.detail.value ?? "";
+    this.value = e.detail.value;
     if (this.stateClass !== "empty" && this.name) {
       this.dispatchState();
     }

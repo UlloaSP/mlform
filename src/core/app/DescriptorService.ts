@@ -66,7 +66,7 @@ export class DescriptorService {
       .map((d) => this.renderDescriptor(d))
       .join("");
 
-    return `<ml-layout backendUrl="${this.backendUrl}">
+    return `<ml-layout>
   <div slot="inputs">${inputs}</div>
   <div slot="report"></div>
 </ml-layout>`;
@@ -98,6 +98,27 @@ export class DescriptorService {
     if (reportSlot) {
       reportSlot.innerHTML = this.reportDescriptorsToInnerHtml(descriptors);
     }
+  }
+
+  public async submit(data: Record<string, unknown>): Promise<Output> {
+    let json: Output;
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(data));
+    try {
+      const res = await fetch(this.backendUrl, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) throw new Error(await res.text());
+      json = await res.json();
+      this.render(json);
+
+      
+    } catch (err) {
+      console.error("Error en fetch:", err);
+    }
+    return json!;
   }
 
   private renderDescriptor(d: DescriptorItem): string {
