@@ -11,13 +11,13 @@ export class TextField extends FieldElement<string> {
         width: 100%;
         padding: 0.75rem 1rem;
         font-size: 1rem;
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--ml-color-border);
         border-radius: var(--radius);
         outline: none;
         transition: border-color 0.2s ease;
       }
       input[type="text"]:focus {
-        border-color: var(--color-accent);
+        border-color: var(--ml-color-accent);
       }
     `,
   ];

@@ -22,7 +22,7 @@ export class RangeField extends FieldElement<number> {
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: var(--range-thumb, var(--color-accent, #1e40af));
+        background: var(--range-thumb, var(--ml-color-accent, #1e40af));
         cursor: pointer;
         border: 2px solid #fff;
         box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
@@ -32,7 +32,7 @@ export class RangeField extends FieldElement<number> {
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: var(--range-thumb, var(--color-accent, #1e40af));
+        background: var(--range-thumb, var(--ml-color-accent, #1e40af));
         cursor: pointer;
         border: 2px solid #fff;
       }

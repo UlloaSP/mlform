@@ -14,7 +14,7 @@ export class NumberField extends FieldElement<number> {
         width: 100%;
         padding: 0.75rem calc(var(--unit-w) + 2rem) 0.75rem 1rem;
         font-size: 1rem;
-        border: 1px solid var(--color-border);
+        border: 1px solid var(--ml-color-border);
         border-radius: var(--radius);
         outline: none;
         transition: border-color 0.2s ease;
@@ -24,7 +24,7 @@ export class NumberField extends FieldElement<number> {
         -webkit-overflow-scrolling: touch;
       }
       input[type="text"]:focus {
-        border-color: var(--color-accent);
+        border-color: var(--ml-color-accent);
       }
       .unit {
         position: absolute;
@@ -33,7 +33,7 @@ export class NumberField extends FieldElement<number> {
         min-width: var(--unit-w);
         transform: translateY(-50%);
         font-size: 0.9rem;
-        color: var(--color-secondary);
+        color: var(--ml-color-secondary);
         pointer-events: none;
       }
     `,
