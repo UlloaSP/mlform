@@ -146,7 +146,7 @@ export class FieldWrapper extends LitElement {
   private dispatchState() {
     this.dispatchEvent(
       new CustomEvent("wrapper", {
-        detail: { name: this.name, state: this.stateClass, value: this.value },
+        detail: { name: this.title, state: this.stateClass, value: this.value },
         bubbles: true,
         composed: true,
       })
