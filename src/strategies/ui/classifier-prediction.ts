@@ -28,7 +28,7 @@ export class ClassifierPrediction extends LitElement {
   /* --------------------------  STYLES  -------------------------- */
   static styles = css`
     :host {
-      --bar-color: #6366f1;
+      --bar-color: var(--ml-color-accent);
       display: block;
       margin: 10px;
       font-family: "Inter", system-ui, sans-serif;
@@ -37,28 +37,30 @@ export class ClassifierPrediction extends LitElement {
     .card {
       padding: 1.5rem 2rem;
       border-radius: var(--radius);
-      background: #ffffff;
+      background: var(--ml-color-surface);
       box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.05),
-        0 8px 16px rgba(0, 0, 0, 0.04);
-      border: 1px solid #f3f4f6; /* gray-100 */
+        0 2px 4px var(--ml-color-shadow),
+        0 8px 16px var(--ml-color-shadow);
+      border: 1px solid var(--ml-color-border);
     }
 
     .prea {
       padding: 1rem;
       border-radius: var(--radius);
       box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.05),
-        0 8px 16px rgba(0, 0, 0, 0.04);
-      border: 1px solid rgb(144, 144, 144); /* gray-100 */
+        0 2px 4px var(--ml-color-shadow),
+        0 8px 16px var(--ml-color-shadow);
+      border: 1px solid var(--ml-color-border);
       margin: 10px;
+      background: var(--ml-color-surface);
+      color: var(--ml-color-primary);
     }
 
     .title {
       font-size: 0.875rem; /* text-sm */
       font-weight: 600;
       text-transform: uppercase;
-      color: #4b5563; /* gray-600 */
+      color: var(--ml-color-secondary);
       letter-spacing: 0.06em;
       margin-bottom: 1rem;
     }
@@ -74,7 +76,7 @@ export class ClassifierPrediction extends LitElement {
     .label {
       font-size: 0.9rem;
       font-weight: 500;
-      color: #374151; /* gray-700 */
+      color: var(--ml-color-primary);
       text-transform: capitalize;
       text-align: right;
     }
@@ -83,7 +85,7 @@ export class ClassifierPrediction extends LitElement {
       position: relative;
       width: 100%;
       height: 10px;
-      background: #e5e7eb; /* gray-200 */
+      background: var(--ml-color-border);
       border-radius: 5px;
       overflow: hidden;
     }
@@ -96,8 +98,8 @@ export class ClassifierPrediction extends LitElement {
       background: linear-gradient(
         90deg,
         var(--bar-color) 0%,
-        #60a5fa 100%
-      ); /* indigo → blue */
+        var(--ml-color-accent-h) 100%
+      );
       border-radius: 5px;
       transition: width 0.3s ease;
     }
@@ -105,7 +107,7 @@ export class ClassifierPrediction extends LitElement {
     .pct {
       font-variant-numeric: tabular-nums;
       font-size: 0.9rem;
-      color: #374151; /* gray-700 */
+      color: var(--ml-color-primary);
       text-align: right;
     }
   `;

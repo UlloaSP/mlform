@@ -68,30 +68,35 @@ export class MLForm implements IMLForm {
     container: HTMLElement
   ): Promise<HTMLElement> {
     const parsedInput = this.fieldService.reg.schema.parse(data.inputs);
-    const parsedOutput = this.modelService.reg.schema.parse(data.outputs);
+    this.modelService.tmpOutputs = data.outputs;
     await this.fieldService.mount(parsedInput as Base, container);
-    await this.modelService.render(parsedOutput as Output);
-    (
-      container.firstChild! as HTMLElement & {
-        modelService?: DescriptorService;
-      }
-    ).modelService = this.modelService;
 
-    container.firstChild!.addEventListener(
-      "ml-submit",
-      (ev: Event) => {
-        const { inputs, response } = (
-          ev as CustomEvent<{
-            inputs: Record<string, unknown>;
-            response: Output;
-          }>
-        ).detail;
-        this._lastInputs = inputs;
-        this._lastResponse = response;
-        this._listeners.forEach((cb) => cb(inputs, response));
-      },
-      { passive: true }
-    );
+    const host = container.firstChild! as HTMLElement & {
+      modelService?: DescriptorService;
+      __mlSubmitHandler?: EventListener;
+    };
+    host.modelService = this.modelService;
+
+    if (host.__mlSubmitHandler) {
+      host.removeEventListener("ml-submit", host.__mlSubmitHandler);
+    }
+
+    host.__mlSubmitHandler = (ev: Event) => {
+      const { inputs, response } = (
+        ev as CustomEvent<{
+          inputs: Record<string, unknown>;
+          response: Output;
+        }>
+      ).detail;
+
+      this._lastInputs = inputs;
+      this._lastResponse = response;
+      this._listeners.forEach((cb) => cb(inputs, response));
+    };
+
+    host.addEventListener("ml-submit", host.__mlSubmitHandler, {
+      passive: true,
+    });
 
     return container;
   }

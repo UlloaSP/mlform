@@ -16,23 +16,24 @@ export class RegressorPrediction extends LitElement {
       --marker-width: 4px; /* valor actual */
       --limit-line-width: 3px; /* nuevo: marcador de límite */
       --limit-line-height: 28px; /* sobresale 6px por arriba y por abajo (barra = 16px) */
+      
       display: block;
       margin: 10px;
     }
 
     .prediction-card {
       padding: 25px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--ml-color-border);
       border-radius: var(--radius);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      background: #fff;
+      box-shadow: 0 4px 12px var(--ml-color-shadow);
+      background: var(--ml-color-surface);
     }
 
     .title {
       font-size: 1rem;
       font-weight: 600;
       text-transform: uppercase;
-      color: #666;
+      color: var(--ml-color-secondary);
     }
 
     .value {
@@ -40,7 +41,7 @@ export class RegressorPrediction extends LitElement {
       justify-content: flex-end;
       font-size: 1rem;
       font-weight: 700;
-      color: #111;
+      color: var(--ml-color-primary);
       margin-bottom: 5px;
     }
 
@@ -60,7 +61,7 @@ export class RegressorPrediction extends LitElement {
       height: 14px;
       width: 14px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgb(0, 251, 255), rgb(11, 0, 159));
+      background: radial-gradient(circle, var(--ml-color-accent), var(--ml-color-accent-h));
     }
 
     /* —— Wrapper del límite: línea + etiqueta —— */
@@ -80,13 +81,13 @@ export class RegressorPrediction extends LitElement {
     .limit-line {
       width: var(--limit-line-width);
       height: var(--limit-line-height);
-      background: #000;
+      background: var(--ml-color-primary);
       opacity: 0.6;
     }
 
     .limit-label {
       font-size: 0.75rem;
-      color: #666;
+      color: var(--ml-color-secondary);
       margin-top: 4px;
       white-space: nowrap;
     }
@@ -164,6 +165,15 @@ export class RegressorPrediction extends LitElement {
     return [this.min - delta, this.max + delta];
   }
 
+  /* —— Utilidades —— */
+  private _hasInterval(): boolean {
+    return (
+      this.interval !== undefined &&
+      this.min !== undefined &&
+      this.max !== undefined
+    );
+  }
+
   private _calcPercent(value: number): number {
     const [barMin, barMax] = this._barExtents();
     return ((value - barMin) / (barMax - barMin)) * 100;
@@ -192,6 +202,20 @@ export class RegressorPrediction extends LitElement {
 
   /* —— Render —— */
   render() {
+    if (!this._hasInterval()) {
+      return html`<div class="prediction-card">
+        ${this.title ? html`<div class="title">${this.title}</div>` : null}
+        ${this.values.map(
+          (val) => html`
+            <div class="item">
+              <div class="value">${val} ${this.unit}</div>
+            </div>
+            </div>
+          `
+        )}
+      </div>`;
+    }
+
     return html`
       <div class="prediction-card">
         ${this.title ? html`<div class="title">${this.title}</div>` : null}
