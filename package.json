@@ -1,0 +1,53 @@
+{
+  "name": "mlform",
+  "version": "0.1.0",
+  "license": "MIT",
+  "author": "UlloaSP <ulloasantinpablo2@gmail.com>",
+  "private": false,
+  "type": "module",
+  "files": ["dist/**"],
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/mlform.mjs"
+    },
+    "./extensions": {
+      "types": "./dist/types/extensions/index.d.ts",
+      "import": "./dist/mlform/extensions.mjs"
+    },
+    "./strategies": {
+      "types": "./dist/types/strategies/index.d.ts",
+      "import": "./dist/mlform/strategies.mjs"
+    }
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "packageManager": "npm@11.5.1",
+  "scripts": {
+    "lint": "npx @biomejs/biome check --write",
+    "type": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "link": "npm run build && npm link",
+    "ci": "npm run lint && npm run type && npm run test && npm run build"
+  },
+  "dependencies": {
+    "lit": "3.3.1",
+    "zod": "4.0.10"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.1.2",
+    "@types/node": "^24.1.0",
+    "globals": "^16.3.0",
+    "jsdom": "^26.1.0",
+    "rollup-plugin-visualizer": "^6.0.3",
+    "typescript": "~5.8.3",
+    "vite": "^7.0.6",
+    "vitest": "^3.2.4",
+    "vite-plugin-dts": "^4.5.4",
+    "@vitest/coverage-v8": "^3.2.4"
+  }
+}
