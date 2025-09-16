@@ -26,12 +26,13 @@ export const DateFieldSchema = z
     value: z.optional(z.iso.datetime()),
     min: z.optional(z.iso.datetime()),
     max: z.optional(z.iso.datetime()),
-    step: z.int().min(1).default(1),
+    step: z.optional(z.int().min(1).default(1)),
   })
   .check((ctx) => {
     if (isNotBeforeOrEqual(ctx.value.min, ctx.value.max)) {
       ctx.issues.push({
         code: "custom",
+        path: ["min"],
         message: DATE_MIN_MAX_MESSAGE,
         input: ctx.value,
         continue: true,
@@ -40,6 +41,7 @@ export const DateFieldSchema = z
     if (isNotBeforeOrEqual(ctx.value.value, ctx.value.max)) {
       ctx.issues.push({
         code: "custom",
+        path: ["value"],
         message: DATE_VALUE_MAX_MESSAGE,
         input: ctx.value,
         continue: true,
@@ -48,6 +50,7 @@ export const DateFieldSchema = z
     if (isNotBeforeOrEqual(ctx.value.min, ctx.value.value)) {
       ctx.issues.push({
         code: "custom",
+        path: ["min"],
         message: DATE_VALUE_MIN_MESSAGE,
         input: ctx.value,
         continue: true,

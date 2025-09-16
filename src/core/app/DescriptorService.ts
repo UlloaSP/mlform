@@ -8,6 +8,7 @@ export class DescriptorService {
   protected readonly registry: DescriptorRegistry = new DescriptorRegistry();
   protected declare backendUrl: string;
   private readonly loadedTypes = new Set<string>();
+  protected temporalOutputs: unknown = null;
 
   constructor(backendUrl: string = "") {
     this.backendUrl = backendUrl;
@@ -15,6 +16,10 @@ export class DescriptorService {
 
   get reg(): DescriptorRegistry {
     return this.registry;
+  }
+
+  set tmpOutputs(value: unknown) {
+    this.temporalOutputs = value;
   }
 
   public async mount(data: Base, host: HTMLElement): Promise<void> {
@@ -25,6 +30,7 @@ export class DescriptorService {
 
   protected async ensureComponents(data: Base): Promise<void> {
     const pending: Promise<unknown>[] = [
+      import("@/core/ui/error-card"),
       import("@/core/ui/ml-layout"),
       import("@/core/ui/field-wrapper"),
     ];
@@ -66,9 +72,10 @@ export class DescriptorService {
       .map((d) => this.renderDescriptor(d))
       .join("");
 
-    return `<ml-layout backendUrl="${this.backendUrl}">
+    return `<ml-layout>
   <div slot="inputs">${inputs}</div>
   <div slot="report"></div>
+  <div slot="error"></div>
 </ml-layout>`;
   }
 
@@ -82,8 +89,7 @@ export class DescriptorService {
   }
 
   public async render(data: Output): Promise<void> {
-    const parsed: unknown = this.reg.schema.parse(data.outputs);
-
+    const parsed = this.reg.schema.parse(data);
     // 1⃣  Lazy-load de los Web Components implicados
     // @ts-ignore
     await this.ensureComponents(parsed);
@@ -98,6 +104,45 @@ export class DescriptorService {
     if (reportSlot) {
       reportSlot.innerHTML = this.reportDescriptorsToInnerHtml(descriptors);
     }
+  }
+
+  public async submit(
+    data: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
+    let json: Output;
+    try {
+      const res = await fetch(this.backendUrl, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      json = await res.json();
+      const parsedOutput = this.reg.schema.parse(this.temporalOutputs);
+      // @ts-ignore
+      parsedOutput[0].execution_time = json.outputs[0].execution_time;
+      // @ts-ignore
+      if (parsedOutput[0].type === "regressor") {
+        // @ts-ignore
+        parsedOutput[0].values = json.outputs[0].values;
+        // @ts-ignore
+      } else if (parsedOutput[0].type === "classifier") {
+        // @ts-ignore
+        parsedOutput[0].probabilities = json.outputs[0].probabilities;
+      }
+      const parsed = this.reg.schema.parse(parsedOutput);
+      // @ts-ignore
+      this.render(parsed);
+      json = parsed as Output;
+    } catch (err) {
+      throw new Error(
+        `Error al enviar los datos al backend: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+    return { outputs: json! };
   }
 
   private renderDescriptor(d: DescriptorItem): string {
