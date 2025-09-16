@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    // Language and module settings
+    "target": "ES2024",
+    "module": "ESNext",
+    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+
+    // Output and build
+    "outDir": "dist/types",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "sourceMap": true,
+    "incremental": true,
+
+    // Type checking and strictness
+    "strict": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Decorators and class fields
+    "experimentalDecorators": true,
+    "useDefineForClassFields": true,
+
+    // Path aliases
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    // Type definitions
+    "types": ["vite/client"]
+  },
+  // Project file includes
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

@@ -1,0 +1,149 @@
+name: CI & Publish
+
+on:
+  push:
+    branches:
+      - main
+      - docs
+      - develop
+      - config
+      - application
+      - domain
+      - presentation
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'release/*'
+
+env:
+  NODE_VERSION: '22.14.0'
+
+jobs:
+  lint-and-format:
+    name: 🔍 Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run Biome
+        run: npm run lint
+
+  type-check:
+    name: 📝 Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📝 Run TypeScript compiler
+        run: npm run type
+
+  test:
+    name: 🧪 Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run tests
+        run: npm run test
+
+      - name: 📊 Generate coverage report
+        run: npm run coverage
+
+      - name: 📤 Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          if-no-files-found: warn
+          retention-days: 30
+
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, type-check, test]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build project
+        run: npm run build
+
+      - name: 📤 Upload bundle stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: stats/
+          if-no-files-found: warn
+          retention-days: 30
+
+  publish-npm:
+    name: 📦 Publish to NPM (main only)
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref_name == 'main' && github.repository_owner == 'UlloaSP'
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build for publication
+        run: npm run build
+
+      - name: 🚀 Publish to NPM
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance
