@@ -1,0 +1,24 @@
+mlform:
+  label: MLForm
+  permalink: /mlform
+  description: Posts about MLForm framework
+
+release:
+  label: Release
+  permalink: /release
+  description: Release announcements and updates
+
+announcement:
+  label: Announcement
+  permalink: /announcement
+  description: Important announcements
+
+tutorial:
+  label: Tutorial
+  permalink: /tutorial
+  description: Tutorials and guides
+
+examples:
+  label: Examples
+  permalink: /examples
+  description: Code examples and use cases

@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "license": "MIT",
   "author": "UlloaSP <ulloasantinpablo2@gmail.com>",
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UlloaSP/mlform"
+  },
+  "private": false,
   "type": "module",
   "files": ["dist/**"],
   "exports": {
