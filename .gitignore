@@ -32,9 +32,6 @@ dist-ssr
 # TypeScript
 *.tsbuildinfo
 
-# Documentation (generated)
-docs/
-
 # Test coverage (generated)
 coverage/
 
