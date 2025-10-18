@@ -1,0 +1,99 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 4rem;
+  padding: 3rem 1rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-heading-color);
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--ifm-color-emphasis-700);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+  .features {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cta {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 12px;
+  margin-top: 4rem;
+}
+
+.cta h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.cta p {
+  font-size: 1.1rem;
+  color: var(--ifm-color-emphasis-700);
+  margin-bottom: 2rem;
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.primaryButton {
+  background: var(--ifm-color-primary);
+  color: white;
+  border: 2px solid var(--ifm-color-primary);
+}
+
+.primaryButton:hover {
+  background: var(--ifm-color-primary-dark);
+  border-color: var(--ifm-color-primary-dark);
+  color: white;
+  text-decoration: none;
+}
+
+.secondaryButton {
+  background: transparent;
+  color: var(--ifm-color-primary);
+  border: 2px solid var(--ifm-color-primary);
+}
+
+.secondaryButton:hover {
+  background: var(--ifm-color-primary);
+  color: white;
+  text-decoration: none;
+}
