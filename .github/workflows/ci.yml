@@ -146,4 +146,4 @@ jobs:
       - name: 🚀 Publish to NPM
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance
+        run: npm publish --provenance --access public
