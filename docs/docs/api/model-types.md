@@ -324,5 +324,4 @@ mlForm.onSubmit((inputs, response) => {
 
 - [MLForm Class](./mlform)
 - [Field Types](./field-types)
-- [Backend Integration Guide](../guides/backend-integration)
-- [Custom Model Strategies](../guides/custom-strategies)
+- [Examples](../examples/ml-classification)

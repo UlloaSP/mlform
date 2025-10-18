@@ -215,7 +215,6 @@ document.addEventListener('DOMContentLoaded', initializeForm);
 
 ## Next Steps
 
-- 📚 Learn about [Field Types](../guides/field-types)
-- 🤖 Understand [Model Types](../guides/model-types)
-- 🎨 Explore [Styling](../guides/styling)
+- 📚 Learn about [Field Types](../api/field-types)
+- 🤖 Understand [Model Types](../api/model-types)
 - 💡 Check more [Examples](../examples/basic-form)

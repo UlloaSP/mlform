@@ -261,11 +261,9 @@ inputs: [
 ## Next Steps
 
 - 📚 Add [ML predictions](./ml-classification) to your form
-- 🎨 Learn about [custom styling](../guides/styling)
-- 🔧 Create [custom field types](../guides/custom-strategies)
+- 📖 Learn about [Field Types](../api/field-types)
+- 🤖 Explore [Model Types](../api/model-types)
 
 ## Related Examples
 
 - [ML Classification Form](./ml-classification)
-- [Registration Form](./registration-form)
-- [Survey Form](./survey-form)

@@ -415,11 +415,6 @@ const config = classConfig[prediction];
 
 ## Next Steps
 
-- 🔢 Try [regression predictions](./ml-regression)
-- 📊 Add [data visualization](../guides/visualization)
-- 🔒 Implement [error handling](../guides/error-handling)
-
-## Related Examples
-
-- [ML Regression](./ml-regression)
-- [Multi-Model Form](./multi-model)
+- � Learn more about [Model Types](../api/model-types)
+- 🎯 Explore [Field Types](../api/field-types)
+- 📚 Check the [MLForm API](../api/mlform)

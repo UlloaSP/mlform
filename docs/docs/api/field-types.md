@@ -309,4 +309,4 @@ console.log(FieldTypes.DATE);     // 'date'
 
 - [MLForm Class](./mlform)
 - [Model Types](./model-types)
-- [Custom Field Types](../guides/custom-strategies)
+- [Examples](../examples/basic-form)

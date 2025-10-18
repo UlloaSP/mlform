@@ -112,5 +112,5 @@ console.log('MLForm installed successfully!');
 Now that you have MLForm installed:
 
 - 🚀 Follow the [Quick Start](./quick-start) guide
-- 📖 Learn about [Field Types](../guides/field-types)
+- 📖 Learn about [Field Types](../api/field-types)
 - 💡 Check out [Examples](../examples/basic-form)
