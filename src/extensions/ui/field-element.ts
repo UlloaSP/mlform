@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { type CSSResultGroup, css, LitElement, type TemplateResult } from "lit";
 import { state } from "lit/decorators.js";
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { css, html, LitElement, render } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { DescriptorService } from "@/core/app";

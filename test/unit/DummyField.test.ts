@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { describe, expect, it } from "vitest";
 import { DummyField } from "../_fixtures/DummyField";
 

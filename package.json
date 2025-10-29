@@ -1,15 +1,53 @@
 {
   "name": "mlform",
   "version": "0.1.2",
+  "description": "Composable form generation utilities for machine learning backend integration",
   "license": "MIT",
-  "author": "UlloaSP <ulloasantinpablo2@gmail.com>",
+  "author": {
+    "name": "Pablo Ulloa Santín",
+    "email": "pablo.ulloa.santin@udc.es",
+    "url": "https://github.com/UlloaSP"
+  },
+  "contributors": [
+    {
+      "name": "Pablo Ulloa Santín",
+      "email": "pablo.ulloa.santin@udc.es",
+      "url": "https://github.com/UlloaSP"
+    }
+  ],
+  "keywords": [
+    "lit",
+    "web-components",
+    "forms",
+    "form-generator",
+    "strategies",
+    "typescript",
+    "zod",
+    "ml",
+    "machine-learning",
+    "frontend",
+    "models",
+    "ui",
+    "user-interface",
+    "library"
+  ],
+  "homepage": "https://ulloasp.github.io/mlform/",
+  "bugs": {
+    "url": "https://github.com/UlloaSP/mlform/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/UlloaSP/mlform"
+    "url": "https://github.com/UlloaSP/mlform.git"
   },
   "private": false,
   "type": "module",
   "files": ["dist/**"],
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/UlloaSP"
+    }
+  ],
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
@@ -27,6 +65,12 @@
   "engines": {
     "node": ">=22.14.0"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
+  "types": "dist/types/index.d.ts",
   "packageManager": "npm@11.5.1",
   "scripts": {
     "lint": "npx @biomejs/biome check --write",
@@ -40,18 +84,18 @@
   },
   "dependencies": {
     "lit": "3.3.1",
-    "zod": "4.0.10"
+    "zod": "4.1.12"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
-    "@types/node": "^24.1.0",
-    "globals": "^16.3.0",
-    "jsdom": "^26.1.0",
-    "rollup-plugin-visualizer": "^6.0.3",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.6",
-    "vitest": "^3.2.4",
+    "@types/node": "^24.9.2",
+    "globals": "^16.4.0",
+    "jsdom": "^27.0.1",
+    "rollup-plugin-visualizer": "^6.0.5",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.12",
+    "vitest": "^4.0.4",
     "vite-plugin-dts": "^4.5.4",
-    "@vitest/coverage-v8": "^3.2.4"
+    "@vitest/coverage-v8": "^4.0.4"
   }
 }

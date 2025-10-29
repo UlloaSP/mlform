@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import React, { useState } from 'react';
 import styles from './CodeBlock.module.css';
 

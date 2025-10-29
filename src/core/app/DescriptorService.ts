@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import type { Base, Output } from "@/core/domain";
 import type { DescriptorItem } from "./DescriptorItem";
 import { DescriptorRegistry } from "./DescriptorRegistry";

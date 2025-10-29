@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import type { Infer } from "@/core/domain";
 import { FieldStrategy } from "@/extensions/app";
 import { FieldTypes, TextFieldSchema } from "@/strategies/domain";

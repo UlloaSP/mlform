@@ -1,6 +1,9 @@
-import React from 'react';
-import Layout from '@theme/Layout';
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import FeatureCard from '@site/src/components/FeatureCard';
+import Layout from '@theme/Layout';
+import React from 'react';
 import styles from './features.module.css';
 
 const features = [

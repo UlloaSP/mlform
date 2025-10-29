@@ -1,0 +1,27 @@
+include LICENSE
+include README.md
+include AUTHORS.md
+include CONTRIBUTING.md
+include docs/docs/getting-started/changelog.md
+include SECURITY.md
+include THIRD_PARTY_LICENSES.md
+include package.json
+include tsconfig.json
+include vite.config.ts
+include biome.json
+include stats/bundle_size_treemap.html
+
+recursive-include src *.ts *.tsx *.js *.json
+recursive-include test *.ts *.tsx *.js *.json
+
+recursive-include docs *.md *.tsx *.ts *.json *.yml *.css
+recursive-include docs/static *
+recursive-include docs/src *
+recursive-exclude docs/build *
+
+recursive-exclude coverage *
+
+recursive-exclude **/__pycache__ *
+recursive-exclude **/*.pyc *
+recursive-exclude **/.DS_Store *
+recursive-exclude **/Thumbs.db *

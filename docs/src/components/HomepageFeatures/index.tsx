@@ -1,6 +1,9 @@
-import type {ReactNode} from 'react';
-import clsx from 'clsx';
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import Heading from '@theme/Heading';
+import clsx from 'clsx';
+import type {ReactNode} from 'react';
 import styles from './styles.module.css';
 
 type FeatureItem = {

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { array, type Schema, union } from "@/core/domain";
 import { DescriptorStrategy } from "./DescriptorStrategy";
 

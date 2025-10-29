@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { FieldElement } from "@/extensions/ui";
