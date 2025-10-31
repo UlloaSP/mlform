@@ -24,6 +24,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'getting-started/installation',
         'getting-started/quick-start',
+        'getting-started/usage-guide',
       ],
     },
     {
@@ -41,6 +42,8 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'API Reference',
       items: [
+        'api/api-reference',
+        'api/integration-patterns',
         'api/mlform',
         'api/field-types',
         'api/model-types',

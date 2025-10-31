@@ -83,7 +83,7 @@ const schema = {
 // Handle predictions
 mlForm.onSubmit((inputs, response) => {
   console.log('Input values:', inputs);
-  console.log('Prediction:', response);
+  console.log('Response:', response);
   
   // Display results
   displayResults(inputs, response);
@@ -92,10 +92,17 @@ mlForm.onSubmit((inputs, response) => {
 function displayResults(inputs, response) {
   const resultsDiv = document.getElementById('results');
   
-  // Get prediction details
-  const prediction = response.prediction;
-  const confidence = (response.confidence * 100).toFixed(1);
-  const executionTime = response.execution_time;
+  // Get prediction details from outputs array
+  const output = response.outputs?.[0];
+  if (!output) {
+    resultsDiv.innerHTML = '<p>Error: No prediction received</p>';
+    resultsDiv.style.display = 'block';
+    return;
+  }
+  
+  const prediction = output.prediction;
+  const confidence = output.confidence ? (output.confidence * 100).toFixed(1) : 'N/A';
+  const executionTime = output.execution_time || 'N/A';
   
   // Format result message
   let statusClass = '';
@@ -133,10 +140,10 @@ function displayResults(inputs, response) {
         <li>Housing: ${inputs['Home Ownership']}</li>
       </ul>
       
-      ${response.probabilities ? `
+      ${output.probabilities ? `
         <h4>Probability Breakdown</h4>
         <div class="probabilities">
-          ${Object.entries(response.probabilities)
+          ${Object.entries(output.probabilities)
             .map(([key, val]) => `
               <div class="prob-item">
                 <span>${key}:</span>
@@ -284,9 +291,11 @@ if (document.readyState === 'loading') {
 
 ## Backend API
 
-Your backend should handle the request:
+Your backend should handle the POST request from MLForm.
 
 ### Request Format
+
+MLForm sends a JSON POST request with this structure:
 
 ```json
 {
@@ -297,75 +306,144 @@ Your backend should handle the request:
     "Existing Debt": 15000,
     "Employment Type": "Full-time",
     "Home Ownership": "Mortgage"
-  },
-  "model_type": "classifier"
+  }
 }
 ```
 
 ### Response Format
 
+Your backend must respond with predictions in this structure:
+
 ```json
 {
-  "type": "classifier",
-  "prediction": "approved",
-  "confidence": 0.87,
-  "probabilities": {
-    "approved": 0.87,
-    "review": 0.10,
-    "rejected": 0.03
-  },
-  "execution_time": 45
+  "outputs": [
+    {
+      "type": "classifier",
+      "prediction": "approved",
+      "confidence": 0.87,
+      "probabilities": {
+        "approved": 0.87,
+        "review": 0.10,
+        "rejected": 0.03
+      },
+      "execution_time": 45
+    }
+  ]
 }
 ```
+
+**Required fields:**
+- `outputs` - Array of prediction outputs
+- `type` - Must be `"classifier"` for classification models
+- `prediction` - The predicted class/label
+
+**Optional fields:**
+- `confidence` - Confidence score (0-1)
+- `probabilities` - Probability for each class
+- `execution_time` - Inference time in milliseconds
 
 ## Example Backend (Python/FastAPI)
 
 ```python
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from typing import Dict, Any
 import joblib
 import time
+import numpy as np
 
 app = FastAPI()
 
 # Load your trained model
 model = joblib.load('credit_risk_model.pkl')
 
-class PredictionRequest(BaseModel):
-    inputs: dict
-    model_type: str
+# Encoding mappings (adjust for your model)
+EMPLOYMENT_ENCODING = {
+    'Full-time': 1,
+    'Part-time': 2,
+    'Self-employed': 3,
+    'Unemployed': 0
+}
+
+OWNERSHIP_ENCODING = {
+    'Own': 1,
+    'Mortgage': 2,
+    'Rent': 0
+}
+
+class MLFormRequest(BaseModel):
+    inputs: Dict[str, Any]
 
 @app.post("/predict/credit-risk")
-async def predict_credit_risk(request: PredictionRequest):
+async def predict_credit_risk(request: MLFormRequest):
     start_time = time.time()
     
-    # Extract features
-    features = [
-        request.inputs['Annual Income'],
-        request.inputs['Credit Score'],
-        request.inputs['Years Employed'],
-        request.inputs['Existing Debt'],
-        # ... encode categorical variables
-    ]
+    try:
+        # Extract and encode features
+        features = np.array([[
+            request.inputs['Annual Income'],
+            request.inputs['Credit Score'],
+            request.inputs['Years Employed'],
+            request.inputs['Existing Debt'],
+            EMPLOYMENT_ENCODING.get(request.inputs['Employment Type'], 0),
+            OWNERSHIP_ENCODING.get(request.inputs['Home Ownership'], 0)
+        ]])
+        
+        # Make prediction
+        prediction_label = model.predict(features)[0]
+        probabilities = model.predict_proba(features)[0]
+        
+        # Map prediction to label
+        class_labels = ['rejected', 'review', 'approved']
+        predicted_class = class_labels[prediction_label] if isinstance(prediction_label, int) else prediction_label
+        
+        execution_time = int((time.time() - start_time) * 1000)
+        
+        # Return response in MLForm expected format
+        return {
+            "outputs": [
+                {
+                    "type": "classifier",
+                    "prediction": predicted_class,
+                    "confidence": float(max(probabilities)),
+                    "probabilities": {
+                        "rejected": float(probabilities[0]),
+                        "review": float(probabilities[1]),
+                        "approved": float(probabilities[2])
+                    },
+                    "execution_time": execution_time
+                }
+            ]
+        }
     
-    # Make prediction
-    prediction = model.predict([features])[0]
-    probabilities = model.predict_proba([features])[0]
-    
-    execution_time = int((time.time() - start_time) * 1000)
-    
-    return {
-        "type": "classifier",
-        "prediction": prediction,
-        "confidence": float(max(probabilities)),
-        "probabilities": {
-            "approved": float(probabilities[0]),
-            "review": float(probabilities[1]),
-            "rejected": float(probabilities[2])
-        },
-        "execution_time": execution_time
-    }
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": str(e),
+                "outputs": []
+            }
+        )
+
+# Enable CORS for frontend requests
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 ```
+
+**Important notes:**
+- The response must include an `outputs` array (this is the key difference from some documentation)
+- Always include `type`, `prediction` fields
+- Wrap your response in the `outputs` array structure
+- Handle errors gracefully with appropriate status codes
+- Enable CORS if frontend and backend are on different origins
 
 ## Key Features
 

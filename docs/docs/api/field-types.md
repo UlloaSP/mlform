@@ -32,7 +32,9 @@ For single-line text input.
   required?: boolean,
   minLength?: number,
   maxLength?: number,
-  pattern?: string
+  pattern?: string,
+  placeholder?: string,
+  value?: string
 }
 ```
 
@@ -45,7 +47,8 @@ For single-line text input.
   description: 'Enter your complete name',
   required: true,
   minLength: 2,
-  maxLength: 100
+  maxLength: 100,
+  placeholder: 'e.g., John Doe'
 }
 ```
 
@@ -53,12 +56,14 @@ For single-line text input.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `title` | `string` | *required* | Label displayed to user |
-| `description` | `string` | - | Help text shown below field |
+| `title` | `string` | *required* | Label displayed to user (1-100 chars) |
+| `description` | `string` | - | Help text shown below field (1-500 chars) |
 | `required` | `boolean` | `true` | Whether field is mandatory |
 | `minLength` | `number` | - | Minimum character length |
 | `maxLength` | `number` | - | Maximum character length |
-| `pattern` | `string` | - | Regex pattern for validation |
+| `pattern` | `string` | - | Regex pattern for validation (valid regex) |
+| `placeholder` | `string` | - | Placeholder hint text |
+| `value` | `string` | - | Initial/default value |
 
 ---
 
@@ -76,7 +81,10 @@ For numeric input with constraints.
   required?: boolean,
   min?: number,
   max?: number,
-  step?: number
+  step?: number,
+  placeholder?: string,
+  value?: number,
+  unit?: string
 }
 ```
 
@@ -90,7 +98,8 @@ For numeric input with constraints.
   required: true,
   min: 0,
   max: 120,
-  step: 1
+  step: 1,
+  placeholder: '25'
 }
 ```
 
@@ -98,12 +107,15 @@ For numeric input with constraints.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `title` | `string` | *required* | Label displayed to user |
-| `description` | `string` | - | Help text shown below field |
+| `title` | `string` | *required* | Label displayed to user (1-100 chars) |
+| `description` | `string` | - | Help text shown below field (1-500 chars) |
 | `required` | `boolean` | `true` | Whether field is mandatory |
 | `min` | `number` | - | Minimum allowed value |
 | `max` | `number` | - | Maximum allowed value |
-| `step` | `number` | - | Increment/decrement step |
+| `step` | `number` | `1` | Increment/decrement step (must be positive) |
+| `placeholder` | `string` | - | Placeholder hint text |
+| `value` | `number` | - | Initial/default value |
+| `unit` | `string` | - | Unit label (e.g., 'USD', 'kg', '%') |
 
 ---
 
@@ -118,7 +130,8 @@ For true/false or yes/no input.
   type: 'boolean',
   title: string,
   description?: string,
-  required?: boolean
+  required?: boolean,
+  value?: boolean
 }
 ```
 
@@ -129,7 +142,8 @@ For true/false or yes/no input.
   type: 'boolean',
   title: 'Subscribe to Newsletter',
   description: 'Receive weekly updates',
-  required: false
+  required: false,
+  value: true
 }
 ```
 
@@ -137,9 +151,10 @@ For true/false or yes/no input.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `title` | `string` | *required* | Label displayed to user |
-| `description` | `string` | - | Help text shown below field |
+| `title` | `string` | *required* | Label displayed to user (1-100 chars) |
+| `description` | `string` | - | Help text shown below field (1-500 chars) |
 | `required` | `boolean` | `true` | Whether field is mandatory |
+| `value` | `boolean` | - | Initial/default checked state |
 
 ---
 
@@ -156,7 +171,7 @@ For selecting from predefined options.
   description?: string,
   required?: boolean,
   options: string[],
-  multiple?: boolean
+  value?: string
 }
 ```
 
@@ -169,7 +184,7 @@ For selecting from predefined options.
   description: 'Select your department',
   required: true,
   options: ['Engineering', 'Sales', 'Marketing', 'HR'],
-  multiple: false
+  value: 'Engineering'
 }
 ```
 
@@ -177,11 +192,17 @@ For selecting from predefined options.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `title` | `string` | *required* | Label displayed to user |
-| `description` | `string` | - | Help text shown below field |
+| `title` | `string` | *required* | Label displayed to user (1-100 chars) |
+| `description` | `string` | - | Help text shown below field (1-500 chars) |
 | `required` | `boolean` | `true` | Whether field is mandatory |
-| `options` | `string[]` | *required* | Available choices |
-| `multiple` | `boolean` | `false` | Allow multiple selections |
+| `options` | `string[]` | *required* | Available choices (min. 1 option) |
+| `value` | `string` | - | Initial selection (must be in options) |
+
+### Notes
+
+- The `value` property, if provided, must match one of the items in `options`
+- Only single selection is supported (not multiple)
+- All options must be non-empty strings
 
 ---
 
@@ -199,7 +220,8 @@ For date input with validation.
   required?: boolean,
   min?: string,
   max?: string,
-  format?: string
+  value?: string,
+  step?: number
 }
 ```
 
@@ -213,7 +235,7 @@ For date input with validation.
   required: true,
   min: '1900-01-01',
   max: '2024-12-31',
-  format: 'YYYY-MM-DD'
+  value: '2000-01-15'
 }
 ```
 
@@ -221,12 +243,19 @@ For date input with validation.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `title` | `string` | *required* | Label displayed to user |
-| `description` | `string` | - | Help text shown below field |
+| `title` | `string` | *required* | Label displayed to user (1-100 chars) |
+| `description` | `string` | - | Help text shown below field (1-500 chars) |
 | `required` | `boolean` | `true` | Whether field is mandatory |
-| `min` | `string` | - | Earliest allowed date |
-| `max` | `string` | - | Latest allowed date |
-| `format` | `string` | `'YYYY-MM-DD'` | Date format string |
+| `min` | `string` | - | Earliest allowed date (ISO 8601 format) |
+| `max` | `string` | - | Latest allowed date (ISO 8601 format) |
+| `value` | `string` | - | Initial date (ISO 8601 format) |
+| `step` | `number` | `1` | Day step increment (must be >= 1) |
+
+### Notes
+
+- All dates must be in ISO 8601 format: `YYYY-MM-DD`
+- The `value` property, if provided, must be between `min` and `max`
+- If `min` is provided, it must be before or equal to `max`
 
 ---
 

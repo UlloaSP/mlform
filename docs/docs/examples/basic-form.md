@@ -19,8 +19,8 @@ This example demonstrates:
 ```typescript
 import { MLForm } from 'mlform';
 
-// Initialize MLForm (backend URL not used for basic forms)
-const mlForm = new MLForm('https://api.example.com');
+// Initialize MLForm (backend URL not used for basic forms, but still required)
+const mlForm = new MLForm('https://api.example.com/predict');
 
 // Define form schema
 const schema = {
@@ -31,14 +31,16 @@ const schema = {
       description: 'Enter your complete name',
       required: true,
       minLength: 2,
-      maxLength: 100
+      maxLength: 100,
+      placeholder: 'e.g., John Doe'
     },
     {
       type: 'text',
       title: 'Email',
       description: 'Your email address',
       required: true,
-      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+      placeholder: 'you@example.com'
     },
     {
       type: 'number',
@@ -46,7 +48,8 @@ const schema = {
       description: 'Your age in years',
       required: true,
       min: 13,
-      max: 120
+      max: 120,
+      step: 1
     },
     {
       type: 'category',
@@ -156,9 +159,16 @@ The email field uses regex pattern validation:
 {
   type: 'text',
   title: 'Email',
-  pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'
+  pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+  placeholder: 'you@example.com',
+  required: true
 }
 ```
+
+**Notes:**
+- Pattern must be a valid regex string
+- Pattern validation happens client-side on form submission
+- Use clear placeholder text to guide users
 
 ### 2. Number Constraints
 
@@ -169,9 +179,16 @@ Age field has min/max validation:
   type: 'number',
   title: 'Age',
   min: 13,
-  max: 120
+  max: 120,
+  step: 1,
+  required: true
 }
 ```
+
+**Notes:**
+- Min and max values are inclusive
+- Step controls the increment (default is 1)
+- Value must be between min and max if both are specified
 
 ### 3. Category Selection
 
@@ -181,9 +198,16 @@ Dropdown with predefined options:
 {
   type: 'category',
   title: 'Country',
-  options: ['United States', 'Canada', 'United Kingdom', /* ... */]
+  options: ['United States', 'Canada', 'United Kingdom'],
+  value: 'United States',  // Optional default
+  required: true
 }
 ```
+
+**Notes:**
+- Only single selection is supported
+- The `value` property must match one of the options if provided
+- All options must be non-empty strings
 
 ### 4. Optional Fields
 
@@ -193,9 +217,15 @@ Newsletter subscription is not required:
 {
   type: 'boolean',
   title: 'Subscribe to Newsletter',
-  required: false
+  required: false,
+  value: false  // Optional default
 }
 ```
+
+**Notes:**
+- Required defaults to `true` if not specified
+- Boolean fields are rendered as checkboxes
+- Value property sets the initial state
 
 ## Accessing Form Data
 
@@ -206,6 +236,14 @@ mlForm.onSubmit((inputs, response) => {
   // Access by field title
   const name = inputs['Full Name'];
   const email = inputs.Email;
+  const age = inputs.Age;
+  const country = inputs.Country;
+  const subscribed = inputs['Subscribe to Newsletter'];
+  
+  // Data types are preserved
+  console.log(typeof age);        // 'number'
+  console.log(typeof subscribed); // 'boolean'
+  console.log(typeof email);      // 'string'
   
   // Process the data
   sendToBackend(inputs);
@@ -220,17 +258,86 @@ const lastInputs = mlForm.lastInputs;
 
 if (lastInputs) {
   console.log('Previously submitted:', lastInputs);
+  console.log('Name was:', lastInputs['Full Name']);
 }
 ```
 
+### Key Points
+
+- Field titles become keys in the inputs object
+- Data types are preserved (numbers stay numbers, booleans stay booleans, etc.)
+- Access by exact field title (case-sensitive)
+- The `inputs` object structure depends on your schema
+
 ## Validation
 
-MLForm automatically validates:
+MLForm automatically validates all fields before submission based on the schema:
 
-- ✅ Required fields are filled
-- ✅ Text matches pattern (email format)
-- ✅ Numbers are within min/max range
-- ✅ String length is within bounds
+### Validation Rules by Field Type
+
+| Field Type | Validations |
+|-----------|------------|
+| `text` | Required check, minLength, maxLength, pattern (regex) |
+| `number` | Required check, min/max range |
+| `boolean` | Required check (if required=true, must be checked) |
+| `category` | Required check, value must be in options |
+| `date` | Required check, min/max date range |
+
+### Validation Example
+
+```typescript
+// This schema will validate:
+const schema = {
+  inputs: [
+    {
+      type: 'text',
+      title: 'Email',
+      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
+      required: true
+      // Validates: field is filled AND matches email pattern
+    },
+    {
+      type: 'number',
+      title: 'Age',
+      min: 13,
+      max: 120,
+      required: true
+      // Validates: field is filled AND is between 13-120
+    },
+    {
+      type: 'category',
+      title: 'Country',
+      options: ['US', 'CA', 'UK'],
+      required: true
+      // Validates: field is filled AND value is in the options list
+    }
+  ]
+};
+```
+
+### Pre-Submission Validation
+
+Validate schema before rendering:
+
+```typescript
+// Validate the entire schema before rendering
+const validation = await mlForm.validateSchema(schema);
+
+if (!validation.success) {
+  console.error('Schema validation errors:', validation.error);
+  // Don't render if schema is invalid
+} else {
+  const container = document.getElementById('form-container');
+  await mlForm.toHTMLElement(schema, container);
+}
+```
+
+### Notes
+
+- ✅ Validation is automatic and built-in
+- ✅ Invalid forms prevent submission
+- ✅ Error messages display near the invalid fields
+- ✅ All validation happens on the client before backend is called
 
 ## Customization
 
