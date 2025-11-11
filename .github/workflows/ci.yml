@@ -165,40 +165,53 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: � Detect version change
+      - name: 🔍 Detect version change from NPM Registry
         id: version_check
         shell: bash
         run: |
           set -eo pipefail
           node <<'NODE'
           const { execSync } = require('child_process');
+          const https = require('https');
           const fs = require('fs');
 
           const outputPath = process.env.GITHUB_OUTPUT;
           const currentVersion = require('./package.json').version;
-          let previousVersion = '';
+          const packageName = require('./package.json').name;
+          let registryVersion = '';
 
-          try {
-            execSync('git rev-parse HEAD^', { stdio: 'ignore' });
-            const previousContent = execSync('git show HEAD^:package.json', {
-              encoding: 'utf8',
-              stdio: ['ignore', 'pipe', 'ignore'],
+          // Fetch latest version from NPM registry
+          const fetchNpmVersion = () => {
+            return new Promise((resolve, reject) => {
+              https.get(`https://registry.npmjs.org/${packageName}/latest`, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                  try {
+                    const json = JSON.parse(data);
+                    resolve(json.version || '');
+                  } catch (error) {
+                    resolve('');
+                  }
+                });
+              }).on('error', () => resolve(''));
             });
-            previousVersion = JSON.parse(previousContent).version || '';
-          } catch (error) {
-            previousVersion = '';
-          }
+          };
 
-          const changed = previousVersion !== currentVersion;
+          (async () => {
+            registryVersion = await fetchNpmVersion();
+            const changed = registryVersion !== currentVersion;
 
-          fs.appendFileSync(outputPath, `current_version=${currentVersion}\n`, 'utf8');
-          fs.appendFileSync(outputPath, `version_changed=${changed}\n`, 'utf8');
+            fs.appendFileSync(outputPath, `current_version=${currentVersion}\n`, 'utf8');
+            fs.appendFileSync(outputPath, `registry_version=${registryVersion}\n`, 'utf8');
+            fs.appendFileSync(outputPath, `version_changed=${changed}\n`, 'utf8');
 
-          if (!changed) {
-            console.log(`No version change detected: ${currentVersion}`);
-          } else {
-            console.log(`Version change detected: ${previousVersion || '<none>'} -> ${currentVersion}`);
-          }
+            if (!changed) {
+              console.log(`No version change detected: ${currentVersion} (registry: ${registryVersion || 'not found'})`);
+            } else {
+              console.log(`Version change detected: ${registryVersion || 'not found'} -> ${currentVersion}`);
+            }
+          })();
           NODE
 
       - name: �📦 Setup Node.js
