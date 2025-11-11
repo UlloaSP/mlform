@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { array, type Schema, union } from "@/core/domain";
+import { array, never, type Schema, union } from "@/core/domain";
 import { DescriptorStrategy } from "./DescriptorStrategy";
 
 const ERROR_TYPE_ALREADY_EXISTS: string =
@@ -11,7 +11,7 @@ const ERROR_TYPE_DOES_NOT_EXIST: string =
 
 export class DescriptorRegistry {
   private readonly catalog = new Map<string, DescriptorStrategy>();
-  private combinedSchema: Schema = union([]);
+  private combinedSchema: Schema = never();
 
   get schema(): Schema {
     return array(this.combinedSchema);

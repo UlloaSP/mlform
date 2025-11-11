@@ -251,7 +251,7 @@ What actually happens.
 - OS: (e.g., Windows 11, macOS 15, Ubuntu 24.04)
 - Node.js version: (e.g., 22.14.0)
 - npm version: (e.g., 11.5.1)
-- MLForm version: (e.g., 0.1.2)
+- MLForm version: (e.g., 0.1.3)
 
 ## Additional Context
 Screenshots, logs, or related issues.

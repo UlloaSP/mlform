@@ -89,14 +89,16 @@ export class NumberField extends FieldElement<number> {
   }
 
   private onInput(e: InputEvent) {
-    this.value = Number((e.target as HTMLInputElement).value.trim());
-    if (!this.value) {
+    const inputValue = (e.target as HTMLInputElement).value.trim();
+
+    if (!inputValue) {
+      this.value = NaN;
       this.dispatchState("empty");
       return;
     }
 
     const ALLOWED = /^[0-9.,\s-]+$/;
-    if (!ALLOWED.test(this.value.toString())) {
+    if (!ALLOWED.test(inputValue)) {
       this.dispatchState(
         "error",
         "Only digits, comma, dot, space, and a leading minus are allowed."
@@ -104,11 +106,8 @@ export class NumberField extends FieldElement<number> {
       return;
     }
 
-    const minusCount = (this.value.toString().match(/-/g) || []).length;
-    if (
-      minusCount > 1 ||
-      (minusCount === 1 && !this.value.toString().startsWith("-"))
-    ) {
+    const minusCount = (inputValue.match(/-/g) || []).length;
+    if (minusCount > 1 || (minusCount === 1 && !inputValue.startsWith("-"))) {
       this.dispatchState(
         "error",
         "Minus sign must appear once and only at the beginning."
@@ -118,7 +117,7 @@ export class NumberField extends FieldElement<number> {
 
     const numberPattern =
       /^-?(?:\d{1,3}(?:([,\s])\d{3}(?:\1\d{3})*)|\d+)(?:[.]\d+)?$/;
-    if (!numberPattern.test(this.value.toString())) {
+    if (!numberPattern.test(inputValue)) {
       this.dispatchState(
         "error",
         "Invalid number format (check grouping or decimal separator)."
@@ -126,7 +125,7 @@ export class NumberField extends FieldElement<number> {
       return;
     }
 
-    const num = this.parseLocaleNumber(this.value.toString());
+    const num = this.parseLocaleNumber(inputValue);
 
     if (
       this.min &&
@@ -135,9 +134,7 @@ export class NumberField extends FieldElement<number> {
     ) {
       this.dispatchState(
         "error",
-        `Number must be between 
-        ${this.min} ${this.unit} and 
-        ${this.max ?? ""} ${this.unit}`
+        `Number must be between ${this.min} ${this.unit} and ${this.max ?? ""} ${this.unit}`
       );
       return;
     }
@@ -158,6 +155,7 @@ export class NumberField extends FieldElement<number> {
       return;
     }
 
+    this.value = num;
     this.dispatchState(
       "success",
       `Valid Number: ${num.toLocaleString("en-US", {})} ${this.unit}`

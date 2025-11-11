@@ -5,6 +5,34 @@ All notable changes to MLForm will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-11-11
+
+### Added
+
+N/A
+
+### Changed
+
+- Dependencies Versions
+
+### Deprecated
+
+N/A
+
+### Removed
+
+N/A
+
+### Fixed
+
+- NumberStrategy error when inputing value "0"
+
+### Security
+
+N/A
+
+---
+
 ## [0.1.2] - 2025-10-29
 
 ### Added
