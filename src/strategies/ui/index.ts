@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 export { BooleanField } from "./boolean-field";
 export { CategoryField } from "./category-field";
 export { ClassifierPrediction } from "./classifier-prediction";

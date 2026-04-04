@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 import { visualizer } from "rollup-plugin-visualizer";

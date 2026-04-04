@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import {
   literal,
   looseObject,
   strictObject,
+  never as Znever,
   type ZodType,
   array as zArray,
   type infer as zInfer,
@@ -12,6 +16,7 @@ import { FieldTypes, ModelTypes } from "@/strategies/domain";
 
 export const array = zArray;
 export const union = zUnion;
+export const never = Znever;
 
 export type Schema = ZodType;
 export type Infer<T extends ZodType> = zInfer<T>;

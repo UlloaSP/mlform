@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
@@ -21,6 +24,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'getting-started/installation',
         'getting-started/quick-start',
+        'getting-started/usage-guide',
       ],
     },
     {
@@ -38,6 +42,8 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'API Reference',
       items: [
+        'api/api-reference',
+        'api/integration-patterns',
         'api/mlform',
         'api/field-types',
         'api/model-types',

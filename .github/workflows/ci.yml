@@ -17,7 +17,7 @@ on:
       - 'release/*'
 
 env:
-  NODE_VERSION: '22.14.0'
+  NODE_VERSION: '24.9.0'
 
 jobs:
   lint-and-format:
@@ -101,21 +101,21 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: docs/package-lock.json
+          cache-dependency-path: ./docs/package-lock.json
 
       - name: 📦 Install docs dependencies
-        working-directory: docs
+        working-directory: ./docs
         run: npm ci
 
       - name: 🏗️ Build documentation
-        working-directory: docs
+        working-directory: ./docs
         run: npm run build
 
       - name: 📤 Upload docs artifact
         uses: actions/upload-artifact@v4
         with:
           name: docs-build
-          path: docs/build/
+          path: ./docs/build/
           if-no-files-found: error
           retention-days: 30
 
@@ -157,7 +157,7 @@ jobs:
       contents: write
       id-token: write
     outputs:
-      package_version: ${{ steps.get_version.outputs.version }}
+      package_version: ${{ steps.version_check.outputs.current_version }}
       published: ${{ steps.publish.outcome == 'success' }}
     steps:
       - name: 📥 Checkout code
@@ -165,28 +165,81 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup Node.js
+      - name: 🔍 Detect version change from NPM Registry
+        id: version_check
+        shell: bash
+        run: |
+          set -eo pipefail
+          node <<'NODE'
+          const { execSync } = require('child_process');
+          const https = require('https');
+          const fs = require('fs');
+
+          const outputPath = process.env.GITHUB_OUTPUT;
+          const currentVersion = require('./package.json').version;
+          const packageName = require('./package.json').name;
+          let registryVersion = '';
+
+          // Fetch latest version from NPM registry
+          const fetchNpmVersion = () => {
+            return new Promise((resolve, reject) => {
+              https.get(`https://registry.npmjs.org/${packageName}/latest`, (res) => {
+                let data = '';
+                res.on('data', (chunk) => { data += chunk; });
+                res.on('end', () => {
+                  try {
+                    const json = JSON.parse(data);
+                    resolve(json.version || '');
+                  } catch (error) {
+                    resolve('');
+                  }
+                });
+              }).on('error', () => resolve(''));
+            });
+          };
+
+          (async () => {
+            registryVersion = await fetchNpmVersion();
+            const changed = registryVersion !== currentVersion;
+
+            fs.appendFileSync(outputPath, `current_version=${currentVersion}\n`, 'utf8');
+            fs.appendFileSync(outputPath, `registry_version=${registryVersion}\n`, 'utf8');
+            fs.appendFileSync(outputPath, `version_changed=${changed}\n`, 'utf8');
+
+            if (!changed) {
+              console.log(`No version change detected: ${currentVersion} (registry: ${registryVersion || 'not found'})`);
+            } else {
+              console.log(`Version change detected: ${registryVersion || 'not found'} -> ${currentVersion}`);
+            }
+          })();
+          NODE
+
+      - name: �📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
+        if: steps.version_check.outputs.version_changed == 'true'
 
       - name: 📦 Install dependencies
         run: npm ci
+        if: steps.version_check.outputs.version_changed == 'true'
 
       - name: 🏗️ Build for publication
         run: npm run build
-
-      - name: 📝 Get package version
-        id: get_version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        if: steps.version_check.outputs.version_changed == 'true'
 
       - name: 🚀 Publish to NPM
         id: publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
+        if: steps.version_check.outputs.version_changed == 'true'
+
+      - name: ℹ️ Skip publish (no version change)
+        if: steps.version_check.outputs.version_changed != 'true'
+        run: echo "Skipping publish; package version ${{ steps.version_check.outputs.current_version }} unchanged."
 
   create-release:
     name: 🎉 Create GitHub Release
@@ -228,7 +281,7 @@ jobs:
   deploy-docs:
     name: 🚀 Deploy Documentation to GitHub Pages
     runs-on: ubuntu-latest
-    needs: [create-release]
+    needs: [build-docs]
     if: success()
     permissions:
       contents: read
@@ -242,7 +295,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: docs-build
-          path: docs-build
+          path: ./docs/build/
 
       - name: 🔧 Setup Pages
         uses: actions/configure-pages@v5
@@ -250,7 +303,7 @@ jobs:
       - name: 📤 Upload to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs-build
+          path: ./docs/build/
 
       - name: 🚀 Deploy to GitHub Pages
         id: deployment

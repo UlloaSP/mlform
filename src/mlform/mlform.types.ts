@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import type { Signature } from "@/core/domain";
 import type { FieldStrategy, ReportStrategy } from "@/extensions/app";
 

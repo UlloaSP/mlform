@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { type DescriptorItem, DescriptorStrategy } from "@/core/app";
 import type { Infer, Schema } from "@/core/domain";
 export abstract class ReportStrategy<

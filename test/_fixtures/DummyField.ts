@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 import { z } from "zod";
 import type { DescriptorItem } from "@/core/app/DescriptorItem";
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
 export { BooleanStrategy } from "./BooleanStrategy";
 export { CategoryStrategy } from "./CategoryStrategy";
 export { ClassifierStrategy } from "./ClassifierStrategy";
