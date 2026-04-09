@@ -50,26 +50,26 @@
     "dist/**"
   ],
   "type": "module",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/types/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/types/src/index.d.ts",
       "import": "./dist/mlform.mjs"
     },
     "./kit": {
-      "types": "./dist/types/kit/index.d.ts",
+      "types": "./dist/types/src/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
     },
     "./engine": {
-      "types": "./dist/types/engine/index.d.ts",
+      "types": "./dist/types/src/engine/index.d.ts",
       "import": "./dist/mlform/engine.mjs"
     },
     "./primitives": {
-      "types": "./dist/types/primitives/index.d.ts",
+      "types": "./dist/types/src/primitives/index.d.ts",
       "import": "./dist/mlform/primitives.mjs"
     },
     "./design-system": {
-      "types": "./dist/types/design-system/index.d.ts",
+      "types": "./dist/types/src/design-system/index.d.ts",
       "import": "./dist/mlform/design-system.mjs"
     }
   },

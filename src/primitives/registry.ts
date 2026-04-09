@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { PrimitiveRegistry } from "./types";
+import { primitiveTagNames } from "./constants";
 
 const reservedCustomElementNames = new Set([
   "annotation-xml",
@@ -73,11 +74,12 @@ export const createPrimitiveRegistry = (): PrimitiveRegistry => {
 
 export const createBuiltinPrimitiveRegistry = (): PrimitiveRegistry => {
   return createPrimitiveRegistry()
-    .registerField("text-field", "mlf-text-field")
-    .registerField("number-field", "mlf-number-field")
-    .registerField("boolean-field", "mlf-boolean-field")
-    .registerField("category-field", "mlf-category-field")
-    .registerField("date-field", "mlf-date-field")
-    .registerReport("classifier-report", "mlf-classifier-report")
-    .registerReport("regressor-report", "mlf-regressor-report");
+    .registerField("text-field", primitiveTagNames.textField)
+    .registerField("number-field", primitiveTagNames.numberField)
+    .registerField("boolean-field", primitiveTagNames.booleanField)
+    .registerField("category-field", primitiveTagNames.categoryField)
+    .registerField("date-field", primitiveTagNames.dateField)
+    .registerField("time-series-field", primitiveTagNames.timeSeriesField)
+    .registerReport("classifier-report", primitiveTagNames.classifierReport)
+    .registerReport("regressor-report", primitiveTagNames.regressorReport);
 };

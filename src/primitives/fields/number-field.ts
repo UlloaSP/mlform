@@ -5,38 +5,67 @@ import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
+import { primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 
-@customElement("mlf-number-field")
+@customElement(primitiveTagNames.numberField)
 export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
   static styles = [
     PrimitiveFieldElement.styles,
     css`
       .input-wrapper {
         position: relative;
+        min-width: 0;
       }
 
       input {
         min-height: var(--mlf-control-height, 3rem);
-        padding-right: calc(var(--mlf-number-unit-width, 0px) + 2rem);
+        padding-right: calc(var(--mlf-number-unit-width, 2rem) + 2rem);
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        text-overflow: clip;
+        -webkit-overflow-scrolling: touch;
         appearance: textfield;
-      }
-
-      input::-webkit-outer-spin-button,
-      input::-webkit-inner-spin-button {
-        margin: 0;
-        -webkit-appearance: none;
       }
 
       .unit {
         position: absolute;
         top: 50%;
-        right: 1rem;
+        right: 0.85rem;
         transform: translateY(-50%);
-        min-width: var(--mlf-number-unit-width, 1rem);
-        color: var(--mlf-number-unit-color, var(--mlf-color-secondary, #475569));
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        max-width: 40%;
+        min-width: var(--mlf-number-unit-width, 2rem);
+        padding-left: 0.65rem;
+        background: linear-gradient(
+          90deg,
+          color-mix(
+              in srgb,
+              var(--mlf-number-overlay-bg, var(--mlf-input-bg, var(--mlf-color-surface, #ffffff)))
+                0%,
+              transparent
+            )
+            0%,
+          var(--mlf-number-overlay-bg, var(--mlf-input-bg, var(--mlf-color-surface, #ffffff))) 45%
+        );
+        color: var(--mlf-number-unit-color, var(--mlf-color-text-muted, #475569));
         font-size: 0.9rem;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
         pointer-events: none;
+      }
+
+      .input-wrapper.is-disabled .unit {
+        opacity: 0.72;
+        --mlf-number-overlay-bg: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
+      }
+
+      .input-wrapper.is-readonly .unit {
+        --mlf-number-overlay-bg: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
       }
 
       .unit:empty {
@@ -55,15 +84,21 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
           ? ""
           : toText(props.value);
     const unit = typeof props.unit === "string" ? props.unit : "";
+    const unitWidth = `${Math.max(unit.length * 0.56 + 0.8, 2.2)}rem`;
+    const wrapperClass = this.fieldState?.disabled
+      ? "input-wrapper is-disabled"
+      : this.fieldState?.readOnly
+        ? "input-wrapper is-readonly"
+        : "input-wrapper";
 
     return html`
-      <div
-        class="input-wrapper"
-        style=${`--mlf-number-unit-width: ${unit ? Math.max(unit.length * 0.5, 1) : 0}rem;`}
-      >
+      <div class=${wrapperClass} style=${`--mlf-number-unit-width: ${unitWidth};`}>
         <input
           class="control"
-          type="number"
+          type="text"
+          inputmode="decimal"
+          spellcheck="false"
+          autocomplete="off"
           id=${context?.controlId ?? ""}
           .value=${value}
           aria-label=${context?.label ?? toText(props.label)}
@@ -72,25 +107,10 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
           ?required=${Boolean(props.required)}
           ?disabled=${Boolean(this.fieldState?.disabled)}
           ?readonly=${Boolean(this.fieldState?.readOnly)}
-          min=${ifDefined(
-            typeof props.min === "number" || typeof props.min === "string"
-              ? String(props.min)
-              : undefined,
-          )}
-          max=${ifDefined(
-            typeof props.max === "number" || typeof props.max === "string"
-              ? String(props.max)
-              : undefined,
-          )}
-          step=${ifDefined(
-            typeof props.step === "number" || typeof props.step === "string"
-              ? String(props.step)
-              : undefined,
-          )}
           @input=${this.#handleInput}
           @blur=${this.#handleBlur}
         />
-        <span class="unit">${unit}</span>
+        <span class="unit" aria-hidden="true">${unit}</span>
       </div>
       ${this.renderAssistiveText()}
     `;

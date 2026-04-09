@@ -5,6 +5,7 @@ import { css, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { ReportController, ReportDescriptor, ReportStateSnapshot } from "@/engine";
+import { primitiveIdPrefixes, primitiveTagNames } from "../constants";
 import type { PrimitiveRegistry, PrimitiveReportRenderContext } from "../types";
 import { toText } from "../utils";
 
@@ -162,7 +163,7 @@ export class PrimitiveReportFrameElement extends LitElement {
     }
 
     return {
-      regionId: `mlf-report-region-${this.controller.id}-${this.#instanceId}`,
+      regionId: `${primitiveIdPrefixes.reportRegion}-${this.controller.id}-${this.#instanceId}`,
       label: toText(props.label, this.controller.config.label ?? this.controller.id),
       description:
         typeof props.description === "string" && props.description.length > 0
@@ -201,10 +202,10 @@ export class PrimitiveReportFrameElement extends LitElement {
   }
 }
 
-customElements.define("mlf-report-frame", PrimitiveReportFrameElement);
+customElements.define(primitiveTagNames.reportFrame, PrimitiveReportFrameElement);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "mlf-report-frame": PrimitiveReportFrameElement;
+    [primitiveTagNames.reportFrame]: PrimitiveReportFrameElement;
   }
 }

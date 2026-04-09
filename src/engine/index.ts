@@ -10,6 +10,7 @@ export {
   numberFieldDefinition,
   regressorReportDefinition,
   textFieldDefinition,
+  timeSeriesFieldDefinition,
 } from "./builtins";
 export {
   EngineError,

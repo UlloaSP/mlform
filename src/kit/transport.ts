@@ -2,10 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { Transport } from "@/engine";
+import { kitErrorMessages, kitTransportDefaults } from "./constants";
 import type { JsonTransportOptions } from "./types";
 
 const defaultBody = (request: Parameters<Transport["submit"]>[0]) => ({
-  inputs: request.serializedValues,
+  [kitTransportDefaults.requestBodyKey]: request.serializedValues,
 });
 
 const defaultParse = async (response: Response): Promise<unknown> => {
@@ -40,7 +41,7 @@ const resolveErrorMessage = (status: number, statusText: string, payload: unknow
     }
   }
 
-  return `Request failed with status ${status}${statusText ? ` ${statusText}` : ""}.`;
+  return kitErrorMessages.requestFailed(status, statusText);
 };
 
 export const createJsonTransport = (options: JsonTransportOptions): Transport => {
@@ -49,19 +50,19 @@ export const createJsonTransport = (options: JsonTransportOptions): Transport =>
       const fetchImpl = options.fetch ?? globalThis.fetch;
 
       if (typeof fetchImpl !== "function") {
-        throw new Error("A fetch implementation is required to use the default kit transport.");
+        throw new Error(kitErrorMessages.missingFetch);
       }
 
       const headers = new Headers(options.headers);
       if (!headers.has("accept")) {
-        headers.set("accept", "application/json");
+        headers.set("accept", kitTransportDefaults.acceptHeader);
       }
       if (!headers.has("content-type")) {
-        headers.set("content-type", "application/json");
+        headers.set("content-type", kitTransportDefaults.contentTypeHeader);
       }
 
       const response = await fetchImpl(String(options.endpoint), {
-        method: options.method ?? "POST",
+        method: options.method ?? kitTransportDefaults.method,
         headers,
         credentials: options.credentials,
         body: JSON.stringify((options.body ?? defaultBody)(request)),

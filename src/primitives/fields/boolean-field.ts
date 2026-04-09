@@ -5,9 +5,10 @@ import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
+import { primitiveIdPrefixes, primitiveStaticText, primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 
-@customElement("mlf-boolean-field")
+@customElement(primitiveTagNames.booleanField)
 export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
   static styles = [
     PrimitiveFieldElement.styles,
@@ -83,10 +84,11 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
     const props = this.props;
     const context = this.fieldContext;
     const checked = props.checked === true;
-    const trueId = `${context?.controlId ?? "mlf-boolean"}-true`;
-    const falseId = `${context?.controlId ?? "mlf-boolean"}-false`;
-    const trueLabel = toText(props.trueLabel, "True");
-    const falseLabel = toText(props.falseLabel, "False");
+    const fallbackControlId = primitiveIdPrefixes.booleanGroup;
+    const trueId = `${context?.controlId ?? fallbackControlId}-true`;
+    const falseId = `${context?.controlId ?? fallbackControlId}-false`;
+    const trueLabel = toText(props.trueLabel, primitiveStaticText.booleanTrue);
+    const falseLabel = toText(props.falseLabel, primitiveStaticText.booleanFalse);
     const disabled = Boolean(this.fieldState?.disabled || this.fieldState?.readOnly);
 
     return html`
@@ -100,7 +102,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         <input
           type="radio"
           id=${trueId}
-          name=${context?.controlId ?? "mlf-boolean"}
+          name=${context?.controlId ?? fallbackControlId}
           value="true"
           .checked=${checked}
           ?disabled=${disabled}
@@ -112,7 +114,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         <input
           type="radio"
           id=${falseId}
-          name=${context?.controlId ?? "mlf-boolean"}
+          name=${context?.controlId ?? fallbackControlId}
           value="false"
           .checked=${!checked}
           ?disabled=${disabled}

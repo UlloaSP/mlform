@@ -11,6 +11,7 @@ import {
   resolveKitLabels,
   resolvePrimitiveRegistry,
 } from "./defaults";
+import { kitErrorMessages } from "./constants";
 import { createJsonTransport } from "./transport";
 import type { MountFormOptions, MountedForm } from "./types";
 
@@ -26,7 +27,7 @@ const resolveTransport = (options: MountFormOptions): Transport => {
     });
   }
 
-  throw new TypeError("mountForm requires either a transport or an endpoint.");
+  throw new TypeError(kitErrorMessages.missingTransport);
 };
 
 export const mountForm = (container: HTMLElement, options: MountFormOptions): MountedForm => {

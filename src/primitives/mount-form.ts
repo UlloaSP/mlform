@@ -3,6 +3,7 @@
 
 import type { FormController } from "@/engine";
 import "./register";
+import { primitiveDefaultLabels, primitiveTagNames } from "./constants";
 import { createBuiltinPrimitiveRegistry } from "./registry";
 import type { MountFormOptions, MountedForm, PrimitiveRegistry } from "./types";
 
@@ -15,17 +16,17 @@ export const mountForm = (
   form: FormController,
   options: MountFormOptions = {},
 ): MountedForm => {
-  const host = document.createElement("mlf-form");
+  const host = document.createElement(primitiveTagNames.form);
   const registry = resolveRegistry(options.registry);
 
   host.form = form;
   host.registry = registry;
   host.layout = options.layout ?? "stacked";
-  host.formLabel = options.formLabel ?? "Inputs";
-  host.reportsLabel = options.reportsLabel ?? "Reports";
-  host.submitLabel = options.submitLabel ?? "Submit";
-  host.validatingLabel = options.validatingLabel ?? "Validating...";
-  host.submittingLabel = options.submittingLabel ?? "Submitting...";
+  host.formLabel = options.formLabel ?? primitiveDefaultLabels.form;
+  host.reportsLabel = options.reportsLabel ?? primitiveDefaultLabels.reports;
+  host.submitLabel = options.submitLabel ?? primitiveDefaultLabels.submit;
+  host.validatingLabel = options.validatingLabel ?? primitiveDefaultLabels.validating;
+  host.submittingLabel = options.submittingLabel ?? primitiveDefaultLabels.submitting;
   host.reportPane = options.reportPane ?? "auto";
 
   container.replaceChildren(host);

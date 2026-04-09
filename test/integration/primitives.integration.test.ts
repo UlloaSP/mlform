@@ -29,13 +29,13 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   const fieldFrame = getShadow(host).querySelectorAll("mlf-field-frame").item(index) as HTMLElement;
   const fieldShadow = getShadow(fieldFrame);
   const renderer = fieldShadow.querySelector(
-    "mlf-text-field, mlf-number-field, mlf-boolean-field, mlf-category-field, mlf-date-field",
+    "mlf-text-field, mlf-number-field, mlf-boolean-field, mlf-category-field, mlf-date-field, mlf-time-series-field",
   );
   return getShadow(renderer).querySelector("[aria-label]") as HTMLElement;
 };
 
 describe("primitives", () => {
-  it("renders engine fields and surfaces validation errors through the primitive frames", async () => {
+  it("keeps the wrapper in the accent state when validation fails without any introduced value", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -65,6 +65,9 @@ describe("primitives", () => {
 
     await flush();
 
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(getShadow(fieldFrame).textContent).not.toContain("Value ready.");
+
     const submitHost = getShadow(mounted.host).querySelector("mlf-submit-button");
     const submitButton = getShadow(submitHost).querySelector("button");
     submitButton?.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
@@ -76,8 +79,7 @@ describe("primitives", () => {
     expect(errorListener).toHaveBeenCalledTimes(1);
     expect(errorListener.mock.calls[0]?.[0]).toBeInstanceOf(ValidationError);
 
-    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
-    expect(getShadow(fieldFrame).textContent).toContain("This field is required.");
+    expect(getShadow(fieldFrame).textContent).not.toContain("This field is required.");
     const renderer = getShadow(fieldFrame).querySelector("mlf-text-field");
     const rendererShadow = getShadow(renderer);
     const textInput = rendererShadow.querySelector("input");
@@ -87,6 +89,235 @@ describe("primitives", () => {
     expect(
       rendererShadow.querySelector(`#${describedBy?.split(" ").at(-1) ?? ""}`)?.textContent,
     ).toContain("This field is required.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("treats explicit default values as introduced and shows success styling immediately", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            defaultValue: "Alice",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(getShadow(fieldFrame).textContent).toContain("Text recorded (5 characters).");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("renders the selected category option when the engine already has an initial valid value", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "category",
+            label: "Tier",
+            options: ["Internal", "External"],
+            defaultValue: "Internal",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    const renderer = getShadow(fieldFrame).querySelector("mlf-category-field") as HTMLElement;
+    const select = getShadow(renderer).querySelector("select") as HTMLSelectElement;
+
+    expect(select.value).toBe("Internal");
+    expect(select.selectedOptions[0]?.textContent).toContain("Internal");
+    expect(getShadow(fieldFrame).textContent).toContain("Category selected: Internal.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("does not show category success feedback when the current value does not match any available option", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "category",
+            label: "Tier",
+            options: ["Internal", "External"],
+            defaultValue: "Ghost",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    const renderer = getShadow(fieldFrame).querySelector("mlf-category-field") as HTMLElement;
+    const select = getShadow(renderer).querySelector("select") as HTMLSelectElement;
+
+    expect(select.value).toBe("");
+    expect(select.selectedOptions[0]?.textContent).toContain("Select");
+    expect(getShadow(fieldFrame).textContent).not.toContain("Category selected:");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("shows success feedback for date fields when a real date value is already present", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "date",
+            label: "Launch date",
+            defaultValue: "2026-07-10",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(getShadow(fieldFrame).textContent).toContain("Selected date: 2026-07-10.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("shows success feedback for boolean fields when false is an explicit configured value", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "boolean",
+            label: "Enabled",
+            defaultValue: false,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(getShadow(fieldFrame).textContent).toContain("Selection recorded: False.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("renders and edits time-series fields through the default primitive registry", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "time-series",
+            label: "Demand history",
+            unit: "MW",
+            defaultValue: [
+              { timestamp: "2026-07-10", value: 10 },
+              { timestamp: "2026-07-11", value: 12 },
+            ],
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    expect(getShadow(fieldFrame).textContent).toContain("Series ready (2 points).");
+
+    const renderer = getShadow(fieldFrame).querySelector("mlf-time-series-field") as HTMLElement;
+    const rendererShadow = getShadow(renderer);
+    const valueInputs = rendererShadow.querySelectorAll(
+      'input[inputmode="decimal"]',
+    ) as NodeListOf<HTMLInputElement>;
+
+    valueInputs[1].value = "14.5";
+    valueInputs[1].dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    valueInputs[1].dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+    await flush();
+
+    expect(form.getField("demand-history")?.state.value).toEqual([
+      { timestamp: new Date("2026-07-10"), value: 10 },
+      { timestamp: new Date("2026-07-11"), value: 14.5 },
+    ]);
+
+    const addButton = rendererShadow.querySelector(
+      'button[aria-label="Add point"]',
+    ) as HTMLButtonElement;
+    addButton.click();
+    await flush();
+
+    expect(form.getField("demand-history")?.state.value).toHaveLength(3);
+    expect(rendererShadow.textContent).toContain("MW");
+
+    const removeButtons = rendererShadow.querySelectorAll(
+      'button[aria-label^="Remove point"]',
+    ) as NodeListOf<HTMLButtonElement>;
+    removeButtons[0].click();
+    await flush();
+
+    expect(form.getField("demand-history")?.state.value).toHaveLength(2);
 
     mounted.unmount();
     container.remove();
@@ -116,6 +347,7 @@ describe("primitives", () => {
             label: "Age",
             required: true,
             min: 18,
+            unit: "years",
           },
         ],
         reports: [
@@ -154,6 +386,14 @@ describe("primitives", () => {
     numberInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
 
     await flush();
+
+    const textFieldFrame = getShadow(mounted.host).querySelectorAll("mlf-field-frame").item(0);
+    expect(getShadow(textFieldFrame).textContent).toContain("Text recorded (5 characters).");
+    const numberRenderer = getShadow(mounted.host)
+      .querySelectorAll("mlf-field-frame")
+      .item(1)
+      ?.shadowRoot?.querySelector("mlf-number-field") as HTMLElement;
+    expect(getShadow(numberRenderer).textContent).toContain("years");
 
     const submitHost = getShadow(mounted.host).querySelector("mlf-submit-button");
     const submitButton = getShadow(submitHost).querySelector("button");

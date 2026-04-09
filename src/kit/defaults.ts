@@ -9,14 +9,11 @@ import {
 } from "@/design-system";
 import { createBuiltinRegistry, createRegistry, type Registry } from "@/engine";
 import { createBuiltinPrimitiveRegistry, type PrimitiveRegistry } from "@/primitives";
+import { primitiveDefaultLabels } from "@/primitives/constants";
 import type { KitLabels } from "./types";
 
 export const defaultKitLabels: Required<KitLabels> = {
-  form: "Inputs",
-  reports: "Reports",
-  submit: "Submit",
-  validating: "Validating...",
-  submitting: "Submitting...",
+  ...primitiveDefaultLabels,
 };
 
 export const defaultKitDesignSystem: DesignSystemConfig = {

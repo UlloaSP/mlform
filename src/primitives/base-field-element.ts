@@ -10,10 +10,21 @@ export abstract class PrimitiveFieldElement extends LitElement {
   static styles: CSSResultGroup = css`
     :host {
       display: block;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
     }
 
     .control {
+      display: block;
       width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       min-height: var(--mlf-control-height, 3rem);
       padding: 0.75rem 1rem;
       border: var(--mlf-border-width, 1px) solid

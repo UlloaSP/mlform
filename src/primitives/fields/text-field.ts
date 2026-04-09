@@ -5,9 +5,10 @@ import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
+import { primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 
-@customElement("mlf-text-field")
+@customElement(primitiveTagNames.textField)
 export class PrimitiveTextFieldElement extends PrimitiveFieldElement {
   static styles = [
     PrimitiveFieldElement.styles,

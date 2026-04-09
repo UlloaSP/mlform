@@ -4,6 +4,7 @@
 import { css, html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import type { FormStatus } from "@/engine";
+import { primitiveDefaultLabels, primitiveEventNames, primitiveTagNames } from "../constants";
 
 export class PrimitiveSubmitButtonElement extends LitElement {
   static styles = css`
@@ -51,9 +52,9 @@ export class PrimitiveSubmitButtonElement extends LitElement {
   `;
 
   @property({ type: String }) accessor status: FormStatus = "idle";
-  @property({ type: String }) accessor idleLabel = "Submit";
-  @property({ type: String }) accessor validatingLabel = "Validating...";
-  @property({ type: String }) accessor submittingLabel = "Submitting...";
+  @property({ type: String }) accessor idleLabel = primitiveDefaultLabels.submit;
+  @property({ type: String }) accessor validatingLabel = primitiveDefaultLabels.validating;
+  @property({ type: String }) accessor submittingLabel = primitiveDefaultLabels.submitting;
 
   render() {
     const label =
@@ -76,7 +77,7 @@ export class PrimitiveSubmitButtonElement extends LitElement {
 
   #handleClick = (): void => {
     this.dispatchEvent(
-      new CustomEvent("mlf-submit-request", {
+      new CustomEvent(primitiveEventNames.submitRequest, {
         bubbles: true,
         composed: true,
       }),
@@ -84,10 +85,10 @@ export class PrimitiveSubmitButtonElement extends LitElement {
   };
 }
 
-customElements.define("mlf-submit-button", PrimitiveSubmitButtonElement);
+customElements.define(primitiveTagNames.submitButton, PrimitiveSubmitButtonElement);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "mlf-submit-button": PrimitiveSubmitButtonElement;
+    [primitiveTagNames.submitButton]: PrimitiveSubmitButtonElement;
   }
 }

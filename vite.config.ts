@@ -37,7 +37,12 @@ export default defineConfig({
     minify: "esbuild",
   },
   plugins: [
-    dts(),
+    dts({
+      entryRoot: "src",
+      include: ["src/**/*.ts"],
+      outDir: "dist/types",
+      tsconfigPath: "./tsconfig.build.json",
+    }),
     visualizer({
       filename: "stats/bundle_size_treemap.html",
       gzipSize: true,

@@ -4,6 +4,7 @@
 import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { FormController, FormState } from "@/engine";
+import { primitiveStaticText, primitiveTagNames } from "../constants";
 
 export class PrimitiveFormErrorsElement extends LitElement {
   static styles = css`
@@ -74,7 +75,7 @@ export class PrimitiveFormErrorsElement extends LitElement {
 
     return html`
       <div class="card" part="form-errors">
-        <p class="eyebrow">Form errors</p>
+        <p class="eyebrow">${primitiveStaticText.formErrorsTitle}</p>
         <ul>
           ${errors.map((error) => html`<li>${error}</li>`)}
         </ul>
@@ -107,10 +108,10 @@ export class PrimitiveFormErrorsElement extends LitElement {
   }
 }
 
-customElements.define("mlf-form-errors", PrimitiveFormErrorsElement);
+customElements.define(primitiveTagNames.formErrors, PrimitiveFormErrorsElement);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "mlf-form-errors": PrimitiveFormErrorsElement;
+    [primitiveTagNames.formErrors]: PrimitiveFormErrorsElement;
   }
 }

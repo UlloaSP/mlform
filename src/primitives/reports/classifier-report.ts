@@ -4,6 +4,7 @@
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { PrimitiveReportElement } from "../base-report-element";
+import { primitiveStaticText, primitiveTagNames } from "../constants";
 import { isRecord, toText } from "../utils";
 
 type ProbabilityRow = {
@@ -27,14 +28,17 @@ const toProbabilityRows = (payload: unknown, labelsOverride: unknown): Probabili
       }
 
       return {
-        label: typeof labels[index] === "string" ? labels[index] : `Class ${index + 1}`,
+        label:
+          typeof labels[index] === "string"
+            ? labels[index]
+            : primitiveStaticText.classifierClassLabel(index),
         value: numeric,
       } satisfies ProbabilityRow;
     })
     .filter((row): row is ProbabilityRow => row !== null);
 };
 
-@customElement("mlf-classifier-report")
+@customElement(primitiveTagNames.classifierReport)
 export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
   static styles = [
     PrimitiveReportElement.styles,
@@ -118,11 +122,14 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
     }
 
     if (payload === null || payload === undefined) {
-      return html`<div class="empty">No classifier output yet.</div>`;
+      return html`<div class="empty">${primitiveStaticText.classifierEmpty}</div>`;
     }
 
     const prediction = isRecord(payload)
-      ? (payload.prediction ?? payload.className ?? payload.label ?? "Unknown")
+      ? (payload.prediction ??
+        payload.className ??
+        payload.label ??
+        primitiveStaticText.classifierUnknownPrediction)
       : payload;
     const rows = toProbabilityRows(payload, this.props.labels);
 
@@ -130,7 +137,7 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
       <section
         part="classifier-report"
         id=${context?.regionId ?? ""}
-        aria-label=${context?.label ?? "Classifier report"}
+        aria-label=${context?.label ?? primitiveStaticText.classifierAriaLabel}
       >
         ${details && rows.length > 0
           ? html`
@@ -147,7 +154,11 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
                 })}
               </div>
             `
-          : html`<div class="compact">${toText(prediction, "Unknown")}</div>`}
+          : html`
+              <div class="compact">
+                ${toText(prediction, primitiveStaticText.classifierUnknownPrediction)}
+              </div>
+            `}
       </section>
     `;
   }

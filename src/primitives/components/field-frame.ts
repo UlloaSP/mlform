@@ -5,10 +5,17 @@ import { css, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { FieldController, FieldDescriptor, FieldStateSnapshot } from "@/engine";
+import { primitiveIdPrefixes, primitiveStaticText, primitiveTagNames } from "../constants";
 import type { PrimitiveFieldRenderContext, PrimitiveRegistry } from "../types";
 import { joinMessages, toText } from "../utils";
 
 let fieldFrameSequence = 0;
+
+type CategoryOption = string | { label: string; value: string };
+
+const normalizeCategoryOption = (option: CategoryOption): { label: string; value: string } => {
+  return typeof option === "string" ? { label: option, value: option } : option;
+};
 
 export class PrimitiveFieldFrameElement extends LitElement {
   static styles = css`
@@ -31,9 +38,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
         var(--mlf-field-border, var(--mlf-color-border, #e2e8f0));
       background: var(--mlf-field-bg, var(--mlf-color-surface, #ffffff));
       box-shadow: 0 4px 12px var(--mlf-field-shadow, rgba(0, 0, 0, 0.04));
-      transition:
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+      transition: box-shadow 0.2s ease;
     }
 
     .tile:hover {
@@ -57,58 +62,26 @@ export class PrimitiveFieldFrameElement extends LitElement {
       background: var(--mlf-field-accent-error, var(--mlf-color-danger, #dc2626));
     }
 
-    .tile.readonly::before,
-    .tile.disabled::before {
-      background: var(--mlf-field-accent-muted, var(--mlf-color-text-muted, #475569));
-    }
-
     .header {
       display: flex;
-      justify-content: space-between;
       align-items: start;
+      justify-content: space-between;
       gap: 1rem;
-    }
-
-    .copy {
-      display: grid;
-      gap: 0.35rem;
       min-width: 0;
     }
 
     .label {
       margin: 0;
+      min-width: 0;
       color: var(--mlf-field-label-color, var(--mlf-color-text, #0f172a));
       font-size: 1rem;
       font-weight: 600;
       line-height: 1.2;
-    }
-
-    .actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      flex-shrink: 0;
-    }
-
-    .meta {
-      display: inline-flex;
-      align-items: center;
-      min-height: 1.8rem;
-      padding: 0.28rem 0.55rem;
-      border-radius: 999px;
-      background: var(
-        --mlf-field-meta-bg,
-        color-mix(in srgb, var(--mlf-color-accent, #1e40af) 10%, transparent)
-      );
-      color: var(--mlf-field-meta-color, var(--mlf-color-secondary, #475569));
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
     }
 
     .help-btn {
+      flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -137,22 +110,32 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
     .description {
       display: none;
-      margin: 0;
+      min-width: 0;
       font-size: 0.875rem;
       line-height: 1.5;
       color: var(--mlf-field-description-color, var(--mlf-color-secondary, #475569));
-      white-space: pre-wrap;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .description.show {
       display: block;
     }
 
+    .control-slot {
+      min-width: 0;
+    }
+
     .feedback {
-      margin: 0;
+      min-width: 0;
       font-size: 0.8rem;
       line-height: 1.5;
-      white-space: pre-wrap;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .feedback.success {
+      color: var(--mlf-field-feedback-success, var(--mlf-color-success, #059669));
     }
 
     .feedback.error {
@@ -201,17 +184,16 @@ export class PrimitiveFieldFrameElement extends LitElement {
     const component = this.registry?.resolveField(descriptor.component);
     const label = toText(props.label, this.controller?.config.label ?? "");
     const description = toText(props.description);
-    const badge = state.readOnly ? "read only" : state.disabled ? "disabled" : state.status;
+    const hasIntroducedValue = this.#hasIntroducedValue(descriptor.component, props, state);
     const errorLabel = joinMessages(state.errors);
-    const toneClass = state.disabled
-      ? "disabled"
-      : state.readOnly
-        ? "readonly"
-        : state.errors.length > 0 || !state.valid
-          ? "error"
-          : state.status === "valid"
-            ? "success"
-            : "";
+    const successLabel = this.#createSuccessMessage(descriptor.component, props, state);
+    const feedback =
+      hasIntroducedValue && state.valid
+        ? { tone: "success", message: successLabel }
+        : hasIntroducedValue && errorLabel
+          ? { tone: "error", message: errorLabel }
+          : null;
+    const toneClass = hasIntroducedValue ? (state.valid ? "success" : "error") : "";
 
     return html`
       <section
@@ -219,41 +201,47 @@ export class PrimitiveFieldFrameElement extends LitElement {
         aria-busy=${String(state.status === "validating")}
         aria-invalid=${String(!state.valid)}
       >
-        <header class="header">
-          <div class="copy">
-            <p class="label">${label}</p>
-          </div>
-
-          <div class="actions">
-            <span class="meta">${badge}</span>
-            <button
-              class="help-btn"
-              type="button"
-              aria-label="Help"
-              aria-expanded=${String(this.descriptionVisible)}
-              ?disabled=${description.length === 0}
-              @click=${this.#toggleDescription}
-            >
-              ?
-            </button>
-          </div>
-        </header>
+        <div class="header">
+          <div class="label">${label}</div>
+          <button
+            class="help-btn"
+            type="button"
+            aria-label=${primitiveStaticText.helpActionLabel}
+            aria-expanded=${String(this.descriptionVisible)}
+            ?disabled=${description.length === 0}
+            @click=${this.#toggleDescription}
+          >
+            ?
+          </button>
+        </div>
 
         ${description
           ? html`
-              <p class="description ${this.descriptionVisible ? "show" : ""}">${description}</p>
+              <div class="description ${this.descriptionVisible ? "show" : ""}">${description}</div>
             `
           : html``}
-        ${component
-          ? this.#renderResolvedRenderer(component)
-          : html`
-              <mlf-unsupported-component
-                role="field"
-                component=${descriptor.component}
-              ></mlf-unsupported-component>
-            `}
-        ${errorLabel
-          ? html` <p class="feedback error" role="alert" aria-live="polite">${errorLabel}</p> `
+
+        <div class="control-slot">
+          ${component
+            ? this.#renderResolvedRenderer(component)
+            : html`
+                <mlf-unsupported-component
+                  role="field"
+                  component=${descriptor.component}
+                ></mlf-unsupported-component>
+              `}
+        </div>
+
+        ${feedback
+          ? html`
+              <div
+                class="feedback ${feedback.tone}"
+                role=${feedback.tone === "error" ? "alert" : "status"}
+                aria-live="polite"
+              >
+                ${feedback.message}
+              </div>
+            `
           : html``}
       </section>
     `;
@@ -284,16 +272,16 @@ export class PrimitiveFieldFrameElement extends LitElement {
         ? props.description
         : undefined;
     const descriptionId = description
-      ? `mlf-field-description-${this.controller.id}-${this.#instanceId}`
+      ? `${primitiveIdPrefixes.fieldDescription}-${this.controller.id}-${this.#instanceId}`
       : undefined;
     const errorId =
       state.errors.length > 0
-        ? `mlf-field-errors-${this.controller.id}-${this.#instanceId}`
+        ? `${primitiveIdPrefixes.fieldErrors}-${this.controller.id}-${this.#instanceId}`
         : undefined;
     const describedBy = [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
     return {
-      controlId: `mlf-field-control-${this.controller.id}-${this.#instanceId}`,
+      controlId: `${primitiveIdPrefixes.fieldControl}-${this.controller.id}-${this.#instanceId}`,
       label: toText(props.label, this.controller.config.label),
       description,
       errors: state.errors,
@@ -305,6 +293,96 @@ export class PrimitiveFieldFrameElement extends LitElement {
       disabled: state.disabled,
       readOnly: state.readOnly,
     };
+  }
+
+  #createSuccessMessage(
+    component: string,
+    props: Record<string, unknown>,
+    state: FieldStateSnapshot,
+  ): string {
+    switch (component) {
+      case "text-field": {
+        const value = typeof props.value === "string" ? props.value : "";
+        return value.length > 0
+          ? primitiveStaticText.fieldTextRecorded(value.length)
+          : primitiveStaticText.fieldReady;
+      }
+      case "number-field": {
+        const unit = typeof props.unit === "string" ? ` ${props.unit}` : "";
+        return state.value === null || state.value === undefined || state.value === ""
+          ? primitiveStaticText.fieldReady
+          : primitiveStaticText.fieldValidNumber(state.value, unit);
+      }
+      case "category-field": {
+        const selected = this.#resolveCategorySelection(props, state.value);
+        return selected
+          ? primitiveStaticText.fieldCategorySelected(selected.label)
+          : primitiveStaticText.fieldSelectionReady;
+      }
+      case "date-field": {
+        const value = typeof props.value === "string" ? props.value : "";
+        return value.length > 0
+          ? primitiveStaticText.fieldSelectedDate(value)
+          : primitiveStaticText.fieldDateReady;
+      }
+      case "boolean-field": {
+        const trueLabel = toText(props.trueLabel, "True");
+        const falseLabel = toText(props.falseLabel, "False");
+        return primitiveStaticText.fieldBooleanSelection(
+          state.value === true ? trueLabel : falseLabel,
+        );
+      }
+      case "time-series-field": {
+        const points = Array.isArray(props.value) ? props.value.length : 0;
+        return primitiveStaticText.fieldTimeSeriesRecorded(points);
+      }
+      default:
+        return primitiveStaticText.fieldReady;
+    }
+  }
+
+  #hasIntroducedValue(
+    component: string,
+    props: Record<string, unknown>,
+    state: FieldStateSnapshot,
+  ): boolean {
+    switch (component) {
+      case "text-field":
+        return typeof state.value === "string" && state.value.trim().length > 0;
+      case "date-field":
+        return typeof props.value === "string" && props.value.trim().length > 0;
+      case "category-field":
+        return this.#resolveCategorySelection(props, state.value) !== null;
+      case "number-field":
+        return (
+          state.value !== null &&
+          state.value !== undefined &&
+          state.value !== "" &&
+          !(typeof state.value === "number" && Number.isNaN(state.value))
+        );
+      case "boolean-field":
+        return this.#hasExplicitConfiguredValue() || state.dirty || state.touched;
+      case "time-series-field":
+        return Array.isArray(props.value) && props.value.length > 0;
+      default:
+        return state.value !== null && state.value !== undefined && state.value !== "";
+    }
+  }
+
+  #resolveCategorySelection(
+    props: Record<string, unknown>,
+    value: unknown,
+  ): { label: string; value: string } | null {
+    if (typeof value !== "string" || value.length === 0) {
+      return null;
+    }
+
+    const options = Array.isArray(props.options) ? (props.options as CategoryOption[]) : [];
+    return options.map(normalizeCategoryOption).find((option) => option.value === value) ?? null;
+  }
+
+  #hasExplicitConfiguredValue(): boolean {
+    return this.controller?.config.defaultValue !== undefined;
   }
 
   #toggleDescription = (): void => {
@@ -349,10 +427,10 @@ export class PrimitiveFieldFrameElement extends LitElement {
   }
 }
 
-customElements.define("mlf-field-frame", PrimitiveFieldFrameElement);
+customElements.define(primitiveTagNames.fieldFrame, PrimitiveFieldFrameElement);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "mlf-field-frame": PrimitiveFieldFrameElement;
+    [primitiveTagNames.fieldFrame]: PrimitiveFieldFrameElement;
   }
 }

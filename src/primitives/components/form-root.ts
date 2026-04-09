@@ -5,6 +5,12 @@ import { css, html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import { SubmissionAbortedError, type FormController, type FormState } from "@/engine";
+import {
+  primitiveDefaultLabels,
+  primitiveEventNames,
+  primitiveStaticText,
+  primitiveTagNames,
+} from "../constants";
 import type { PrimitiveLayout, PrimitiveRegistry } from "../types";
 
 export class PrimitiveFormElement extends LitElement {
@@ -135,13 +141,16 @@ export class PrimitiveFormElement extends LitElement {
   @property({ attribute: false }) accessor form: FormController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ type: String }) accessor layout: PrimitiveLayout = "stacked";
-  @property({ type: String, attribute: "form-label" }) accessor formLabel = "Inputs";
-  @property({ type: String, attribute: "reports-label" }) accessor reportsLabel = "Reports";
-  @property({ type: String, attribute: "submit-label" }) accessor submitLabel = "Submit";
+  @property({ type: String, attribute: "form-label" }) accessor formLabel =
+    primitiveDefaultLabels.form;
+  @property({ type: String, attribute: "reports-label" }) accessor reportsLabel =
+    primitiveDefaultLabels.reports;
+  @property({ type: String, attribute: "submit-label" }) accessor submitLabel =
+    primitiveDefaultLabels.submit;
   @property({ type: String, attribute: "validating-label" }) accessor validatingLabel =
-    "Validating...";
+    primitiveDefaultLabels.validating;
   @property({ type: String, attribute: "submitting-label" }) accessor submittingLabel =
-    "Submitting...";
+    primitiveDefaultLabels.submitting;
   @property({ type: String, attribute: "report-pane" }) accessor reportPane:
     | "auto"
     | "always"
@@ -195,7 +204,7 @@ export class PrimitiveFormElement extends LitElement {
         <section class="panel form-pane" part="form-pane">
           <header class="pane-header">
             <div class="pane-copy">
-              <p class="eyebrow">Form</p>
+              <p class="eyebrow">${primitiveStaticText.formEyebrow}</p>
               <h1 class="pane-title">${this.formLabel}</h1>
             </div>
             <span class="status">${state.status}</span>
@@ -240,7 +249,7 @@ export class PrimitiveFormElement extends LitElement {
               <aside class="panel report-pane" part="report-pane">
                 <header class="pane-header">
                   <div class="pane-copy">
-                    <p class="eyebrow">Report</p>
+                    <p class="eyebrow">${primitiveStaticText.reportEyebrow}</p>
                     <h2 class="pane-title">${this.reportsLabel}</h2>
                   </div>
                   <span class="status">${reportsToRender.length}</span>
@@ -273,7 +282,7 @@ export class PrimitiveFormElement extends LitElement {
     }
 
     this.dispatchEvent(
-      new CustomEvent("mlf-submit-start", {
+      new CustomEvent(primitiveEventNames.submitStart, {
         detail: {
           form: this.form,
           state: this.form.state,
@@ -287,7 +296,7 @@ export class PrimitiveFormElement extends LitElement {
       const result = await this.form.submit();
 
       this.dispatchEvent(
-        new CustomEvent("mlf-submit-success", {
+        new CustomEvent(primitiveEventNames.submitSuccess, {
           detail: {
             form: this.form,
             state: this.form.state,
@@ -300,7 +309,9 @@ export class PrimitiveFormElement extends LitElement {
     } catch (error) {
       this.dispatchEvent(
         new CustomEvent(
-          error instanceof SubmissionAbortedError ? "mlf-submit-abort" : "mlf-submit-error",
+          error instanceof SubmissionAbortedError
+            ? primitiveEventNames.submitAbort
+            : primitiveEventNames.submitError,
           {
             detail: {
               form: this.form,
@@ -341,10 +352,10 @@ export class PrimitiveFormElement extends LitElement {
   }
 }
 
-customElements.define("mlf-form", PrimitiveFormElement);
+customElements.define(primitiveTagNames.form, PrimitiveFormElement);
 
 declare global {
   interface HTMLElementTagNameMap {
-    "mlf-form": PrimitiveFormElement;
+    [primitiveTagNames.form]: PrimitiveFormElement;
   }
 }

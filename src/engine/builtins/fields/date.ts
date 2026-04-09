@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
+import * as z from "zod";
+import { builtinValidationMessages } from "../../constants";
+import type { BaseFieldConfig, FieldDefinition, NormalizedFieldConfig } from "../../types";
+import { toDate } from "../../utils";
+import { baseFieldShape, makeFieldDescriptor } from "../shared";
+
+type DateFieldConfig = BaseFieldConfig & {
+  kind: "date";
+  min?: string;
+  max?: string;
+};
+
+export const dateFieldDefinition: FieldDefinition<DateFieldConfig, Date | null> = {
+  kind: "date",
+  schema: z.object({
+    kind: z.literal("date"),
+    ...baseFieldShape,
+    min: z.string().optional(),
+    max: z.string().optional(),
+  }),
+  getDefaultValue(config) {
+    return toDate(config.defaultValue) ?? null;
+  },
+  normalizeValue(value) {
+    return toDate(value);
+  },
+  serializeValue(value) {
+    return value instanceof Date ? value.toISOString() : value;
+  },
+  validate(value, config) {
+    if (value === null) {
+      return [];
+    }
+
+    const errors: string[] = [];
+    const minDate = toDate(config.min);
+    const maxDate = toDate(config.max);
+
+    if (minDate && value.getTime() < minDate.getTime()) {
+      errors.push(builtinValidationMessages.dateOnOrAfter(String(config.min)));
+    }
+    if (maxDate && value.getTime() > maxDate.getTime()) {
+      errors.push(builtinValidationMessages.dateOnOrBefore(String(config.max)));
+    }
+
+    return errors;
+  },
+  describe(config, context) {
+    return makeFieldDescriptor("date-field", config as NormalizedFieldConfig<DateFieldConfig>, {
+      value:
+        context.state.value instanceof Date
+          ? context.state.value.toISOString().slice(0, 10)
+          : context.state.value,
+      min: config.min,
+      max: config.max,
+      state: context.state.status,
+      errors: context.state.errors,
+    });
+  },
+};

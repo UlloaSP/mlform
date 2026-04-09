@@ -3,8 +3,9 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { primitiveStaticText, primitiveTagNames } from "../constants";
 
-@customElement("mlf-unsupported-component")
+@customElement(primitiveTagNames.unsupportedComponent)
 export class UnsupportedComponent extends LitElement {
   static styles = css`
     :host {
@@ -37,7 +38,7 @@ export class UnsupportedComponent extends LitElement {
     return html`
       <div class="card" part="unsupported-card">
         <strong>${this.role}</strong>
-        Missing primitive mapping for <code>${this.component}</code>.
+        ${primitiveStaticText.unsupportedMapping(this.role, this.component)}
       </div>
     `;
   }
@@ -45,6 +46,6 @@ export class UnsupportedComponent extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "mlf-unsupported-component": UnsupportedComponent;
+    [primitiveTagNames.unsupportedComponent]: UnsupportedComponent;
   }
 }

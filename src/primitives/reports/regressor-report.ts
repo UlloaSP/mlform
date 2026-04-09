@@ -4,6 +4,7 @@
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { PrimitiveReportElement } from "../base-report-element";
+import { primitiveStaticText, primitiveTagNames } from "../constants";
 import { isRecord } from "../utils";
 
 const formatValue = (value: unknown, precision: number, unit: string): string => {
@@ -86,7 +87,7 @@ const clampPercent = (value: number, min: number, max: number): number => {
   return Math.min(Math.max(((value - barMin) / (barMax - barMin)) * 100, 0), 98.45);
 };
 
-@customElement("mlf-regressor-report")
+@customElement(primitiveTagNames.regressorReport)
 export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
   static styles = [
     PrimitiveReportElement.styles,
@@ -177,7 +178,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
     }
 
     if (payload === null || payload === undefined) {
-      return html`<div class="empty">No regression output yet.</div>`;
+      return html`<div class="empty">${primitiveStaticText.regressorEmpty}</div>`;
     }
 
     const unit = typeof this.props.unit === "string" ? this.props.unit : "";
@@ -196,7 +197,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
       <section
         part="regressor-report"
         id=${context?.regionId ?? ""}
-        aria-label=${context?.label ?? "Regressor report"}
+        aria-label=${context?.label ?? primitiveStaticText.regressorAriaLabel}
       >
         ${values.length > 0
           ? values.map(
@@ -241,7 +242,11 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
               `,
             )
           : html`<div class="value">${formatValue(payload, precision, unit)}</div>`}
-        ${executionTime ? html`<div class="meta">Execution time: ${executionTime}</div>` : html``}
+        ${executionTime
+          ? html`<div class="meta">
+              ${primitiveStaticText.regressorExecutionTime(executionTime)}
+            </div>`
+          : html``}
       </section>
     `;
   }

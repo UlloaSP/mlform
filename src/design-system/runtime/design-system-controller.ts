@@ -2,6 +2,12 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { builtinDesignSystemRegistry } from "../registry";
+import {
+  designSystemEventNames,
+  designSystemHostAttributeNames,
+  designSystemMediaQueries,
+  designSystemObservedAttributeFilter,
+} from "../constants";
 import { resolveDesignSystem } from "../resolve";
 import type {
   DesignSystemConfig,
@@ -60,7 +66,9 @@ export class DesignSystemController {
     this.#originalColorScheme = host.style.colorScheme || null;
     this.#mediaQuery =
       typeof window !== "undefined" && typeof window.matchMedia === "function"
-        ? (window.matchMedia("(prefers-color-scheme: dark)") as MediaQueryListWithLegacy)
+        ? (window.matchMedia(
+            designSystemMediaQueries.prefersDarkScheme,
+          ) as MediaQueryListWithLegacy)
         : null;
     this.#mediaListener = () => this.refresh();
     this.#mutationObserver =
@@ -151,7 +159,7 @@ export class DesignSystemController {
     this.#appliedTokens = applyResolvedDesignSystem(this.#host, resolved);
     this.#onChange?.(resolved);
     this.#host.dispatchEvent(
-      new CustomEvent("ml-design-system-change", {
+      new CustomEvent(designSystemEventNames.change, {
         detail: { designSystem: resolved },
         bubbles: true,
         composed: true,
@@ -171,13 +179,15 @@ export class DesignSystemController {
     }
 
     if (config.hostSchemeResolver) {
-      const resolved = config.hostSchemeResolver(this.#host);
-      if (resolved) {
-        return { scheme: resolved, source: "host-resolver" };
+      const resolvedScheme = config.hostSchemeResolver(this.#host);
+      if (resolvedScheme) {
+        return { scheme: resolvedScheme, source: "host-resolver" };
       }
     }
 
-    const explicitSelf = normalizeScheme(this.#host.getAttribute("data-color-scheme"));
+    const explicitSelf = normalizeScheme(
+      this.#host.getAttribute(designSystemHostAttributeNames.explicitScheme),
+    );
     if (explicitSelf) {
       return { scheme: explicitSelf, source: "host-attribute" };
     }
@@ -185,9 +195,9 @@ export class DesignSystemController {
     let current: HTMLElement | null = this.#host.parentElement;
     while (current) {
       const explicit =
-        normalizeScheme(current.getAttribute("data-mlf-scheme")) ??
-        normalizeScheme(current.getAttribute("data-mlf-effective-scheme")) ??
-        normalizeScheme(current.getAttribute("data-color-scheme"));
+        normalizeScheme(current.getAttribute(designSystemHostAttributeNames.inheritedScheme)) ??
+        normalizeScheme(current.getAttribute(designSystemHostAttributeNames.effectiveScheme)) ??
+        normalizeScheme(current.getAttribute(designSystemHostAttributeNames.explicitScheme));
       if (explicit) {
         return { scheme: explicit, source: "host-attribute" };
       }
@@ -217,19 +227,16 @@ export class DesignSystemController {
     this.#mutationObserver.disconnect();
     this.#observedNodes.clear();
 
-    let current: HTMLElement | null = this.#host;
-    while (current) {
-      this.#observeNode(current);
-      current = current.parentElement;
-    }
+    this.#observeNode(this.#host, false);
 
-    const root = this.#host.ownerDocument?.documentElement;
-    if (root) {
-      this.#observeNode(root, true);
+    let current: HTMLElement | null = this.#host.parentElement;
+    while (current) {
+      this.#observeNode(current, true);
+      current = current.parentElement;
     }
   }
 
-  #observeNode(node: Node, observeDocumentRoot = false): void {
+  #observeNode(node: Node, observeChildList: boolean): void {
     if (!this.#mutationObserver || this.#observedNodes.has(node)) {
       return;
     }
@@ -237,15 +244,9 @@ export class DesignSystemController {
     this.#observedNodes.add(node);
     this.#mutationObserver.observe(node, {
       attributes: true,
-      childList: observeDocumentRoot,
-      subtree: observeDocumentRoot,
-      attributeFilter: [
-        "data-mlf-scheme",
-        "data-mlf-effective-scheme",
-        "data-color-scheme",
-        "style",
-        "class",
-      ],
+      childList: observeChildList,
+      subtree: false,
+      attributeFilter: [...designSystemObservedAttributeFilter],
     });
   }
 
