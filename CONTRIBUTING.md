@@ -210,15 +210,18 @@ We rely on Biome, TypeScript, and Vitest for quality gates.
 
 ```markdown
 ## Summary
+
 Explain what this PR changes and why.
 
 ## Testing
+
 - [ ] npm run lint
 - [ ] npm run type
 - [ ] npm run test
 - [ ] npm run coverage (if applicable)
 
 ## Additional Notes
+
 Include screenshots, follow-up tasks, or related issues.
 ```
 
@@ -234,26 +237,32 @@ Before filing a bug report:
 
 ```markdown
 ## Bug Description
+
 Clear summary of the issue.
 
 ## Steps to Reproduce
+
 1. Step one
 2. Step two
 3. ...
 
 ## Expected Behavior
+
 What should happen.
 
 ## Actual Behavior
+
 What actually happens.
 
 ## Environment
+
 - OS: (e.g., Windows 11, macOS 15, Ubuntu 24.04)
 - Node.js version: (e.g., 22.14.0)
 - npm version: (e.g., 11.5.1)
 - MLForm version: (e.g., 0.1.3)
 
 ## Additional Context
+
 Screenshots, logs, or related issues.
 ```
 
@@ -270,18 +279,23 @@ We welcome ideas for new features or improvements. Please:
 
 ```markdown
 ## Feature Description
+
 What would you like to add or change?
 
 ## Use Case
+
 Why is this needed?
 
 ## Proposed Solution
+
 How might it work?
 
 ## Alternatives Considered
+
 Other approaches you evaluated.
 
 ## Additional Context
+
 Links, mockups, or related resources.
 ```
 

@@ -1,0 +1,65 @@
+:root {
+  --sl-color-accent-low: #dff2ee;
+  --sl-color-accent: #0d7f70;
+  --sl-color-accent-high: #083f39;
+  --sl-color-white: #fbfdfc;
+  --sl-color-gray-1: #edf4f1;
+  --sl-color-gray-2: #d3ded9;
+  --sl-color-gray-3: #a5b5ae;
+  --sl-color-gray-4: #687973;
+  --sl-color-gray-5: #3e4b47;
+  --sl-color-gray-6: #222b29;
+  --sl-color-black: #101413;
+  --sl-font: ui-sans-serif, "Segoe UI", "Aptos", sans-serif;
+  --sl-font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #0f302c;
+  --sl-color-accent: #5bd6c7;
+  --sl-color-accent-high: #c9fff7;
+  --sl-color-white: #f5faf8;
+  --sl-color-gray-1: #dce8e4;
+  --sl-color-gray-2: #b8c9c3;
+  --sl-color-gray-3: #849891;
+  --sl-color-gray-4: #53645f;
+  --sl-color-gray-5: #303c38;
+  --sl-color-gray-6: #1d2522;
+  --sl-color-black: #0b100f;
+}
+
+.site-title {
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.hero {
+  border-bottom: 1px solid var(--sl-color-gray-5);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.doc-card {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 8px;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--sl-color-black) 3%, transparent);
+}
+
+.doc-card strong {
+  display: block;
+  color: var(--sl-color-white);
+  margin-bottom: 0.35rem;
+}
+
+.surface-note {
+  border-left: 4px solid var(--sl-color-accent);
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, var(--sl-color-accent-low) 45%, transparent);
+  border-radius: 0 8px 8px 0;
+}

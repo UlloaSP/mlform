@@ -3,7 +3,6 @@
 
 import { resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
-import { visualizer } from "rollup-plugin-visualizer";
 import dts from "vite-plugin-dts";
 import { defineConfig } from "vite-plus";
 
@@ -42,10 +41,6 @@ export default defineConfig({
       include: ["src/**/*.ts"],
       outDir: "dist/types",
       tsconfigPath: "./tsconfig.build.json",
-    }),
-    visualizer({
-      filename: "stats/bundle_size_treemap.html",
-      gzipSize: true,
     }),
   ],
   resolve: {

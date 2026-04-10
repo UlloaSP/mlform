@@ -1,0 +1,49 @@
+---
+title: Installation
+description: Install MLForm and prepare the documentation workspace.
+---
+
+Install the runtime package in an application:
+
+```bash
+npm install mlform
+```
+
+Import from the root package for normal application use:
+
+```ts
+import { mountForm } from "mlform";
+```
+
+Use subpath imports only when you need a specific layer:
+
+```ts
+import { createForm } from "mlform/engine";
+import { createPrimitiveRegistry } from "mlform/primitives";
+import { defineTheme } from "mlform/design-system";
+```
+
+For this repository, use Vite+:
+
+```bash
+vp install
+vp check
+vp test
+vp build
+```
+
+The package declares Node.js `>=24.9.0` for local development and CI. The docs workspace is an Astro Starlight app under `docs/` and uses the same `vp` workflow:
+
+```bash
+cd docs
+vp install
+vp run dev
+```
+
+Common mistakes:
+
+| Mistake                                              | Fix                          |
+| ---------------------------------------------------- | ---------------------------- |
+| Installing the docs dependencies with `npm` directly | Use `vp install`.            |
+| Importing test utilities from `vitest`               | Use this repo's Vite+ setup. |
+| Using legacy examples with a class constructor       | Use `mountForm`.             |

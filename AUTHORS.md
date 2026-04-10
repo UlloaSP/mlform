@@ -19,7 +19,7 @@ MLForm is made possible by the contributions of the following individuals and or
 
 ## Contributors
 
-*This section will be updated as contributors join the project.*
+_This section will be updated as contributors join the project._
 
 To add your name here, please contribute to the project by:
 
@@ -71,7 +71,7 @@ Interested in contributing? We'd love to have you!
 
 ## Hall of Fame
 
-*Coming soon - contributors with significant impact will be recognized here.*
+_Coming soon - contributors with significant impact will be recognized here._
 
 ### Categories
 
@@ -101,6 +101,6 @@ All contributors are expected to follow our Code of Conduct (see [CONTRIBUTING.m
 
 ---
 
-*This list is maintained manually. If you've contributed and don't see your name, please open an issue or PR!*
+_This list is maintained manually. If you've contributed and don't see your name, please open an issue or PR!_
 
 **Last Updated**: October 29, 2025
