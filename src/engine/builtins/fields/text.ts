@@ -38,6 +38,13 @@ export const textFieldDefinition: FieldDefinition<TextFieldConfig, string> = {
   },
   validate(value, config) {
     const errors: string[] = [];
+    if (
+      config.minLength !== undefined &&
+      config.maxLength !== undefined &&
+      config.minLength > config.maxLength
+    ) {
+      errors.push(builtinValidationMessages.invalidTextLengthRange);
+    }
     if (config.minLength !== undefined && value.length < config.minLength) {
       errors.push(builtinValidationMessages.minLength(config.minLength));
     }

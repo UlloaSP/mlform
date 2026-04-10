@@ -31,9 +31,14 @@ export const builtinReportFallbacks = {
 } as const;
 
 export const builtinValidationMessages = {
+  invalidNumber: "Value must be a valid number.",
   textPatternMismatch: "Value does not match the expected pattern.",
   booleanRequired: "This field must be accepted.",
   categoryOptionMismatch: "Value must match one of the available options.",
+  invalidTextLengthRange: "Minimum length cannot exceed maximum length.",
+  invalidNumericRange: "Minimum value cannot exceed maximum value.",
+  invalidDateRange: "Minimum date cannot be after maximum date.",
+  invalidPointCountRange: "Minimum number of points cannot exceed maximum number of points.",
   minLength: (value: number): string => `Minimum length is ${value} characters.`,
   maxLength: (value: number): string => `Maximum length is ${value} characters.`,
   minValue: (value: number): string => `Minimum value is ${value}.`,

@@ -40,13 +40,15 @@ export const builtinReportDefinitions = [
 export const createBuiltinRegistry = (): Registry => {
   const registry = createRegistry();
 
-  for (const definition of builtinFieldDefinitions) {
-    registry.registerField(definition);
-  }
-
-  for (const definition of builtinReportDefinitions) {
-    registry.registerReport(definition);
-  }
+  registry
+    .registerField(textFieldDefinition)
+    .registerField(numberFieldDefinition)
+    .registerField(booleanFieldDefinition)
+    .registerField(categoryFieldDefinition)
+    .registerField(dateFieldDefinition)
+    .registerField(timeSeriesFieldDefinition)
+    .registerReport(classifierReportDefinition)
+    .registerReport(regressorReportDefinition);
 
   return registry;
 };

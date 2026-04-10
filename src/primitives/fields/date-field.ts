@@ -42,6 +42,7 @@ export class PrimitiveDateFieldElement extends PrimitiveFieldElement {
         ?readonly=${Boolean(this.fieldState?.readOnly)}
         min=${ifDefined(typeof props.min === "string" ? props.min : undefined)}
         max=${ifDefined(typeof props.max === "string" ? props.max : undefined)}
+        step=${ifDefined(typeof props.step === "number" ? String(props.step) : undefined)}
         @input=${this.#handleInput}
         @blur=${this.#handleBlur}
       />

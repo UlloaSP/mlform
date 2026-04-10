@@ -1,51 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  FieldStateSnapshot,
-  FormState,
-  FormStatus,
-  ReportStateSnapshot,
-  SubmitResult,
-} from "./types";
-import type { Store } from "./store";
-
-export interface InternalFieldState extends FieldStateSnapshot {
-  syncErrors: string[];
-  validationErrors: string[];
-  externalErrors: string[];
-  validationVersion: number;
-}
-
-export interface EngineState {
-  status: FormStatus;
-  submitCount: number;
-  lastResult: SubmitResult | null;
-  formErrors: string[];
-  fieldStates: Record<string, InternalFieldState>;
-  reportStates: Record<string, ReportStateSnapshot>;
-  lifecycleVersion: number;
-  activeValidationVersion: number;
-  activeSubmissionVersion: number | null;
-}
-
-export type EngineStore = Store<EngineState>;
-
-export const createInitialEngineState = (): EngineState => ({
-  status: "idle",
-  submitCount: 0,
-  lastResult: null,
-  formErrors: [],
-  fieldStates: {},
-  reportStates: {},
-  lifecycleVersion: 0,
-  activeValidationVersion: 0,
-  activeSubmissionVersion: null,
-});
+import type { FieldStateSnapshot, FormState } from "../types";
+import { cloneValue } from "../values";
+import type { EngineState, InternalFieldState } from "./engine";
 
 export const toFieldStateSnapshot = (state: InternalFieldState): FieldStateSnapshot => ({
-  value: state.value,
-  initialValue: state.initialValue,
+  value: cloneValue(state.value),
+  initialValue: cloneValue(state.initialValue),
   touched: state.touched,
   dirty: state.dirty,
   valid: state.valid,
@@ -69,7 +31,10 @@ export const toFieldStateSnapshots = (
 
 export const toFormState = (state: EngineState): FormState => {
   const values = Object.fromEntries(
-    Object.entries(state.fieldStates).map(([fieldId, fieldState]) => [fieldId, fieldState.value]),
+    Object.entries(state.fieldStates).map(([fieldId, fieldState]) => [
+      fieldId,
+      cloneValue(fieldState.value),
+    ]),
   );
 
   const snapshots = toFieldStateSnapshots(state.fieldStates);
@@ -90,10 +55,11 @@ export const toFormState = (state: EngineState): FormState => {
     dirty,
     touched,
     values,
+    reportStates: cloneValue(state.reportStates),
     errors: {
       form: [...state.formErrors],
       fields: fieldErrors,
     },
-    lastResult: state.lastResult,
+    lastResult: cloneValue(state.lastResult),
   };
 };

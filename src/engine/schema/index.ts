@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { EngineError, RegistryError } from "./errors";
+import { EngineError, RegistryError } from "../errors";
 import type {
   FieldConfig,
   FormSchema,
@@ -9,8 +9,8 @@ import type {
   NormalizedReportConfig,
   Registry,
   ReportConfig,
-} from "./types";
-import { slugify } from "./utils";
+} from "../types";
+import { slugify } from "../utils";
 
 export interface NormalizedFormSchema {
   fields: NormalizedFieldConfig[];

@@ -101,6 +101,7 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
           autocomplete="off"
           id=${context?.controlId ?? ""}
           .value=${value}
+          placeholder=${toText(props.placeholder)}
           aria-label=${context?.label ?? toText(props.label)}
           aria-describedby=${ifDefined(context?.describedBy)}
           aria-invalid=${String(context?.invalid ?? false)}

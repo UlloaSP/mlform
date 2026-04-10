@@ -187,13 +187,13 @@ export class PrimitiveFieldFrameElement extends LitElement {
     const hasIntroducedValue = this.#hasIntroducedValue(descriptor.component, props, state);
     const errorLabel = joinMessages(state.errors);
     const successLabel = this.#createSuccessMessage(descriptor.component, props, state);
-    const feedback =
-      hasIntroducedValue && state.valid
+    const showError = errorLabel.length > 0 && (state.touched || hasIntroducedValue);
+    const feedback = showError
+      ? { tone: "error", message: errorLabel }
+      : hasIntroducedValue && state.valid
         ? { tone: "success", message: successLabel }
-        : hasIntroducedValue && errorLabel
-          ? { tone: "error", message: errorLabel }
-          : null;
-    const toneClass = hasIntroducedValue ? (state.valid ? "success" : "error") : "";
+        : null;
+    const toneClass = showError ? "error" : hasIntroducedValue && state.valid ? "success" : "";
 
     return html`
       <section

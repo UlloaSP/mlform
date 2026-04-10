@@ -18,6 +18,17 @@ import type {
 } from "@/engine";
 import type { PrimitiveLayout, PrimitiveRegistry } from "@/primitives";
 
+export type JsonTransportMethod = "POST" | "PUT" | "PATCH" | "DELETE";
+
+export interface KitDesignSystemSnapshot extends Omit<
+  DesignSystemConfig,
+  "mode" | "theme" | "recipe"
+> {
+  mode: NonNullable<DesignSystemConfig["mode"]>;
+  theme: NonNullable<DesignSystemConfig["theme"]>;
+  recipe: NonNullable<DesignSystemConfig["recipe"]>;
+}
+
 export interface KitLabels {
   form?: string;
   reports?: string;
@@ -29,10 +40,10 @@ export interface KitLabels {
 export interface JsonTransportOptions {
   endpoint: string | URL;
   fetch?: typeof globalThis.fetch;
-  method?: string;
+  method?: JsonTransportMethod;
   headers?: HeadersInit;
   credentials?: RequestCredentials;
-  body?: (request: SubmitRequest) => unknown;
+  body?: (request: SubmitRequest) => BodyInit | null | undefined;
   parse?: (response: Response) => Promise<unknown>;
 }
 
@@ -63,7 +74,7 @@ export interface MountedForm {
   readonly designSystemRegistry: DesignSystemRegistry;
   readonly designSystem: AttachedDesignSystem;
   updateDesignSystem(config: DesignSystemConfig): void;
-  replaceDesignSystem(config: DesignSystemConfig): void;
+  replaceDesignSystem(config: KitDesignSystemSnapshot): void;
   resetDesignSystem(): void;
   unmount(): void;
 }

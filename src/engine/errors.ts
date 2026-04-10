@@ -37,9 +37,30 @@ export class SubmitError extends EngineError {
   }
 }
 
+export class ReportPayloadError extends SubmitError {
+  readonly reportId: string;
+
+  constructor(reportId: string, message: string, cause: unknown) {
+    super(`Invalid payload for report "${reportId}": ${message}`, cause);
+    this.name = "ReportPayloadError";
+    this.reportId = reportId;
+  }
+}
+
 export class SubmissionAbortedError extends SubmitError {
   constructor(message = "Form submission was aborted.", cause?: unknown) {
     super(message, cause);
     this.name = "SubmissionAbortedError";
   }
 }
+
+export const createAbortError = (reason?: string): SubmissionAbortedError => {
+  return new SubmissionAbortedError(reason ? `Form submission was aborted: ${reason}` : undefined);
+};
+
+export const isAbortLikeError = (error: unknown): boolean => {
+  return (
+    error instanceof SubmissionAbortedError ||
+    (error instanceof Error && error.name === "AbortError")
+  );
+};

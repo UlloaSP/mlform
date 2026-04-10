@@ -14,21 +14,26 @@ export {
 } from "./builtins";
 export {
   EngineError,
+  ReportPayloadError,
   RegistryError,
   SubmissionAbortedError,
   SubmitError,
   ValidationError,
 } from "./errors";
 export { createForm } from "./form";
-export { createRegistry, EngineRegistry } from "./registry";
+export {
+  createRegistry,
+  defineFieldDefinition,
+  defineReportDefinition,
+  EngineRegistry,
+} from "./registry";
 export {
   defaultEquality,
-  identity,
-  isPromiseLike,
   shallowArrayEquality,
   shallowEquality,
   shallowObjectEquality,
-} from "./utils";
+} from "./equality";
+export { identity, isPromiseLike } from "./utils";
 export type {
   AllConditions,
   AfterSubmitContext,
@@ -62,6 +67,7 @@ export type {
   FormValidationContext,
   FormValidationIssue,
   FormValidationResult,
+  InactiveFieldPolicy,
   MaybePromise,
   NormalizedFieldConfig,
   NormalizedReportConfig,

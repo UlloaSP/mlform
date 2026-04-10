@@ -9,6 +9,7 @@ import {
   type FieldController,
   type FieldDefinition,
 } from "@/engine";
+import { PrimitiveFormElement } from "@/primitives/components/form-root";
 import { createPrimitiveRegistry, mountForm } from "@/primitives";
 
 const flush = async (): Promise<void> => {
@@ -35,7 +36,7 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
 };
 
 describe("primitives", () => {
-  it("keeps the wrapper in the accent state when validation fails without any introduced value", async () => {
+  it("shows visible field feedback after submit when a required field is still empty", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -79,7 +80,7 @@ describe("primitives", () => {
     expect(errorListener).toHaveBeenCalledTimes(1);
     expect(errorListener.mock.calls[0]?.[0]).toBeInstanceOf(ValidationError);
 
-    expect(getShadow(fieldFrame).textContent).not.toContain("This field is required.");
+    expect(getShadow(fieldFrame).textContent).toContain("This field is required.");
     const renderer = getShadow(fieldFrame).querySelector("mlf-text-field");
     const rendererShadow = getShadow(renderer);
     const textInput = rendererShadow.querySelector("input");
@@ -89,6 +90,257 @@ describe("primitives", () => {
     expect(
       rendererShadow.querySelector(`#${describedBy?.split(" ").at(-1) ?? ""}`)?.textContent,
     ).toContain("This field is required.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("shows visible feedback when clearing previously valid built-in values back to empty", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            id: "name",
+            kind: "text",
+            label: "Name",
+            required: true,
+          },
+          {
+            id: "age",
+            kind: "number",
+            label: "Age",
+            required: true,
+          },
+          {
+            id: "tier",
+            kind: "category",
+            label: "Tier",
+            required: true,
+            options: ["Internal", "External"],
+          },
+          {
+            id: "launch-date",
+            kind: "date",
+            label: "Launch date",
+            required: true,
+          },
+          {
+            id: "history",
+            kind: "time-series",
+            label: "History",
+            required: true,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      initialValues: {
+        name: "Alice",
+        age: 24,
+        tier: "Internal",
+        "launch-date": "2026-07-10",
+        history: [{ timestamp: "2026-07-10", value: 10 }],
+      },
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    textInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+
+    const numberInput = getFieldControlHost(mounted.host, 1) as HTMLInputElement;
+    numberInput.value = "";
+    numberInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    numberInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+
+    const categorySelect = getFieldControlHost(mounted.host, 2) as HTMLSelectElement;
+    categorySelect.value = "";
+    categorySelect.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+    categorySelect.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+
+    const dateInput = getFieldControlHost(mounted.host, 3) as HTMLInputElement;
+    dateInput.value = "";
+    dateInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    dateInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+
+    const timeSeriesFieldFrame = getShadow(mounted.host)
+      .querySelectorAll("mlf-field-frame")
+      .item(4) as HTMLElement;
+    const timeSeriesRenderer = getShadow(timeSeriesFieldFrame).querySelector(
+      "mlf-time-series-field",
+    ) as HTMLElement;
+    const removeButton = getShadow(timeSeriesRenderer).querySelector(
+      'button[aria-label^="Remove point"]',
+    ) as HTMLButtonElement;
+    removeButton.click();
+
+    await flush();
+    await flush();
+
+    const fieldFrames = getShadow(mounted.host).querySelectorAll("mlf-field-frame");
+    for (const fieldFrame of fieldFrames) {
+      expect(getShadow(fieldFrame as HTMLElement).textContent).toContain("This field is required.");
+    }
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("shows visible feedback for non-numeric text entered into number fields", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "number",
+            label: "Training epochs",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const numberInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    numberInput.value = "dfsfdsfdfdsfdsf";
+    numberInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+    await flush();
+
+    expect(form.getField("training-epochs")?.state.value).toBe("dfsfdsfdfdsfdsf");
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    expect(getShadow(fieldFrame).textContent).toContain("Value must be a valid number.");
+    expect(numberInput.getAttribute("aria-invalid")).toBe("true");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("shows built-in min and max validation feedback while editing constrained fields", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            id: "username",
+            kind: "text",
+            label: "Username",
+            minLength: 5,
+            pattern: "^[a-z]+$",
+          },
+          {
+            id: "epochs",
+            kind: "number",
+            label: "Training epochs",
+            min: 10,
+            max: 20,
+          },
+          {
+            id: "release-date",
+            kind: "date",
+            label: "Release date",
+            min: "2026-01-10",
+            max: "2026-01-20",
+          },
+          {
+            id: "history",
+            kind: "time-series",
+            label: "History",
+            minPoints: 2,
+            minDate: "2026-01-10",
+            maxDate: "2026-01-20",
+            minValue: 100,
+            maxValue: 200,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "A1";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+    const numberInput = getFieldControlHost(mounted.host, 1) as HTMLInputElement;
+    numberInput.value = "5";
+    numberInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+    const dateInput = getFieldControlHost(mounted.host, 2) as HTMLInputElement;
+    dateInput.value = "2026-01-05";
+    dateInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+    const timeSeriesFieldFrame = getShadow(mounted.host)
+      .querySelectorAll("mlf-field-frame")
+      .item(3) as HTMLElement;
+    const timeSeriesRenderer = getShadow(timeSeriesFieldFrame).querySelector(
+      "mlf-time-series-field",
+    ) as HTMLElement;
+    const timeSeriesShadow = getShadow(timeSeriesRenderer);
+    const addButton = timeSeriesShadow.querySelector(
+      'button[aria-label="Add point"]',
+    ) as HTMLButtonElement;
+    addButton.click();
+    await flush();
+
+    const timestampInput = timeSeriesShadow.querySelector('input[type="date"]') as HTMLInputElement;
+    timestampInput.value = "2026-01-05";
+    timestampInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+    const valueInput = timeSeriesShadow.querySelector(
+      'input[inputmode="decimal"]',
+    ) as HTMLInputElement;
+    valueInput.value = "50";
+    valueInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    valueInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+
+    expect(form.getField("username")?.state.errors).toContain("Minimum length is 5 characters.");
+    expect(form.getField("username")?.state.errors).toContain(
+      "Value does not match the expected pattern.",
+    );
+    expect(form.getField("epochs")?.state.errors).toContain("Minimum value is 10.");
+    expect(form.getField("release-date")?.state.errors).toContain(
+      "Date must be on or after 2026-01-10.",
+    );
+    expect(form.getField("history")?.state.errors).toContain("Minimum number of points is 2.");
+    expect(form.getField("history")?.state.errors).toContain(
+      "Date must be on or after 2026-01-10.",
+    );
+    expect(form.getField("history")?.state.errors).toContain("Minimum value is 100.");
+
+    const fieldFrames = getShadow(mounted.host).querySelectorAll("mlf-field-frame");
+    expect(getShadow(fieldFrames.item(0)).textContent).toContain("Minimum length is 5 characters.");
+    expect(getShadow(fieldFrames.item(1)).textContent).toContain("Minimum value is 10.");
+    expect(getShadow(fieldFrames.item(2)).textContent).toContain(
+      "Date must be on or after 2026-01-10.",
+    );
+    expect(getShadow(fieldFrames.item(3)).textContent).toContain("Minimum number of points is 2.");
 
     mounted.unmount();
     container.remove();
@@ -221,6 +473,52 @@ describe("primitives", () => {
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
     expect(getShadow(fieldFrame).textContent).toContain("Selected date: 2026-07-10.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("renders legacy-compatible number placeholders and date steps in the default primitives", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "number",
+            label: "Revenue",
+            placeholder: "Enter amount",
+          },
+          {
+            kind: "date",
+            label: "Billing cycle",
+            step: 7,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrames = getShadow(mounted.host).querySelectorAll("mlf-field-frame");
+
+    const numberRenderer = getShadow(fieldFrames.item(0)).querySelector(
+      "mlf-number-field",
+    ) as HTMLElement;
+    const numberInput = getShadow(numberRenderer).querySelector("input") as HTMLInputElement;
+    expect(numberInput.placeholder).toBe("Enter amount");
+
+    const dateRenderer = getShadow(fieldFrames.item(1)).querySelector(
+      "mlf-date-field",
+    ) as HTMLElement;
+    const dateInput = getShadow(dateRenderer).querySelector("input") as HTMLInputElement;
+    expect(dateInput.step).toBe("7");
 
     mounted.unmount();
     container.remove();
@@ -376,6 +674,19 @@ describe("primitives", () => {
 
     await flush();
     expect(getShadow(mounted.host).querySelector("mlf-report-frame")).toBeNull();
+    const splitShell = getShadow(mounted.host).querySelector(".split-shell");
+    const leftSection = getShadow(mounted.host).querySelector(".left-section");
+    const rightSection = getShadow(mounted.host).querySelector(".right-section");
+    const formInputs = getShadow(mounted.host).querySelector(".form-inputs.scroll-y");
+    const resultsArea = getShadow(mounted.host).querySelector(".results-area.scroll-y");
+    const formActions = getShadow(mounted.host).querySelector(".form-actions");
+
+    expect(splitShell).not.toBeNull();
+    expect(leftSection).not.toBeNull();
+    expect(rightSection).not.toBeNull();
+    expect(formInputs).not.toBeNull();
+    expect(resultsArea).not.toBeNull();
+    expect(formActions?.contains(formInputs as Node)).toBe(false);
 
     const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
     textInput.value = "Alice";
@@ -412,6 +723,50 @@ describe("primitives", () => {
     const reportShadow = getShadow(reportRenderer);
     expect(reportShadow.textContent).toContain("high");
     expect(reportShadow.textContent).toContain("90.0%");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("sizes the split host to the mounted container instead of imposing its own viewport height", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+          },
+        ],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+            label: "Risk",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    container.style.width = "640px";
+    container.style.height = "420px";
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      layout: "split",
+      reportPane: "always",
+    });
+
+    await flush();
+
+    const cssText = PrimitiveFormElement.styles.toString();
+
+    expect(cssText).toContain("inline-size: 100%;");
+    expect(cssText).toContain("block-size: 100%;");
+    expect(cssText).not.toContain("--mlf-shell-split-height");
 
     mounted.unmount();
     container.remove();

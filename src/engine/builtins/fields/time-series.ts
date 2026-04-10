@@ -112,6 +112,24 @@ export const timeSeriesFieldDefinition: FieldDefinition<TimeSeriesFieldConfig, T
       const minDate = toDate(config.minDate);
       const maxDate = toDate(config.maxDate);
 
+      if (
+        config.minPoints !== undefined &&
+        config.maxPoints !== undefined &&
+        config.minPoints > config.maxPoints
+      ) {
+        errors.push(builtinValidationMessages.invalidPointCountRange);
+      }
+      if (minDate && maxDate && minDate.getTime() > maxDate.getTime()) {
+        errors.push(builtinValidationMessages.invalidDateRange);
+      }
+      if (
+        config.minValue !== undefined &&
+        config.maxValue !== undefined &&
+        config.minValue > config.maxValue
+      ) {
+        errors.push(builtinValidationMessages.invalidNumericRange);
+      }
+
       if (config.minPoints !== undefined && value.length < config.minPoints) {
         errors.push(`Minimum number of points is ${config.minPoints}.`);
       }

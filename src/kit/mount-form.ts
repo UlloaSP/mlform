@@ -13,9 +13,19 @@ import {
 } from "./defaults";
 import { kitErrorMessages } from "./constants";
 import { createJsonTransport } from "./transport";
-import type { MountFormOptions, MountedForm } from "./types";
+import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./types";
+
+const mountedFormRef = Symbol("mlform.kit.mounted");
+
+type KitContainer = HTMLElement & {
+  [mountedFormRef]?: MountedForm;
+};
 
 const resolveTransport = (options: MountFormOptions): Transport => {
+  if (options.transport && (options.endpoint || options.transportOptions)) {
+    throw new TypeError(kitErrorMessages.conflictingTransport);
+  }
+
   if (options.transport) {
     return options.transport;
   }
@@ -30,7 +40,18 @@ const resolveTransport = (options: MountFormOptions): Transport => {
   throw new TypeError(kitErrorMessages.missingTransport);
 };
 
+const assertDesignSystemSnapshot: (
+  config: KitDesignSystemSnapshot | DesignSystemConfig,
+) => asserts config is KitDesignSystemSnapshot = (config) => {
+  if (!config.mode || !config.theme || !config.recipe) {
+    throw new TypeError(kitErrorMessages.invalidDesignSystemSnapshot);
+  }
+};
+
 export const mountForm = (container: HTMLElement, options: MountFormOptions): MountedForm => {
+  const hostContainer = container as KitContainer;
+  hostContainer[mountedFormRef]?.unmount();
+
   const engineRegistry = cloneEngineRegistry(options.registry);
   const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
@@ -61,7 +82,9 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     onChange: options.onDesignSystemChange,
   });
 
-  return {
+  let unmounted = false;
+
+  const mounted: MountedForm = {
     form,
     host: mountedPrimitive.host,
     engineRegistry,
@@ -71,17 +94,33 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     updateDesignSystem(config: DesignSystemConfig) {
       designSystem.update(config);
     },
-    replaceDesignSystem(config: DesignSystemConfig) {
-      designSystem.replace(resolveKitDesignSystem(config));
+    replaceDesignSystem(config: KitDesignSystemSnapshot) {
+      assertDesignSystemSnapshot(config);
+      designSystem.replace(config);
     },
     resetDesignSystem() {
       designSystem.reset();
     },
     unmount() {
+      if (unmounted) {
+        return;
+      }
+
+      unmounted = true;
+
+      if (hostContainer[mountedFormRef] === mounted) {
+        delete hostContainer[mountedFormRef];
+      }
+
+      form.abortSubmit("unmount");
       designSystem.disconnect();
       mountedPrimitive.unmount();
     },
   };
+
+  hostContainer[mountedFormRef] = mounted;
+
+  return mounted;
 };
 
 export const unmountForm = (mounted: MountedForm): void => {

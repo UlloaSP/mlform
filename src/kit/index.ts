@@ -4,4 +4,11 @@
 export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
 export { mountForm, unmountForm } from "./mount-form";
 export { createJsonTransport } from "./transport";
-export type { JsonTransportOptions, KitLabels, MountFormOptions, MountedForm } from "./types";
+export type {
+  JsonTransportMethod,
+  JsonTransportOptions,
+  KitDesignSystemSnapshot,
+  KitLabels,
+  MountFormOptions,
+  MountedForm,
+} from "./types";

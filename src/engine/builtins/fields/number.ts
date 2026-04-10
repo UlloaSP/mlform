@@ -12,9 +12,10 @@ type NumberFieldConfig = BaseFieldConfig & {
   max?: number;
   step?: number;
   unit?: string;
+  placeholder?: string;
 };
 
-export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | null> = {
+export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | string | null> = {
   kind: "number",
   schema: z.object({
     kind: z.literal("number"),
@@ -23,6 +24,7 @@ export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | 
     max: z.number().optional(),
     step: z.number().positive().optional(),
     unit: z.string().optional(),
+    placeholder: z.string().optional(),
   }),
   getDefaultValue(config) {
     return typeof config.defaultValue === "number" ? config.defaultValue : null;
@@ -36,12 +38,29 @@ export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | 
       return Number.isNaN(value) ? null : value;
     }
 
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed.length === 0) {
+        return null;
+      }
+
+      const parsed = Number(trimmed);
+      return Number.isNaN(parsed) ? value : parsed;
+    }
+
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
   },
   validate(value, config) {
     const errors: string[] = [];
+    if (config.min !== undefined && config.max !== undefined && config.min > config.max) {
+      errors.push(builtinValidationMessages.invalidNumericRange);
+    }
     if (value === null) {
+      return errors;
+    }
+    if (typeof value !== "number") {
+      errors.push(builtinValidationMessages.invalidNumber);
       return errors;
     }
     if (config.min !== undefined && value < config.min) {
@@ -59,6 +78,7 @@ export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | 
       max: config.max,
       step: config.step,
       unit: config.unit,
+      placeholder: config.placeholder ?? "",
       state: context.state.status,
       errors: context.state.errors,
     });

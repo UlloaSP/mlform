@@ -26,7 +26,13 @@ describe("kit", () => {
       values: {
         age: 34,
       },
+      fieldValues: {
+        age: 34,
+      },
       serializedValues: {
+        age: 34,
+      },
+      serializedFieldValues: {
         age: 34,
       },
       fields: [],
@@ -74,10 +80,55 @@ describe("kit", () => {
     await expect(
       transport.submit({
         values: {},
+        fieldValues: {},
         serializedValues: {},
+        serializedFieldValues: {},
         fields: [],
         reports: [],
       }),
     ).rejects.toThrow("backend offline");
+  });
+
+  it("rejects HTTP methods that do not support the kit JSON body contract", () => {
+    expect(() =>
+      createJsonTransport({
+        endpoint: "https://api.example.com/predict",
+        method: "GET" as never,
+        fetch: vi.fn() as typeof globalThis.fetch,
+      }),
+    ).toThrow('Unsupported HTTP method "GET"');
+  });
+
+  it("passes through custom request bodies without forcing JSON serialization", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      statusText: "No Content",
+      headers: new Headers(),
+      json: vi.fn(),
+      text: vi.fn().mockResolvedValue(""),
+    });
+    const transport = createJsonTransport({
+      endpoint: "https://api.example.com/upload",
+      fetch: fetchMock as typeof globalThis.fetch,
+      body: () => {
+        const body = new FormData();
+        body.set("file", new Blob(["hello"], { type: "text/plain" }), "hello.txt");
+        return body;
+      },
+    });
+
+    await transport.submit({
+      values: {},
+      fieldValues: {},
+      serializedValues: {},
+      serializedFieldValues: {},
+      fields: [],
+      reports: [],
+    });
+
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(requestInit.body).toBeInstanceOf(FormData);
+    expect(new Headers(requestInit.headers).has("content-type")).toBe(false);
   });
 });

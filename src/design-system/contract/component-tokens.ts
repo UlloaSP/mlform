@@ -14,6 +14,16 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
       "--mlf-shell-bg": "transparent",
       "--mlf-shell-overlay":
         "linear-gradient(180deg, rgba(247, 249, 252, 0), var(--mlf-color-overlay) 50%)",
+      "--mlf-shell-panel-bg": "var(--mlf-color-surface)",
+      "--mlf-shell-panel-border": "var(--mlf-color-border)",
+      "--mlf-shell-panel-shadow-soft": "var(--mlf-shadow-sm)",
+      "--mlf-shell-panel-shadow": "var(--mlf-shadow-md)",
+      "--mlf-shell-header-bg": "color-mix(in srgb, var(--mlf-color-surface) 76%, transparent)",
+      "--mlf-shell-header-blur": "3px",
+      "--mlf-shell-action-bg": "var(--mlf-color-surface-muted)",
+      "--mlf-shell-left-min-width": "22rem",
+      "--mlf-shell-left-max-width": "48rem",
+      "--mlf-shell-right-min-width": "24rem",
     },
   },
   hero: {

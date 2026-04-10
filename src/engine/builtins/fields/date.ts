@@ -11,6 +11,7 @@ type DateFieldConfig = BaseFieldConfig & {
   kind: "date";
   min?: string;
   max?: string;
+  step?: number;
 };
 
 export const dateFieldDefinition: FieldDefinition<DateFieldConfig, Date | null> = {
@@ -20,6 +21,7 @@ export const dateFieldDefinition: FieldDefinition<DateFieldConfig, Date | null> 
     ...baseFieldShape,
     min: z.string().optional(),
     max: z.string().optional(),
+    step: z.number().positive().optional(),
   }),
   getDefaultValue(config) {
     return toDate(config.defaultValue) ?? null;
@@ -31,13 +33,17 @@ export const dateFieldDefinition: FieldDefinition<DateFieldConfig, Date | null> 
     return value instanceof Date ? value.toISOString() : value;
   },
   validate(value, config) {
-    if (value === null) {
-      return [];
-    }
-
     const errors: string[] = [];
     const minDate = toDate(config.min);
     const maxDate = toDate(config.max);
+
+    if (minDate && maxDate && minDate.getTime() > maxDate.getTime()) {
+      errors.push(builtinValidationMessages.invalidDateRange);
+    }
+
+    if (value === null) {
+      return errors;
+    }
 
     if (minDate && value.getTime() < minDate.getTime()) {
       errors.push(builtinValidationMessages.dateOnOrAfter(String(config.min)));
@@ -56,6 +62,7 @@ export const dateFieldDefinition: FieldDefinition<DateFieldConfig, Date | null> 
           : context.state.value,
       min: config.min,
       max: config.max,
+      step: config.step,
       state: context.state.status,
       errors: context.state.errors,
     });

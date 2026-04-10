@@ -8,4 +8,11 @@ export {
   mountForm,
   unmountForm,
 } from "@/kit";
-export type { JsonTransportOptions, KitLabels, MountFormOptions, MountedForm } from "@/kit";
+export type {
+  JsonTransportMethod,
+  JsonTransportOptions,
+  KitDesignSystemSnapshot,
+  KitLabels,
+  MountedForm,
+  MountFormOptions,
+} from "@/kit";

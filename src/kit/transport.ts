@@ -44,7 +44,24 @@ const resolveErrorMessage = (status: number, statusText: string, payload: unknow
   return kitErrorMessages.requestFailed(status, statusText);
 };
 
+const resolveMethod = (method: string | undefined): NonNullable<JsonTransportOptions["method"]> => {
+  const normalized = (method ?? kitTransportDefaults.method).toUpperCase();
+
+  if (
+    normalized === "POST" ||
+    normalized === "PUT" ||
+    normalized === "PATCH" ||
+    normalized === "DELETE"
+  ) {
+    return normalized;
+  }
+
+  throw new TypeError(kitErrorMessages.unsupportedMethod(normalized));
+};
+
 export const createJsonTransport = (options: JsonTransportOptions): Transport => {
+  const method = resolveMethod(options.method);
+
   return {
     async submit(request) {
       const fetchImpl = options.fetch ?? globalThis.fetch;
@@ -54,18 +71,23 @@ export const createJsonTransport = (options: JsonTransportOptions): Transport =>
       }
 
       const headers = new Headers(options.headers);
+      const body =
+        typeof options.body === "function"
+          ? options.body(request)
+          : JSON.stringify(defaultBody(request));
+
       if (!headers.has("accept")) {
         headers.set("accept", kitTransportDefaults.acceptHeader);
       }
-      if (!headers.has("content-type")) {
+      if (typeof options.body !== "function" && !headers.has("content-type")) {
         headers.set("content-type", kitTransportDefaults.contentTypeHeader);
       }
 
       const response = await fetchImpl(String(options.endpoint), {
-        method: options.method ?? kitTransportDefaults.method,
+        method,
         headers,
         credentials: options.credentials,
-        body: JSON.stringify((options.body ?? defaultBody)(request)),
+        body,
         signal: request.signal,
       });
 

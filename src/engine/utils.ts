@@ -56,8 +56,6 @@ export const toDate = (value: unknown): Date | null => {
 
 export const identity = <T>(value: T): T => value;
 
-export const defaultEquality = <T>(previous: T, next: T): boolean => Object.is(previous, next);
-
 export const delay = (ms: number, signal?: AbortSignal): Promise<void> => {
   if (ms <= 0) {
     return Promise.resolve();
@@ -81,93 +79,4 @@ export const delay = (ms: number, signal?: AbortSignal): Promise<void> => {
 
     signal?.addEventListener("abort", onAbort, { once: true });
   });
-};
-
-export const shallowArrayEquality = <T>(previous: readonly T[], next: readonly T[]): boolean => {
-  if (previous === next) {
-    return true;
-  }
-  if (previous.length !== next.length) {
-    return false;
-  }
-
-  return previous.every((value, index) => Object.is(value, next[index]));
-};
-
-export const shallowObjectEquality = (
-  previous: Record<string, unknown>,
-  next: Record<string, unknown>,
-): boolean => {
-  if (previous === next) {
-    return true;
-  }
-
-  const previousKeys = Object.keys(previous);
-  const nextKeys = Object.keys(next);
-
-  if (previousKeys.length !== nextKeys.length) {
-    return false;
-  }
-
-  return previousKeys.every((key) => Object.is(previous[key], next[key]));
-};
-
-export const shallowEquality = <T>(previous: T, next: T): boolean => {
-  if (Object.is(previous, next)) {
-    return true;
-  }
-
-  if (Array.isArray(previous) && Array.isArray(next)) {
-    return shallowArrayEquality(previous, next);
-  }
-
-  if (isRecord(previous) && isRecord(next)) {
-    return shallowObjectEquality(previous, next);
-  }
-
-  return false;
-};
-
-const toComparablePrimitive = (value: unknown): number | string | null => {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value.getTime();
-  }
-
-  if (typeof value === "number") {
-    return Number.isNaN(value) ? null : value;
-  }
-
-  if (typeof value === "string") {
-    const asDate = Date.parse(value);
-    if (!Number.isNaN(asDate) && /^\d{4}-\d{2}-\d{2}/.test(value)) {
-      return asDate;
-    }
-
-    return value;
-  }
-
-  if (typeof value === "bigint") {
-    return Number(value);
-  }
-
-  return null;
-};
-
-export const compareComparable = (left: unknown, right: unknown): -1 | 0 | 1 | null => {
-  const comparableLeft = toComparablePrimitive(left);
-  const comparableRight = toComparablePrimitive(right);
-
-  if (comparableLeft === null || comparableRight === null) {
-    return null;
-  }
-
-  if (typeof comparableLeft !== typeof comparableRight) {
-    return null;
-  }
-
-  if (comparableLeft === comparableRight) {
-    return 0;
-  }
-
-  return comparableLeft < comparableRight ? -1 : 1;
 };
