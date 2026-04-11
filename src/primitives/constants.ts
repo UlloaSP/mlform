@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import type { FormStatus, ReportStatus } from "@/engine";
+
 export const primitiveTagNames = {
   form: "mlf-form",
   formErrors: "mlf-form-errors",
@@ -47,6 +49,7 @@ export interface PrimitiveText {
   reportEyebrow: string;
   formErrorsTitle: string;
   helpActionLabel: string;
+  helpActionGlyph: string;
   categoryPlaceholder: string;
   unsupportedMapping: (role: string, component: string) => string;
   classifierEmpty: string;
@@ -75,17 +78,20 @@ export interface PrimitiveText {
   formMetaFields: (count: number) => string;
   formMetaReports: (count: number) => string;
   formMetaSubmits: (count: number) => string;
+  formStatusLabel: (status: FormStatus) => string;
+  reportStatusLabel: (status: ReportStatus) => string;
   reportsEmptyTitle: string;
   reportsEmptyBody: string;
 }
 
 export type PrimitiveTextOverrides = Partial<PrimitiveText>;
 
-export const primitiveStaticText: PrimitiveText = {
+export const primitiveStaticText: PrimitiveText = Object.freeze({
   formEyebrow: "Form",
   reportEyebrow: "Report",
   formErrorsTitle: "Form errors",
   helpActionLabel: "Help",
+  helpActionGlyph: "?",
   categoryPlaceholder: "Select",
   unsupportedMapping: (role: string, component: string): string =>
     `Missing primitive mapping for ${role} ${component}.`,
@@ -117,12 +123,40 @@ export const primitiveStaticText: PrimitiveText = {
   formMetaFields: (count: number): string => `${count} fields`,
   formMetaReports: (count: number): string => `${count} reports`,
   formMetaSubmits: (count: number): string => `${count} submits`,
+  formStatusLabel: (status: FormStatus): string => {
+    switch (status) {
+      case "idle":
+        return "Idle";
+      case "editing":
+        return "Editing";
+      case "validating":
+        return "Validating";
+      case "submitting":
+        return "Submitting";
+      case "success":
+        return "Success";
+      case "error":
+        return "Error";
+    }
+  },
+  reportStatusLabel: (status: ReportStatus): string => {
+    switch (status) {
+      case "idle":
+        return "Idle";
+      case "loading":
+        return "Loading";
+      case "ready":
+        return "Ready";
+      case "error":
+        return "Error";
+    }
+  },
   reportsEmptyTitle: "Results",
   reportsEmptyBody: "Reports will appear here after the form is submitted.",
-};
+});
 
 export const resolvePrimitiveText = (overrides?: PrimitiveTextOverrides): PrimitiveText => {
-  return overrides ? { ...primitiveStaticText, ...overrides } : primitiveStaticText;
+  return overrides ? Object.freeze({ ...primitiveStaticText, ...overrides }) : primitiveStaticText;
 };
 
 export const primitiveIdPrefixes = {

@@ -15,6 +15,7 @@ import {
 } from "./state";
 import { createFormSubmitter } from "./submission";
 import { createFormValidator } from "./validation";
+import { cloneValue } from "./values";
 import type {
   CreateFormConfig,
   FormController,
@@ -37,9 +38,38 @@ export const createForm = (config: CreateFormConfig): FormController => {
     onListenerError: config.onListenerError,
   });
 
-  const getValues = () => toFormState(store.getState()).values;
+  let cachedSourceState = store.getState();
+  let cachedFormState = toFormState(cachedSourceState);
+
+  const getPublicState = (): FormState => {
+    const nextState = store.getState();
+    if (nextState !== cachedSourceState) {
+      cachedSourceState = nextState;
+      cachedFormState = toFormState(nextState);
+    }
+
+    return cachedFormState;
+  };
+
+  const getValues = () =>
+    Object.fromEntries(
+      Object.entries(store.getState().fieldStates).map(([fieldId, fieldState]) => [
+        fieldId,
+        cloneValue(fieldState.value),
+      ]),
+    );
   const getSubmitCount = () => store.getState().submitCount;
   const getFormStatus = () => store.getState().status;
+  const hasInteractiveFieldState = (fieldStates: Record<string, InternalFieldState>): boolean => {
+    for (const fieldId in fieldStates) {
+      const fieldState = fieldStates[fieldId];
+      if (fieldState?.dirty || fieldState?.touched) {
+        return true;
+      }
+    }
+
+    return false;
+  };
   const shouldResetInactiveFields = () => config.inactiveFieldPolicy === "reset-on-hide";
   const resolveInactiveFieldPolicy = (field: {
     readonly config: { readonly inactiveFieldPolicy?: InactiveFieldPolicy };
@@ -111,6 +141,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
   const reportMap = new Map<string, InternalReportController>(
     reports.map((report) => [report.id, report]),
   );
+  const readonlyFields = Object.freeze([...fields]) as readonly InternalFieldController[];
+  const readonlyReports = Object.freeze([...reports]) as readonly InternalReportController[];
 
   const resetReports = (): void => {
     for (const report of reports) {
@@ -153,11 +185,13 @@ export const createForm = (config: CreateFormConfig): FormController => {
 
   const setRestingStatus = (): void => {
     store.batch(() => {
-      const snapshot = toFormState(store.getState());
+      const nextStatus = hasInteractiveFieldState(store.getState().fieldStates)
+        ? "editing"
+        : "idle";
       store.update((current) =>
         transitionEngineState(current, {
           type: "rest",
-          status: snapshot.dirty || snapshot.touched ? "editing" : "idle",
+          status: nextStatus,
         }),
       );
 
@@ -224,13 +258,13 @@ export const createForm = (config: CreateFormConfig): FormController => {
 
   const controller: FormController = {
     get fields() {
-      return fields;
+      return readonlyFields;
     },
     get reports() {
-      return reports;
+      return readonlyReports;
     },
     get state() {
-      return toFormState(store.getState());
+      return getPublicState();
     },
     getField(id) {
       return fieldMap.get(id);
@@ -324,7 +358,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
     },
     subscribe(listener) {
       return store.subscribe(() => {
-        listener(this.state);
+        listener(getPublicState());
       });
     },
     subscribeSelector<TSelected>(
@@ -333,14 +367,14 @@ export const createForm = (config: CreateFormConfig): FormController => {
       options?: SelectorSubscriptionOptions<TSelected>,
     ) {
       const equality = options?.equality ?? shallowEquality<TSelected>;
-      let previousSelected = selector(this.state);
+      let previousSelected = selector(getPublicState());
 
       if (options?.emitInitial) {
-        listener(previousSelected, this.state);
+        listener(previousSelected, getPublicState());
       }
 
       return store.subscribe(() => {
-        const nextState = this.state;
+        const nextState = getPublicState();
         const nextSelected = selector(nextState);
         if (!equality(previousSelected, nextSelected)) {
           previousSelected = nextSelected;

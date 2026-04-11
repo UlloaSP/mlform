@@ -34,6 +34,9 @@ export const sageTheme: ThemeManifest = {
     dark: {
       colorScheme: "dark",
       tokens: {
+        "--mlf-shadow-sm": "0 1px 3px rgba(0, 0, 0, 0.45)",
+        "--mlf-shadow-md": "0 14px 30px rgba(0, 0, 0, 0.35)",
+        "--mlf-shadow-lg": "0 24px 60px rgba(0, 0, 0, 0.28)",
         "--mlf-color-bg": "#121a15",
         "--mlf-color-surface": "#182119",
         "--mlf-color-surface-muted": "#203024",

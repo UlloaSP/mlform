@@ -36,6 +36,53 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
 };
 
 describe("primitives", () => {
+  it("rejects mounting into a non-empty container unless replacement is explicit", () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    container.append(document.createElement("span"));
+
+    expect(() => mountForm(container, form)).toThrow(
+      'Mount into an empty container or pass `containerStrategy: "replace"`.',
+    );
+  });
+
+  it("restores replaced container content on unmount when replacement is explicit", () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    const placeholder = document.createElement("p");
+    placeholder.textContent = "placeholder";
+    container.append(placeholder);
+
+    const mounted = mountForm(container, form, {
+      containerStrategy: "replace",
+    });
+
+    expect(container.firstElementChild).toBe(mounted.host);
+
+    mounted.unmount();
+
+    expect(container.childElementCount).toBe(1);
+    expect(container.firstElementChild).toBe(placeholder);
+  });
+
   it("shows visible field feedback after submit when a required field is still empty", async () => {
     const form = createForm({
       schema: {
@@ -90,6 +137,46 @@ describe("primitives", () => {
     expect(
       rendererShadow.querySelector(`#${describedBy?.split(" ").at(-1) ?? ""}`)?.textContent,
     ).toContain("This field is required.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("keeps form-level errors visible in split layout when the report pane is hidden", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+      validators: [
+        () => ({
+          form: ["Form-level warning."],
+        }),
+      ],
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      layout: "split",
+      reportPane: "hidden",
+    });
+
+    await flush();
+
+    await form.validate();
+    await flush();
+    const formErrors = getShadow(mounted.host).querySelector("mlf-form-errors");
+    expect(getShadow(formErrors).textContent).toContain("Form errors");
+    expect(getShadow(formErrors).textContent).toContain("Form-level warning.");
 
     mounted.unmount();
     container.remove();

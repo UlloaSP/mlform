@@ -4,3 +4,4 @@
 export { componentKeys, type ComponentKey } from "./component-keys";
 export { componentTokenDefaults, type ComponentTokenManifest } from "./component-tokens";
 export { globalTokenDefaults } from "./global-tokens";
+export { mlfTokenKeys, type MlfTokenKey } from "./token-keys";

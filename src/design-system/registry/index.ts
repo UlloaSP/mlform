@@ -9,4 +9,5 @@ export {
 } from "./builtins";
 export { createDesignSystemRegistry } from "./create-registry";
 export { defineRecipe } from "./define-recipe";
+export { defineComponentTokens, defineGlobalTokens } from "./define-token-maps";
 export { defineTheme } from "./define-theme";

@@ -28,3 +28,9 @@ The returned object exposes:
 | `replaceDesignSystem(snapshot)` | Replace with an explicit mode, theme, and recipe.              |
 | `resetDesignSystem()`           | Restore defaults.                                              |
 | `unmount()`                     | Abort pending submit, disconnect styling, and remove the host. |
+
+Notes:
+
+- Calling `mountForm` again on the same container automatically unmounts the previous MLForm instance first.
+- `mountForm` expects an empty container by default.
+- Pass `containerStrategy: "replace"` only when you want MLForm to replace existing host content and restore it on `unmount()`.

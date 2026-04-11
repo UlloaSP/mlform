@@ -27,7 +27,7 @@ describe("design-system integration", () => {
     const container = document.createElement("div");
     document.body.append(container);
     const mounted = mountForm(container, form);
-    mounted.host.setAttribute("theme-id", "manual");
+    mounted.host.setAttribute("data-mlf-theme-id", "manual");
     mounted.host.style.setProperty("--mlf-color-accent", "#101010");
     mounted.host.style.setProperty("--mlf-custom-surface-glow", "initial-glow");
     mounted.host.style.colorScheme = "dark";
@@ -40,8 +40,8 @@ describe("design-system integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("cobalt");
-    expect(mounted.host.getAttribute("recipe-id")).toBe("minimal");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("cobalt");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBe("minimal");
     expect(mounted.host.style.getPropertyValue("--mlf-color-accent")).toBe("#1f5eff");
     expect(attached.config.theme).toBe("cobalt");
 
@@ -57,7 +57,7 @@ describe("design-system integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("sunset");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("sunset");
     expect(mounted.host.style.getPropertyValue("--mlf-color-accent")).toBe("#663399");
     expect(mounted.host.style.getPropertyValue("--mlf-custom-surface-glow")).toBe("active-glow");
 
@@ -68,8 +68,8 @@ describe("design-system integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("graphite");
-    expect(mounted.host.getAttribute("recipe-id")).toBe("default");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("graphite");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBe("default");
     expect(mounted.host.style.getPropertyValue("--mlf-color-accent")).toBe("#375a7f");
     expect(mounted.host.style.getPropertyValue("--mlf-custom-surface-glow")).toBe("initial-glow");
 
@@ -77,14 +77,14 @@ describe("design-system integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("cobalt");
-    expect(mounted.host.getAttribute("recipe-id")).toBe("minimal");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("cobalt");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBe("minimal");
     expect(mounted.host.style.getPropertyValue("--mlf-color-accent")).toBe("#1f5eff");
 
     attached.disconnect();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("manual");
-    expect(mounted.host.getAttribute("recipe-id")).toBeNull();
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("manual");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBeNull();
     expect(mounted.host.getAttribute("data-mlf-scheme")).toBeNull();
     expect(mounted.host.style.getPropertyValue("--mlf-color-accent")).toBe("#101010");
     expect(mounted.host.style.getPropertyValue("--mlf-custom-surface-glow")).toBe("initial-glow");
@@ -120,13 +120,13 @@ describe("design-system integration", () => {
     });
 
     await flush();
-    expect(mounted.host.getAttribute("effective-scheme")).toBe("light");
+    expect(mounted.host.getAttribute("data-mlf-effective-scheme")).toBe("light");
 
     container.setAttribute("data-color-scheme", "dark");
     await flush();
     await flush();
 
-    expect(mounted.host.getAttribute("effective-scheme")).toBe("dark");
+    expect(mounted.host.getAttribute("data-mlf-effective-scheme")).toBe("dark");
 
     inherited.disconnect();
 
@@ -138,13 +138,13 @@ describe("design-system integration", () => {
     });
 
     await flush();
-    expect(mounted.host.getAttribute("effective-scheme")).toBe("light");
+    expect(mounted.host.getAttribute("data-mlf-effective-scheme")).toBe("light");
 
     window.__setPreferredColorScheme?.("dark");
     await flush();
     await flush();
 
-    expect(mounted.host.getAttribute("effective-scheme")).toBe("dark");
+    expect(mounted.host.getAttribute("data-mlf-effective-scheme")).toBe("dark");
     expect(auto.resolved?.effectiveModeSource).toBe("system");
 
     auto.disconnect();
@@ -185,7 +185,7 @@ describe("design-system integration", () => {
     await flush();
 
     expect(outer.getAttribute("data-mlf-scheme")).toBe("dark");
-    expect(mounted.host.getAttribute("effective-scheme")).toBe("dark");
+    expect(mounted.host.getAttribute("data-mlf-effective-scheme")).toBe("dark");
     expect(child.resolved?.effectiveModeSource).toBe("host-attribute");
 
     parent.replace({
@@ -197,7 +197,7 @@ describe("design-system integration", () => {
     await flush();
 
     expect(outer.getAttribute("data-mlf-scheme")).toBe("light");
-    expect(mounted.host.getAttribute("effective-scheme")).toBe("light");
+    expect(mounted.host.getAttribute("data-mlf-effective-scheme")).toBe("light");
 
     child.disconnect();
     parent.disconnect();

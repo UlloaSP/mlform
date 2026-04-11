@@ -12,11 +12,17 @@ import type {
   FormHooks,
   FormSchema,
   FormValidator,
+  InactiveFieldPolicy,
   Registry,
   SubmitRequest,
   Transport,
 } from "@/engine";
-import type { PrimitiveLayout, PrimitiveRegistry, PrimitiveTextOverrides } from "@/primitives";
+import type {
+  PrimitiveContainerStrategy,
+  PrimitiveLayout,
+  PrimitiveRegistry,
+  PrimitiveTextOverrides,
+} from "@/primitives";
 
 export type JsonTransportMethod = "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -59,8 +65,14 @@ export interface MountFormOptions {
   initialValues?: Record<string, unknown>;
   validators?: FormValidator[];
   hooks?: FormHooks;
-  inactiveFieldPolicy?: "include" | "omit";
+  hookFailurePolicy?: {
+    afterSubmit?: "fail-submit" | "preserve-success";
+  };
+  inactiveFieldPolicy?: InactiveFieldPolicy;
+  listenerErrorPolicy?: "ignore" | "throw-aggregate";
+  onListenerError?: (error: unknown) => void;
   layout?: PrimitiveLayout;
+  containerStrategy?: PrimitiveContainerStrategy;
   reportPane?: "auto" | "always" | "hidden";
   labels?: KitLabels;
   primitiveText?: PrimitiveTextOverrides;

@@ -12,3 +12,5 @@ Use primitives directly when:
 - you want to embed MLForm in a host that manages its own design system attachment
 
 Most applications should use `mountForm` from the root package.
+
+`mountForm` expects an empty container by default. Pass `containerStrategy: "replace"` only when you explicitly want to replace existing host content and restore it on `unmount()`.

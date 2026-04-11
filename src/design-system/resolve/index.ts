@@ -8,7 +8,7 @@ import type {
   ResolveDesignSystemRuntimeOptions,
   ResolvedDesignSystem,
 } from "../types";
-import { mergeDesignSystemConfig } from "./merge-config";
+import { assertDesignSystemWarnings, collectDesignSystemWarnings } from "./diagnostics";
 import { resolveMode } from "./resolve-mode";
 import { resolveRecipe } from "./resolve-recipe";
 import { resolveTheme } from "./resolve-theme";
@@ -19,18 +19,21 @@ export const resolveDesignSystem = (
   registry: DesignSystemRegistry = builtinDesignSystemRegistry,
   runtimeOptions: ResolveDesignSystemRuntimeOptions = {},
 ): ResolvedDesignSystem => {
-  const mergedConfig = mergeDesignSystemConfig(config);
-  const theme = resolveTheme(mergedConfig, registry);
-  const recipe = resolveRecipe(mergedConfig, registry);
-  const mode = resolveMode(mergedConfig, theme, runtimeOptions);
+  const theme = resolveTheme(config, registry);
+  const recipe = resolveRecipe(config, registry);
+  const warnings = collectDesignSystemWarnings(config, registry, theme, recipe);
+  assertDesignSystemWarnings(config, warnings);
+  const mode = resolveMode(config, theme, runtimeOptions);
 
   return resolveTokens(
-    mergedConfig,
+    config,
     theme,
     recipe,
     mode.effectiveScheme,
     mode.requestedMode,
     mode.effectiveModeSource,
+    warnings,
+    runtimeOptions,
   );
 };
 

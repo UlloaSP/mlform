@@ -14,6 +14,7 @@ import type {
 import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
 
 export type PrimitiveLayout = "stacked" | "split";
+export type PrimitiveContainerStrategy = "error" | "replace";
 
 export interface PrimitiveRegistry {
   registerField(component: string, tagName: string): PrimitiveRegistry;
@@ -26,6 +27,7 @@ export interface PrimitiveRegistry {
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
   layout?: PrimitiveLayout;
+  containerStrategy?: PrimitiveContainerStrategy;
   formLabel?: string;
   reportsLabel?: string;
   submitLabel?: string;

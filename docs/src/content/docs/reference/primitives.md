@@ -23,3 +23,7 @@ Events emitted by primitive hosts:
 | `mlf-submit-error`   | Submit fails.                        |
 
 Layouts are `stacked` and `split`.
+
+`mountForm(container, form)` expects an empty container by default.
+
+Use `containerStrategy: "replace"` when you need to replace existing children and restore them on `unmount()`.

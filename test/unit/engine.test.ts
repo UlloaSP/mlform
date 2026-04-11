@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import {
   EngineError,
+  type FieldController,
   ReportPayloadError,
   SubmissionAbortedError,
   SubmitError,
@@ -323,6 +324,35 @@ describe("engine", () => {
 
     unsubscribeSelected();
     unsubscribeField();
+  });
+
+  it("exposes frozen controller collections and configs", () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            ui: {
+              tone: "quiet",
+            },
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    expect(Object.isFrozen(form.fields)).toBe(true);
+    expect(Object.isFrozen(form.reports)).toBe(true);
+    expect(Object.isFrozen(form.fields[0]!.config)).toBe(true);
+    expect(Object.isFrozen((form.fields[0]!.config as { ui?: object }).ui ?? null)).toBe(true);
+
+    expect(() => {
+      (form.fields as FieldController[]).push(form.fields[0]!);
+    }).toThrow(TypeError);
   });
 
   it("emits a single form notification for batched setValues updates", () => {

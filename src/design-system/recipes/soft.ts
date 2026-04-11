@@ -12,19 +12,19 @@ export const softRecipe: RecipeManifest = {
     hero: {
       tokens: {
         "--mlf-hero-bg":
-          "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-accent) 10%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 92%, white), color-mix(in srgb, var(--mlf-color-surface-muted) 88%, white))",
+          "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-accent) 10%, transparent), transparent 42%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 92%, var(--mlf-color-surface-elevated)), color-mix(in srgb, var(--mlf-color-surface-muted) 88%, var(--mlf-color-surface-elevated)))",
       },
     },
     field: {
       tokens: {
         "--mlf-field-bg":
-          "linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 96%, white), color-mix(in srgb, var(--mlf-color-surface-muted) 94%, white))",
+          "linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 96%, var(--mlf-color-surface-elevated)), color-mix(in srgb, var(--mlf-color-surface-muted) 94%, var(--mlf-color-surface-elevated)))",
       },
     },
     report: {
       tokens: {
         "--mlf-report-bg":
-          "linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 95%, white), color-mix(in srgb, var(--mlf-color-surface-muted) 92%, white))",
+          "linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 95%, var(--mlf-color-surface-elevated)), color-mix(in srgb, var(--mlf-color-surface-muted) 92%, var(--mlf-color-surface-elevated)))",
       },
     },
   },

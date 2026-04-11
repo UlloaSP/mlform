@@ -4,14 +4,24 @@ description: Define densidad, motion y chrome de componentes.
 ---
 
 ```ts
-import { createDesignSystemRegistry, defineRecipe } from "mlform/design-system";
+import {
+  createDesignSystemRegistry,
+  defineComponentTokens,
+  defineGlobalTokens,
+  defineRecipe,
+} from "mlform/design-system";
 
 const compactOps = defineRecipe({
   id: "compact-ops",
   label: "Compact ops",
   density: "compact",
   motion: "subtle",
-  tokens: { "--mlf-radius-md": "6px" },
+  tokens: defineGlobalTokens({ "--mlf-radius-md": "6px" }),
+  components: {
+    field: defineComponentTokens("field", {
+      "--mlf-field-shadow": "none",
+    }),
+  },
 });
 
 const designSystemRegistry = createDesignSystemRegistry().registerRecipe(compactOps);

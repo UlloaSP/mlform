@@ -1,40 +1,32 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import { designSystemHostAttributeNames } from "../constants";
 import type { ResolvedDesignSystem } from "../types";
+import { writeDesignSystemTokenDeclarations } from "./declarations";
 
 export const managedDesignSystemAttributes = [
-  "theme-id",
-  "recipe-id",
-  "effective-scheme",
-  "density",
-  "motion",
-  "data-mlf-effective-scheme",
-  "data-mlf-scheme",
+  designSystemHostAttributeNames.themeId,
+  designSystemHostAttributeNames.recipeId,
+  designSystemHostAttributeNames.effectiveScheme,
+  designSystemHostAttributeNames.inheritedScheme,
+  designSystemHostAttributeNames.density,
+  designSystemHostAttributeNames.motion,
 ] as const;
 
 export const applyResolvedDesignSystem = (
   host: HTMLElement,
   resolved: ResolvedDesignSystem,
 ): Set<string> => {
-  const nextApplied = new Set<string>();
-
-  host.setAttribute("theme-id", resolved.themeId);
-  host.setAttribute("recipe-id", resolved.recipeId);
-  host.setAttribute("effective-scheme", resolved.effectiveScheme);
-  host.setAttribute("density", resolved.density);
-  host.setAttribute("motion", resolved.motion);
-  host.setAttribute("data-mlf-effective-scheme", resolved.effectiveScheme);
-  host.setAttribute("data-mlf-scheme", resolved.effectiveScheme);
+  host.setAttribute(designSystemHostAttributeNames.themeId, resolved.themeId);
+  host.setAttribute(designSystemHostAttributeNames.recipeId, resolved.recipeId);
+  host.setAttribute(designSystemHostAttributeNames.effectiveScheme, resolved.effectiveScheme);
+  host.setAttribute(designSystemHostAttributeNames.inheritedScheme, resolved.effectiveScheme);
+  host.setAttribute(designSystemHostAttributeNames.density, resolved.density);
+  host.setAttribute(designSystemHostAttributeNames.motion, resolved.motion);
 
   host.style.colorScheme = resolved.effectiveScheme;
-
-  for (const [token, value] of Object.entries(resolved.tokens)) {
-    host.style.setProperty(token, value);
-    nextApplied.add(token);
-  }
-
-  return nextApplied;
+  return writeDesignSystemTokenDeclarations(host.style, resolved);
 };
 
 export const restoreManagedDesignSystem = (

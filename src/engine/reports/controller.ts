@@ -11,6 +11,7 @@ import type {
   ReportStateSnapshot,
   SubmitResult,
 } from "../types";
+import { deepFreeze } from "../utils";
 import { cloneValue } from "../values";
 
 type CreateReportControllerOptions = {
@@ -87,43 +88,48 @@ export const createReportController = ({
   definition,
   store,
 }: CreateReportControllerOptions): InternalReportController => {
-  setReportState(store, config.id, idleState);
+  const readonlyConfig = deepFreeze(cloneValue(config));
+  setReportState(store, readonlyConfig.id, idleState);
 
   const controller: InternalReportController = {
     get id() {
-      return config.id;
+      return readonlyConfig.id;
     },
     get kind() {
-      return config.kind;
+      return readonlyConfig.kind;
     },
     get config() {
-      return config;
+      return readonlyConfig;
     },
     get state() {
-      return cloneReportStateSnapshot(definition, config, store.getState().reportStates[config.id]);
+      return cloneReportStateSnapshot(
+        definition,
+        readonlyConfig,
+        store.getState().reportStates[readonlyConfig.id],
+      );
     },
     get descriptor() {
       const state = this.state;
-      return definition.describe(config, {
-        reportId: config.id,
+      return definition.describe(readonlyConfig, {
+        reportId: readonlyConfig.id,
         state,
         payload: state.payload,
         result: cloneValue(store.getState().lastResult),
       });
     },
     cloneState(state) {
-      return cloneReportStateSnapshot(definition, config, state);
+      return cloneReportStateSnapshot(definition, readonlyConfig, state);
     },
     async prepareState(result) {
       let rawPayload: unknown;
 
       try {
         rawPayload = definition.resolvePayload
-          ? await definition.resolvePayload(config, {
-              report: config,
+          ? await definition.resolvePayload(readonlyConfig, {
+              report: readonlyConfig,
               result,
             })
-          : result.reports[config.source];
+          : result.reports[readonlyConfig.source];
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         return {
@@ -135,7 +141,7 @@ export const createReportController = ({
 
       if (rawPayload === undefined || !definition.payloadSchema) {
         return {
-          payload: cloneReportPayload(definition, config, rawPayload),
+          payload: cloneReportPayload(definition, readonlyConfig, rawPayload),
           error: null,
           status: rawPayload === undefined ? "idle" : "ready",
         };
@@ -144,14 +150,14 @@ export const createReportController = ({
       try {
         const payload = definition.payloadSchema.parse(rawPayload);
         return {
-          payload: cloneReportPayload(definition, config, payload),
+          payload: cloneReportPayload(definition, readonlyConfig, payload),
           error: null,
           status: "ready",
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         if (definition.payloadValidationPolicy === "fail-submit") {
-          throw new ReportPayloadError(config.id, message, error);
+          throw new ReportPayloadError(readonlyConfig.id, message, error);
         }
 
         return {
@@ -162,21 +168,21 @@ export const createReportController = ({
       }
     },
     commitState(state) {
-      setReportState(store, config.id, this.cloneState(state));
+      setReportState(store, readonlyConfig.id, this.cloneState(state));
     },
     async update(result) {
       this.commitState(await this.prepareState(result));
     },
     markLoading() {
-      setReportState(store, config.id, loadingState);
+      setReportState(store, readonlyConfig.id, loadingState);
     },
     reset() {
-      setReportState(store, config.id, idleState);
+      setReportState(store, readonlyConfig.id, idleState);
     },
     subscribe(listener) {
-      let previousState = store.getState().reportStates[config.id];
+      let previousState = store.getState().reportStates[readonlyConfig.id];
       return store.subscribe(() => {
-        const nextState = store.getState().reportStates[config.id];
+        const nextState = store.getState().reportStates[readonlyConfig.id];
         if (!defaultEquality(previousState, nextState)) {
           previousState = nextState;
           listener(this.cloneState(nextState));

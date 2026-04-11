@@ -56,6 +56,33 @@ export const toDate = (value: unknown): Date | null => {
 
 export const identity = <T>(value: T): T => value;
 
+export const deepFreeze = <T>(value: T): T => {
+  const isTypedView = typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(value);
+  const isArrayBufferLike =
+    (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) ||
+    (typeof SharedArrayBuffer !== "undefined" && value instanceof SharedArrayBuffer);
+  const isBlobLike =
+    (typeof Blob !== "undefined" && value instanceof Blob) ||
+    (typeof File !== "undefined" && value instanceof File);
+
+  if (
+    value !== null &&
+    (typeof value === "object" || typeof value === "function") &&
+    !isTypedView &&
+    !isArrayBufferLike &&
+    !isBlobLike &&
+    !Object.isFrozen(value)
+  ) {
+    Object.freeze(value);
+
+    for (const nested of Object.values(value as object)) {
+      deepFreeze(nested);
+    }
+  }
+
+  return value;
+};
+
 export const delay = (ms: number, signal?: AbortSignal): Promise<void> => {
   if (ms <= 0) {
     return Promise.resolve();

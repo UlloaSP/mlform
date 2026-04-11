@@ -28,3 +28,8 @@ El objeto devuelto expone:
 | `replaceDesignSystem(snapshot)` | Sustituye con `mode`, `theme` y `recipe` explicitos.            |
 | `resetDesignSystem()`           | Restaura defaults.                                              |
 | `unmount()`                     | Aborta envios pendientes, desconecta estilos y elimina el host. |
+
+Notas:
+
+- `mountForm` espera un contenedor vacio por defecto.
+- Usa `containerStrategy: "replace"` solo cuando quieras sustituir contenido existente del host y restaurarlo en `unmount()`.

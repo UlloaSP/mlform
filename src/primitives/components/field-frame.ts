@@ -206,6 +206,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
     // never flickers — the aria-live on the sr-only span handles announcements.
     const controlId = `${primitiveIdPrefixes.fieldControl}-${this.controller?.id}-${this.#instanceId}`;
     const errorId = `${primitiveIdPrefixes.fieldErrors}-${this.controller?.id}-${this.#instanceId}`;
+    const detailsId = `${primitiveIdPrefixes.fieldDescription}-${this.controller?.id}-${this.#instanceId}-details`;
 
     return html`
       <section
@@ -220,16 +221,19 @@ export class PrimitiveFieldFrameElement extends LitElement {
             type="button"
             aria-label=${this.text.helpActionLabel}
             aria-expanded=${String(this.descriptionVisible)}
+            aria-controls=${detailsId}
             ?disabled=${description.length === 0}
             @click=${this.#toggleDescription}
           >
-            ?
+            ${this.text.helpActionGlyph}
           </button>
         </div>
 
         ${description
           ? html`
-              <div class="description ${this.descriptionVisible ? "show" : ""}">${description}</div>
+              <div id=${detailsId} class="description ${this.descriptionVisible ? "show" : ""}">
+                ${description}
+              </div>
             `
           : html``}
 

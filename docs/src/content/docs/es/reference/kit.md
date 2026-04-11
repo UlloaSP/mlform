@@ -21,3 +21,5 @@ Tipos:
 - `KitDesignSystemSnapshot`
 
 `MountFormOptions` requiere `schema` y tambien `endpoint` o `transport`.
+
+Tambien acepta `containerStrategy: "replace"` cuando MLForm debe sustituir temporalmente contenido existente del host y restaurarlo en `unmount()`.

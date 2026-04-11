@@ -2,16 +2,28 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { builtinDesignSystemRegistry } from "../registry";
+import { deepFreeze } from "../registry/deep-freeze";
 import { mergeDesignSystemConfig } from "../resolve";
 import { DesignSystemController } from "./design-system-controller";
 import type { AttachDesignSystemOptions, AttachedDesignSystem, DesignSystemConfig } from "../types";
 
+/**
+ * Attach a design system to a host element.
+ *
+ * **DOM required.** This function accesses `HTMLElement`, `MutationObserver`,
+ * and `window.matchMedia` and must run in a browser environment. It is not
+ * suitable for SSR / Node.js contexts. Use `resolveDesignSystem` directly for
+ * server-side token resolution without DOM side effects.
+ */
 export const attachDesignSystem = (
   host: HTMLElement,
   options: AttachDesignSystemOptions = {},
 ): AttachedDesignSystem => {
-  const initialConfig = mergeDesignSystemConfig(options.config);
-  let currentConfig: DesignSystemConfig = mergeDesignSystemConfig(initialConfig);
+  const freezeConfig = (...configs: Array<DesignSystemConfig | undefined>): DesignSystemConfig =>
+    deepFreeze(mergeDesignSystemConfig(...configs));
+
+  const initialConfig = freezeConfig(options.config);
+  let currentConfig = initialConfig;
   const registry = options.registry?.clone() ?? builtinDesignSystemRegistry.clone();
   const controller = new DesignSystemController({
     host,
@@ -22,29 +34,29 @@ export const attachDesignSystem = (
 
   controller.connect();
 
-  return {
+  return Object.freeze({
     host,
     registry,
     get config() {
-      return mergeDesignSystemConfig(currentConfig);
+      return currentConfig;
     },
     get resolved() {
       return controller.resolved;
     },
-    update(config) {
-      currentConfig = mergeDesignSystemConfig(currentConfig, config);
+    update(config: DesignSystemConfig) {
+      currentConfig = freezeConfig(currentConfig, config);
       controller.refresh();
     },
-    replace(config) {
-      currentConfig = mergeDesignSystemConfig(config);
+    replace(config: DesignSystemConfig) {
+      currentConfig = freezeConfig(config);
       controller.refresh();
     },
     reset() {
-      currentConfig = mergeDesignSystemConfig(initialConfig);
+      currentConfig = initialConfig;
       controller.refresh();
     },
     disconnect() {
       controller.disconnect();
     },
-  };
+  });
 };

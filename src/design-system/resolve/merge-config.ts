@@ -60,6 +60,8 @@ export const mergeDesignSystemConfig = (
       theme: current?.theme ?? accumulator.theme,
       recipe: current?.recipe ?? accumulator.recipe,
       hostSchemeResolver: current?.hostSchemeResolver ?? accumulator.hostSchemeResolver,
+      strict: current?.strict ?? accumulator.strict,
+      onWarning: current?.onWarning ?? accumulator.onWarning,
       overrides: mergeOverrides(accumulator.overrides, current?.overrides),
     }),
     {},

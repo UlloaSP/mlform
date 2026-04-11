@@ -29,6 +29,22 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
 };
 
 describe("kit integration", () => {
+  it("rejects mounting into a non-empty container unless replacement is explicit", () => {
+    const container = document.createElement("div");
+    container.append(document.createElement("span"));
+
+    expect(() =>
+      mountForm(container, {
+        transport: {
+          submit: vi.fn().mockResolvedValue({ reports: {} }),
+        },
+        schema: {
+          fields: [{ kind: "text", label: "Name" }],
+        },
+      }),
+    ).toThrow('Mount into an empty container or pass `containerStrategy: "replace"`.');
+  });
+
   it("mounts a default form, submits through the endpoint transport, and applies the design system", async () => {
     const json = vi.fn().mockResolvedValue({
       reports: {
@@ -84,8 +100,8 @@ describe("kit integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("cobalt");
-    expect(mounted.host.getAttribute("recipe-id")).toBe("minimal");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("cobalt");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBe("minimal");
     expect(getShadow(mounted.host).textContent).toContain("Profile");
 
     const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
@@ -122,7 +138,7 @@ describe("kit integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("sunset");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("sunset");
 
     mounted.replaceDesignSystem({
       mode: "auto",
@@ -132,15 +148,15 @@ describe("kit integration", () => {
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("neutral");
-    expect(mounted.host.getAttribute("recipe-id")).toBe("default");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("neutral");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBe("default");
 
     mounted.resetDesignSystem();
 
     await flush();
 
-    expect(mounted.host.getAttribute("theme-id")).toBe("cobalt");
-    expect(mounted.host.getAttribute("recipe-id")).toBe("minimal");
+    expect(mounted.host.getAttribute("data-mlf-theme-id")).toBe("cobalt");
+    expect(mounted.host.getAttribute("data-mlf-recipe-id")).toBe("minimal");
 
     mounted.unmount();
     expect(container.childElementCount).toBe(0);
@@ -214,6 +230,34 @@ describe("kit integration", () => {
     container.remove();
   });
 
+  it("restores replaced container content on unmount when replacement is explicit", async () => {
+    const container = document.createElement("div");
+    const placeholder = document.createElement("section");
+    placeholder.textContent = "dashboard";
+    container.append(placeholder);
+    document.body.append(container);
+
+    const mounted = mountForm(container, {
+      transport: {
+        submit: vi.fn().mockResolvedValue({ reports: {} }),
+      },
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+      },
+      containerStrategy: "replace",
+    });
+
+    await flush();
+
+    expect(container.firstElementChild).toBe(mounted.host);
+
+    mounted.unmount();
+
+    expect(container.childElementCount).toBe(1);
+    expect(container.firstElementChild).toBe(placeholder);
+    container.remove();
+  });
+
   it("aborts in-flight submissions when the mounted form is unmounted", async () => {
     let resolveTransport: ((value: unknown) => void) | undefined;
     let rejectTransport: ((reason?: unknown) => void) | undefined;
@@ -272,6 +316,55 @@ describe("kit integration", () => {
         },
       }),
     ).toThrow("Provide either transport or endpoint/transportOptions");
+  });
+
+  it("forwards reset-on-hide and listener error policies to the engine", async () => {
+    const listenerErrors: unknown[] = [];
+    const container = document.createElement("div");
+    document.body.append(container);
+
+    const mounted = mountForm(container, {
+      transport: {
+        submit: vi.fn().mockResolvedValue({ reports: {} }),
+      },
+      schema: {
+        fields: [
+          { kind: "boolean", label: "Advanced" },
+          {
+            kind: "text",
+            label: "Secret",
+            defaultValue: "initial-secret",
+            hiddenWhen: ({ values }) => values.advanced !== true,
+          },
+        ],
+      },
+      inactiveFieldPolicy: "reset-on-hide",
+      listenerErrorPolicy: "ignore",
+      onListenerError(error) {
+        listenerErrors.push(error);
+      },
+    });
+
+    mounted.form.subscribe(() => {
+      throw new Error("listener failed");
+    });
+
+    mounted.form.setValues({
+      advanced: true,
+      secret: "temporary-secret",
+    });
+    mounted.form.setValues({
+      advanced: false,
+    });
+
+    expect(mounted.form.getValues()).toEqual({
+      advanced: false,
+      secret: "initial-secret",
+    });
+    expect(listenerErrors).toHaveLength(2);
+
+    mounted.unmount();
+    container.remove();
   });
 
   it("validates replaceDesignSystem at runtime for untyped consumers", async () => {

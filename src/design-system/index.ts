@@ -11,22 +11,37 @@ export type {
   DesignSystemMode,
   DesignSystemRegistry,
   DesignSystemScheme,
+  DesignSystemWarning,
+  DesignSystemWarningCode,
   EffectiveModeSource,
   Motion,
+  GlobalTokenKey,
+  GlobalTokenMap,
+  ComponentTokenKey,
+  ComponentTokenMap,
   RecipeManifest,
   ResolvedComponentConfig,
   ResolvedDesignSystem,
   ResolveDesignSystemRuntimeOptions,
   ThemeManifest,
   ThemeScheme,
+  TokenMap,
 } from "./types";
-export { componentKeys, componentTokenDefaults, globalTokenDefaults } from "./contract";
+export {
+  componentKeys,
+  componentTokenDefaults,
+  globalTokenDefaults,
+  mlfTokenKeys,
+} from "./contract";
+export type { MlfTokenKey } from "./contract";
 export {
   builtinRecipes,
   builtinThemes,
   builtinDesignSystemRegistry,
   createBuiltinDesignSystemRegistry,
   createDesignSystemRegistry,
+  defineComponentTokens,
+  defineGlobalTokens,
   defineRecipe,
   defineTheme,
 } from "./registry";
@@ -36,4 +51,5 @@ export {
   applyResolvedDesignSystem,
   createDesignSystemStylesheet,
   DesignSystemController,
+  writeDesignSystemTokenDeclarations,
 } from "./runtime";

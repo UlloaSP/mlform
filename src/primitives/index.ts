@@ -9,6 +9,7 @@ export { mountForm, unmountForm } from "./mount-form";
 export { createBuiltinPrimitiveRegistry, createPrimitiveRegistry } from "./registry";
 export { primitiveDefaultLabels, primitiveStaticText, resolvePrimitiveText } from "./constants";
 export type {
+  PrimitiveContainerStrategy,
   MountedForm,
   MountFormOptions,
   PrimitiveLayout,

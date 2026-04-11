@@ -10,7 +10,21 @@ import {
   type PrimitiveText,
 } from "./constants";
 import { createBuiltinPrimitiveRegistry } from "./registry";
-import type { MountFormOptions, MountedForm, PrimitiveRegistry } from "./types";
+import type {
+  MountFormOptions,
+  MountedForm,
+  PrimitiveContainerStrategy,
+  PrimitiveRegistry,
+} from "./types";
+
+const assertContainerStrategy = (
+  container: HTMLElement,
+  containerStrategy: PrimitiveContainerStrategy,
+): void => {
+  if (container.childNodes.length > 0 && containerStrategy !== "replace") {
+    throw new TypeError('Mount into an empty container or pass `containerStrategy: "replace"`.');
+  }
+};
 
 const resolveRegistry = (registry: PrimitiveRegistry | undefined): PrimitiveRegistry => {
   return registry ? registry.clone() : createBuiltinPrimitiveRegistry();
@@ -35,6 +49,10 @@ export const mountForm = (
   };
   const registry = resolveRegistry(options.registry);
   const text = resolvePrimitiveText(options.text);
+  const containerStrategy = options.containerStrategy ?? "error";
+  const previousChildren = containerStrategy === "replace" ? Array.from(container.childNodes) : [];
+
+  assertContainerStrategy(container, containerStrategy);
 
   host.form = form;
   host.registry = registry;
@@ -49,19 +67,39 @@ export const mountForm = (
 
   container.replaceChildren(host);
 
-  return {
+  let unmounted = false;
+
+  return Object.freeze({
     form,
     host,
     registry,
     text,
     unmount() {
+      if (unmounted) {
+        return;
+      }
+
+      unmounted = true;
+
       if (host.parentNode === container) {
-        container.removeChild(host);
+        if (containerStrategy === "replace" && previousChildren.length > 0) {
+          container.replaceChildren(...previousChildren);
+        } else {
+          container.removeChild(host);
+        }
       } else {
         host.remove();
+
+        if (
+          containerStrategy === "replace" &&
+          previousChildren.length > 0 &&
+          container.childNodes.length === 0
+        ) {
+          container.replaceChildren(...previousChildren);
+        }
       }
     },
-  };
+  });
 };
 
 export const unmountForm = (mounted: MountedForm): void => {

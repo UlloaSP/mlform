@@ -132,7 +132,7 @@ export class PrimitiveReportFrameElement extends LitElement {
               ? html`<p class="description">${toText(props.description)}</p>`
               : html``}
           </div>
-          <span class="meta">${state.status}</span>
+          <span class="meta">${this.text.reportStatusLabel(state.status)}</span>
         </div>
 
         ${component

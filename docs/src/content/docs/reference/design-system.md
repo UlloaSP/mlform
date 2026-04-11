@@ -8,7 +8,11 @@ Exports from `mlform/design-system` include:
 - `attachDesignSystem`
 - `resolveDesignSystem`
 - `mergeDesignSystemConfig`
+- `writeDesignSystemTokenDeclarations`
+- `createDesignSystemStylesheet`
 - `createDesignSystemRegistry`
+- `defineGlobalTokens`
+- `defineComponentTokens`
 - `defineTheme`
 - `defineRecipe`
 - `builtinDesignSystemRegistry`
@@ -21,6 +25,9 @@ Important types:
 - `RecipeManifest`
 - `DesignSystemOverrides`
 - `ResolvedDesignSystem`
+- `DesignSystemWarning`
+- `GlobalTokenMap`
+- `ComponentTokenMap`
 - `DesignSystemRegistry`
 - `AttachedDesignSystem`
 

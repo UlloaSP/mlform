@@ -14,6 +14,7 @@ export const densityTokenScales: Record<Density, Record<string, string>> = {
     "--mlf-control-padding-block": "0.65rem",
     "--mlf-pane-min-width": "18rem",
   },
+  // comfortable is the baseline — all values come from globalTokenDefaults, no overrides needed
   comfortable: {},
   spacious: {
     "--mlf-shell-gap": "1.4rem",

@@ -64,11 +64,15 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     initialValues: options.initialValues,
     validators: options.validators,
     hooks: options.hooks,
+    hookFailurePolicy: options.hookFailurePolicy,
     inactiveFieldPolicy: options.inactiveFieldPolicy,
+    listenerErrorPolicy: options.listenerErrorPolicy,
+    onListenerError: options.onListenerError,
   });
   const mountedPrimitive = mountPrimitiveForm(container, form, {
     registry: primitiveRegistry,
     layout: options.layout,
+    containerStrategy: options.containerStrategy,
     formLabel: labels.form,
     reportsLabel: labels.reports,
     submitLabel: labels.submit,
@@ -85,7 +89,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
 
   let unmounted = false;
 
-  const mounted: MountedForm = {
+  const mounted: MountedForm = Object.freeze({
     form,
     host: mountedPrimitive.host,
     engineRegistry,
@@ -117,7 +121,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
       designSystem.disconnect();
       mountedPrimitive.unmount();
     },
-  };
+  });
 
   hostContainer[mountedFormRef] = mounted;
 

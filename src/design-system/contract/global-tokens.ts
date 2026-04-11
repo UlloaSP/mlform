@@ -1,6 +1,34 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+/**
+ * Canonical neutral-light color values. Single source of truth shared by
+ * `globalTokenDefaults` (fallback layer) and `neutralTheme.schemes.light`.
+ * Edit here; both consumers update automatically.
+ */
+export const neutralLightColorTokens: Record<string, string> = {
+  "--mlf-color-bg": "#f6f3ee",
+  "--mlf-color-surface": "#fffdf9",
+  "--mlf-color-surface-muted": "#f1ece4",
+  "--mlf-color-surface-elevated": "#ffffff",
+  "--mlf-color-text": "#1f2933",
+  "--mlf-color-text-muted": "#5b6673",
+  "--mlf-color-text-inverse": "#ffffff",
+  "--mlf-color-border": "#ddd4c7",
+  "--mlf-color-border-strong": "#c6baa9",
+  "--mlf-color-accent": "#145c9e",
+  "--mlf-color-accent-hover": "#0f4d84",
+  "--mlf-color-accent-soft": "rgba(20, 92, 158, 0.12)",
+  "--mlf-color-success": "#1f8a5b",
+  "--mlf-color-warning": "#c17c1f",
+  "--mlf-color-danger": "#be3a34",
+  "--mlf-color-danger-soft": "rgba(190, 58, 52, 0.12)",
+  "--mlf-color-focus-ring": "rgba(20, 92, 158, 0.24)",
+  "--mlf-color-overlay": "rgba(255, 253, 249, 0.82)",
+  "--mlf-color-hover-surface": "#ebe2d4",
+  "--mlf-color-chart-track": "rgba(96, 120, 168, 0.12)",
+};
+
 export const globalTokenDefaults: Record<string, string> = {
   "--mlf-font-family-body":
     '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif',
@@ -47,24 +75,5 @@ export const globalTokenDefaults: Record<string, string> = {
   "--mlf-control-padding-inline": "0.92rem",
   "--mlf-control-padding-block": "0.78rem",
   "--mlf-pane-min-width": "20rem",
-  "--mlf-color-bg": "#f6f3ee",
-  "--mlf-color-surface": "#fffdf9",
-  "--mlf-color-surface-muted": "#f1ece4",
-  "--mlf-color-surface-elevated": "#ffffff",
-  "--mlf-color-text": "#1f2933",
-  "--mlf-color-text-muted": "#5b6673",
-  "--mlf-color-text-inverse": "#ffffff",
-  "--mlf-color-border": "#ddd4c7",
-  "--mlf-color-border-strong": "#c6baa9",
-  "--mlf-color-accent": "#145c9e",
-  "--mlf-color-accent-hover": "#0f4d84",
-  "--mlf-color-accent-soft": "rgba(20, 92, 158, 0.12)",
-  "--mlf-color-success": "#1f8a5b",
-  "--mlf-color-warning": "#c17c1f",
-  "--mlf-color-danger": "#be3a34",
-  "--mlf-color-danger-soft": "rgba(190, 58, 52, 0.12)",
-  "--mlf-color-focus-ring": "rgba(20, 92, 158, 0.24)",
-  "--mlf-color-overlay": "rgba(255, 253, 249, 0.82)",
-  "--mlf-color-hover-surface": "#ebe2d4",
-  "--mlf-color-chart-track": "rgba(96, 120, 168, 0.12)",
+  ...neutralLightColorTokens,
 };

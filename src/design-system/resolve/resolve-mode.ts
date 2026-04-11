@@ -8,12 +8,12 @@ import type {
   ThemeManifest,
 } from "../types";
 
-const fallbackScheme = (theme: ThemeManifest): "light" | "dark" => {
-  if (theme.schemes.light.colorScheme === "dark" && !theme.schemes.dark) {
-    return "dark";
-  }
+// When no scheme can be determined from mode/system/inheritance, fall back to "light".
+// ThemeScheme.colorScheme is informational only and does not affect this fallback.
+const FALLBACK_SCHEME = "light" as const;
 
-  return "light";
+const canResolveScheme = (theme: ThemeManifest, scheme: "light" | "dark"): boolean => {
+  return scheme === "light" || Boolean(theme.schemes.dark);
 };
 
 export const resolveMode = (
@@ -31,7 +31,7 @@ export const resolveMode = (
     if (requestedMode === "dark" && !theme.schemes.dark) {
       return {
         requestedMode,
-        effectiveScheme: fallbackScheme(theme),
+        effectiveScheme: FALLBACK_SCHEME,
         effectiveModeSource: "theme-fallback",
       };
     }
@@ -44,7 +44,7 @@ export const resolveMode = (
   }
 
   if (requestedMode === "auto") {
-    if (options.systemScheme) {
+    if (options.systemScheme && canResolveScheme(theme, options.systemScheme)) {
       return {
         requestedMode,
         effectiveScheme: options.systemScheme,
@@ -54,12 +54,12 @@ export const resolveMode = (
 
     return {
       requestedMode,
-      effectiveScheme: fallbackScheme(theme),
+      effectiveScheme: FALLBACK_SCHEME,
       effectiveModeSource: "theme-fallback",
     };
   }
 
-  if (options.inheritedScheme) {
+  if (options.inheritedScheme && canResolveScheme(theme, options.inheritedScheme)) {
     return {
       requestedMode,
       effectiveScheme: options.inheritedScheme,
@@ -69,7 +69,7 @@ export const resolveMode = (
 
   return {
     requestedMode,
-    effectiveScheme: fallbackScheme(theme),
+    effectiveScheme: FALLBACK_SCHEME,
     effectiveModeSource: "theme-fallback",
   };
 };

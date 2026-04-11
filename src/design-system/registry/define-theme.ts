@@ -2,9 +2,20 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { ThemeManifest } from "../types";
+import { deepFreeze } from "./deep-freeze";
 
 export const defineTheme = (theme: ThemeManifest): ThemeManifest => {
-  return {
+  if (!theme.id?.trim()) {
+    throw new Error(`[mlform] ThemeManifest missing or empty "id"`);
+  }
+  if (!theme.label?.trim()) {
+    throw new Error(`[mlform] Theme "${theme.id}" missing or empty "label"`);
+  }
+  if (!theme.schemes?.light?.tokens) {
+    throw new Error(`[mlform] Theme "${theme.id}" missing "schemes.light.tokens"`);
+  }
+
+  return deepFreeze({
     ...theme,
     schemes: {
       light: {
@@ -21,5 +32,5 @@ export const defineTheme = (theme: ThemeManifest): ThemeManifest => {
         : {}),
     },
     sharedTokens: theme.sharedTokens ? { ...theme.sharedTokens } : undefined,
-  };
+  });
 };

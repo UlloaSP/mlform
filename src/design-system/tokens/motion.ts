@@ -5,9 +5,9 @@ import type { Motion } from "../types";
 
 export const motionTokenScales: Record<Motion, Record<string, string>> = {
   none: {
-    "--mlf-motion-fast": "0ms",
-    "--mlf-motion-base": "0ms",
-    "--mlf-motion-slow": "0ms",
+    "--mlf-motion-fast": "0ms linear",
+    "--mlf-motion-base": "0ms linear",
+    "--mlf-motion-slow": "0ms linear",
   },
   subtle: {
     "--mlf-motion-fast": "120ms ease",

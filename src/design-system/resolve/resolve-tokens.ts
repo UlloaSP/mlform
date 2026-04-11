@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { componentKeys, componentTokenDefaults } from "../contract";
+import { componentKeys } from "../contract";
 import {
   baseTokenBundle,
   densityTokenScales,
@@ -10,7 +10,9 @@ import {
 } from "../tokens";
 import type {
   DesignSystemConfig,
+  DesignSystemWarning,
   RecipeManifest,
+  ResolveDesignSystemRuntimeOptions,
   ResolvedComponentConfig,
   ResolvedDesignSystem,
   ThemeManifest,
@@ -31,6 +33,21 @@ const resolveThemeTokens = (
   };
 };
 
+const resolveComponentTokens = (
+  tokens: Record<string, string>,
+): Record<(typeof componentKeys)[number], ResolvedComponentConfig> => {
+  return Object.fromEntries(
+    componentKeys.map((key) => [
+      key,
+      {
+        tokens: Object.fromEntries(
+          Object.entries(tokens).filter(([token]) => token.startsWith(`--mlf-${key}-`)),
+        ),
+      },
+    ]),
+  ) as Record<(typeof componentKeys)[number], ResolvedComponentConfig>;
+};
+
 export const resolveTokens = (
   config: DesignSystemConfig,
   theme: ThemeManifest,
@@ -38,31 +55,17 @@ export const resolveTokens = (
   effectiveScheme: "light" | "dark",
   requestedMode: ResolvedDesignSystem["requestedMode"],
   effectiveModeSource: ResolvedDesignSystem["effectiveModeSource"],
+  warnings: DesignSystemWarning[],
+  runtimeOptions: ResolveDesignSystemRuntimeOptions = {},
 ): ResolvedDesignSystem => {
   const density = config.overrides?.density ?? recipe.density;
-  const motion = config.overrides?.motion ?? recipe.motion;
-  const recipeComponentTokens = Object.fromEntries(
-    componentKeys.map((key) => [key, recipe.components?.[key] ?? undefined]),
-  ) as Partial<Record<(typeof componentKeys)[number], { tokens: Record<string, string> }>>;
-  const overrideComponentTokens = Object.fromEntries(
-    componentKeys.map((key) => [key, config.overrides?.components?.[key] ?? undefined]),
-  ) as Partial<Record<(typeof componentKeys)[number], { tokens?: Record<string, string> }>>;
-
-  const components = Object.fromEntries(
-    componentKeys.map((key) => {
-      const tokens = {
-        ...componentTokenDefaults[key]?.tokens,
-        ...recipe.components?.[key]?.tokens,
-        ...config.overrides?.components?.[key]?.tokens,
-      };
-
-      return [key, { tokens }] satisfies [string, ResolvedComponentConfig];
-    }),
-  ) as Record<(typeof componentKeys)[number], ResolvedComponentConfig>;
+  // Respect prefers-reduced-motion unless the consumer explicitly overrides motion.
+  const motion =
+    config.overrides?.motion ?? (runtimeOptions.prefersReducedMotion ? "none" : recipe.motion);
 
   const tokenOverrides = {
     ...config.overrides?.tokens,
-    ...flattenComponentTokens(overrideComponentTokens),
+    ...flattenComponentTokens(config.overrides?.components ?? {}),
   };
 
   const tokens = {
@@ -70,12 +73,12 @@ export const resolveTokens = (
     ...densityTokenScales[density],
     ...motionTokenScales[motion],
     ...resolveThemeTokens(theme, effectiveScheme),
-    ...flattenComponentTokens(componentTokenDefaults),
     ...recipe.tokens,
-    ...flattenComponentTokens(recipeComponentTokens),
+    ...flattenComponentTokens(recipe.components ?? {}),
     ...config.overrides?.tokens,
-    ...flattenComponentTokens(overrideComponentTokens),
+    ...flattenComponentTokens(config.overrides?.components ?? {}),
   };
+  const components = resolveComponentTokens(tokens);
 
   return {
     requestedMode,
@@ -88,5 +91,6 @@ export const resolveTokens = (
     tokens,
     tokenOverrides,
     components,
+    warnings,
   };
 };

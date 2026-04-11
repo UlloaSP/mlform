@@ -418,7 +418,7 @@ export class PrimitiveFormElement extends LitElement {
               <p class="eyebrow">${text.formEyebrow}</p>
               <h1 class="pane-title">${this.formLabel}</h1>
             </div>
-            <span class="status">${state.status}</span>
+            <span class="status">${text.formStatusLabel(state.status)}</span>
           </header>
 
           <div class="pane-body">
@@ -505,7 +505,7 @@ export class PrimitiveFormElement extends LitElement {
             <div class="form-inputs scroll-y">
               <header class="sticky-header">
                 <h2>${this.formLabel}</h2>
-                <span class="sticky-meta">${state.status}</span>
+                <span class="sticky-meta">${text.formStatusLabel(state.status)}</span>
               </header>
 
               <div class="split-content">
@@ -514,6 +514,8 @@ export class PrimitiveFormElement extends LitElement {
                   <span>${text.formMetaReports(form.reports.length)}</span>
                   <span>${text.formMetaSubmits(state.submitCount)}</span>
                 </div>
+
+                <mlf-form-errors .form=${form} .text=${text}></mlf-form-errors>
 
                 <div class="collection" part="field-list">
                   ${repeat(
@@ -552,8 +554,6 @@ export class PrimitiveFormElement extends LitElement {
                     </header>
 
                     <div class="split-content">
-                      <mlf-form-errors .form=${form} .text=${text}></mlf-form-errors>
-
                       ${reportsToRender.length > 0
                         ? html`
                             <div class="collection" part="report-list">

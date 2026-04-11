@@ -21,6 +21,8 @@ import {
   resolveDerivedFlags,
   toSnapshotState,
 } from "../validation";
+import { deepFreeze } from "../utils";
+import { cloneValue } from "../values";
 
 type CreateFieldControllerOptions = {
   config: NormalizedFieldConfig;
@@ -74,12 +76,15 @@ export const createFieldController = ({
   getFormStatus,
   onValueChange,
 }: CreateFieldControllerOptions): InternalFieldController => {
+  const readonlyConfig = deepFreeze(cloneValue(config));
   const initialValue =
-    config.defaultValue !== undefined ? config.defaultValue : definition.getDefaultValue?.(config);
+    readonlyConfig.defaultValue !== undefined
+      ? readonlyConfig.defaultValue
+      : definition.getDefaultValue?.(readonlyConfig);
 
   const initialState = makeFieldState(
     definition,
-    config,
+    readonlyConfig,
     initialValue,
     getValues(),
     getSubmitCount(),
@@ -90,7 +95,7 @@ export const createFieldController = ({
   const getInternalState = (): InternalFieldState => store.getState().fieldStates[config.id];
 
   const fieldValidator = createFieldValidator({
-    config,
+    config: readonlyConfig,
     definition,
     store,
     getValues,
@@ -101,27 +106,27 @@ export const createFieldController = ({
 
   const controller: InternalFieldController = {
     get id() {
-      return config.id;
+      return readonlyConfig.id;
     },
     get kind() {
-      return config.kind;
+      return readonlyConfig.kind;
     },
     get config() {
-      return config;
+      return readonlyConfig;
     },
     get state() {
       return toFieldStateSnapshot(getInternalState());
     },
     get descriptor() {
-      return definition.describe(config, {
-        fieldId: config.id,
+      return definition.describe(readonlyConfig, {
+        fieldId: readonlyConfig.id,
         state: this.state,
       });
     },
     setValue(value) {
       const nextValues = {
         ...getValues(),
-        [config.id]: this.coerceValue(value),
+        [readonlyConfig.id]: this.coerceValue(value),
       };
 
       this.applyValue(value, nextValues);
@@ -144,22 +149,22 @@ export const createFieldController = ({
     },
     prepareValue(value, values) {
       const currentState = getInternalState();
-      const normalizedValue = normalizeValue(definition, config, value);
-      const flags = resolveDerivedFlags(config, values, getSubmitCount(), getFormStatus());
+      const normalizedValue = normalizeValue(definition, readonlyConfig, value);
+      const flags = resolveDerivedFlags(readonlyConfig, values, getSubmitCount(), getFormStatus());
 
       if (!flags.visible) {
-        throw new EngineError(`Field "${config.id}" is hidden and cannot be updated.`);
+        throw new EngineError(`Field "${readonlyConfig.id}" is hidden and cannot be updated.`);
       }
       if (flags.disabled) {
-        throw new EngineError(`Field "${config.id}" is disabled and cannot be updated.`);
+        throw new EngineError(`Field "${readonlyConfig.id}" is disabled and cannot be updated.`);
       }
       if (flags.readOnly) {
-        throw new EngineError(`Field "${config.id}" is read-only and cannot be updated.`);
+        throw new EngineError(`Field "${readonlyConfig.id}" is read-only and cannot be updated.`);
       }
 
       const syncErrors = computeSyncErrors(
         definition,
-        config,
+        readonlyConfig,
         normalizedValue,
         values,
         getSubmitCount(),
@@ -170,7 +175,12 @@ export const createFieldController = ({
         ...currentState,
         value: normalizedValue,
         touched: true,
-        dirty: !areFieldValuesEqual(definition, config, normalizedValue, currentState.initialValue),
+        dirty: !areFieldValuesEqual(
+          definition,
+          readonlyConfig,
+          normalizedValue,
+          currentState.initialValue,
+        ),
         visible: flags.visible,
         disabled: flags.disabled,
         readOnly: flags.readOnly,
@@ -180,11 +190,11 @@ export const createFieldController = ({
       });
     },
     commitState(state) {
-      setFieldState(store, config.id, state);
+      setFieldState(store, readonlyConfig.id, state);
     },
     blur() {
       const currentState = getInternalState();
-      setFieldState(store, config.id, {
+      setFieldState(store, readonlyConfig.id, {
         ...currentState,
         touched: true,
       });
@@ -202,14 +212,14 @@ export const createFieldController = ({
     },
     reset() {
       fieldValidator.abort("field-reset");
-      setFieldState(store, config.id, {
+      setFieldState(store, readonlyConfig.id, {
         ...initialState,
       });
     },
     subscribe(listener) {
       let previousState = getInternalState();
       return store.subscribe(() => {
-        const nextState = store.getState().fieldStates[config.id];
+        const nextState = store.getState().fieldStates[readonlyConfig.id];
         if (!defaultEquality(previousState, nextState)) {
           previousState = nextState;
           listener(toFieldStateSnapshot(nextState));
@@ -219,18 +229,18 @@ export const createFieldController = ({
     serialize() {
       const value = getInternalState().value;
       if (definition.serializeValue) {
-        return definition.serializeValue(value, config);
+        return definition.serializeValue(value, readonlyConfig);
       }
       return value;
     },
     coerceValue(value) {
-      return normalizeValue(definition, config, value);
+      return normalizeValue(definition, readonlyConfig, value);
     },
     setExternalErrors(errors) {
       const currentState = getInternalState();
       setFieldState(
         store,
-        config.id,
+        readonlyConfig.id,
         toSnapshotState({
           ...currentState,
           externalErrors: [...errors],
@@ -240,19 +250,20 @@ export const createFieldController = ({
     refresh(options) {
       const currentState = getInternalState();
       const values = options?.values ?? getValues();
-      const flags = resolveDerivedFlags(config, values, getSubmitCount(), getFormStatus());
-      const inactiveFieldPolicy = config.inactiveFieldPolicy ?? options?.inactiveFieldPolicy;
+      const flags = resolveDerivedFlags(readonlyConfig, values, getSubmitCount(), getFormStatus());
+      const inactiveFieldPolicy =
+        readonlyConfig.inactiveFieldPolicy ?? options?.inactiveFieldPolicy;
       const shouldResetInactive =
         (options?.resetInactiveToInitial === true || inactiveFieldPolicy === "reset-on-hide") &&
         (!flags.visible || flags.disabled);
       const normalizedValue = normalizeValue(
         definition,
-        config,
+        readonlyConfig,
         shouldResetInactive ? currentState.initialValue : currentState.value,
       );
       const syncErrors = computeSyncErrors(
         definition,
-        config,
+        readonlyConfig,
         normalizedValue,
         values,
         getSubmitCount(),
@@ -271,7 +282,12 @@ export const createFieldController = ({
       const nextState = toSnapshotState({
         ...currentState,
         value: normalizedValue,
-        dirty: !areFieldValuesEqual(definition, config, normalizedValue, currentState.initialValue),
+        dirty: !areFieldValuesEqual(
+          definition,
+          readonlyConfig,
+          normalizedValue,
+          currentState.initialValue,
+        ),
         visible: flags.visible,
         disabled: flags.disabled,
         readOnly: flags.readOnly,
@@ -281,7 +297,7 @@ export const createFieldController = ({
         validationVersion: currentState.validationVersion,
       });
 
-      setFieldState(store, config.id, nextState);
+      setFieldState(store, readonlyConfig.id, nextState);
       return nextState;
     },
   };
