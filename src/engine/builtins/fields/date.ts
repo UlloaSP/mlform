@@ -51,6 +51,13 @@ export const dateFieldDefinition: FieldDefinition<DateFieldConfig, Date | null> 
     if (maxDate && value.getTime() > maxDate.getTime()) {
       errors.push(builtinValidationMessages.dateOnOrBefore(String(config.max)));
     }
+    if (config.step !== undefined) {
+      const stepBase = minDate ?? new Date("1970-01-01T00:00:00Z");
+      const diffDays = Math.round(Math.abs(value.getTime() - stepBase.getTime()) / 86400000);
+      if (diffDays % config.step !== 0) {
+        errors.push(builtinValidationMessages.stepDate(config.step));
+      }
+    }
 
     return errors;
   },

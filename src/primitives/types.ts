@@ -11,6 +11,7 @@ import type {
   ReportDescriptor,
   SubmitResult,
 } from "@/engine";
+import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
 
 export type PrimitiveLayout = "stacked" | "split";
 
@@ -31,12 +32,14 @@ export interface MountFormOptions {
   validatingLabel?: string;
   submittingLabel?: string;
   reportPane?: "auto" | "always" | "hidden";
+  text?: PrimitiveTextOverrides;
 }
 
 export interface MountedForm {
   readonly form: FormController;
   readonly host: HTMLElement;
   readonly registry: PrimitiveRegistry;
+  readonly text: PrimitiveText;
   unmount(): void;
 }
 
@@ -64,12 +67,14 @@ export interface PrimitiveFieldRendererElement extends HTMLElement {
   controller?: FieldController;
   descriptor?: FieldDescriptor | null;
   context?: PrimitiveFieldRenderContext;
+  text?: PrimitiveText;
 }
 
 export interface PrimitiveReportRendererElement extends HTMLElement {
   controller?: ReportController;
   descriptor?: ReportDescriptor | null;
   context?: PrimitiveReportRenderContext;
+  text?: PrimitiveText;
 }
 
 export interface PrimitiveSubmitStartDetail {
@@ -89,3 +94,5 @@ export interface PrimitiveSubmitErrorDetail {
   error: unknown;
   status: FormStatus;
 }
+
+export type { PrimitiveText, PrimitiveTextOverrides } from "./constants";

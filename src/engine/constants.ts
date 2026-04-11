@@ -43,6 +43,14 @@ export const builtinValidationMessages = {
   maxLength: (value: number): string => `Maximum length is ${value} characters.`,
   minValue: (value: number): string => `Minimum value is ${value}.`,
   maxValue: (value: number): string => `Maximum value is ${value}.`,
+  stepValue: (value: number): string => `Value must be a multiple of ${value}.`,
   dateOnOrAfter: (value: string): string => `Date must be on or after ${value}.`,
   dateOnOrBefore: (value: string): string => `Date must be on or before ${value}.`,
+  stepDate: (value: number): string =>
+    `Date must fall on a step of ${value} day(s) from the minimum date.`,
+  minPoints: (value: number): string => `Minimum number of points is ${value}.`,
+  maxPoints: (value: number): string => `Maximum number of points is ${value}.`,
+  timestampsUnique: "Timestamps must be unique.",
+  timestampsAscending: "Timestamps must be sorted in ascending order.",
+  timestampsDescending: "Timestamps must be sorted in descending order.",
 } as const;

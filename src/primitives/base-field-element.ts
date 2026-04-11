@@ -2,10 +2,14 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html, LitElement, nothing, type CSSResultGroup, type TemplateResult } from "lit";
-import { property, state } from "lit/decorators.js";
-import type { FieldController, FieldDescriptor, FieldStateSnapshot } from "@/engine";
+import { property } from "lit/decorators.js";
+import type { FieldController, FieldDescriptor } from "@/engine";
+import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type { PrimitiveFieldRenderContext } from "./types";
 
+// field-frame.ts owns the subscription to FieldController and passes
+// descriptor + context as properties to this element.  No second subscription
+// is needed here — that would cause a redundant render on every state change.
 export abstract class PrimitiveFieldElement extends LitElement {
   static styles: CSSResultGroup = css`
     :host {
@@ -76,32 +80,10 @@ export abstract class PrimitiveFieldElement extends LitElement {
   @property({ attribute: false }) accessor controller: FieldController | undefined;
   @property({ attribute: false }) accessor descriptor: FieldDescriptor | null = null;
   @property({ attribute: false }) accessor context: PrimitiveFieldRenderContext | undefined;
-
-  @state() protected accessor fieldState: FieldStateSnapshot | null = null;
-
-  #unsubscribe: (() => void) | null = null;
-  #connectedController: FieldController | undefined;
-
-  protected willUpdate(changedProperties: Map<string, unknown>): void {
-    if (changedProperties.has("controller")) {
-      this.#attachController();
-    }
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.#attachController();
-  }
-
-  disconnectedCallback(): void {
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = undefined;
-    super.disconnectedCallback();
-  }
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   protected commitValue(value: unknown): void {
-    if (this.fieldState?.disabled || this.fieldState?.readOnly) {
+    if (this.context?.disabled || this.context?.readOnly) {
       return;
     }
 
@@ -132,7 +114,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
       ${context.description && context.descriptionId
         ? html`<span id=${context.descriptionId} class="sr-only">${context.description}</span>`
         : nothing}
-      ${context.errors.length > 0 && context.errorId
+      ${context.errorId
         ? html`
             <span id=${context.errorId} class="sr-only" aria-live="polite">
               ${context.errors.join(" ")}
@@ -154,34 +136,5 @@ export abstract class PrimitiveFieldElement extends LitElement {
       describedBy: context?.describedBy,
       invalid: context?.invalid ?? false,
     };
-  }
-
-  #attachController(): void {
-    if (!this.isConnected) {
-      return;
-    }
-
-    if (this.#connectedController === this.controller) {
-      this.#syncFromController();
-      return;
-    }
-
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = this.controller;
-    this.#syncFromController();
-
-    if (!this.controller) {
-      return;
-    }
-
-    this.#unsubscribe = this.controller.subscribe(() => {
-      this.#syncFromController();
-    });
-  }
-
-  #syncFromController(): void {
-    this.descriptor = this.controller?.descriptor ?? this.descriptor ?? null;
-    this.fieldState = this.controller?.state ?? null;
   }
 }

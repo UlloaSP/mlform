@@ -4,7 +4,7 @@
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { PrimitiveReportElement } from "../base-report-element";
-import { primitiveStaticText, primitiveTagNames } from "../constants";
+import { primitiveTagNames } from "../constants";
 import { isRecord } from "../utils";
 
 const formatValue = (value: unknown, precision: number, unit: string): string => {
@@ -172,13 +172,14 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
     const payload = this.props.payload;
     const error = typeof this.props.error === "string" ? this.props.error : null;
     const context = this.reportContext;
+    const text = this.text;
 
     if (error) {
       return html`<div class="error">${error}</div>`;
     }
 
     if (payload === null || payload === undefined) {
-      return html`<div class="empty">${primitiveStaticText.regressorEmpty}</div>`;
+      return html`<div class="empty">${text.regressorEmpty}</div>`;
     }
 
     const unit = typeof this.props.unit === "string" ? this.props.unit : "";
@@ -197,7 +198,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
       <section
         part="regressor-report"
         id=${context?.regionId ?? ""}
-        aria-label=${context?.label ?? primitiveStaticText.regressorAriaLabel}
+        aria-label=${context?.label ?? text.regressorAriaLabel}
       >
         ${values.length > 0
           ? values.map(
@@ -243,9 +244,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
             )
           : html`<div class="value">${formatValue(payload, precision, unit)}</div>`}
         ${executionTime
-          ? html`<div class="meta">
-              ${primitiveStaticText.regressorExecutionTime(executionTime)}
-            </div>`
+          ? html`<div class="meta">${text.regressorExecutionTime(executionTime)}</div>`
           : html``}
       </section>
     `;

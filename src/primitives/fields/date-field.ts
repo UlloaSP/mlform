@@ -38,8 +38,8 @@ export class PrimitiveDateFieldElement extends PrimitiveFieldElement {
         aria-describedby=${ifDefined(context?.describedBy)}
         aria-invalid=${String(context?.invalid ?? false)}
         ?required=${Boolean(props.required)}
-        ?disabled=${Boolean(this.fieldState?.disabled)}
-        ?readonly=${Boolean(this.fieldState?.readOnly)}
+        ?disabled=${Boolean(this.fieldContext?.disabled)}
+        ?readonly=${Boolean(this.fieldContext?.readOnly)}
         min=${ifDefined(typeof props.min === "string" ? props.min : undefined)}
         max=${ifDefined(typeof props.max === "string" ? props.max : undefined)}
         step=${ifDefined(typeof props.step === "number" ? String(props.step) : undefined)}

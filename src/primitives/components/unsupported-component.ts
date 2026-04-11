@@ -3,7 +3,7 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { primitiveStaticText, primitiveTagNames } from "../constants";
+import { primitiveStaticText, primitiveTagNames, type PrimitiveText } from "../constants";
 
 @customElement(primitiveTagNames.unsupportedComponent)
 export class UnsupportedComponent extends LitElement {
@@ -33,12 +33,13 @@ export class UnsupportedComponent extends LitElement {
 
   @property({ type: String }) accessor component = "";
   @property({ type: String }) accessor role = "renderer";
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   render() {
     return html`
       <div class="card" part="unsupported-card">
         <strong>${this.role}</strong>
-        ${primitiveStaticText.unsupportedMapping(this.role, this.component)}
+        ${this.text.unsupportedMapping(this.role, this.component)}
       </div>
     `;
   }

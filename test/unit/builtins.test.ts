@@ -2,12 +2,43 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { numberFieldDefinition, timeSeriesFieldDefinition } from "@/engine";
+import { booleanFieldDefinition, numberFieldDefinition, timeSeriesFieldDefinition } from "@/engine";
 
 describe("builtin definitions", () => {
   it("keeps number field normalization behavior", () => {
     expect(numberFieldDefinition.normalizeValue?.("42", { kind: "number", label: "Age" })).toBe(42);
     expect(numberFieldDefinition.normalizeValue?.("", { kind: "number", label: "Age" })).toBeNull();
+  });
+
+  it("includes custom boolean labels in descriptors", () => {
+    const config = booleanFieldDefinition.schema.parse({
+      kind: "boolean",
+      label: "Enabled",
+      trueLabel: "On",
+      falseLabel: "Off",
+    });
+
+    const descriptor = booleanFieldDefinition.describe(
+      { ...config, id: "enabled" },
+      {
+        fieldId: "enabled",
+        state: {
+          value: true,
+          initialValue: false,
+          touched: true,
+          dirty: true,
+          valid: true,
+          visible: true,
+          disabled: false,
+          readOnly: false,
+          errors: [],
+          status: "valid",
+        },
+      },
+    );
+
+    expect(descriptor.props.trueLabel).toBe("On");
+    expect(descriptor.props.falseLabel).toBe("Off");
   });
 
   it("normalizes and serializes time-series values", () => {

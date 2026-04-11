@@ -8,6 +8,8 @@ import { baseFieldShape, makeFieldDescriptor } from "../shared";
 
 type BooleanFieldConfig = BaseFieldConfig & {
   kind: "boolean";
+  trueLabel?: string;
+  falseLabel?: string;
 };
 
 export const booleanFieldDefinition: FieldDefinition<BooleanFieldConfig, boolean> = {
@@ -15,6 +17,8 @@ export const booleanFieldDefinition: FieldDefinition<BooleanFieldConfig, boolean
   schema: z.object({
     kind: z.literal("boolean"),
     ...baseFieldShape,
+    trueLabel: z.string().optional(),
+    falseLabel: z.string().optional(),
   }),
   getDefaultValue(config) {
     return typeof config.defaultValue === "boolean" ? config.defaultValue : false;
@@ -34,6 +38,8 @@ export const booleanFieldDefinition: FieldDefinition<BooleanFieldConfig, boolean
       config as NormalizedFieldConfig<BooleanFieldConfig>,
       {
         checked: context.state.value,
+        trueLabel: config.trueLabel,
+        falseLabel: config.falseLabel,
         state: context.state.status,
         errors: context.state.errors,
       },

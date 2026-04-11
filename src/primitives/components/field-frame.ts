@@ -2,10 +2,16 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, LitElement } from "lit";
-import { property, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { FieldController, FieldDescriptor, FieldStateSnapshot } from "@/engine";
-import { primitiveIdPrefixes, primitiveStaticText, primitiveTagNames } from "../constants";
+import { ControllerBinding } from "../controller-binding";
+import {
+  primitiveIdPrefixes,
+  primitiveStaticText,
+  primitiveTagNames,
+  type PrimitiveText,
+} from "../constants";
 import type { PrimitiveFieldRenderContext, PrimitiveRegistry } from "../types";
 import { joinMessages, toText } from "../utils";
 
@@ -17,6 +23,7 @@ const normalizeCategoryOption = (option: CategoryOption): { label: string; value
   return typeof option === "string" ? { label: option, value: option } : option;
 };
 
+@customElement(primitiveTagNames.fieldFrame)
 export class PrimitiveFieldFrameElement extends LitElement {
   static styles = css`
     :host {
@@ -145,31 +152,31 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
   @property({ attribute: false }) accessor controller: FieldController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   @state() private accessor descriptor: FieldDescriptor | null = null;
   @state() private accessor fieldState: FieldStateSnapshot | null = null;
   @state() private accessor descriptionVisible = false;
 
   readonly #instanceId = ++fieldFrameSequence;
-  #unsubscribe: (() => void) | null = null;
-  #connectedController: FieldController | undefined;
+  #memoizedContext: PrimitiveFieldRenderContext | undefined;
+  #memoizedDescriptor: FieldDescriptor | null = null;
+  #memoizedFieldState: FieldStateSnapshot | null = null;
+  #memoizedControlId = "";
+  #memoizedErrorId = "";
+
+  readonly #binding = new ControllerBinding<FieldController>(this, (ctrl) => {
+    this.descriptor = ctrl?.descriptor ?? null;
+    this.fieldState = ctrl?.state ?? null;
+    if (!this.descriptor?.props.description) {
+      this.descriptionVisible = false;
+    }
+  });
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has("controller")) {
-      this.#attachController();
+      this.#binding.bind(this.controller);
     }
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.#attachController();
-  }
-
-  disconnectedCallback(): void {
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = undefined;
-    super.disconnectedCallback();
   }
 
   render() {
@@ -195,6 +202,11 @@ export class PrimitiveFieldFrameElement extends LitElement {
         : null;
     const toneClass = showError ? "error" : hasIntroducedValue && state.valid ? "success" : "";
 
+    // errorId is stable (always present per field instance) so aria-describedby
+    // never flickers — the aria-live on the sr-only span handles announcements.
+    const controlId = `${primitiveIdPrefixes.fieldControl}-${this.controller?.id}-${this.#instanceId}`;
+    const errorId = `${primitiveIdPrefixes.fieldErrors}-${this.controller?.id}-${this.#instanceId}`;
+
     return html`
       <section
         class="tile ${toneClass}"
@@ -206,7 +218,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
           <button
             class="help-btn"
             type="button"
-            aria-label=${primitiveStaticText.helpActionLabel}
+            aria-label=${this.text.helpActionLabel}
             aria-expanded=${String(this.descriptionVisible)}
             ?disabled=${description.length === 0}
             @click=${this.#toggleDescription}
@@ -223,11 +235,12 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
         <div class="control-slot">
           ${component
-            ? this.#renderResolvedRenderer(component)
+            ? this.#renderResolvedRenderer(component, controlId, errorId)
             : html`
                 <mlf-unsupported-component
                   role="field"
                   component=${descriptor.component}
+                  .text=${this.text}
                 ></mlf-unsupported-component>
               `}
         </div>
@@ -247,21 +260,48 @@ export class PrimitiveFieldFrameElement extends LitElement {
     `;
   }
 
-  #renderResolvedRenderer(tagName: string) {
+  #renderResolvedRenderer(tagName: string, controlId: string, errorId: string) {
     const tag = unsafeStatic(tagName);
-    const context = this.#createContext(this.descriptor?.props ?? {}, this.fieldState);
+    const context = this.#getContext(controlId, errorId);
     return html`
       <${tag}
         .controller=${this.controller}
         .descriptor=${this.descriptor}
         .context=${context}
+        .text=${this.text}
       ></${tag}>
     `;
+  }
+
+  #getContext(controlId: string, errorId: string): PrimitiveFieldRenderContext | undefined {
+    if (
+      this.descriptor === this.#memoizedDescriptor &&
+      this.fieldState === this.#memoizedFieldState &&
+      controlId === this.#memoizedControlId &&
+      errorId === this.#memoizedErrorId
+    ) {
+      return this.#memoizedContext;
+    }
+
+    const context = this.#createContext(
+      this.descriptor?.props ?? {},
+      this.fieldState,
+      controlId,
+      errorId,
+    );
+    this.#memoizedDescriptor = this.descriptor;
+    this.#memoizedFieldState = this.fieldState;
+    this.#memoizedControlId = controlId;
+    this.#memoizedErrorId = errorId;
+    this.#memoizedContext = context;
+    return context;
   }
 
   #createContext(
     props: Record<string, unknown>,
     state: FieldStateSnapshot | null,
+    controlId: string,
+    errorId: string,
   ): PrimitiveFieldRenderContext | undefined {
     if (!this.controller || !state) {
       return undefined;
@@ -274,14 +314,13 @@ export class PrimitiveFieldFrameElement extends LitElement {
     const descriptionId = description
       ? `${primitiveIdPrefixes.fieldDescription}-${this.controller.id}-${this.#instanceId}`
       : undefined;
-    const errorId =
-      state.errors.length > 0
-        ? `${primitiveIdPrefixes.fieldErrors}-${this.controller.id}-${this.#instanceId}`
-        : undefined;
+
+    // errorId is always included in describedBy so aria-describedby is stable.
+    // When there are no errors the sr-only span is empty — no false announcement.
     const describedBy = [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
     return {
-      controlId: `${primitiveIdPrefixes.fieldControl}-${this.controller.id}-${this.#instanceId}`,
+      controlId,
       label: toText(props.label, this.controller.config.label),
       description,
       errors: state.errors,
@@ -300,44 +339,38 @@ export class PrimitiveFieldFrameElement extends LitElement {
     props: Record<string, unknown>,
     state: FieldStateSnapshot,
   ): string {
+    const text = this.text;
+
     switch (component) {
       case "text-field": {
         const value = typeof props.value === "string" ? props.value : "";
-        return value.length > 0
-          ? primitiveStaticText.fieldTextRecorded(value.length)
-          : primitiveStaticText.fieldReady;
+        return value.length > 0 ? text.fieldTextRecorded(value.length) : text.fieldReady;
       }
       case "number-field": {
         const unit = typeof props.unit === "string" ? ` ${props.unit}` : "";
         return state.value === null || state.value === undefined || state.value === ""
-          ? primitiveStaticText.fieldReady
-          : primitiveStaticText.fieldValidNumber(state.value, unit);
+          ? text.fieldReady
+          : text.fieldValidNumber(state.value, unit);
       }
       case "category-field": {
         const selected = this.#resolveCategorySelection(props, state.value);
-        return selected
-          ? primitiveStaticText.fieldCategorySelected(selected.label)
-          : primitiveStaticText.fieldSelectionReady;
+        return selected ? text.fieldCategorySelected(selected.label) : text.fieldSelectionReady;
       }
       case "date-field": {
         const value = typeof props.value === "string" ? props.value : "";
-        return value.length > 0
-          ? primitiveStaticText.fieldSelectedDate(value)
-          : primitiveStaticText.fieldDateReady;
+        return value.length > 0 ? text.fieldSelectedDate(value) : text.fieldDateReady;
       }
       case "boolean-field": {
-        const trueLabel = toText(props.trueLabel, "True");
-        const falseLabel = toText(props.falseLabel, "False");
-        return primitiveStaticText.fieldBooleanSelection(
-          state.value === true ? trueLabel : falseLabel,
-        );
+        const trueLabel = toText(props.trueLabel, text.booleanTrue);
+        const falseLabel = toText(props.falseLabel, text.booleanFalse);
+        return text.fieldBooleanSelection(state.value === true ? trueLabel : falseLabel);
       }
       case "time-series-field": {
         const points = Array.isArray(props.value) ? props.value.length : 0;
-        return primitiveStaticText.fieldTimeSeriesRecorded(points);
+        return text.fieldTimeSeriesRecorded(points);
       }
       default:
-        return primitiveStaticText.fieldReady;
+        return text.fieldReady;
     }
   }
 
@@ -392,42 +425,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
     this.descriptionVisible = !this.descriptionVisible;
   };
-
-  #attachController(): void {
-    if (!this.isConnected) {
-      return;
-    }
-
-    if (this.#connectedController === this.controller) {
-      this.#syncFromController();
-      return;
-    }
-
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = this.controller;
-    this.#syncFromController();
-
-    if (!this.controller) {
-      return;
-    }
-
-    this.#unsubscribe = this.controller.subscribe(() => {
-      this.#syncFromController();
-    });
-  }
-
-  #syncFromController(): void {
-    this.descriptor = this.controller?.descriptor ?? null;
-    this.fieldState = this.controller?.state ?? null;
-
-    if (!this.descriptor?.props.description) {
-      this.descriptionVisible = false;
-    }
-  }
 }
-
-customElements.define(primitiveTagNames.fieldFrame, PrimitiveFieldFrameElement);
 
 declare global {
   interface HTMLElementTagNameMap {

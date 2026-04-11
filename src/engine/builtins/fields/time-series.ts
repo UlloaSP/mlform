@@ -131,10 +131,10 @@ export const timeSeriesFieldDefinition: FieldDefinition<TimeSeriesFieldConfig, T
       }
 
       if (config.minPoints !== undefined && value.length < config.minPoints) {
-        errors.push(`Minimum number of points is ${config.minPoints}.`);
+        errors.push(builtinValidationMessages.minPoints(config.minPoints));
       }
       if (config.maxPoints !== undefined && value.length > config.maxPoints) {
-        errors.push(`Maximum number of points is ${config.maxPoints}.`);
+        errors.push(builtinValidationMessages.maxPoints(config.maxPoints));
       }
 
       let previousTimestamp: number | null = null;
@@ -145,7 +145,7 @@ export const timeSeriesFieldDefinition: FieldDefinition<TimeSeriesFieldConfig, T
 
         if (config.uniqueTimestamps !== false) {
           if (seenTimestamps.has(timestamp)) {
-            errors.push("Timestamps must be unique.");
+            errors.push(builtinValidationMessages.timestampsUnique);
             break;
           }
           seenTimestamps.add(timestamp);
@@ -170,12 +170,12 @@ export const timeSeriesFieldDefinition: FieldDefinition<TimeSeriesFieldConfig, T
 
         if (previousTimestamp !== null && config.ordered) {
           if (config.ordered === "asc" && timestamp < previousTimestamp) {
-            errors.push("Timestamps must be sorted in ascending order.");
+            errors.push(builtinValidationMessages.timestampsAscending);
             break;
           }
 
           if (config.ordered === "desc" && timestamp > previousTimestamp) {
-            errors.push("Timestamps must be sorted in descending order.");
+            errors.push(builtinValidationMessages.timestampsDescending);
             break;
           }
         }

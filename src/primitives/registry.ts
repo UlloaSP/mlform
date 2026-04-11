@@ -17,7 +17,8 @@ const reservedCustomElementNames = new Set([
 
 const isValidCustomElementName = (tagName: string): boolean => {
   return (
-    /^[a-z](?:[-.0-9_a-z]*-[-.0-9_a-z]*)$/.test(tagName) && !reservedCustomElementNames.has(tagName)
+    /^[a-z][-.0-9_a-z]*-[-.0-9_a-z]*[a-z0-9]$/.test(tagName) &&
+    !reservedCustomElementNames.has(tagName)
   );
 };
 

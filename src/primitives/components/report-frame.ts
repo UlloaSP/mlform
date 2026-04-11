@@ -2,15 +2,22 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, LitElement } from "lit";
-import { property, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { ReportController, ReportDescriptor, ReportStateSnapshot } from "@/engine";
-import { primitiveIdPrefixes, primitiveTagNames } from "../constants";
+import { ControllerBinding } from "../controller-binding";
+import {
+  primitiveIdPrefixes,
+  primitiveStaticText,
+  primitiveTagNames,
+  type PrimitiveText,
+} from "../constants";
 import type { PrimitiveRegistry, PrimitiveReportRenderContext } from "../types";
 import { toText } from "../utils";
 
 let reportFrameSequence = 0;
 
+@customElement(primitiveTagNames.reportFrame)
 export class PrimitiveReportFrameElement extends LitElement {
   static styles = css`
     :host {
@@ -84,30 +91,25 @@ export class PrimitiveReportFrameElement extends LitElement {
 
   @property({ attribute: false }) accessor controller: ReportController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   @state() private accessor descriptor: ReportDescriptor | null = null;
   @state() private accessor reportState: ReportStateSnapshot | null = null;
 
   readonly #instanceId = ++reportFrameSequence;
-  #unsubscribe: (() => void) | null = null;
-  #connectedController: ReportController | undefined;
+  #memoizedContext: PrimitiveReportRenderContext | undefined;
+  #memoizedController: ReportController | undefined;
+  #memoizedDescriptor: ReportDescriptor | null = null;
+
+  readonly #binding = new ControllerBinding<ReportController>(this, (ctrl) => {
+    this.descriptor = ctrl?.descriptor ?? null;
+    this.reportState = ctrl?.state ?? null;
+  });
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has("controller")) {
-      this.#attachController();
+      this.#binding.bind(this.controller);
     }
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.#attachController();
-  }
-
-  disconnectedCallback(): void {
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = undefined;
-    super.disconnectedCallback();
   }
 
   render() {
@@ -139,6 +141,7 @@ export class PrimitiveReportFrameElement extends LitElement {
               <mlf-unsupported-component
                 role="report"
                 component=${descriptor.component}
+                .text=${this.text}
               ></mlf-unsupported-component>
             `}
       </section>
@@ -147,14 +150,30 @@ export class PrimitiveReportFrameElement extends LitElement {
 
   #renderResolvedRenderer(tagName: string) {
     const tag = unsafeStatic(tagName);
-    const context = this.#createContext(this.descriptor?.props ?? {});
+    const context = this.#getContext();
     return html`
       <${tag}
         .controller=${this.controller}
         .descriptor=${this.descriptor}
         .context=${context}
+        .text=${this.text}
       ></${tag}>
     `;
+  }
+
+  #getContext(): PrimitiveReportRenderContext | undefined {
+    if (
+      this.controller === this.#memoizedController &&
+      this.descriptor === this.#memoizedDescriptor
+    ) {
+      return this.#memoizedContext;
+    }
+
+    const context = this.#createContext(this.descriptor?.props ?? {});
+    this.#memoizedController = this.controller;
+    this.#memoizedDescriptor = this.descriptor;
+    this.#memoizedContext = context;
+    return context;
   }
 
   #createContext(props: Record<string, unknown>): PrimitiveReportRenderContext | undefined {
@@ -171,38 +190,7 @@ export class PrimitiveReportFrameElement extends LitElement {
           : undefined,
     };
   }
-
-  #attachController(): void {
-    if (!this.isConnected) {
-      return;
-    }
-
-    if (this.#connectedController === this.controller) {
-      this.#syncFromController();
-      return;
-    }
-
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = this.controller;
-    this.#syncFromController();
-
-    if (!this.controller) {
-      return;
-    }
-
-    this.#unsubscribe = this.controller.subscribe(() => {
-      this.#syncFromController();
-    });
-  }
-
-  #syncFromController(): void {
-    this.descriptor = this.controller?.descriptor ?? null;
-    this.reportState = this.controller?.state ?? null;
-  }
 }
-
-customElements.define(primitiveTagNames.reportFrame, PrimitiveReportFrameElement);
 
 declare global {
   interface HTMLElementTagNameMap {

@@ -2,10 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html, LitElement } from "lit";
-import { property, state } from "lit/decorators.js";
-import type { FormController, FormState } from "@/engine";
-import { primitiveStaticText, primitiveTagNames } from "../constants";
+import { customElement, property, state } from "lit/decorators.js";
+import type { FormController } from "@/engine";
+import { primitiveStaticText, primitiveTagNames, type PrimitiveText } from "../constants";
 
+@customElement(primitiveTagNames.formErrors)
 export class PrimitiveFormErrorsElement extends LitElement {
   static styles = css`
     :host {
@@ -42,8 +43,9 @@ export class PrimitiveFormErrorsElement extends LitElement {
   `;
 
   @property({ attribute: false }) accessor form: FormController | undefined;
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
-  @state() private accessor formState: FormState | null = null;
+  @state() private accessor formErrors: readonly string[] = [];
 
   #unsubscribe: (() => void) | null = null;
   #connectedForm: FormController | undefined;
@@ -67,15 +69,15 @@ export class PrimitiveFormErrorsElement extends LitElement {
   }
 
   render() {
-    const errors = this.formState?.errors.form ?? [];
+    const errors = this.formErrors;
 
     if (errors.length === 0) {
       return html``;
     }
 
     return html`
-      <div class="card" part="form-errors">
-        <p class="eyebrow">${primitiveStaticText.formErrorsTitle}</p>
+      <div class="card" part="form-errors" role="alert" aria-live="assertive" aria-atomic="true">
+        <p class="eyebrow">${this.text.formErrorsTitle}</p>
         <ul>
           ${errors.map((error) => html`<li>${error}</li>`)}
         </ul>
@@ -89,26 +91,32 @@ export class PrimitiveFormErrorsElement extends LitElement {
     }
 
     if (this.#connectedForm === this.form) {
-      this.formState = this.form?.state ?? null;
+      this.formErrors = this.form?.state.errors.form ?? [];
       return;
     }
 
     this.#unsubscribe?.();
     this.#unsubscribe = null;
     this.#connectedForm = this.form;
-    this.formState = this.form?.state ?? null;
+    this.formErrors = this.form?.state.errors.form ?? [];
 
     if (!this.form) {
       return;
     }
 
-    this.#unsubscribe = this.form.subscribe((state) => {
-      this.formState = state;
-    });
+    // subscribeSelector re-renders only when form-level errors actually change,
+    // not on every field keystroke.
+    this.#unsubscribe = this.form.subscribeSelector(
+      (state) => state.errors.form,
+      (errors) => {
+        this.formErrors = errors;
+      },
+      {
+        equality: (a, b) => a === b || (a.length === b.length && a.every((msg, i) => msg === b[i])),
+      },
+    );
   }
 }
-
-customElements.define(primitiveTagNames.formErrors, PrimitiveFormErrorsElement);
 
 declare global {
   interface HTMLElementTagNameMap {

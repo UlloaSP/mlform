@@ -2,10 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import type { FormStatus } from "@/engine";
 import { primitiveDefaultLabels, primitiveEventNames, primitiveTagNames } from "../constants";
 
+@customElement(primitiveTagNames.submitButton)
 export class PrimitiveSubmitButtonElement extends LitElement {
   static styles = css`
     :host {
@@ -68,6 +69,7 @@ export class PrimitiveSubmitButtonElement extends LitElement {
       <button
         type="button"
         ?disabled=${this.status === "validating" || this.status === "submitting"}
+        aria-busy=${String(this.status === "validating" || this.status === "submitting")}
         @click=${this.#handleClick}
       >
         ${label}
@@ -84,8 +86,6 @@ export class PrimitiveSubmitButtonElement extends LitElement {
     );
   };
 }
-
-customElements.define(primitiveTagNames.submitButton, PrimitiveSubmitButtonElement);
 
 declare global {
   interface HTMLElementTagNameMap {

@@ -5,7 +5,7 @@ import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
-import { primitiveIdPrefixes, primitiveStaticText, primitiveTagNames } from "../constants";
+import { primitiveIdPrefixes, primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 
 @customElement(primitiveTagNames.booleanField)
@@ -84,12 +84,13 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
     const props = this.props;
     const context = this.fieldContext;
     const checked = props.checked === true;
+    const text = this.text;
     const fallbackControlId = primitiveIdPrefixes.booleanGroup;
     const trueId = `${context?.controlId ?? fallbackControlId}-true`;
     const falseId = `${context?.controlId ?? fallbackControlId}-false`;
-    const trueLabel = toText(props.trueLabel, primitiveStaticText.booleanTrue);
-    const falseLabel = toText(props.falseLabel, primitiveStaticText.booleanFalse);
-    const disabled = Boolean(this.fieldState?.disabled || this.fieldState?.readOnly);
+    const trueLabel = toText(props.trueLabel, text.booleanTrue);
+    const falseLabel = toText(props.falseLabel, text.booleanFalse);
+    const disabled = Boolean(this.fieldContext?.disabled || this.fieldContext?.readOnly);
 
     return html`
       <fieldset
@@ -97,7 +98,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         aria-label=${context?.label ?? toText(props.label)}
         aria-describedby=${ifDefined(context?.describedBy)}
         aria-invalid=${String(context?.invalid ?? false)}
-        aria-readonly=${String(Boolean(this.fieldState?.readOnly))}
+        aria-readonly=${String(Boolean(this.fieldContext?.readOnly))}
       >
         <input
           type="radio"

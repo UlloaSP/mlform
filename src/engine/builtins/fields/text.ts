@@ -45,6 +45,9 @@ export const textFieldDefinition: FieldDefinition<TextFieldConfig, string> = {
     ) {
       errors.push(builtinValidationMessages.invalidTextLengthRange);
     }
+    if (value.length === 0) {
+      return errors;
+    }
     if (config.minLength !== undefined && value.length < config.minLength) {
       errors.push(builtinValidationMessages.minLength(config.minLength));
     }

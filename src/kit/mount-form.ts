@@ -75,6 +75,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     validatingLabel: labels.validating,
     submittingLabel: labels.submitting,
     reportPane: options.reportPane,
+    text: options.primitiveText,
   });
   const designSystem = attachDesignSystem(mountedPrimitive.host, {
     config: initialDesignSystem,

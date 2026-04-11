@@ -42,7 +42,46 @@ export const primitiveDefaultLabels: Readonly<Record<keyof typeof primitiveLabel
   submitting: "Submitting...",
 };
 
-export const primitiveStaticText = {
+export interface PrimitiveText {
+  formEyebrow: string;
+  reportEyebrow: string;
+  formErrorsTitle: string;
+  helpActionLabel: string;
+  categoryPlaceholder: string;
+  unsupportedMapping: (role: string, component: string) => string;
+  classifierEmpty: string;
+  classifierAriaLabel: string;
+  classifierUnknownPrediction: string;
+  classifierClassLabel: (index: number) => string;
+  regressorEmpty: string;
+  regressorAriaLabel: string;
+  regressorExecutionTime: (value: string) => string;
+  booleanTrue: string;
+  booleanFalse: string;
+  fieldReady: string;
+  fieldSelectionReady: string;
+  fieldDateReady: string;
+  fieldTextRecorded: (length: number) => string;
+  fieldValidNumber: (value: unknown, unit: string) => string;
+  fieldCategorySelected: (label: string) => string;
+  fieldSelectedDate: (value: string) => string;
+  fieldBooleanSelection: (label: string) => string;
+  fieldTimeSeriesRecorded: (count: number) => string;
+  timeSeriesAddRow: string;
+  timeSeriesRemoveRow: string;
+  timeSeriesTimestamp: string;
+  timeSeriesValue: string;
+  timeSeriesEmpty: string;
+  formMetaFields: (count: number) => string;
+  formMetaReports: (count: number) => string;
+  formMetaSubmits: (count: number) => string;
+  reportsEmptyTitle: string;
+  reportsEmptyBody: string;
+}
+
+export type PrimitiveTextOverrides = Partial<PrimitiveText>;
+
+export const primitiveStaticText: PrimitiveText = {
   formEyebrow: "Form",
   reportEyebrow: "Report",
   formErrorsTitle: "Form errors",
@@ -75,7 +114,16 @@ export const primitiveStaticText = {
   timeSeriesTimestamp: "Timestamp",
   timeSeriesValue: "Value",
   timeSeriesEmpty: "No points yet.",
-} as const;
+  formMetaFields: (count: number): string => `${count} fields`,
+  formMetaReports: (count: number): string => `${count} reports`,
+  formMetaSubmits: (count: number): string => `${count} submits`,
+  reportsEmptyTitle: "Results",
+  reportsEmptyBody: "Reports will appear here after the form is submitted.",
+};
+
+export const resolvePrimitiveText = (overrides?: PrimitiveTextOverrides): PrimitiveText => {
+  return overrides ? { ...primitiveStaticText, ...overrides } : primitiveStaticText;
+};
 
 export const primitiveIdPrefixes = {
   booleanGroup: "mlf-boolean",

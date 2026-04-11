@@ -4,7 +4,7 @@
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { PrimitiveReportElement } from "../base-report-element";
-import { primitiveStaticText, primitiveTagNames } from "../constants";
+import { primitiveTagNames } from "../constants";
 import { isRecord, toText } from "../utils";
 
 type ProbabilityRow = {
@@ -12,7 +12,11 @@ type ProbabilityRow = {
   value: number;
 };
 
-const toProbabilityRows = (payload: unknown, labelsOverride: unknown): ProbabilityRow[] => {
+const toProbabilityRows = (
+  payload: unknown,
+  labelsOverride: unknown,
+  fallbackLabel: (index: number) => string,
+): ProbabilityRow[] => {
   if (!isRecord(payload) || !Array.isArray(payload.probabilities)) {
     return [];
   }
@@ -28,10 +32,7 @@ const toProbabilityRows = (payload: unknown, labelsOverride: unknown): Probabili
       }
 
       return {
-        label:
-          typeof labels[index] === "string"
-            ? labels[index]
-            : primitiveStaticText.classifierClassLabel(index),
+        label: typeof labels[index] === "string" ? labels[index] : fallbackLabel(index),
         value: numeric,
       } satisfies ProbabilityRow;
     })
@@ -116,28 +117,29 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
     const error = typeof this.props.error === "string" ? this.props.error : null;
     const context = this.reportContext;
     const details = this.props.details !== false;
+    const text = this.text;
 
     if (error) {
       return html`<div class="error">${error}</div>`;
     }
 
     if (payload === null || payload === undefined) {
-      return html`<div class="empty">${primitiveStaticText.classifierEmpty}</div>`;
+      return html`<div class="empty">${text.classifierEmpty}</div>`;
     }
 
     const prediction = isRecord(payload)
       ? (payload.prediction ??
         payload.className ??
         payload.label ??
-        primitiveStaticText.classifierUnknownPrediction)
+        text.classifierUnknownPrediction)
       : payload;
-    const rows = toProbabilityRows(payload, this.props.labels);
+    const rows = toProbabilityRows(payload, this.props.labels, text.classifierClassLabel);
 
     return html`
       <section
         part="classifier-report"
         id=${context?.regionId ?? ""}
-        aria-label=${context?.label ?? primitiveStaticText.classifierAriaLabel}
+        aria-label=${context?.label ?? text.classifierAriaLabel}
       >
         ${details && rows.length > 0
           ? html`
@@ -155,9 +157,7 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
               </div>
             `
           : html`
-              <div class="compact">
-                ${toText(prediction, primitiveStaticText.classifierUnknownPrediction)}
-              </div>
+              <div class="compact">${toText(prediction, text.classifierUnknownPrediction)}</div>
             `}
       </section>
     `;

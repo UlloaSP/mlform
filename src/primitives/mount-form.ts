@@ -3,7 +3,12 @@
 
 import type { FormController } from "@/engine";
 import "./register";
-import { primitiveDefaultLabels, primitiveTagNames } from "./constants";
+import {
+  primitiveDefaultLabels,
+  primitiveTagNames,
+  resolvePrimitiveText,
+  type PrimitiveText,
+} from "./constants";
 import { createBuiltinPrimitiveRegistry } from "./registry";
 import type { MountFormOptions, MountedForm, PrimitiveRegistry } from "./types";
 
@@ -16,8 +21,20 @@ export const mountForm = (
   form: FormController,
   options: MountFormOptions = {},
 ): MountedForm => {
-  const host = document.createElement(primitiveTagNames.form);
+  const host = document.createElement(primitiveTagNames.form) as HTMLElement & {
+    form: FormController;
+    registry: PrimitiveRegistry;
+    layout: NonNullable<MountFormOptions["layout"]>;
+    formLabel: string;
+    reportsLabel: string;
+    submitLabel: string;
+    validatingLabel: string;
+    submittingLabel: string;
+    reportPane: NonNullable<MountFormOptions["reportPane"]>;
+    text: PrimitiveText;
+  };
   const registry = resolveRegistry(options.registry);
+  const text = resolvePrimitiveText(options.text);
 
   host.form = form;
   host.registry = registry;
@@ -28,6 +45,7 @@ export const mountForm = (
   host.validatingLabel = options.validatingLabel ?? primitiveDefaultLabels.validating;
   host.submittingLabel = options.submittingLabel ?? primitiveDefaultLabels.submitting;
   host.reportPane = options.reportPane ?? "auto";
+  host.text = text;
 
   container.replaceChildren(host);
 
@@ -35,6 +53,7 @@ export const mountForm = (
     form,
     host,
     registry,
+    text,
     unmount() {
       if (host.parentNode === container) {
         container.removeChild(host);

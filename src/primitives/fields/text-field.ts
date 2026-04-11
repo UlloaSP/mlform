@@ -35,8 +35,8 @@ export class PrimitiveTextFieldElement extends PrimitiveFieldElement {
         aria-invalid=${String(context?.invalid ?? false)}
         placeholder=${toText(props.placeholder)}
         ?required=${Boolean(props.required)}
-        ?disabled=${Boolean(this.fieldState?.disabled)}
-        ?readonly=${Boolean(this.fieldState?.readOnly)}
+        ?disabled=${Boolean(this.fieldContext?.disabled)}
+        ?readonly=${Boolean(this.fieldContext?.readOnly)}
         minlength=${ifDefined(
           typeof props.minLength === "number" ? String(props.minLength) : undefined,
         )}

@@ -2,10 +2,14 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, LitElement, type CSSResultGroup } from "lit";
-import { property, state } from "lit/decorators.js";
-import type { ReportController, ReportDescriptor, ReportStateSnapshot } from "@/engine";
+import { property } from "lit/decorators.js";
+import type { ReportController, ReportDescriptor } from "@/engine";
+import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type { PrimitiveReportRenderContext } from "./types";
 
+// report-frame.ts owns the subscription to ReportController and passes
+// descriptor + context as properties to this element.  No second subscription
+// is needed here — that would cause a redundant render on every state change.
 export abstract class PrimitiveReportElement extends LitElement {
   static styles: CSSResultGroup = css`
     :host {
@@ -27,29 +31,7 @@ export abstract class PrimitiveReportElement extends LitElement {
   @property({ attribute: false }) accessor controller: ReportController | undefined;
   @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
   @property({ attribute: false }) accessor context: PrimitiveReportRenderContext | undefined;
-
-  @state() protected accessor reportState: ReportStateSnapshot | null = null;
-
-  #unsubscribe: (() => void) | null = null;
-  #connectedController: ReportController | undefined;
-
-  protected willUpdate(changedProperties: Map<string, unknown>): void {
-    if (changedProperties.has("controller")) {
-      this.#attachController();
-    }
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.#attachController();
-  }
-
-  disconnectedCallback(): void {
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = undefined;
-    super.disconnectedCallback();
-  }
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   protected get props(): Record<string, unknown> {
     return this.descriptor?.props ?? {};
@@ -57,34 +39,5 @@ export abstract class PrimitiveReportElement extends LitElement {
 
   protected get reportContext(): PrimitiveReportRenderContext | undefined {
     return this.context;
-  }
-
-  #attachController(): void {
-    if (!this.isConnected) {
-      return;
-    }
-
-    if (this.#connectedController === this.controller) {
-      this.#syncFromController();
-      return;
-    }
-
-    this.#unsubscribe?.();
-    this.#unsubscribe = null;
-    this.#connectedController = this.controller;
-    this.#syncFromController();
-
-    if (!this.controller) {
-      return;
-    }
-
-    this.#unsubscribe = this.controller.subscribe(() => {
-      this.#syncFromController();
-    });
-  }
-
-  #syncFromController(): void {
-    this.descriptor = this.controller?.descriptor ?? this.descriptor ?? null;
-    this.reportState = this.controller?.state ?? null;
   }
 }

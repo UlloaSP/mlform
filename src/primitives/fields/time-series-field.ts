@@ -5,7 +5,7 @@ import { css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
-import { primitiveStaticText, primitiveTagNames } from "../constants";
+import { primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 
 type DraftRow = {
@@ -253,6 +253,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
   ];
 
   @state() private accessor rows: DraftRow[] = [];
+  #rowsDirtySinceCommit = false;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     super.willUpdate(changedProperties);
@@ -266,11 +267,14 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
     const props = this.props;
     const context = this.fieldContext;
     const granularity = this.#granularity;
-    const disabled = Boolean(this.fieldState?.disabled);
-    const readOnly = Boolean(this.fieldState?.readOnly);
+    const disabled = Boolean(this.fieldContext?.disabled);
+    const readOnly = Boolean(this.fieldContext?.readOnly);
     const locked = disabled || readOnly;
     const unit = typeof props.unit === "string" ? props.unit : "";
+    const minValue = typeof props.minValue === "number" ? props.minValue : undefined;
+    const maxValue = typeof props.maxValue === "number" ? props.maxValue : undefined;
     const unitWidth = `${Math.max(unit.length * 0.56 + 0.8, 2.3)}rem`;
+    const text = this.text;
 
     return html`
       <div class="series" style=${`--mlf-time-series-unit-width: ${unitWidth};`}>
@@ -278,11 +282,11 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
           <button
             class="add-btn"
             type="button"
-            aria-label=${primitiveStaticText.timeSeriesAddRow}
+            aria-label=${text.timeSeriesAddRow}
             ?disabled=${locked}
             @click=${this.#handleAddRow}
           >
-            ${primitiveStaticText.timeSeriesAddRow}
+            ${text.timeSeriesAddRow}
           </button>
         </div>
 
@@ -290,8 +294,8 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
           ? html`
               <div class="grid">
                 <div class="header" aria-hidden="true">
-                  <div>${primitiveStaticText.timeSeriesTimestamp}</div>
-                  <div>${primitiveStaticText.timeSeriesValue}</div>
+                  <div>${text.timeSeriesTimestamp}</div>
+                  <div>${text.timeSeriesValue}</div>
                   <div></div>
                 </div>
                 ${this.rows.map((row, index) => {
@@ -306,7 +310,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
                           id=${timestampId}
                           type=${granularity === "datetime" ? "datetime-local" : "date"}
                           .value=${row.timestamp}
-                          aria-label=${`${context?.label ?? toText(props.label)} ${primitiveStaticText.timeSeriesTimestamp} ${index + 1}`}
+                          aria-label=${`${context?.label ?? toText(props.label)} ${text.timeSeriesTimestamp} ${index + 1}`}
                           aria-describedby=${ifDefined(context?.describedBy)}
                           aria-invalid=${String(context?.invalid ?? false)}
                           ?required=${Boolean(props.required)}
@@ -331,9 +335,11 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
                           spellcheck="false"
                           autocomplete="off"
                           .value=${row.value}
-                          aria-label=${`${context?.label ?? toText(props.label)} ${primitiveStaticText.timeSeriesValue} ${index + 1}`}
+                          aria-label=${`${context?.label ?? toText(props.label)} ${text.timeSeriesValue} ${index + 1}`}
                           aria-describedby=${ifDefined(context?.describedBy)}
                           aria-invalid=${String(context?.invalid ?? false)}
+                          aria-valuemin=${ifDefined(minValue)}
+                          aria-valuemax=${ifDefined(maxValue)}
                           ?required=${Boolean(props.required)}
                           ?disabled=${disabled}
                           ?readonly=${readOnly}
@@ -345,7 +351,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
                       <button
                         class="remove-btn"
                         type="button"
-                        aria-label=${`${primitiveStaticText.timeSeriesRemoveRow} ${index + 1}`}
+                        aria-label=${`${text.timeSeriesRemoveRow} ${index + 1}`}
                         ?disabled=${locked}
                         @click=${() => this.#handleRemoveRow(index)}
                       >
@@ -356,7 +362,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
                 })}
               </div>
             `
-          : html`<div class="empty">${primitiveStaticText.timeSeriesEmpty}</div>`}
+          : html`<div class="empty">${text.timeSeriesEmpty}</div>`}
       </div>
       ${this.renderAssistiveText()}
     `;
@@ -372,6 +378,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
 
   #syncRowsFromDescriptor(): void {
     this.rows = normalizeRows(this.props.value, this.#granularity);
+    this.#rowsDirtySinceCommit = false;
   }
 
   #handleTimestampInput(index: number, event: Event): void {
@@ -379,11 +386,17 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
     this.rows = this.rows.map((row, rowIndex) =>
       rowIndex === index ? { ...row, timestamp: value } : row,
     );
+    this.#rowsDirtySinceCommit = true;
   }
 
   #handleValueInput(index: number, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.rows = this.rows.map((row, rowIndex) => (rowIndex === index ? { ...row, value } : row));
+    this.#rowsDirtySinceCommit = true;
+    // Commit on every value change so engine runs syncErrors live.
+    // Timestamp inputs are NOT committed live because partial date strings
+    // cause the row to be filtered out by normalizeTimeSeriesPoint.
+    this.#commitRows();
   }
 
   #handleAddRow = (): void => {
@@ -394,11 +407,13 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
     };
 
     this.rows = [...this.rows, row];
+    this.#rowsDirtySinceCommit = true;
     this.#commitRows();
   };
 
   #handleRemoveRow(index: number): void {
     this.rows = this.rows.filter((_, rowIndex) => rowIndex !== index);
+    this.#rowsDirtySinceCommit = true;
     this.#commitRows();
   }
 
@@ -408,6 +423,10 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
   };
 
   #commitRows(): void {
+    if (!this.#rowsDirtySinceCommit) {
+      return;
+    }
+
     this.commitValue(
       this.rows
         .filter((row) => row.timestamp.length > 0)
@@ -416,5 +435,6 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
           value: row.value === "" ? null : row.value,
         })),
     );
+    this.#rowsDirtySinceCommit = false;
   }
 }

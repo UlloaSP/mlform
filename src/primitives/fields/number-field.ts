@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
 import { primitiveTagNames } from "../constants";
@@ -74,22 +74,29 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
     `,
   ];
 
+  @state() private accessor draftValue: string | null = null;
+  @state() private accessor focused = false;
+
   render() {
     const props = this.props;
     const context = this.fieldContext;
-    const value =
+    const committedValue =
       typeof props.value === "number"
         ? String(props.value)
         : props.value === null || props.value === undefined
           ? ""
           : toText(props.value);
+    const value = this.focused && this.draftValue !== null ? this.draftValue : committedValue;
     const unit = typeof props.unit === "string" ? props.unit : "";
     const unitWidth = `${Math.max(unit.length * 0.56 + 0.8, 2.2)}rem`;
-    const wrapperClass = this.fieldState?.disabled
+    const wrapperClass = this.fieldContext?.disabled
       ? "input-wrapper is-disabled"
-      : this.fieldState?.readOnly
+      : this.fieldContext?.readOnly
         ? "input-wrapper is-readonly"
         : "input-wrapper";
+    const numericValue = typeof props.value === "number" ? props.value : undefined;
+    const minValue = typeof props.min === "number" ? props.min : undefined;
+    const maxValue = typeof props.max === "number" ? props.max : undefined;
 
     return html`
       <div class=${wrapperClass} style=${`--mlf-number-unit-width: ${unitWidth};`}>
@@ -105,9 +112,13 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
           aria-label=${context?.label ?? toText(props.label)}
           aria-describedby=${ifDefined(context?.describedBy)}
           aria-invalid=${String(context?.invalid ?? false)}
+          aria-valuenow=${ifDefined(numericValue)}
+          aria-valuemin=${ifDefined(minValue)}
+          aria-valuemax=${ifDefined(maxValue)}
           ?required=${Boolean(props.required)}
-          ?disabled=${Boolean(this.fieldState?.disabled)}
-          ?readonly=${Boolean(this.fieldState?.readOnly)}
+          ?disabled=${Boolean(this.fieldContext?.disabled)}
+          ?readonly=${Boolean(this.fieldContext?.readOnly)}
+          @focus=${this.#handleFocus}
           @input=${this.#handleInput}
           @blur=${this.#handleBlur}
         />
@@ -119,10 +130,43 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
 
   #handleInput = (event: Event): void => {
     const value = (event.target as HTMLInputElement).value;
-    this.commitValue(value === "" ? null : value);
+    this.draftValue = value;
+    this.commitValue(this.#getCommittedValue(value));
   };
 
   #handleBlur = (): void => {
+    this.focused = false;
+    this.commitValue(this.draftValue === null || this.draftValue === "" ? null : this.draftValue);
+    this.draftValue = null;
     this.commitBlur();
   };
+
+  #handleFocus = (): void => {
+    this.focused = true;
+    this.draftValue =
+      typeof this.props.value === "number"
+        ? String(this.props.value)
+        : this.props.value === null || this.props.value === undefined
+          ? ""
+          : toText(this.props.value);
+  };
+
+  #getCommittedValue(value: string): string | number | null {
+    const trimmed = value.trim();
+
+    if (trimmed.length === 0) {
+      return null;
+    }
+
+    if (/^[+-]?$/.test(trimmed) || /^[+-]?\.$/.test(trimmed)) {
+      return null;
+    }
+
+    if (/^[+-]?(?:\d+\.|\d*\.\d+)$/.test(trimmed)) {
+      const parsed = Number(trimmed);
+      return Number.isNaN(parsed) ? value : parsed;
+    }
+
+    return value;
+  }
 }

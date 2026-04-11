@@ -5,7 +5,7 @@ import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
-import { primitiveStaticText, primitiveTagNames } from "../constants";
+import { primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 
 type Option = string | { label: string; value: string };
@@ -63,6 +63,7 @@ export class PrimitiveCategoryFieldElement extends PrimitiveFieldElement {
     const rawValue = typeof props.value === "string" ? props.value : "";
     const options = Array.isArray(props.options) ? (props.options as Option[]) : [];
     const value = resolveSelectedValue(rawValue, options);
+    const text = this.text;
 
     return html`
       <div class="select-wrap">
@@ -72,14 +73,14 @@ export class PrimitiveCategoryFieldElement extends PrimitiveFieldElement {
           aria-label=${context?.label ?? toText(props.label)}
           aria-describedby=${ifDefined(context?.describedBy)}
           aria-invalid=${String(context?.invalid ?? false)}
-          aria-readonly=${String(Boolean(this.fieldState?.readOnly))}
+          aria-readonly=${String(Boolean(this.fieldContext?.readOnly))}
           ?required=${Boolean(props.required)}
-          ?disabled=${Boolean(this.fieldState?.disabled || this.fieldState?.readOnly)}
+          ?disabled=${Boolean(this.fieldContext?.disabled || this.fieldContext?.readOnly)}
           @change=${this.#handleChange}
           @blur=${this.#handleBlur}
         >
           <option value="" ?selected=${value === ""}>
-            &#8212; ${primitiveStaticText.categoryPlaceholder} &#8212;
+            &#8212; ${text.categoryPlaceholder} &#8212;
           </option>
           ${options.map((option) => {
             const normalized = normalizeOption(option);

@@ -2,17 +2,41 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html, LitElement } from "lit";
-import { property, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { SubmissionAbortedError, type FormController, type FormState } from "@/engine";
+import { SubmissionAbortedError, type FormController, type FormStatus } from "@/engine";
 import {
   primitiveDefaultLabels,
   primitiveEventNames,
   primitiveStaticText,
   primitiveTagNames,
+  type PrimitiveText,
 } from "../constants";
 import type { PrimitiveLayout, PrimitiveRegistry } from "../types";
 
+type FormRenderState = {
+  status: FormStatus;
+  submitCount: number;
+  hasFormErrors: boolean;
+  visibleFieldIds: string[];
+  visibleReportIds: string[];
+};
+
+const sameIds = (left: readonly string[], right: readonly string[]): boolean => {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+};
+
+const sameFormRenderState = (left: FormRenderState, right: FormRenderState): boolean => {
+  return (
+    left.status === right.status &&
+    left.submitCount === right.submitCount &&
+    left.hasFormErrors === right.hasFormErrors &&
+    sameIds(left.visibleFieldIds, right.visibleFieldIds) &&
+    sameIds(left.visibleReportIds, right.visibleReportIds)
+  );
+};
+
+@customElement(primitiveTagNames.form)
 export class PrimitiveFormElement extends LitElement {
   static styles = css`
     :host {
@@ -331,9 +355,9 @@ export class PrimitiveFormElement extends LitElement {
     | "auto"
     | "always"
     | "hidden" = "auto";
+  @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
-  @state() private accessor formState: FormState | null = null;
-
+  @state() private accessor formState: FormRenderState | null = null;
   #unsubscribe: (() => void) | null = null;
   #connectedForm: FormController | undefined;
 
@@ -363,13 +387,16 @@ export class PrimitiveFormElement extends LitElement {
       return html``;
     }
 
-    const visibleFields = form.fields.filter((field) => field.state.visible);
-    const visibleReports = form.reports.filter(
-      (report) => report.descriptor !== null || report.state.status !== "idle",
-    );
+    const text = this.text;
+    const visibleFields = state.visibleFieldIds
+      .map((fieldId) => form.getField(fieldId))
+      .filter((field): field is NonNullable<typeof field> => field !== undefined);
+    const visibleReports = state.visibleReportIds
+      .map((reportId) => form.getReport(reportId))
+      .filter((report): report is NonNullable<typeof report> => report !== undefined);
     const reportsToRender = this.reportPane === "always" ? form.reports : visibleReports;
     const showSplitReports =
-      this.reportPane !== "hidden" && (form.reports.length > 0 || state.errors.form.length > 0);
+      this.reportPane !== "hidden" && (form.reports.length > 0 || state.hasFormErrors);
     const showReports =
       this.layout === "split"
         ? showSplitReports
@@ -388,7 +415,7 @@ export class PrimitiveFormElement extends LitElement {
         <section class="panel form-pane" part="form-pane">
           <header class="pane-header">
             <div class="pane-copy">
-              <p class="eyebrow">${primitiveStaticText.formEyebrow}</p>
+              <p class="eyebrow">${text.formEyebrow}</p>
               <h1 class="pane-title">${this.formLabel}</h1>
             </div>
             <span class="status">${state.status}</span>
@@ -396,12 +423,12 @@ export class PrimitiveFormElement extends LitElement {
 
           <div class="pane-body">
             <div class="meta">
-              <span>${visibleFields.length} fields</span>
-              <span>${form.reports.length} reports</span>
-              <span>${state.submitCount} submits</span>
+              <span>${text.formMetaFields(visibleFields.length)}</span>
+              <span>${text.formMetaReports(form.reports.length)}</span>
+              <span>${text.formMetaSubmits(state.submitCount)}</span>
             </div>
 
-            <mlf-form-errors .form=${form}></mlf-form-errors>
+            <mlf-form-errors .form=${form} .text=${text}></mlf-form-errors>
 
             <div class="collection" part="field-list">
               ${repeat(
@@ -411,6 +438,7 @@ export class PrimitiveFormElement extends LitElement {
                   <mlf-field-frame
                     .controller=${field}
                     .registry=${this.registry}
+                    .text=${text}
                   ></mlf-field-frame>
                 `,
               )}
@@ -433,7 +461,7 @@ export class PrimitiveFormElement extends LitElement {
               <aside class="panel report-pane" part="report-pane">
                 <header class="pane-header">
                   <div class="pane-copy">
-                    <p class="eyebrow">${primitiveStaticText.reportEyebrow}</p>
+                    <p class="eyebrow">${text.reportEyebrow}</p>
                     <h2 class="pane-title">${this.reportsLabel}</h2>
                   </div>
                   <span class="status">${reportsToRender.length}</span>
@@ -448,6 +476,7 @@ export class PrimitiveFormElement extends LitElement {
                         <mlf-report-frame
                           .controller=${report}
                           .registry=${this.registry}
+                          .text=${text}
                         ></mlf-report-frame>
                       `,
                     )}
@@ -462,11 +491,13 @@ export class PrimitiveFormElement extends LitElement {
 
   #renderSplitLayout(
     form: FormController,
-    state: FormState,
+    state: FormRenderState,
     visibleFields: ReturnType<FormController["fields"]["filter"]>,
     reportsToRender: typeof form.reports,
     showReports: boolean,
   ) {
+    const text = this.text;
+
     return html`
       <div class="root split">
         <div class="split-shell">
@@ -479,9 +510,9 @@ export class PrimitiveFormElement extends LitElement {
 
               <div class="split-content">
                 <div class="meta">
-                  <span>${visibleFields.length} fields</span>
-                  <span>${form.reports.length} reports</span>
-                  <span>${state.submitCount} submits</span>
+                  <span>${text.formMetaFields(visibleFields.length)}</span>
+                  <span>${text.formMetaReports(form.reports.length)}</span>
+                  <span>${text.formMetaSubmits(state.submitCount)}</span>
                 </div>
 
                 <div class="collection" part="field-list">
@@ -492,6 +523,7 @@ export class PrimitiveFormElement extends LitElement {
                       <mlf-field-frame
                         .controller=${field}
                         .registry=${this.registry}
+                        .text=${text}
                       ></mlf-field-frame>
                     `,
                   )}
@@ -520,7 +552,7 @@ export class PrimitiveFormElement extends LitElement {
                     </header>
 
                     <div class="split-content">
-                      <mlf-form-errors .form=${form}></mlf-form-errors>
+                      <mlf-form-errors .form=${form} .text=${text}></mlf-form-errors>
 
                       ${reportsToRender.length > 0
                         ? html`
@@ -532,6 +564,7 @@ export class PrimitiveFormElement extends LitElement {
                                   <mlf-report-frame
                                     .controller=${report}
                                     .registry=${this.registry}
+                                    .text=${text}
                                   ></mlf-report-frame>
                                 `,
                               )}
@@ -539,10 +572,8 @@ export class PrimitiveFormElement extends LitElement {
                           `
                         : html`
                             <div class="empty-report-state">
-                              <p class="empty-report-title">${this.reportsLabel}</p>
-                              <p class="empty-report-copy">
-                                Reports will appear here after the form is submitted.
-                              </p>
+                              <p class="empty-report-title">${text.reportsEmptyTitle}</p>
+                              <p class="empty-report-copy">${text.reportsEmptyBody}</p>
                             </div>
                           `}
                     </div>
@@ -612,26 +643,45 @@ export class PrimitiveFormElement extends LitElement {
     }
 
     if (this.#connectedForm === this.form) {
-      this.formState = this.form?.state ?? null;
+      this.formState = this.form ? this.#selectFormState(this.form) : null;
       return;
     }
 
     this.#unsubscribe?.();
     this.#unsubscribe = null;
     this.#connectedForm = this.form;
-    this.formState = this.form?.state ?? null;
+    this.formState = this.form ? this.#selectFormState(this.form) : null;
 
     if (!this.form) {
       return;
     }
 
-    this.#unsubscribe = this.form.subscribe((nextState) => {
-      this.formState = nextState;
-    });
+    const form = this.form;
+    this.#unsubscribe = form.subscribeSelector(
+      () => this.#selectFormState(form),
+      (nextState) => {
+        this.formState = nextState;
+      },
+      {
+        equality: sameFormRenderState,
+      },
+    );
+  }
+
+  #selectFormState(form: FormController): FormRenderState {
+    const state = form.state;
+
+    return {
+      status: state.status,
+      submitCount: state.submitCount,
+      hasFormErrors: state.errors.form.length > 0,
+      visibleFieldIds: form.fields.filter((field) => field.state.visible).map((field) => field.id),
+      visibleReportIds: form.reports
+        .filter((report) => report.descriptor !== null || report.state.status !== "idle")
+        .map((report) => report.id),
+    };
   }
 }
-
-customElements.define(primitiveTagNames.form, PrimitiveFormElement);
 
 declare global {
   interface HTMLElementTagNameMap {

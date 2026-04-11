@@ -16,7 +16,7 @@ import type {
   SubmitRequest,
   Transport,
 } from "@/engine";
-import type { PrimitiveLayout, PrimitiveRegistry } from "@/primitives";
+import type { PrimitiveLayout, PrimitiveRegistry, PrimitiveTextOverrides } from "@/primitives";
 
 export type JsonTransportMethod = "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -63,6 +63,7 @@ export interface MountFormOptions {
   layout?: PrimitiveLayout;
   reportPane?: "auto" | "always" | "hidden";
   labels?: KitLabels;
+  primitiveText?: PrimitiveTextOverrides;
   onDesignSystemChange?: (resolved: ResolvedDesignSystem) => void;
 }
 

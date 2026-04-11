@@ -69,6 +69,15 @@ export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | 
     if (config.max !== undefined && value > config.max) {
       errors.push(builtinValidationMessages.maxValue(config.max));
     }
+    if (config.step !== undefined) {
+      const origin = config.min ?? 0;
+      const diff = Math.abs(value - origin);
+      const remainder = diff % config.step;
+      const tolerance = config.step * 1e-9;
+      if (remainder > tolerance && Math.abs(remainder - config.step) > tolerance) {
+        errors.push(builtinValidationMessages.stepValue(config.step));
+      }
+    }
     return errors;
   },
   describe(config, context) {
