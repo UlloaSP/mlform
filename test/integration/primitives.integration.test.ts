@@ -232,6 +232,52 @@ describe("primitives", () => {
     container.remove();
   });
 
+  it("suppresses number validation errors for partial drafts until blur", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "number",
+            label: "Training epochs",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const numberInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    numberInput.value = "-";
+    numberInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+
+    await flush();
+
+    expect(numberInput.value).toBe("-");
+    expect(form.getField("training-epochs")?.state.errors).toEqual([]);
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    expect(getShadow(fieldFrame).textContent).not.toContain("Value must be a valid number.");
+
+    numberInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+    await flush();
+    await flush();
+
+    expect(form.getField("training-epochs")?.state.errors).toContain(
+      "Value must be a valid number.",
+    );
+
+    mounted.unmount();
+    container.remove();
+  });
+
   it("shows built-in min and max validation feedback while editing constrained fields", async () => {
     const form = createForm({
       schema: {
@@ -524,6 +570,45 @@ describe("primitives", () => {
     container.remove();
   });
 
+  it("accepts mount-time primitive text overrides", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "category",
+            label: "Tier",
+            options: ["Internal", "External"],
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      text: {
+        formEyebrow: "Survey",
+        categoryPlaceholder: "Choose tier",
+      },
+    });
+
+    await flush();
+
+    expect(getShadow(mounted.host).textContent).toContain("Survey");
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    const renderer = getShadow(fieldFrame).querySelector("mlf-category-field") as HTMLElement;
+    const select = getShadow(renderer).querySelector("select") as HTMLSelectElement;
+    expect(select.options[0]?.textContent).toContain("Choose tier");
+
+    mounted.unmount();
+    container.remove();
+  });
+
   it("shows success feedback for boolean fields when false is an explicit configured value", async () => {
     const form = createForm({
       schema: {
@@ -549,6 +634,43 @@ describe("primitives", () => {
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
     expect(getShadow(fieldFrame).textContent).toContain("Selection recorded: False.");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("renders custom boolean labels from the engine descriptor", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "boolean",
+            label: "Enabled",
+            defaultValue: false,
+            trueLabel: "On",
+            falseLabel: "Off",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    const renderer = getShadow(fieldFrame).querySelector("mlf-boolean-field") as HTMLElement;
+    const labels = getShadow(renderer).querySelectorAll("label.opt");
+
+    expect(labels[0]?.textContent).toContain("On");
+    expect(labels[1]?.textContent).toContain("Off");
+    expect(getShadow(fieldFrame).textContent).toContain("Selection recorded: Off.");
 
     mounted.unmount();
     container.remove();
@@ -616,6 +738,54 @@ describe("primitives", () => {
     await flush();
 
     expect(form.getField("demand-history")?.state.value).toHaveLength(2);
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("does not commit identical time-series rows twice on blur after a value edit", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "time-series",
+            label: "Demand history",
+            defaultValue: [{ timestamp: "2026-07-10", value: 10 }],
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const field = form.getField("demand-history");
+    if (!field) {
+      throw new Error("Expected time-series field.");
+    }
+    const setValueSpy = vi.spyOn(field, "setValue");
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    const renderer = getShadow(fieldFrame).querySelector("mlf-time-series-field") as HTMLElement;
+    const valueInput = getShadow(renderer).querySelector(
+      'input[inputmode="decimal"]',
+    ) as HTMLInputElement;
+
+    valueInput.value = "12";
+    valueInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    valueInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+
+    expect(setValueSpy).toHaveBeenCalledTimes(1);
 
     mounted.unmount();
     container.remove();
@@ -821,6 +991,159 @@ describe("primitives", () => {
     const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
     const reportRenderer = getShadow(reportFrame).querySelector("mlf-regressor-report");
     expect(getShadow(reportRenderer).textContent).toContain("0.00");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("does not request a root update for repeated keystrokes that leave render state unchanged", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const host = mounted.host as PrimitiveFormElement;
+    const originalRequestUpdate = host.requestUpdate.bind(host);
+    let requestCount = 0;
+    (
+      host as PrimitiveFormElement & {
+        requestUpdate: PrimitiveFormElement["requestUpdate"];
+      }
+    ).requestUpdate = ((...args: Parameters<PrimitiveFormElement["requestUpdate"]>) => {
+      requestCount += 1;
+      return originalRequestUpdate(...args);
+    }) as PrimitiveFormElement["requestUpdate"];
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "A";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    expect(requestCount).toBeGreaterThan(0);
+
+    requestCount = 0;
+    textInput.value = "Al";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    expect(requestCount).toBe(0);
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("keeps field renderer context stable across frame-only rerenders", async () => {
+    if (!customElements.get("test-context-probe-field")) {
+      class TestContextProbeFieldElement extends HTMLElement {
+        #context: unknown;
+        contextSetCount = 0;
+
+        set context(value: unknown) {
+          if (this.#context !== value) {
+            this.contextSetCount += 1;
+            this.#context = value;
+          }
+        }
+
+        get context(): unknown {
+          return this.#context;
+        }
+      }
+
+      customElements.define("test-context-probe-field", TestContextProbeFieldElement);
+    }
+
+    const registry = createBuiltinRegistry();
+
+    registry.registerField({
+      kind: "context-probe",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "context-probe";
+            label: string;
+            description?: string;
+            id?: string;
+          };
+        },
+      } as never,
+      normalizeValue(value) {
+        return typeof value === "string" ? value : "";
+      },
+      describe(config, context) {
+        return {
+          component: "context-probe-field",
+          props: {
+            id: config.id,
+            label: config.label,
+            description: config.description ?? "",
+            value: context.state.value,
+          },
+        };
+      },
+    } satisfies FieldDefinition);
+
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "context-probe",
+            label: "Probe",
+            description: "Toggle me",
+          },
+        ],
+      },
+      registry,
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const primitiveRegistry = createPrimitiveRegistry().registerField(
+      "context-probe-field",
+      "test-context-probe-field",
+    );
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      registry: primitiveRegistry,
+      reportPane: "hidden",
+    });
+
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    const probe = getShadow(fieldFrame).querySelector("test-context-probe-field") as HTMLElement & {
+      contextSetCount: number;
+    };
+    const helpButton = getShadow(fieldFrame).querySelector("button.help-btn") as HTMLButtonElement;
+    const initialContextSetCount = probe.contextSetCount;
+
+    expect(initialContextSetCount).toBeGreaterThan(0);
+
+    helpButton.click();
+    await flush();
+    helpButton.click();
+    await flush();
+
+    expect(probe.contextSetCount).toBe(initialContextSetCount);
 
     mounted.unmount();
     container.remove();
