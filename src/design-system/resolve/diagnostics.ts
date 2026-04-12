@@ -4,13 +4,18 @@
 import { componentKeys, mlfTokenKeys } from "../contract";
 import type {
   DesignSystemConfig,
+  DesignSystemScheme,
   DesignSystemRegistry,
   DesignSystemWarning,
+  DesignSystemWarningCode,
   RecipeManifest,
   ThemeManifest,
 } from "../types";
 
 const knownTokenKeys = new Set<string>(mlfTokenKeys);
+
+/** Matches `var(--mlf-...)` references in token values. */
+const mlfVarReferencePattern = /var\(\s*(--mlf-[a-z0-9-]+)\s*[,)]/g;
 
 const pushUnknownTokenWarnings = (
   warnings: DesignSystemWarning[],
@@ -60,6 +65,34 @@ const pushMisplacedComponentTokenWarnings = (
       value: token,
       message: `[mlform] Token "${token}" does not belong to component "${component}" at ${path}`,
     });
+  }
+};
+
+const pushBrokenReferenceWarnings = (
+  warnings: DesignSystemWarning[],
+  resolvedTokenKeys: Set<string>,
+  tokens: Record<string, string> | undefined,
+): void => {
+  if (!tokens) {
+    return;
+  }
+
+  for (const [token, value] of Object.entries(tokens)) {
+    mlfVarReferencePattern.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = mlfVarReferencePattern.exec(value)) !== null) {
+      const referencedToken = match[1];
+      if (!resolvedTokenKeys.has(referencedToken) && knownTokenKeys.has(referencedToken)) {
+        // Only warn about --mlf- tokens that are known to the contract but
+        // absent from the resolved set. Non-mlf vars are outside our scope.
+        warnings.push({
+          code: "broken-token-reference" as DesignSystemWarningCode,
+          path: token,
+          value: referencedToken,
+          message: `[mlform] Token "${token}" references "${referencedToken}" which is not present in the resolved token set`,
+        });
+      }
+    }
   }
 };
 
@@ -114,6 +147,13 @@ export const collectDesignSystemWarnings = (
     `theme "${theme.id}".schemes.dark.tokens`,
     theme.schemes.dark?.tokens,
   );
+  for (const [variantId, variant] of Object.entries(theme.variants ?? {})) {
+    pushUnknownTokenWarnings(
+      warnings,
+      `theme "${theme.id}".variants.${variantId}.tokens`,
+      variant.tokens,
+    );
+  }
   pushUnknownTokenWarnings(warnings, `recipe "${recipe.id}".tokens`, recipe.tokens);
 
   for (const [componentKey, component] of Object.entries(recipe.components ?? {})) {
@@ -143,6 +183,54 @@ export const collectDesignSystemWarnings = (
     );
   }
 
+  return dedupeWarnings(warnings);
+};
+
+export const collectThemeVariantWarnings = (
+  config: DesignSystemConfig,
+  theme: ThemeManifest,
+  effectiveScheme: DesignSystemScheme,
+): DesignSystemWarning[] => {
+  if (!config.variant) {
+    return [];
+  }
+
+  const variant = theme.variants?.[config.variant];
+  if (!variant) {
+    return [
+      {
+        code: "invalid-theme-variant",
+        path: "variant",
+        value: config.variant,
+        message: `[mlform] Theme "${theme.id}" does not define variant "${config.variant}"`,
+      },
+    ];
+  }
+
+  if (variant.baseScheme !== effectiveScheme) {
+    return [
+      {
+        code: "invalid-theme-variant",
+        path: "variant",
+        value: config.variant,
+        message: `[mlform] Theme variant "${config.variant}" targets "${variant.baseScheme}" but effective scheme is "${effectiveScheme}". Variant was ignored.`,
+      },
+    ];
+  }
+
+  return [];
+};
+
+/**
+ * Post-resolution check: validates that `var(--mlf-*)` references in resolved
+ * token values point to tokens that actually exist in the resolved set.
+ */
+export const collectBrokenReferenceWarnings = (
+  resolvedTokens: Record<string, string>,
+): DesignSystemWarning[] => {
+  const warnings: DesignSystemWarning[] = [];
+  const resolvedKeys = new Set(Object.keys(resolvedTokens));
+  pushBrokenReferenceWarnings(warnings, resolvedKeys, resolvedTokens);
   return dedupeWarnings(warnings);
 };
 

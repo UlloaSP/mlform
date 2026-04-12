@@ -59,6 +59,7 @@ export const mergeDesignSystemConfig = (
       mode: current?.mode ?? accumulator.mode,
       theme: current?.theme ?? accumulator.theme,
       recipe: current?.recipe ?? accumulator.recipe,
+      variant: current?.variant ?? accumulator.variant,
       hostSchemeResolver: current?.hostSchemeResolver ?? accumulator.hostSchemeResolver,
       strict: current?.strict ?? accumulator.strict,
       onWarning: current?.onWarning ?? accumulator.onWarning,

@@ -20,8 +20,10 @@ export type EffectiveModeSource =
 export type DesignSystemWarningCode =
   | "unknown-theme-id"
   | "unknown-recipe-id"
+  | "invalid-theme-variant"
   | "unknown-token-key"
-  | "misplaced-component-token";
+  | "misplaced-component-token"
+  | "broken-token-reference";
 
 export interface DesignSystemWarning {
   code: DesignSystemWarningCode;
@@ -69,6 +71,18 @@ export interface ThemeScheme {
   tokens: Record<string, string>;
 }
 
+/**
+ * A named variant of a base scheme. Variants overlay additional tokens
+ * on top of a base scheme's tokens — use for accessibility variants
+ * (e.g. `"high-contrast-light"`, `"high-contrast-dark"`) or brand variants.
+ */
+export interface ThemeVariant {
+  /** Which base scheme this variant extends. */
+  baseScheme: DesignSystemScheme;
+  /** Additional tokens overlaid on the base scheme's tokens. */
+  tokens: Record<string, string>;
+}
+
 export interface ThemeManifest {
   id: string;
   label: string;
@@ -76,6 +90,16 @@ export interface ThemeManifest {
     light: ThemeScheme;
     dark?: ThemeScheme;
   };
+  /**
+   * Additional scheme variants that overlay base scheme tokens.
+   * Keyed by arbitrary variant names (e.g. `"high-contrast-light"`,
+   * `"high-contrast-dark"`). Each variant specifies a `baseScheme` and
+   * additional tokens applied on top.
+   *
+   * When `prefersMoreContrast` is detected and no explicit `variant` is set,
+   * the resolver auto-selects `"high-contrast-${effectiveScheme}"` if present.
+   */
+  variants?: Record<string, ThemeVariant>;
   /**
    * Tokens applied to both schemes before scheme-specific tokens.
    * Use for values that don't change between light and dark (e.g. brand fonts,
@@ -108,6 +132,16 @@ export interface DesignSystemConfig {
   mode?: DesignSystemMode;
   theme?: string | ThemeManifest;
   recipe?: string | RecipeManifest;
+  /**
+   * Select a named theme variant (e.g. `"high-contrast-light"`). When set,
+   * the variant's tokens overlay the resolved base scheme tokens only when the
+   * variant's `baseScheme` matches the effective scheme. Mismatches emit an
+   * `"invalid-theme-variant"` warning and the variant is ignored.
+   *
+   * When omitted and `prefersMoreContrast` is active, the resolver
+   * auto-selects `"high-contrast-${effectiveScheme}"` if it exists in the theme.
+   */
+  variant?: string;
   overrides?: DesignSystemOverrides;
   hostSchemeResolver?: (host: HTMLElement) => DesignSystemScheme | null;
   strict?: boolean;
@@ -123,6 +157,8 @@ export interface ResolvedDesignSystem {
   effectiveScheme: DesignSystemScheme;
   effectiveModeSource: EffectiveModeSource;
   themeId: string;
+  /** The active theme variant, or `null` if no variant is applied. */
+  variant: string | null;
   recipeId: string;
   density: Density;
   motion: Motion;
@@ -138,11 +174,38 @@ export interface ResolveDesignSystemRuntimeOptions {
   systemScheme?: DesignSystemScheme;
   /** When true and `motion` is not explicitly overridden, effective motion collapses to `"none"`. */
   prefersReducedMotion?: boolean;
+  /** When true and `density` is not explicitly overridden, effective density becomes `"spacious"`. */
+  prefersMoreContrast?: boolean;
+  /**
+   * When true, Windows High Contrast Mode (or equivalent `forced-colors: active`)
+   * is active. Color tokens are remapped to CSS system colors so the browser's
+   * forced-color palette is respected.
+   */
+  forcedColors?: boolean;
 }
+
+export type DesignSystemRegistryChangeType =
+  | "theme-registered"
+  | "theme-removed"
+  | "recipe-registered"
+  | "recipe-removed";
+
+export interface DesignSystemRegistryChangeEvent {
+  type: DesignSystemRegistryChangeType;
+  id: string;
+}
+
+export type DesignSystemRegistryChangeListener = (event: DesignSystemRegistryChangeEvent) => void;
 
 export interface DesignSystemRegistry {
   registerTheme(theme: ThemeManifest): DesignSystemRegistry;
   registerRecipe(recipe: RecipeManifest): DesignSystemRegistry;
+  /**
+   * Register a variant for an existing theme without re-registering the
+   * entire theme. If the theme does not exist yet, the variant is stored
+   * and will be attached when the theme is later registered.
+   */
+  registerVariant(themeId: string, variantId: string, variant: ThemeVariant): DesignSystemRegistry;
   removeTheme(id: string): DesignSystemRegistry;
   removeRecipe(id: string): DesignSystemRegistry;
   getTheme(id: string): ThemeManifest | undefined;
@@ -150,19 +213,51 @@ export interface DesignSystemRegistry {
   listThemes(): ThemeManifest[];
   listRecipes(): RecipeManifest[];
   clone(): DesignSystemRegistry;
+  onChange(listener: DesignSystemRegistryChangeListener): () => void;
 }
+
+/**
+ * Strategy for animating design-system transitions (theme/scheme switches).
+ *
+ * - `"none"` — instant switch (default).
+ * - `"view-transition"` — uses the View Transitions API (`document.startViewTransition`)
+ *   when available; falls back to instant switch. Stale transitions are ignored
+ *   when a newer update supersedes them.
+ * - A custom function receives the update callback and is responsible for
+ *   calling it (e.g. wrapping in a CSS transition or animation). It may return
+ *   cleanup function and should observe `context.signal` for cancellation.
+ */
+export interface DesignSystemTransitionContext {
+  host: HTMLElement;
+  resolved: ResolvedDesignSystem;
+  previous: ResolvedDesignSystem | null;
+  signal: AbortSignal;
+}
+
+export type DesignSystemTransition =
+  | "none"
+  | "view-transition"
+  | ((apply: () => void, context: DesignSystemTransitionContext) => void | (() => void));
 
 export interface DesignSystemControllerOptions {
   host: HTMLElement;
   registry?: DesignSystemRegistry;
   getConfig: () => DesignSystemConfig;
   onChange?: (resolved: ResolvedDesignSystem) => void;
+  /** When true, seed controller state from matching SSR/inline DOM before first refresh. */
+  hydrate?: boolean;
+  /**
+   * How to animate when the resolved design system changes. Defaults to `"none"`.
+   */
+  transition?: DesignSystemTransition;
 }
 
 export interface AttachDesignSystemOptions {
   config?: DesignSystemConfig;
   registry?: DesignSystemRegistry;
   onChange?: (resolved: ResolvedDesignSystem) => void;
+  /** How to animate when the resolved design system changes. Defaults to `"none"`. */
+  transition?: DesignSystemTransition;
 }
 
 export interface AttachedDesignSystem {

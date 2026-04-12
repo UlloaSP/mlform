@@ -13,7 +13,7 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
       "--mlf-shell-color": "var(--mlf-color-text)",
       "--mlf-shell-bg": "transparent",
       "--mlf-shell-overlay":
-        "linear-gradient(180deg, rgba(247, 249, 252, 0), var(--mlf-color-overlay) 50%)",
+        "linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 0%, transparent), var(--mlf-color-overlay) 50%)",
       "--mlf-shell-panel-bg": "var(--mlf-color-surface)",
       "--mlf-shell-panel-border": "var(--mlf-color-border)",
       "--mlf-shell-panel-shadow-soft": "var(--mlf-shadow-sm)",
@@ -29,8 +29,9 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   hero: {
     tokens: {
       "--mlf-hero-bg":
-        "radial-gradient(circle at top left, var(--mlf-color-accent-soft), transparent 34%), linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 248, 252, 0.95))",
-      "--mlf-hero-border": "color-mix(in srgb, var(--mlf-color-border) 90%, white)",
+        "radial-gradient(circle at top left, var(--mlf-color-accent-soft), transparent 34%), linear-gradient(135deg, color-mix(in srgb, var(--mlf-color-surface) 95%, transparent), color-mix(in srgb, var(--mlf-color-surface) 95%, var(--mlf-color-surface-muted)))",
+      "--mlf-hero-border":
+        "color-mix(in srgb, var(--mlf-color-border) 90%, var(--mlf-color-surface))",
       "--mlf-hero-shadow": "var(--mlf-shadow-lg)",
       "--mlf-hero-radius": "var(--mlf-radius-xl)",
       "--mlf-hero-eyebrow-color": "var(--mlf-color-text-muted)",
@@ -40,7 +41,7 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   field: {
     tokens: {
       "--mlf-field-bg":
-        "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-accent) 8%, transparent), transparent 38%), linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 253, 0.98))",
+        "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-accent) 8%, transparent), transparent 38%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 96%, transparent), color-mix(in srgb, var(--mlf-color-surface) 98%, var(--mlf-color-surface-muted)))",
       "--mlf-field-border": "var(--mlf-color-border)",
       "--mlf-field-border-invalid": "color-mix(in srgb, var(--mlf-color-danger) 34%, transparent)",
       "--mlf-field-shadow": "var(--mlf-shadow-md)",
@@ -56,7 +57,7 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   report: {
     tokens: {
       "--mlf-report-bg":
-        "radial-gradient(circle at top right, color-mix(in srgb, var(--mlf-color-accent) 10%, transparent), transparent 34%), linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 253, 0.98))",
+        "radial-gradient(circle at top right, color-mix(in srgb, var(--mlf-color-accent) 10%, transparent), transparent 34%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 96%, transparent), color-mix(in srgb, var(--mlf-color-surface) 98%, var(--mlf-color-surface-muted)))",
       "--mlf-report-border": "var(--mlf-color-border)",
       "--mlf-report-shadow": "var(--mlf-shadow-md)",
       "--mlf-report-radius": "var(--mlf-radius-lg)",
@@ -103,7 +104,7 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   error: {
     tokens: {
       "--mlf-error-bg":
-        "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-danger) 14%, transparent), transparent 55%), linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.88))",
+        "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-danger) 14%, transparent), transparent 55%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 94%, transparent), color-mix(in srgb, var(--mlf-color-surface) 88%, transparent))",
       "--mlf-error-border": "color-mix(in srgb, var(--mlf-color-danger) 20%, transparent)",
       "--mlf-error-color": "var(--mlf-color-danger)",
     },

@@ -8,7 +8,12 @@ import type {
   ResolveDesignSystemRuntimeOptions,
   ResolvedDesignSystem,
 } from "../types";
-import { assertDesignSystemWarnings, collectDesignSystemWarnings } from "./diagnostics";
+import {
+  assertDesignSystemWarnings,
+  collectBrokenReferenceWarnings,
+  collectDesignSystemWarnings,
+  collectThemeVariantWarnings,
+} from "./diagnostics";
 import { resolveMode } from "./resolve-mode";
 import { resolveRecipe } from "./resolve-recipe";
 import { resolveTheme } from "./resolve-theme";
@@ -24,8 +29,13 @@ export const resolveDesignSystem = (
   const warnings = collectDesignSystemWarnings(config, registry, theme, recipe);
   assertDesignSystemWarnings(config, warnings);
   const mode = resolveMode(config, theme, runtimeOptions);
+  const variantWarnings = collectThemeVariantWarnings(config, theme, mode.effectiveScheme);
+  if (variantWarnings.length > 0) {
+    warnings.push(...variantWarnings);
+    assertDesignSystemWarnings(config, variantWarnings);
+  }
 
-  return resolveTokens(
+  const resolved = resolveTokens(
     config,
     theme,
     recipe,
@@ -35,6 +45,17 @@ export const resolveDesignSystem = (
     warnings,
     runtimeOptions,
   );
+
+  // Post-resolution: check for broken var(--mlf-*) references.
+  const brokenRefWarnings = collectBrokenReferenceWarnings(resolved.tokens);
+  if (brokenRefWarnings.length > 0) {
+    resolved.warnings.push(...brokenRefWarnings);
+    assertDesignSystemWarnings(config, brokenRefWarnings);
+  }
+
+  return resolved;
 };
 
 export { mergeDesignSystemConfig } from "./merge-config";
+export { migrateTokens, migrateThemeTokens } from "./migrate-tokens";
+export type { TokenMigration, TokenMigrationConflict } from "./migrate-tokens";

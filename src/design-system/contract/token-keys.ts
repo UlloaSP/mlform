@@ -50,6 +50,9 @@ export const mlfTokenKeys = [
   "--mlf-motion-fast",
   "--mlf-motion-base",
   "--mlf-motion-slow",
+  // Global: Transition (for theme/scheme switch animations)
+  "--mlf-transition-duration",
+  "--mlf-transition-easing",
   // Global: Layout
   "--mlf-layout-gap",
   "--mlf-section-gap",

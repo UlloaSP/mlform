@@ -8,6 +8,8 @@ export const designSystemEventNames = {
 export const designSystemMediaQueries = {
   prefersDarkScheme: "(prefers-color-scheme: dark)",
   prefersReducedMotion: "(prefers-reduced-motion: reduce)",
+  prefersMoreContrast: "(prefers-contrast: more)",
+  forcedColors: "(forced-colors: active)",
 } as const;
 
 export const designSystemHostAttributeNames = {
@@ -15,9 +17,11 @@ export const designSystemHostAttributeNames = {
   inheritedScheme: "data-mlf-scheme",
   effectiveScheme: "data-mlf-effective-scheme",
   themeId: "data-mlf-theme-id",
+  variantId: "data-mlf-variant-id",
   recipeId: "data-mlf-recipe-id",
   density: "data-mlf-density",
   motion: "data-mlf-motion",
+  signature: "data-mlf-signature",
   style: "style",
   class: "class",
 } as const;

@@ -9,14 +9,15 @@ export const resolveTheme = (
   registry: DesignSystemRegistry,
 ): ThemeManifest => {
   const requested = config.theme;
+  const fallback = registry.getTheme("neutral") ?? neutralTheme;
 
   if (requested && typeof requested !== "string") {
     return requested;
   }
 
   if (typeof requested === "string") {
-    return registry.getTheme(requested) ?? neutralTheme;
+    return registry.getTheme(requested) ?? fallback;
   }
 
-  return registry.getTheme("neutral") ?? neutralTheme;
+  return fallback;
 };

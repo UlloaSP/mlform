@@ -15,9 +15,10 @@ import type { AttachDesignSystemOptions, AttachedDesignSystem, DesignSystemConfi
  * suitable for SSR / Node.js contexts. Use `resolveDesignSystem` directly for
  * server-side token resolution without DOM side effects.
  */
-export const attachDesignSystem = (
+export const createAttachedDesignSystem = (
   host: HTMLElement,
   options: AttachDesignSystemOptions = {},
+  hydrate = false,
 ): AttachedDesignSystem => {
   const freezeConfig = (...configs: Array<DesignSystemConfig | undefined>): DesignSystemConfig =>
     deepFreeze(mergeDesignSystemConfig(...configs));
@@ -30,6 +31,8 @@ export const attachDesignSystem = (
     registry,
     getConfig: () => currentConfig,
     onChange: options.onChange,
+    hydrate,
+    transition: options.transition,
   });
 
   controller.connect();
@@ -59,4 +62,11 @@ export const attachDesignSystem = (
       controller.disconnect();
     },
   });
+};
+
+export const attachDesignSystem = (
+  host: HTMLElement,
+  options: AttachDesignSystemOptions = {},
+): AttachedDesignSystem => {
+  return createAttachedDesignSystem(host, options);
 };

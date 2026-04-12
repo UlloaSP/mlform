@@ -67,6 +67,8 @@ export const globalTokenDefaults: Record<string, string> = {
   "--mlf-motion-fast": "140ms ease",
   "--mlf-motion-base": "180ms ease",
   "--mlf-motion-slow": "260ms ease",
+  "--mlf-transition-duration": "200ms",
+  "--mlf-transition-easing": "ease-in-out",
   "--mlf-layout-gap": "1rem",
   "--mlf-section-gap": "1rem",
   "--mlf-pane-gap": "1rem",

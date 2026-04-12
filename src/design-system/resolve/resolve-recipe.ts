@@ -9,14 +9,15 @@ export const resolveRecipe = (
   registry: DesignSystemRegistry,
 ): RecipeManifest => {
   const requested = config.recipe;
+  const fallback = registry.getRecipe("default") ?? defaultRecipe;
 
   if (requested && typeof requested !== "string") {
     return requested;
   }
 
   if (typeof requested === "string") {
-    return registry.getRecipe(requested) ?? defaultRecipe;
+    return registry.getRecipe(requested) ?? fallback;
   }
 
-  return registry.getRecipe("default") ?? defaultRecipe;
+  return fallback;
 };

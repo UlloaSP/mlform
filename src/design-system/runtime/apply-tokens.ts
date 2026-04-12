@@ -2,28 +2,41 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { designSystemHostAttributeNames } from "../constants";
-import type { ResolvedDesignSystem } from "../types";
+import type { DesignSystemTransition, ResolvedDesignSystem } from "../types";
 import { writeDesignSystemTokenDeclarations } from "./declarations";
+import { getResolvedDesignSystemHostAttributes } from "./host-state";
 
 export const managedDesignSystemAttributes = [
   designSystemHostAttributeNames.themeId,
+  designSystemHostAttributeNames.variantId,
   designSystemHostAttributeNames.recipeId,
   designSystemHostAttributeNames.effectiveScheme,
   designSystemHostAttributeNames.inheritedScheme,
   designSystemHostAttributeNames.density,
   designSystemHostAttributeNames.motion,
+  designSystemHostAttributeNames.signature,
 ] as const;
 
 export const applyResolvedDesignSystem = (
   host: HTMLElement,
   resolved: ResolvedDesignSystem,
+  transition?: DesignSystemTransition,
 ): Set<string> => {
-  host.setAttribute(designSystemHostAttributeNames.themeId, resolved.themeId);
-  host.setAttribute(designSystemHostAttributeNames.recipeId, resolved.recipeId);
-  host.setAttribute(designSystemHostAttributeNames.effectiveScheme, resolved.effectiveScheme);
-  host.setAttribute(designSystemHostAttributeNames.inheritedScheme, resolved.effectiveScheme);
-  host.setAttribute(designSystemHostAttributeNames.density, resolved.density);
-  host.setAttribute(designSystemHostAttributeNames.motion, resolved.motion);
+  const attributes = getResolvedDesignSystemHostAttributes(resolved);
+  for (const attribute of managedDesignSystemAttributes) {
+    const value = attributes[attribute];
+    if (value === undefined) {
+      host.removeAttribute(attribute);
+    } else {
+      host.setAttribute(attribute, value);
+    }
+  }
+
+  // When view-transition is active, set view-transition-name so CSS
+  // ::view-transition-* pseudo-elements can target the design system host.
+  if (transition === "view-transition") {
+    host.style.viewTransitionName = "mlf-design-system";
+  }
 
   host.style.colorScheme = resolved.effectiveScheme;
   return writeDesignSystemTokenDeclarations(host.style, resolved);
@@ -59,4 +72,6 @@ export const restoreManagedDesignSystem = (
   } else {
     host.style.colorScheme = originalColorScheme;
   }
+
+  host.style.removeProperty("view-transition-name");
 };

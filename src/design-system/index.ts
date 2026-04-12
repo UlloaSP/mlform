@@ -10,7 +10,12 @@ export type {
   DesignSystemControllerOptions,
   DesignSystemMode,
   DesignSystemRegistry,
+  DesignSystemRegistryChangeEvent,
+  DesignSystemRegistryChangeListener,
+  DesignSystemRegistryChangeType,
   DesignSystemScheme,
+  DesignSystemTransitionContext,
+  DesignSystemTransition,
   DesignSystemWarning,
   DesignSystemWarningCode,
   EffectiveModeSource,
@@ -25,6 +30,7 @@ export type {
   ResolveDesignSystemRuntimeOptions,
   ThemeManifest,
   ThemeScheme,
+  ThemeVariant,
   TokenMap,
 } from "./types";
 export {
@@ -45,11 +51,21 @@ export {
   defineRecipe,
   defineTheme,
 } from "./registry";
-export { mergeDesignSystemConfig, resolveDesignSystem } from "./resolve";
+export {
+  mergeDesignSystemConfig,
+  migrateTokens,
+  migrateThemeTokens,
+  resolveDesignSystem,
+} from "./resolve";
+export type { TokenMigration, TokenMigrationConflict } from "./resolve";
 export {
   attachDesignSystem,
   applyResolvedDesignSystem,
   createDesignSystemStylesheet,
+  createResolvedDesignSystemSignature,
   DesignSystemController,
+  getResolvedDesignSystemHostAttributes,
+  hydrateDesignSystem,
   writeDesignSystemTokenDeclarations,
 } from "./runtime";
+export type { CreateDesignSystemStylesheetOptions } from "./runtime";

@@ -3,6 +3,13 @@
 
 import type { Density } from "../types";
 
+/**
+ * Density token overrides for each density level. All three levels are
+ * explicit so readers can compare values without cross-referencing
+ * `globalTokenDefaults`. The `comfortable` values intentionally mirror
+ * the baseline in `globalTokenDefaults` — they are authoritative here,
+ * and `globalTokenDefaults` inherits the same values.
+ */
 export const densityTokenScales: Record<Density, Record<string, string>> = {
   compact: {
     "--mlf-shell-gap": "1rem",
@@ -14,8 +21,16 @@ export const densityTokenScales: Record<Density, Record<string, string>> = {
     "--mlf-control-padding-block": "0.65rem",
     "--mlf-pane-min-width": "18rem",
   },
-  // comfortable is the baseline — all values come from globalTokenDefaults, no overrides needed
-  comfortable: {},
+  comfortable: {
+    "--mlf-shell-gap": "1.2rem",
+    "--mlf-layout-gap": "1rem",
+    "--mlf-section-gap": "1rem",
+    "--mlf-pane-gap": "1rem",
+    "--mlf-control-height": "3rem",
+    "--mlf-control-padding-inline": "0.92rem",
+    "--mlf-control-padding-block": "0.78rem",
+    "--mlf-pane-min-width": "20rem",
+  },
   spacious: {
     "--mlf-shell-gap": "1.4rem",
     "--mlf-layout-gap": "1.2rem",

@@ -31,6 +31,17 @@ export const defineTheme = (theme: ThemeManifest): ThemeManifest => {
           }
         : {}),
     },
+    variants: theme.variants
+      ? Object.fromEntries(
+          Object.entries(theme.variants).map(([key, variant]) => [
+            key,
+            {
+              baseScheme: variant.baseScheme,
+              tokens: { ...variant.tokens },
+            },
+          ]),
+        )
+      : undefined,
     sharedTokens: theme.sharedTokens ? { ...theme.sharedTokens } : undefined,
   });
 };
