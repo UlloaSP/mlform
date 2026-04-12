@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export const toComparablePrimitive = (value: unknown): number | string | null => {
+export const toComparablePrimitive = (value: unknown): number | string | bigint | null => {
   if (value instanceof Date) {
     return Number.isNaN(value.getTime()) ? null : value.getTime();
   }
@@ -20,7 +20,7 @@ export const toComparablePrimitive = (value: unknown): number | string | null =>
   }
 
   if (typeof value === "bigint") {
-    return Number(value);
+    return value;
   }
 
   return null;

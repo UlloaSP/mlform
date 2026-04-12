@@ -212,9 +212,18 @@ export const createFieldValidator = ({
       const lifecycleVersion = store.getState().lifecycleVersion;
       const values = getValues();
       const normalizedValue = normalizeValue(definition, config, currentState.value);
-      const flags = resolveDerivedFlags(config, values, getSubmitCount(), getFormStatus());
+      const submitCount = getSubmitCount();
+      const flags = resolveDerivedFlags(config, values, submitCount, getFormStatus());
       const validationRunId = ++activeValidationRunId;
       const abortController = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const syncErrors = computeSyncErrors(
+        definition,
+        config,
+        normalizedValue,
+        values,
+        submitCount,
+        flags,
+      );
 
       activeAbortController?.abort("validation-restarted");
       activeAbortController = abortController;
@@ -226,10 +235,13 @@ export const createFieldValidator = ({
           visible: flags.visible,
           disabled: flags.disabled,
           readOnly: flags.readOnly,
-          syncErrors: [],
+          syncErrors,
           validationErrors: [],
           externalErrors: [],
         });
+        if (activeAbortController === abortController) {
+          activeAbortController = null;
+        }
         commitState(config.id, nextState);
         return {
           fieldId: config.id,
@@ -246,27 +258,11 @@ export const createFieldValidator = ({
           disabled: flags.disabled,
           readOnly: flags.readOnly,
           validationVersion,
-          syncErrors: computeSyncErrors(
-            definition,
-            config,
-            normalizedValue,
-            values,
-            getSubmitCount(),
-            flags,
-          ),
+          syncErrors,
           validationErrors: [...currentState.validationErrors],
           externalErrors: [...currentState.externalErrors],
           status: "validating",
         }),
-      );
-
-      const syncErrors = computeSyncErrors(
-        definition,
-        config,
-        normalizedValue,
-        values,
-        getSubmitCount(),
-        flags,
       );
 
       let validationErrors: string[] = [];
@@ -285,7 +281,7 @@ export const createFieldValidator = ({
           const validationResult = definition.validate(normalizedValue, config, {
             field: config,
             values,
-            submitCount: getSubmitCount(),
+            submitCount,
             validationVersion,
             signal: abortController?.signal,
           });

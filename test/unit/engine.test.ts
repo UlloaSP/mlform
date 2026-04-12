@@ -705,6 +705,84 @@ describe("engine", () => {
     expect(form.getField("window")?.state.disabled).toBe(true);
   });
 
+  it("supports bigint declarative comparisons without losing precision", () => {
+    const registry = createBuiltinRegistry();
+
+    registry.registerField({
+      kind: "bigint",
+      schema: z
+        .object({
+          kind: z.literal("bigint"),
+          id: z.string().optional(),
+          label: z.string(),
+          hiddenWhen: z.any().optional(),
+          disabledWhen: z.any().optional(),
+          readOnlyWhen: z.any().optional(),
+        })
+        .passthrough(),
+      getDefaultValue() {
+        return 0n;
+      },
+      normalizeValue(value) {
+        if (typeof value === "bigint") {
+          return value;
+        }
+
+        if (typeof value === "number" || typeof value === "string") {
+          return BigInt(value);
+        }
+
+        return 0n;
+      },
+      describe(config, context) {
+        return {
+          component: "bigint-field",
+          props: {
+            id: config.id,
+            label: config.label,
+            value: context.state.value,
+          },
+        };
+      },
+    });
+
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "bigint",
+            label: "Minimum",
+          },
+          {
+            kind: "bigint",
+            label: "Maximum",
+          },
+          {
+            kind: "text",
+            label: "Window",
+            disabledWhen: {
+              kind: "field-comparison",
+              field: "minimum",
+              otherField: "maximum",
+              operator: "gt",
+            },
+          },
+        ],
+      },
+      registry,
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    form.setValues({
+      minimum: 9007199254740993n,
+      maximum: 9007199254740992n,
+    });
+
+    expect(form.getField("window")?.state.disabled).toBe(true);
+  });
+
   it("runs cross-field validators and validation hooks", async () => {
     const beforeValidate = vi.fn();
     const afterValidate = vi.fn();
@@ -2608,6 +2686,126 @@ describe("engine", () => {
     expect(submit).toHaveBeenCalledTimes(1);
   });
 
+  it("does not let stale external abort signals cancel later submissions", async () => {
+    let resolveSecondSubmit: ((value: { reports: Record<string, unknown> }) => void) | undefined;
+    let startSecondSubmit: (() => void) | undefined;
+    const secondSubmitStarted = new Promise<void>((resolve) => {
+      startSecondSubmit = resolve;
+    });
+    const submit = vi
+      .fn()
+      .mockResolvedValueOnce({ reports: {} })
+      .mockImplementationOnce(
+        ({ signal }: { signal?: AbortSignal }) =>
+          new Promise((resolve, reject) => {
+            startSecondSubmit?.();
+            signal?.addEventListener(
+              "abort",
+              () => {
+                reject(new Error("second submit aborted"));
+              },
+              { once: true },
+            );
+
+            resolveSecondSubmit = resolve as (value: { reports: Record<string, unknown> }) => void;
+          }),
+      );
+    const staleAbortController = new AbortController();
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            required: true,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: { submit },
+    });
+
+    form.setValues({ name: "Alice" });
+    await form.submit({ signal: staleAbortController.signal });
+
+    const secondSubmit = form.submit();
+    await secondSubmitStarted;
+    staleAbortController.abort("late-stale-abort");
+    resolveSecondSubmit?.({ reports: {} });
+
+    await expect(secondSubmit).resolves.toMatchObject({
+      values: { name: "Alice" },
+    });
+    expect(form.state.status).toBe("success");
+    expect(submit).toHaveBeenCalledTimes(2);
+  });
+
+  it("isolates submit hooks, transport payloads, and returned results from engine state", async () => {
+    const inputSeries = [{ timestamp: "2026-01-01", value: 10 }];
+    const normalizedSeries = [{ timestamp: new Date("2026-01-01"), value: 10 }];
+    const serializedSeries = [{ timestamp: "2026-01-01", value: 10 }];
+    const beforeSubmit = vi.fn(({ values }: { values: Record<string, unknown> }) => {
+      expect(values).toEqual({ series: normalizedSeries });
+      (values.series as { timestamp: Date; value: number }[])[0]!.value = 20;
+    });
+    const submit = vi
+      .fn()
+      .mockImplementation(
+        async ({
+          values,
+          serializedValues,
+        }: {
+          values: Record<string, unknown>;
+          serializedValues: Record<string, unknown>;
+        }) => {
+          expect(values).toEqual({ series: normalizedSeries });
+          expect(serializedValues).toEqual({ series: serializedSeries });
+          (values.series as { timestamp: Date; value: number }[])[0]!.value = 30;
+          (serializedValues.series as { timestamp: string; value: number }[])[0]!.value = 40;
+
+          return { reports: {} };
+        },
+      );
+    const afterSubmit = vi.fn(({ result }: { result: { values: Record<string, unknown> } }) => {
+      expect(result.values).toEqual({ series: normalizedSeries });
+      (result.values.series as { timestamp: Date; value: number }[])[0]!.value = 50;
+    });
+
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "time-series",
+            label: "Series",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: { submit },
+      hooks: {
+        beforeSubmit,
+        afterSubmit,
+      },
+    });
+
+    form.setValues({ series: inputSeries });
+
+    const result = await form.submit();
+
+    expect(beforeSubmit).toHaveBeenCalledTimes(1);
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect(afterSubmit).toHaveBeenCalledTimes(1);
+    expect(form.getValues()).toEqual({ series: normalizedSeries });
+    expect(form.state.values).toEqual({ series: normalizedSeries });
+    expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
+    expect(result.values).toEqual({ series: normalizedSeries });
+
+    (result.values.series as { timestamp: Date; value: number }[])[0]!.value = 60;
+
+    expect(form.getValues()).toEqual({ series: normalizedSeries });
+    expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
+  });
+
   it("resets field and report state back to initial values", async () => {
     const form = createForm({
       schema: {
@@ -2642,8 +2840,49 @@ describe("engine", () => {
 
     expect(form.state.status).toBe("idle");
     expect(form.getValues()).toEqual({ name: "Initial" });
+    expect(form.state.submitCount).toBe(0);
     expect(form.state.lastResult).toBeNull();
     expect(form.reports[0]?.state.status).toBe("idle");
+  });
+
+  it("clears submit-count driven state on reset", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            required: true,
+            defaultValue: "Initial",
+          },
+          {
+            kind: "text",
+            label: "After Submit",
+            hiddenWhen: {
+              kind: "submit-count",
+              gte: 1,
+            },
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue({ reports: {} }),
+      },
+    });
+
+    expect(form.state.submitCount).toBe(0);
+    expect(form.getField("after-submit")?.state.visible).toBe(true);
+
+    await form.submit();
+
+    expect(form.state.submitCount).toBe(1);
+    expect(form.getField("after-submit")?.state.visible).toBe(false);
+
+    form.reset();
+
+    expect(form.state.submitCount).toBe(0);
+    expect(form.getField("after-submit")?.state.visible).toBe(true);
   });
 
   it("does not let a stale submit overwrite state after reset", async () => {

@@ -3,6 +3,7 @@
 
 import { normalizeValuePath, setPathValue } from "../paths";
 import type { NormalizedFieldConfig, TransportResponse } from "../types";
+import { cloneValue } from "../values";
 import { isRecord } from "../utils";
 
 type SubmissionField = {
@@ -22,6 +23,15 @@ export type SubmissionValueRecords = {
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
 };
+
+export const cloneSubmissionValueRecords = (
+  records: SubmissionValueRecords,
+): SubmissionValueRecords => ({
+  values: cloneValue(records.values),
+  fieldValues: cloneValue(records.fieldValues),
+  serializedValues: cloneValue(records.serializedValues),
+  serializedFieldValues: cloneValue(records.serializedFieldValues),
+});
 
 export const shouldIncludeFieldInSubmission = (
   field: SubmissionField,
@@ -49,12 +59,13 @@ export const buildSubmissionValueRecords = (
     }
 
     const valuePath = normalizeValuePath(field.config.valuePath, field.id);
+    const rawValue = field.state.value;
     const serializedValue = field.serialize();
 
-    fieldValues[field.id] = field.state.value;
-    serializedFieldValues[field.id] = serializedValue;
-    setPathValue(values, valuePath, field.state.value);
-    setPathValue(serializedValues, valuePath, serializedValue);
+    fieldValues[field.id] = cloneValue(rawValue);
+    serializedFieldValues[field.id] = cloneValue(serializedValue);
+    setPathValue(values, valuePath, cloneValue(rawValue));
+    setPathValue(serializedValues, valuePath, cloneValue(serializedValue));
   }
 
   return {

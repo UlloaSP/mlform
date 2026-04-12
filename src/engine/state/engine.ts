@@ -131,6 +131,7 @@ export const transitionEngineState = (
       return {
         ...current,
         status: "idle",
+        submitCount: 0,
         formErrors: [],
         lastResult: null,
         activeSubmissionVersion: null,

@@ -22,6 +22,7 @@ import { createSubmissionAbortManager } from "./abort";
 import { createSubmissionLifecycle } from "./lifecycle";
 import {
   buildSubmissionValueRecords,
+  cloneSubmissionValueRecords,
   normalizeTransportResponse,
   type SubmissionValueRecords,
 } from "./request";
@@ -104,9 +105,10 @@ export const createFormSubmitter = ({
     submitCount: number,
     error: unknown,
   ): Promise<void> => {
+    const publicRecords = cloneSubmissionValueRecords(records);
     await hooks?.onSubmitError?.({
       backend,
-      ...records,
+      ...publicRecords,
       submitCount,
       error,
     });
@@ -200,17 +202,20 @@ export const createFormSubmitter = ({
       );
       abortManager.attachExternalSignal(options, submissionRequestId);
 
-      markReportsLoading();
-      lifecycle.start(submissionRequestId);
+      store.batch(() => {
+        markReportsLoading();
+        lifecycle.start(submissionRequestId);
+      });
 
       const submitCount = getSubmitCount();
       const lifecycleVersion = store.getState().lifecycleVersion;
       const submitSignal = abortManager.createSignal(options);
 
       try {
+        const beforeSubmitRecords = cloneSubmissionValueRecords(records);
         await hooks?.beforeSubmit?.({
           backend: selectedTransport.backend,
-          ...records,
+          ...beforeSubmitRecords,
           submitCount,
           signal: submitSignal,
         });
@@ -219,9 +224,10 @@ export const createFormSubmitter = ({
           throw createAbortError(abortManager.getAbortReason(submissionRequestId));
         }
 
+        const transportRecords = cloneSubmissionValueRecords(records);
         const response = await selectedTransport.transport.submit({
           backend: selectedTransport.backend,
-          ...records,
+          ...transportRecords,
           fields: normalizedSchema.fields,
           reports: normalizedSchema.reports,
           signal: submitSignal,
@@ -251,15 +257,19 @@ export const createFormSubmitter = ({
         });
         const result = createSubmissionResult(reports, baseResult, nextReportStates);
 
-        commitReportStates(reports, nextReportStates);
-        lifecycle.succeed(cloneSubmissionResult(reports, result));
+        const storedResult = cloneSubmissionResult(reports, result);
+        store.batch(() => {
+          commitReportStates(reports, nextReportStates);
+          lifecycle.succeed(storedResult);
+        });
 
         try {
+          const afterSubmitRecords = cloneSubmissionValueRecords(records);
           await hooks?.afterSubmit?.({
             backend: selectedTransport.backend,
-            ...records,
+            ...afterSubmitRecords,
             submitCount,
-            result,
+            result: cloneSubmissionResult(reports, result),
           });
         } catch (error) {
           if (hookFailurePolicy?.afterSubmit !== "preserve-success") {
@@ -269,7 +279,7 @@ export const createFormSubmitter = ({
           await notifySubmitError(selectedTransport.backend, records, submitCount, error);
         }
 
-        return result;
+        return cloneSubmissionResult(reports, result);
       } catch (error) {
         if (
           isAbortLikeError(error) ||

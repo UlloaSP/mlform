@@ -48,8 +48,13 @@ export class ControllerBinding<T extends Subscribable> implements ReactiveContro
     }
 
     if (this.#current === controller) {
-      // Same instance — just re-sync state without re-subscribing.
+      // Same instance — re-sync state and re-subscribe if reconnect cleared the listener.
       this.#onSync(controller);
+      if (!controller || this.#unsubscribe) {
+        return;
+      }
+
+      this.#unsubscribe = controller.subscribe(() => this.#onSync(this.#current));
       return;
     }
 
@@ -70,6 +75,5 @@ export class ControllerBinding<T extends Subscribable> implements ReactiveContro
   hostDisconnected(): void {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
-    this.#current = undefined;
   }
 }

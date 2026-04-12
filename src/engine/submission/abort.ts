@@ -24,6 +24,17 @@ export const createSubmissionAbortManager = (): SubmissionAbortManager => {
   let currentSubmissionRequestId: number | null = null;
   let submissionRequestSequence = 0;
   const abortedSubmissionReasons = new Map<number, string>();
+  const externalSignalCleanup = new Map<number, () => void>();
+
+  const runExternalSignalCleanup = (requestId: number): void => {
+    const cleanup = externalSignalCleanup.get(requestId);
+    if (!cleanup) {
+      return;
+    }
+
+    externalSignalCleanup.delete(requestId);
+    cleanup();
+  };
 
   return {
     ensureIdle() {
@@ -66,17 +77,24 @@ export const createSubmissionAbortManager = (): SubmissionAbortManager => {
         throw createAbortError(String(options.signal.reason ?? ""));
       }
 
-      options.signal.addEventListener(
-        "abort",
-        () => {
-          activeAbortReason =
-            options.signal?.reason instanceof Error
-              ? options.signal.reason.message
-              : String(options.signal?.reason ?? "");
-          activeAbortController?.abort(options.signal?.reason);
-        },
-        { once: true },
-      );
+      const onAbort = () => {
+        if (currentSubmissionRequestId !== requestId) {
+          runExternalSignalCleanup(requestId);
+          return;
+        }
+
+        activeAbortReason =
+          options.signal?.reason instanceof Error
+            ? options.signal.reason.message
+            : String(options.signal?.reason ?? "");
+        activeAbortController?.abort(options.signal?.reason);
+        runExternalSignalCleanup(requestId);
+      };
+
+      options.signal.addEventListener("abort", onAbort, { once: true });
+      externalSignalCleanup.set(requestId, () => {
+        options.signal?.removeEventListener("abort", onAbort);
+      });
     },
     abort(reason) {
       if (currentSubmissionRequestId === null) {
@@ -89,6 +107,8 @@ export const createSubmissionAbortManager = (): SubmissionAbortManager => {
       activeAbortController?.abort(abortReason);
     },
     clear(requestId) {
+      runExternalSignalCleanup(requestId);
+
       if (currentSubmissionRequestId === requestId) {
         currentSubmissionRequestId = null;
       }
@@ -98,6 +118,10 @@ export const createSubmissionAbortManager = (): SubmissionAbortManager => {
       abortedSubmissionReasons.delete(requestId);
     },
     reset() {
+      for (const requestId of externalSignalCleanup.keys()) {
+        runExternalSignalCleanup(requestId);
+      }
+
       currentSubmissionRequestId = null;
       activeAbortController = null;
       activeAbortReason = "";

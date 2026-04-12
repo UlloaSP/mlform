@@ -1135,6 +1135,42 @@ describe("primitives", () => {
     container.remove();
   });
 
+  it("keeps primitive field bindings alive after host reconnect", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    container.removeChild(mounted.host);
+    container.appendChild(mounted.host);
+    await flush();
+
+    form.setValues({ name: "Alice" });
+    await flush();
+
+    const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(getShadow(fieldFrame).textContent).toContain("Text recorded (5 characters).");
+
+    mounted.unmount();
+    container.remove();
+  });
+
   it("keeps field renderer context stable across frame-only rerenders", async () => {
     if (!customElements.get("test-context-probe-field")) {
       class TestContextProbeFieldElement extends HTMLElement {

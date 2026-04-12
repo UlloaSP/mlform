@@ -17,46 +17,54 @@ export const createSubmissionLifecycle = ({
 }: SubmissionTransitionOptions) => {
   return {
     start(submissionVersion: number) {
-      store.update((current) =>
-        transitionEngineState(current, {
-          type: "start-submission",
-          submissionVersion,
-        }),
-      );
+      store.batch(() => {
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "start-submission",
+            submissionVersion,
+          }),
+        );
 
-      syncAfterSubmissionTransition();
+        syncAfterSubmissionTransition();
+      });
     },
     succeed(result: SubmitResult) {
-      store.update((current) =>
-        transitionEngineState(current, {
-          type: "submission-success",
-          result,
-        }),
-      );
+      store.batch(() => {
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "submission-success",
+            result,
+          }),
+        );
 
-      syncAfterSubmissionTransition();
+        syncAfterSubmissionTransition();
+      });
     },
     abort(message: string) {
-      resetReports();
-      store.update((current) =>
-        transitionEngineState(current, {
-          type: "submission-aborted",
-          message,
-        }),
-      );
+      store.batch(() => {
+        resetReports();
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "submission-aborted",
+            message,
+          }),
+        );
 
-      syncAfterSubmissionTransition();
+        syncAfterSubmissionTransition();
+      });
     },
     fail(message: string) {
-      resetReports();
-      store.update((current) =>
-        transitionEngineState(current, {
-          type: "submission-error",
-          message,
-        }),
-      );
+      store.batch(() => {
+        resetReports();
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "submission-error",
+            message,
+          }),
+        );
 
-      syncAfterSubmissionTransition();
+        syncAfterSubmissionTransition();
+      });
     },
     clear(submissionVersion: number) {
       store.update((current) =>
