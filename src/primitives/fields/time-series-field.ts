@@ -198,7 +198,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
 
       .cell {
         position: relative;
-        min-width: 0;
+        min-width: fit-content;
       }
 
       .value-wrap {

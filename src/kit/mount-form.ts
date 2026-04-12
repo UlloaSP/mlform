@@ -21,20 +21,30 @@ type KitContainer = HTMLElement & {
   [mountedFormRef]?: MountedForm;
 };
 
-const resolveTransport = (options: MountFormOptions): Transport => {
-  if (options.transport && (options.endpoint || options.transportOptions)) {
+type KitTransportConfig = {
+  transport: Transport;
+};
+
+const resolveTransportConfig = (options: MountFormOptions): KitTransportConfig => {
+  const hasEndpoint = "endpoint" in options && options.endpoint !== undefined;
+  const hasTransport = "transport" in options && options.transport !== undefined;
+
+  if (Number(hasEndpoint) + Number(hasTransport) > 1) {
     throw new TypeError(kitErrorMessages.conflictingTransport);
   }
 
-  if (options.transport) {
-    return options.transport;
+  if (hasTransport) {
+    return {
+      transport: options.transport,
+    };
   }
 
-  if (options.endpoint) {
-    return createJsonTransport({
-      endpoint: options.endpoint,
-      ...options.transportOptions,
-    });
+  if (hasEndpoint) {
+    return {
+      transport: createJsonTransport({
+        endpoint: options.endpoint,
+      }),
+    };
   }
 
   throw new TypeError(kitErrorMessages.missingTransport);
@@ -57,10 +67,11 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const labels = resolveKitLabels(options.labels);
   const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
+  const transportConfig = resolveTransportConfig(options);
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
-    transport: resolveTransport(options),
+    ...transportConfig,
     initialValues: options.initialValues,
     validators: options.validators,
     hooks: options.hooks,

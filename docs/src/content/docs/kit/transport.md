@@ -1,9 +1,9 @@
 ---
 title: Transport
-description: Submit MLForm values through the default JSON transport or a custom transport.
+description: Submit MLForm values through endpoint sugar or a composed transport pipeline.
 ---
 
-The kit can create a JSON transport from `endpoint`:
+Use `endpoint` for the simple JSON case:
 
 ```ts
 mountForm(container, {
@@ -12,17 +12,19 @@ mountForm(container, {
 });
 ```
 
-Customize the HTTP layer with `transportOptions`:
+When you need HTTP customization, build the transport explicitly:
 
 ```ts
+import { createJsonTransport, mountForm } from "mlform";
+
 mountForm(container, {
-  endpoint: "/api/predict",
   schema,
-  transportOptions: {
+  transport: createJsonTransport({
+    endpoint: "/api/predict",
     method: "PATCH",
     headers: { "x-client": "mlform" },
     credentials: "include",
-  },
+  }),
 });
 ```
 
@@ -40,5 +42,58 @@ mountForm(container, {
       };
     },
   },
+});
+```
+
+Use `createRoutingTransport` when MLForm should pick one transport internally. Route names are internal policy ids, not part of `form.submit()`:
+
+```ts
+import { createJsonTransport, createRoutingTransport, mountForm } from "mlform";
+
+const transport = createRoutingTransport({
+  transports: {
+    local: {
+      async submit(request) {
+        return { reports: { prediction: await runLocalModel(request.serializedValues) } };
+      },
+    },
+    remote: createJsonTransport({
+      endpoint: "/api/predict",
+    }),
+  },
+  selectTransport(request) {
+    return request.serializedValues.mode === "offline" ? "local" : "remote";
+  },
+});
+
+mountForm(container, {
+  schema,
+  transport,
+});
+```
+
+Use `createFanoutTransport` when one submit should call every transport and merge the results:
+
+```ts
+import { createFanoutTransport, mountForm } from "mlform";
+
+mountForm(container, {
+  schema,
+  transport: createFanoutTransport({
+    transports: [localModelTransport, remoteApiTransport],
+  }),
+});
+```
+
+Use `createFallbackTransport` when later transports should run only after earlier failures:
+
+```ts
+import { createFallbackTransport, mountForm } from "mlform";
+
+mountForm(container, {
+  schema,
+  transport: createFallbackTransport({
+    transports: [primaryTransport, backupTransport],
+  }),
 });
 ```

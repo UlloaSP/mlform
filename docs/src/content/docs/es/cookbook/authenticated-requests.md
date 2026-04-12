@@ -4,16 +4,18 @@ description: Cookies, bearer tokens y headers personalizados.
 ---
 
 ```ts
+import { createJsonTransport, mountForm } from "mlform";
+
 mountForm(container, {
   schema,
-  endpoint: "/api/predict",
-  transportOptions: {
+  transport: createJsonTransport({
+    endpoint: "/api/predict",
     credentials: "include",
     headers: {
       Authorization: `Bearer ${token}`,
       "X-Request-Source": "mlform",
     },
-  },
+  }),
 });
 ```
 

@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import { SubmissionAbortedError } from "@/engine";
-import { mountForm } from "@/kit";
+import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -68,10 +68,10 @@ describe("kit integration", () => {
     const container = document.createElement("div");
     document.body.append(container);
     const mounted = mountForm(container, {
-      endpoint: "https://api.example.com/predict",
-      transportOptions: {
+      transport: createJsonTransport({
+        endpoint: "https://api.example.com/predict",
         fetch: fetchMock as typeof globalThis.fetch,
-      },
+      }),
       schema: {
         fields: [
           {
@@ -160,6 +160,115 @@ describe("kit integration", () => {
 
     mounted.unmount();
     expect(container.childElementCount).toBe(0);
+    container.remove();
+  });
+
+  it("routes mounted submissions through a composed transport", async () => {
+    const localSubmit = vi.fn().mockResolvedValue({
+      reports: {
+        risk: {
+          prediction: "local",
+          labels: ["low", "high"],
+          probabilities: [0.8, 0.2],
+        },
+      },
+    });
+    const remoteSubmit = vi.fn().mockResolvedValue({
+      reports: {
+        risk: {
+          prediction: "remote",
+          labels: ["low", "high"],
+          probabilities: [0.1, 0.9],
+        },
+      },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+
+    const mounted = mountForm(container, {
+      transport: createRoutingTransport({
+        transports: {
+          local: { submit: localSubmit },
+          remote: { submit: remoteSubmit },
+        },
+        selectTransport(request) {
+          return request.serializedValues.mode === "remote" ? "remote" : "local";
+        },
+      }),
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            required: true,
+          },
+          {
+            id: "mode",
+            kind: "text",
+            label: "Mode",
+          },
+        ],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+            label: "Risk",
+          },
+        ],
+      },
+      initialValues: {
+        name: "Alice",
+        mode: "local",
+      },
+    });
+
+    await flush();
+
+    const localResult = await mounted.form.submit();
+
+    expect(localSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        serializedValues: {
+          name: "Alice",
+          mode: "local",
+        },
+      }),
+    );
+    expect(localResult.reports.risk).toMatchObject({
+      prediction: "local",
+    });
+
+    await flush();
+
+    let reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
+    let reportRenderer = getShadow(reportFrame).querySelector("mlf-classifier-report");
+    expect(getShadow(reportRenderer).textContent).toContain("80.0%");
+
+    mounted.form.setValues({
+      mode: "remote",
+    });
+
+    const remoteResult = await mounted.form.submit();
+
+    expect(remoteSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        serializedValues: {
+          name: "Alice",
+          mode: "remote",
+        },
+      }),
+    );
+    expect(remoteResult.reports.risk).toMatchObject({
+      prediction: "remote",
+    });
+
+    await flush();
+
+    reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
+    reportRenderer = getShadow(reportFrame).querySelector("mlf-classifier-report");
+    expect(getShadow(reportRenderer).textContent).toContain("90.0%");
+
+    mounted.unmount();
     container.remove();
   });
 
@@ -314,8 +423,8 @@ describe("kit integration", () => {
         schema: {
           fields: [{ kind: "text", label: "Name" }],
         },
-      }),
-    ).toThrow("Provide either transport or endpoint/transportOptions");
+      } as never),
+    ).toThrow("Provide exactly one transport strategy");
   });
 
   it("forwards reset-on-hide and listener error policies to the engine", async () => {

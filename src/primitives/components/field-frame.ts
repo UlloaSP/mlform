@@ -130,7 +130,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
     }
 
     .control-slot {
-      min-width: 0;
+      min-width: fit-content;
     }
 
     .feedback {

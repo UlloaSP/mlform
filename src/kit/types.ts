@@ -13,8 +13,10 @@ import type {
   FormSchema,
   FormValidator,
   InactiveFieldPolicy,
+  MaybePromise,
   Registry,
   SubmitRequest,
+  TransportResponse,
   Transport,
 } from "@/engine";
 import type {
@@ -53,11 +55,55 @@ export interface JsonTransportOptions {
   parse?: (response: Response) => Promise<unknown>;
 }
 
-export interface MountFormOptions {
+export type TransportCollection<TTransportId extends string = string> =
+  | Record<TTransportId, Transport>
+  | readonly Transport[];
+
+export interface RoutingTransportOptions<TTransportId extends string = string> {
+  transports: Record<TTransportId, Transport>;
+  selectTransport: (
+    request: SubmitRequest,
+    context: {
+      transportIds: readonly TTransportId[];
+    },
+  ) => MaybePromise<TTransportId>;
+}
+
+export interface FanoutTransportResult<TTransportId extends string = string> {
+  id: TTransportId | undefined;
+  index: number;
+  response: TransportResponse;
+}
+
+export interface FanoutTransportOptions<TTransportId extends string = string> {
+  transports: TransportCollection<TTransportId>;
+  merge?: (context: {
+    request: SubmitRequest;
+    results: readonly FanoutTransportResult<TTransportId>[];
+  }) => MaybePromise<unknown>;
+}
+
+export interface FallbackTransportFailure<TTransportId extends string = string> {
+  id: TTransportId | undefined;
+  index: number;
+  error: unknown;
+}
+
+export interface FallbackTransportOptions<TTransportId extends string = string> {
+  transports: TransportCollection<TTransportId>;
+  shouldFallback?: (
+    error: unknown,
+    context: {
+      request: SubmitRequest;
+      id: TTransportId | undefined;
+      index: number;
+      failures: readonly FallbackTransportFailure<TTransportId>[];
+    },
+  ) => MaybePromise<boolean>;
+}
+
+interface BaseMountFormOptions {
   schema: FormSchema;
-  endpoint?: string | URL;
-  transport?: Transport;
-  transportOptions?: Omit<JsonTransportOptions, "endpoint">;
   registry?: Registry;
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
@@ -78,6 +124,25 @@ export interface MountFormOptions {
   primitiveText?: PrimitiveTextOverrides;
   onDesignSystemChange?: (resolved: ResolvedDesignSystem) => void;
 }
+
+interface EndpointMountTransportOptions {
+  endpoint: string | URL;
+  transport?: never;
+  transports?: never;
+  defaultBackend?: never;
+  transportOptions?: never;
+}
+
+interface SingleMountTransportOptions {
+  endpoint?: never;
+  transport: Transport;
+  transports?: never;
+  defaultBackend?: never;
+  transportOptions?: never;
+}
+
+export type MountFormOptions = BaseMountFormOptions &
+  (EndpointMountTransportOptions | SingleMountTransportOptions);
 
 export interface MountedForm {
   readonly form: FormController;

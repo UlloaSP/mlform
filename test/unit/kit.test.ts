@@ -2,7 +2,21 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createJsonTransport } from "@/kit";
+import {
+  createFanoutTransport,
+  createFallbackTransport,
+  createJsonTransport,
+  createRoutingTransport,
+} from "@/kit";
+
+const baseRequest = {
+  values: {},
+  fieldValues: {},
+  serializedValues: {},
+  serializedFieldValues: {},
+  fields: [],
+  reports: [],
+} as const;
 
 describe("kit", () => {
   it("creates a JSON transport that sends serialized inputs by default", async () => {
@@ -23,6 +37,7 @@ describe("kit", () => {
     });
 
     const result = await transport.submit({
+      ...baseRequest,
       values: {
         age: 34,
       },
@@ -35,8 +50,6 @@ describe("kit", () => {
       serializedFieldValues: {
         age: 34,
       },
-      fields: [],
-      reports: [],
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -77,16 +90,7 @@ describe("kit", () => {
       fetch: fetchMock as typeof globalThis.fetch,
     });
 
-    await expect(
-      transport.submit({
-        values: {},
-        fieldValues: {},
-        serializedValues: {},
-        serializedFieldValues: {},
-        fields: [],
-        reports: [],
-      }),
-    ).rejects.toThrow("backend offline");
+    await expect(transport.submit(baseRequest)).rejects.toThrow("backend offline");
   });
 
   it("rejects HTTP methods that do not support the kit JSON body contract", () => {
@@ -118,17 +122,151 @@ describe("kit", () => {
       },
     });
 
-    await transport.submit({
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
-      fields: [],
-      reports: [],
-    });
+    await transport.submit(baseRequest);
 
     const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
     expect(requestInit.body).toBeInstanceOf(FormData);
     expect(new Headers(requestInit.headers).has("content-type")).toBe(false);
+  });
+
+  it("routes submissions through a selected transport without exposing backend choice", async () => {
+    const localSubmit = vi.fn().mockResolvedValue({
+      reports: {
+        risk: { prediction: "local" },
+      },
+    });
+    const remoteSubmit = vi.fn().mockResolvedValue({
+      reports: {
+        risk: { prediction: "remote" },
+      },
+    });
+    const transport = createRoutingTransport({
+      transports: {
+        local: { submit: localSubmit },
+        remote: { submit: remoteSubmit },
+      },
+      selectTransport(request) {
+        return request.serializedValues.mode === "remote" ? "remote" : "local";
+      },
+    });
+
+    await transport.submit({
+      ...baseRequest,
+      serializedValues: {
+        mode: "local",
+      },
+    });
+    await transport.submit({
+      ...baseRequest,
+      serializedValues: {
+        mode: "remote",
+      },
+    });
+
+    expect(localSubmit).toHaveBeenCalledTimes(1);
+    expect(remoteSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("fans out to every transport and preserves per-transport raw output by default", async () => {
+    const transport = createFanoutTransport({
+      transports: {
+        primary: {
+          submit: vi.fn().mockResolvedValue({
+            reports: {
+              risk: { prediction: "approved" },
+            },
+            meta: {
+              model: "primary",
+            },
+          }),
+        },
+        shadow: {
+          submit: vi.fn().mockResolvedValue({
+            reports: {
+              score: { value: 0.92 },
+            },
+            meta: {
+              model: "shadow",
+            },
+          }),
+        },
+      },
+    });
+
+    await expect(transport.submit(baseRequest)).resolves.toEqual({
+      reports: {
+        risk: { prediction: "approved" },
+        score: { value: 0.92 },
+      },
+      meta: {
+        transports: {
+          primary: { model: "primary" },
+          shadow: { model: "shadow" },
+        },
+      },
+      raw: {
+        primary: {
+          reports: {
+            risk: { prediction: "approved" },
+          },
+          meta: {
+            model: "primary",
+          },
+        },
+        shadow: {
+          reports: {
+            score: { value: 0.92 },
+          },
+          meta: {
+            model: "shadow",
+          },
+        },
+      },
+    });
+  });
+
+  it("rejects duplicate report ids in default fanout merges", async () => {
+    const transport = createFanoutTransport({
+      transports: [
+        {
+          submit: vi.fn().mockResolvedValue({
+            reports: {
+              risk: { prediction: "approved" },
+            },
+          }),
+        },
+        {
+          submit: vi.fn().mockResolvedValue({
+            reports: {
+              risk: { prediction: "rejected" },
+            },
+          }),
+        },
+      ],
+    });
+
+    await expect(transport.submit(baseRequest)).rejects.toThrow(
+      'createFanoutTransport received report "risk"',
+    );
+  });
+
+  it("falls back to later transports after failures", async () => {
+    const primarySubmit = vi.fn().mockRejectedValue(new Error("primary offline"));
+    const secondarySubmit = vi.fn().mockResolvedValue({
+      reports: {
+        risk: { prediction: "fallback" },
+      },
+    });
+    const transport = createFallbackTransport({
+      transports: [{ submit: primarySubmit }, { submit: secondarySubmit }],
+    });
+
+    await expect(transport.submit(baseRequest)).resolves.toEqual({
+      reports: {
+        risk: { prediction: "fallback" },
+      },
+    });
+    expect(primarySubmit).toHaveBeenCalledTimes(1);
+    expect(secondarySubmit).toHaveBeenCalledTimes(1);
   });
 });

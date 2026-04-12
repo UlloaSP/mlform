@@ -3,12 +3,23 @@
 
 export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
 export { mountForm, unmountForm } from "./mount-form";
-export { createJsonTransport } from "./transport";
+export {
+  createFanoutTransport,
+  createFallbackTransport,
+  createJsonTransport,
+  createRoutingTransport,
+} from "./transport";
 export type {
+  FanoutTransportOptions,
+  FanoutTransportResult,
+  FallbackTransportFailure,
+  FallbackTransportOptions,
   JsonTransportMethod,
   JsonTransportOptions,
   KitDesignSystemSnapshot,
   KitLabels,
   MountFormOptions,
   MountedForm,
+  RoutingTransportOptions,
+  TransportCollection,
 } from "./types";

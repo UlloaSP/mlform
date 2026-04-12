@@ -8,6 +8,9 @@ Exports:
 - `mountForm(container, options)`
 - `unmountForm(mounted)`
 - `createJsonTransport(options)`
+- `createRoutingTransport(options)`
+- `createFanoutTransport(options)`
+- `createFallbackTransport(options)`
 - `defaultKitDesignSystem`
 - `defaultKitLabels`
 
@@ -17,10 +20,21 @@ Types:
 - `MountedForm`
 - `JsonTransportOptions`
 - `JsonTransportMethod`
+- `RoutingTransportOptions`
+- `FanoutTransportOptions`
+- `FanoutTransportResult`
+- `FallbackTransportOptions`
+- `FallbackTransportFailure`
+- `TransportCollection`
 - `KitLabels`
 - `KitDesignSystemSnapshot`
 
-`MountFormOptions` requires `schema` and either `endpoint` or `transport`.
+`MountFormOptions` requires `schema` and exactly one transport strategy:
+
+- `endpoint`
+- `transport`
+
+Advanced routing, fan-out, and fallback behavior should be composed inside `transport`.
 
 It also forwards engine-level knobs such as `inactiveFieldPolicy`, `hookFailurePolicy`, `listenerErrorPolicy`, and `onListenerError`.
 

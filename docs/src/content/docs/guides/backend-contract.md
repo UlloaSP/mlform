@@ -28,19 +28,20 @@ It expects any parseable response. The recommended response is:
 }
 ```
 
-Use `transportOptions.body` when the backend needs a different request shape:
+Use `createJsonTransport({ body })` when the backend needs a different request shape:
 
 ```ts
-transportOptions: {
+const transport = createJsonTransport({
+  endpoint: "/api/predict",
   body(request) {
     return JSON.stringify({
       values: request.serializedValues,
       reportIds: request.reports.map((report) => report.id),
     });
   },
-}
+});
 ```
 
-Use `transportOptions.parse` when the backend returns text, nested JSON, or a streaming gateway result.
+Use `createJsonTransport({ parse })` when the backend returns text, nested JSON, or a streaming gateway result.
 
 Legacy `outputs` responses are compatibility behavior only. New backends should return `reports`.

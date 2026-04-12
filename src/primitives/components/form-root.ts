@@ -206,7 +206,7 @@ export class PrimitiveFormElement extends LitElement {
     .left-section {
       flex: 0 1 auto;
       resize: horizontal;
-      min-width: var(--mlf-shell-left-min-width, 22rem);
+      min-width: min-content;
       max-width: var(--mlf-shell-left-max-width, 48rem);
       border-right: var(--mlf-border-width, 1px) solid
         var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
