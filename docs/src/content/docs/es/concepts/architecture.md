@@ -15,12 +15,12 @@ MLForm se divide en cuatro superficies publicas.
 Usa el kit en codigo de aplicacion. Baja a engine o primitives solo para renderers, registries o capas de integracion personalizadas.
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 import type { FormSchema } from "mlform/engine";
 
 const schema: FormSchema = {
   fields: [{ kind: "text", label: "Prompt" }],
 };
 
-mountForm(container, { endpoint: "/predict", schema });
+mountForm(container, { transport: createJsonTransport({ endpoint: "/predict" }), schema });
 ```

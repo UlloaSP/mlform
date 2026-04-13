@@ -13,7 +13,7 @@ El default del kit es `inactiveFieldPolicy: "omit"`.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   inactiveFieldPolicy: "include",
 });

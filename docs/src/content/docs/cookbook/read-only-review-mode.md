@@ -7,7 +7,7 @@ description: Lock user input while keeping values visible.
 const reviewMode = true;
 
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema: {
     fields: [
       {

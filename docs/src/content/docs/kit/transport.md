@@ -1,13 +1,15 @@
 ---
 title: Transport
-description: Submit MLForm values through endpoint sugar or a composed transport pipeline.
+description: Submit MLForm values through a composed transport pipeline.
 ---
 
-Use `endpoint` for the simple JSON case:
+Use `createJsonTransport` for the simple JSON case:
 
 ```ts
+import { createJsonTransport, mountForm } from "mlform";
+
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
 });
 ```
@@ -97,3 +99,32 @@ mountForm(container, {
   }),
 });
 ```
+
+Use middleware to compose auth, retries, circuit breaking, rate limiting, caching, deduplication, and request or response transforms:
+
+```ts
+import {
+  createJsonTransport,
+  mountForm,
+  pipe,
+  withAuth,
+  withCircuitBreaker,
+  withRateLimit,
+  withRetry,
+} from "mlform";
+
+const transport = pipe(
+  createJsonTransport({ endpoint: "/api/predict" }),
+  withAuth({ type: "bearer", token: () => getAccessToken() }),
+  withRetry({ attempts: 3 }),
+  withCircuitBreaker({ failureThreshold: 5, resetTimeout: 60_000 }),
+  withRateLimit({ maxConcurrent: 4, perSecond: 8 }),
+);
+
+mountForm(container, {
+  schema,
+  transport,
+});
+```
+
+Streaming is optional. Any transport may expose `stream(request)` alongside `submit(request)`. `createJsonTransport` can do that through `stream(response, request)`.

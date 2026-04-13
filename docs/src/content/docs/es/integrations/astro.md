@@ -7,11 +7,11 @@ description: Usa un script de cliente o un island para montar MLForm.
 <div id="prediction-form"></div>
 
 <script>
-  import { mountForm } from "mlform";
+  import { createJsonTransport, mountForm } from "mlform";
 
   const container = document.querySelector("#prediction-form");
   if (container) {
-    mountForm(container, { endpoint: "/api/predict", schema });
+    mountForm(container, { transport: createJsonTransport({ endpoint: "/api/predict" }), schema });
   }
 </script>
 ```

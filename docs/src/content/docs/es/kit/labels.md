@@ -5,7 +5,7 @@ description: Textos visibles configurables en la capa kit.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   labels: {
     form: "Customer profile",

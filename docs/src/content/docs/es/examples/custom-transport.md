@@ -28,4 +28,4 @@ mountForm(container, {
 });
 ```
 
-No proporciones `transport` y `endpoint` a la vez; MLForm lo trata como error de configuracion.
+Usa `createJsonTransport(...)` solo si el backend sigue el contrato JSON por defecto. Si no, mantén un `transport` propio.

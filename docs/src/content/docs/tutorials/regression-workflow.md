@@ -9,7 +9,7 @@ Submit structured values and render one numeric score.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/price",
+  transport: createJsonTransport({ endpoint: "/api/price" }),
   schema: {
     fields: [
       { id: "area", kind: "number", label: "Area", min: 0, unit: "m2" },

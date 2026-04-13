@@ -5,7 +5,7 @@ description: Themes, recipes, modos y overrides.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   designSystem: {
     mode: "auto",

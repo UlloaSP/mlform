@@ -11,6 +11,19 @@ Exports:
 - `createRoutingTransport(options)`
 - `createFanoutTransport(options)`
 - `createFallbackTransport(options)`
+- `createPipelineTransport(options)`
+- `createRacingTransport(options)`
+- `pipe(transport, ...middleware)`
+- `withAuth(options)`
+- `withRetry(options)`
+- `withTimeout(ms)`
+- `withCircuitBreaker(options)`
+- `withRateLimit(options)`
+- `withDedup(options)`
+- `withCache(options)`
+- `withRequestTransform(fn)`
+- `withResponseTransform(fn)`
+- `withLogging(options)`
 - `defaultKitDesignSystem`
 - `defaultKitLabels`
 
@@ -25,15 +38,20 @@ Tipos:
 - `FanoutTransportResult`
 - `FallbackTransportOptions`
 - `FallbackTransportFailure`
+- `PipelineTransportOptions`
+- `RacingTransportOptions`
+- `AuthOptions`
+- `RetryOptions`
+- `CircuitBreakerOptions`
+- `RateLimitOptions`
+- `DedupOptions`
+- `CacheOptions`
 - `TransportCollection`
 - `KitLabels`
 - `KitDesignSystemSnapshot`
 
-`MountFormOptions` requiere `schema` y exactamente una estrategia de transporte:
+`MountFormOptions` requiere `schema` y un `transport`.
 
-- `endpoint`
-- `transport`
-
-El comportamiento avanzado de routing, fan-out y fallback debe componerse dentro de `transport`.
+Compón routing, fan-out, fallback, auth, retries, streaming y transforms dentro de `transport`.
 
 Tambien acepta `containerStrategy: "replace"` cuando MLForm debe sustituir temporalmente contenido existente del host y restaurarlo en `unmount()`.

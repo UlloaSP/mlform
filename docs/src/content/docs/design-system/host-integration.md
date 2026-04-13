@@ -7,7 +7,7 @@ For embedded apps, prefer `mode: "inherit"` so MLForm follows host light or dark
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   designSystem: {
     mode: "inherit",
@@ -21,7 +21,7 @@ Use `onDesignSystemChange` to inspect the resolved system:
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   onDesignSystemChange(resolved) {
     console.log(resolved.effectiveScheme, resolved.themeId, resolved.recipeId);

@@ -4,7 +4,10 @@ description: Suscríbete al estado para pintar una vista previa del host.
 ---
 
 ```ts
-const mounted = mountForm(container, { endpoint: "/api/predict", schema });
+const mounted = mountForm(container, {
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  schema,
+});
 
 const unsubscribe = mounted.form.subscribeSelector(
   (state) => state.values,

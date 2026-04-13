@@ -15,12 +15,15 @@ MLForm is split into four public surfaces.
 Use the kit for application code. Drop to engine or primitives only when building custom renderers, registries, or integration layers.
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 import type { FormSchema } from "mlform/engine";
 
 const schema: FormSchema = {
   fields: [{ kind: "text", label: "Prompt" }],
 };
 
-mountForm(container, { endpoint: "/predict", schema });
+mountForm(container, {
+  transport: createJsonTransport({ endpoint: "/predict" }),
+  schema,
+});
 ```

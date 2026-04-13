@@ -9,7 +9,7 @@ Collect dated numeric observations for a forecasting backend.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/forecast",
+  transport: createJsonTransport({ endpoint: "/api/forecast" }),
   schema: {
     fields: [
       {

@@ -5,7 +5,7 @@ description: Observa validación, submit, errores, aborts y cleanup.
 
 ```ts
 const mounted = mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   hooks: {
     beforeValidate({ values }) {

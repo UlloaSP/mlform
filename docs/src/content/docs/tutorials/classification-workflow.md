@@ -9,7 +9,7 @@ Show a classifier report with class labels and probabilities.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/classify",
+  transport: createJsonTransport({ endpoint: "/api/classify" }),
   schema: {
     fields: [{ id: "text", kind: "text", label: "Text", required: true }],
     reports: [

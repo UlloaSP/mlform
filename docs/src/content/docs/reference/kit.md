@@ -11,6 +11,19 @@ Exports:
 - `createRoutingTransport(options)`
 - `createFanoutTransport(options)`
 - `createFallbackTransport(options)`
+- `createPipelineTransport(options)`
+- `createRacingTransport(options)`
+- `pipe(transport, ...middleware)`
+- `withAuth(options)`
+- `withRetry(options)`
+- `withTimeout(ms)`
+- `withCircuitBreaker(options)`
+- `withRateLimit(options)`
+- `withDedup(options)`
+- `withCache(options)`
+- `withRequestTransform(fn)`
+- `withResponseTransform(fn)`
+- `withLogging(options)`
 - `defaultKitDesignSystem`
 - `defaultKitLabels`
 
@@ -25,16 +38,21 @@ Types:
 - `FanoutTransportResult`
 - `FallbackTransportOptions`
 - `FallbackTransportFailure`
+- `PipelineTransportOptions`
+- `RacingTransportOptions`
+- `AuthOptions`
+- `RetryOptions`
+- `CircuitBreakerOptions`
+- `RateLimitOptions`
+- `DedupOptions`
+- `CacheOptions`
 - `TransportCollection`
 - `KitLabels`
 - `KitDesignSystemSnapshot`
 
-`MountFormOptions` requires `schema` and exactly one transport strategy:
+`MountFormOptions` requires `schema` and one `transport`.
 
-- `endpoint`
-- `transport`
-
-Advanced routing, fan-out, and fallback behavior should be composed inside `transport`.
+Compose routing, fan-out, fallback, auth, retries, streaming, and transforms inside `transport`.
 
 It also forwards engine-level knobs such as `inactiveFieldPolicy`, `hookFailurePolicy`, `listenerErrorPolicy`, and `onListenerError`.
 

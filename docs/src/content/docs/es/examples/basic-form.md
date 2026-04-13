@@ -8,10 +8,10 @@ description: Un formulario pequeno que envia datos a un endpoint de prediccion.
 ```
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 
 mountForm(document.querySelector("#basic-form") as HTMLElement, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema: {
     fields: [
       { id: "name", kind: "text", label: "Name", required: true },

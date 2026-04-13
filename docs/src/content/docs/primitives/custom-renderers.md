@@ -16,7 +16,7 @@ const primitiveRegistry = createBuiltinPrimitiveRegistry().registerField(
 );
 
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   primitiveRegistry,
 });

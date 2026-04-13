@@ -10,7 +10,7 @@ description: Primitive layout options for form and report placement.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   layout: "split",
   reportPane: "auto",

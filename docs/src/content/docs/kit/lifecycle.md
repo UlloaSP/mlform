@@ -7,7 +7,7 @@ Use hooks to observe validation and submit phases:
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   hooks: {
     beforeSubmit({ serializedValues }) {

@@ -15,7 +15,7 @@ Use `hooks.onSubmitError` for host notifications.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   hooks: {
     onSubmitError({ error }) {

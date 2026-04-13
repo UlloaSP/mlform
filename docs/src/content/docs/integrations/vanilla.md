@@ -9,7 +9,7 @@ description: Mount MLForm without a frontend framework.
 ```
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 
 const host = document.querySelector("#prediction-form");
 
@@ -18,7 +18,7 @@ if (!(host instanceof HTMLElement)) {
 }
 
 const mounted = mountForm(host, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
 });
 

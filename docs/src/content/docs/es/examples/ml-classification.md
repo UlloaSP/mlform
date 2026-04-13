@@ -4,10 +4,10 @@ description: Flujo de clasificacion con campos, un informe classifier y un backe
 ---
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 
 mountForm(document.querySelector("#credit-risk") as HTMLElement, {
-  endpoint: "/api/credit-risk",
+  transport: createJsonTransport({ endpoint: "/api/credit-risk" }),
   schema: {
     fields: [
       { id: "income", kind: "number", label: "Annual income", min: 0, unit: "USD" },

@@ -7,7 +7,7 @@ Usa `time-series` cuando un modelo necesita una secuencia de observaciones numer
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/forecast",
+  transport: createJsonTransport({ endpoint: "/api/forecast" }),
   schema: {
     fields: [
       {

@@ -6,14 +6,17 @@ description: Monta MLForm con ref, onMounted y onBeforeUnmount.
 ```vue
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { mountForm, type MountedForm } from "mlform";
+import { createJsonTransport, mountForm, type MountedForm } from "mlform";
 
 const host = ref<HTMLElement | null>(null);
 let mounted: MountedForm | undefined;
 
 onMounted(() => {
   if (!host.value) return;
-  mounted = mountForm(host.value, { endpoint: "/api/predict", schema });
+  mounted = mountForm(host.value, {
+    transport: createJsonTransport({ endpoint: "/api/predict" }),
+    schema,
+  });
 });
 
 onBeforeUnmount(() => mounted?.unmount());

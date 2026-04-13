@@ -7,7 +7,7 @@ Para aplicaciones embebidas, prefiere `mode: "inherit"` para que MLForm siga sup
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   designSystem: {
     mode: "inherit",
@@ -21,7 +21,7 @@ Usa `onDesignSystemChange` para inspeccionar el sistema resuelto:
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   onDesignSystemChange(resolved) {
     console.log(resolved.effectiveScheme, resolved.themeId, resolved.recipeId);

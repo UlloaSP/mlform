@@ -13,24 +13,26 @@ await mlForm.toHTMLElement(schema, container);
 Use `mountForm` instead:
 
 ```ts
+import { createJsonTransport, mountForm } from "mlform";
+
 const mounted = mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
 });
 ```
 
 Migration map:
 
-| Legacy                         | Current                                                               |
-| ------------------------------ | --------------------------------------------------------------------- |
-| `new MLForm(url)`              | `mountForm(container, { endpoint: url, schema })`                     |
-| `toHTMLElement(...)`           | `mountForm(...)`                                                      |
-| `inputs` collection            | `fields` collection                                                   |
-| `outputs` collection           | `reports` collection                                                  |
-| field `type`                   | field `kind`                                                          |
-| field `title`                  | field `label`                                                         |
-| `onSubmit` callback            | `hooks.afterSubmit`, `hooks.beforeSubmit`, or `mounted.form.submit()` |
-| `mlform/extensions` strategies | engine definitions and primitive registries                           |
+| Legacy                         | Current                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `new MLForm(url)`              | `mountForm(container, { transport: createJsonTransport({ endpoint: url }), schema })` |
+| `toHTMLElement(...)`           | `mountForm(...)`                                                                      |
+| `inputs` collection            | `fields` collection                                                                   |
+| `outputs` collection           | `reports` collection                                                                  |
+| field `type`                   | field `kind`                                                                          |
+| field `title`                  | field `label`                                                                         |
+| `onSubmit` callback            | `hooks.afterSubmit`, `hooks.beforeSubmit`, or `mounted.form.submit()`                 |
+| `mlform/extensions` strategies | engine definitions and primitive registries                                           |
 
 Legacy schema:
 

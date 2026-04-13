@@ -5,7 +5,7 @@ description: Blend MLForm into an existing dashboard shell.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   layout: "split",
   reportPane: "always",

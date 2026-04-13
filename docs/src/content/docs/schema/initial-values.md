@@ -14,7 +14,7 @@ MLForm has two ways to set an initial field value.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema: {
     fields: [
       { id: "threshold", kind: "number", label: "Threshold", defaultValue: 0.7 },

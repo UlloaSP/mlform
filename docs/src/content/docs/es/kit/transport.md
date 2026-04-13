@@ -1,13 +1,15 @@
 ---
 title: Transport
-description: Envia valores mediante `endpoint` o mediante un pipeline de transportes compuesto.
+description: Envia valores mediante un pipeline de transportes compuesto.
 ---
 
-Usa `endpoint` para el caso JSON simple:
+Usa `createJsonTransport` para el caso JSON simple:
 
 ```ts
+import { createJsonTransport, mountForm } from "mlform";
+
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
 });
 ```
@@ -97,3 +99,32 @@ mountForm(container, {
   }),
 });
 ```
+
+Usa middleware para componer auth, retries, circuit breaker, rate limit, cache, dedup y transforms de request o response:
+
+```ts
+import {
+  createJsonTransport,
+  mountForm,
+  pipe,
+  withAuth,
+  withCircuitBreaker,
+  withRateLimit,
+  withRetry,
+} from "mlform";
+
+const transport = pipe(
+  createJsonTransport({ endpoint: "/api/predict" }),
+  withAuth({ type: "bearer", token: () => getAccessToken() }),
+  withRetry({ attempts: 3 }),
+  withCircuitBreaker({ failureThreshold: 5, resetTimeout: 60_000 }),
+  withRateLimit({ maxConcurrent: 4, perSecond: 8 }),
+);
+
+mountForm(container, {
+  schema,
+  transport,
+});
+```
+
+Streaming es opcional. Cualquier transport puede exponer `stream(request)` ademas de `submit(request)`. `createJsonTransport` puede hacerlo mediante `stream(response, request)`.

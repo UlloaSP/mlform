@@ -5,7 +5,7 @@ description: Monta en ngAfterViewInit y limpia en ngOnDestroy.
 
 ```ts
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from "@angular/core";
-import { mountForm, type MountedForm } from "mlform";
+import { createJsonTransport, mountForm, type MountedForm } from "mlform";
 
 @Component({
   selector: "app-prediction-form",
@@ -16,7 +16,10 @@ export class PredictionFormComponent implements AfterViewInit, OnDestroy {
   private mounted?: MountedForm;
 
   ngAfterViewInit() {
-    this.mounted = mountForm(this.host.nativeElement, { endpoint: "/api/predict", schema });
+    this.mounted = mountForm(this.host.nativeElement, {
+      transport: createJsonTransport({ endpoint: "/api/predict" }),
+      schema,
+    });
   }
 
   ngOnDestroy() {

@@ -7,7 +7,7 @@ Use design system overrides for runtime configuration:
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   designSystem: {
     overrides: {

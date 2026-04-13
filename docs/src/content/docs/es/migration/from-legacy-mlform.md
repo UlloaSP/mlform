@@ -14,23 +14,23 @@ Usa `mountForm`:
 
 ```ts
 const mounted = mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
 });
 ```
 
 Mapa de migracion:
 
-| Legacy                          | Actual                                                              |
-| ------------------------------- | ------------------------------------------------------------------- |
-| `new MLForm(url)`               | `mountForm(container, { endpoint: url, schema })`                   |
-| `toHTMLElement(...)`            | `mountForm(...)`                                                    |
-| coleccion `inputs`              | coleccion `fields`                                                  |
-| coleccion `outputs`             | coleccion `reports`                                                 |
-| `type` de campo                 | `kind` de campo                                                     |
-| `title` de campo                | `label` de campo                                                    |
-| callback `onSubmit`             | `hooks.afterSubmit`, `hooks.beforeSubmit` o `mounted.form.submit()` |
-| estrategias `mlform/extensions` | definiciones de engine y primitive registries                       |
+| Legacy                          | Actual                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------- |
+| `new MLForm(url)`               | `mountForm(container, { transport: createJsonTransport({ endpoint: url }), schema })` |
+| `toHTMLElement(...)`            | `mountForm(...)`                                                                      |
+| coleccion `inputs`              | coleccion `fields`                                                                    |
+| coleccion `outputs`             | coleccion `reports`                                                                   |
+| `type` de campo                 | `kind` de campo                                                                       |
+| `title` de campo                | `label` de campo                                                                      |
+| callback `onSubmit`             | `hooks.afterSubmit`, `hooks.beforeSubmit` o `mounted.form.submit()`                   |
+| estrategias `mlform/extensions` | definiciones de engine y primitive registries                                         |
 
 Schema legacy:
 

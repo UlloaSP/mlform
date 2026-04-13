@@ -7,7 +7,7 @@ description: User-facing labels available in the kit layer.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   labels: {
     form: "Customer profile",

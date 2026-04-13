@@ -28,7 +28,7 @@ Use `inactiveFieldPolicy: "include"` when the backend must receive the full stat
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   inactiveFieldPolicy: "include",
 });

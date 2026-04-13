@@ -7,7 +7,7 @@ The kit attaches MLForm's design system automatically. Configure it with `design
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   designSystem: {
     mode: "auto",

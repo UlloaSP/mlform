@@ -5,7 +5,7 @@ description: Usa useRef y useEffect con cleanup.
 
 ```tsx
 import { useEffect, useMemo, useRef } from "react";
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 
 export function PredictionForm() {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,7 +19,10 @@ export function PredictionForm() {
 
   useEffect(() => {
     if (!ref.current) return;
-    const mounted = mountForm(ref.current, { endpoint: "/api/predict", schema });
+    const mounted = mountForm(ref.current, {
+      transport: createJsonTransport({ endpoint: "/api/predict" }),
+      schema,
+    });
     return () => mounted.unmount();
   }, [schema]);
 

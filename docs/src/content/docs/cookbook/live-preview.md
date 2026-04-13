@@ -4,7 +4,10 @@ description: Subscribe to form state and render host-side previews.
 ---
 
 ```ts
-const mounted = mountForm(container, { endpoint: "/api/predict", schema });
+const mounted = mountForm(container, {
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  schema,
+});
 
 const unsubscribe = mounted.form.subscribeSelector(
   (state) => state.values,

@@ -4,13 +4,13 @@ description: Monta MLForm sin framework.
 ---
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 
 const container = document.querySelector("#prediction-form");
 if (!container) throw new Error("Missing #prediction-form container.");
 
 const mounted = mountForm(container as HTMLElement, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
 });
 

@@ -8,13 +8,13 @@ description: Tutorial completo con campos text, number, category y un informe cl
 Montar un formulario que recoja una descripción, un umbral y un segmento, y muestre una predicción.
 
 ```ts
-import { mountForm } from "mlform";
+import { createJsonTransport, mountForm } from "mlform";
 
 const container = document.querySelector("#prediction-form");
 if (!container) throw new Error("Missing #prediction-form container.");
 
 const mounted = mountForm(container as HTMLElement, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema: {
     fields: [
       { id: "prompt", kind: "text", label: "Prompt", required: true, minLength: 3 },

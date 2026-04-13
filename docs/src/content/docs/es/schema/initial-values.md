@@ -7,7 +7,7 @@ description: defaultValue e initialValues.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   initialValues: {
     threshold: 0.85,

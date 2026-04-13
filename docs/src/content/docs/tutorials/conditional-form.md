@@ -9,7 +9,7 @@ Show advanced fields only when the user opts in.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema: {
     fields: [
       { id: "advanced", kind: "boolean", label: "Use advanced options" },

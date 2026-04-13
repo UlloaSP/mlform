@@ -5,7 +5,7 @@ description: Integra MLForm en un dashboard existente.
 
 ```ts
 mountForm(container, {
-  endpoint: "/api/predict",
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   layout: "split",
   reportPane: "always",
