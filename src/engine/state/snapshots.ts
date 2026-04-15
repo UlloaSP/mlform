@@ -56,6 +56,7 @@ export const toFormState = (state: EngineState): FormState => {
     touched,
     values,
     reportStates: cloneValue(state.reportStates),
+    submissionProgress: cloneValue(state.submissionProgress),
     errors: {
       form: [...state.formErrors],
       fields: fieldErrors,

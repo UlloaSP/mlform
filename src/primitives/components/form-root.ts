@@ -18,6 +18,10 @@ type FormRenderState = {
   status: FormStatus;
   submitCount: number;
   hasFormErrors: boolean;
+  submissionLoaded?: number;
+  submissionTotal?: number;
+  submissionMessage?: string;
+  submissionSessionMessageCount?: number;
   visibleFieldIds: string[];
   visibleReportIds: string[];
 };
@@ -31,6 +35,10 @@ const sameFormRenderState = (left: FormRenderState, right: FormRenderState): boo
     left.status === right.status &&
     left.submitCount === right.submitCount &&
     left.hasFormErrors === right.hasFormErrors &&
+    left.submissionLoaded === right.submissionLoaded &&
+    left.submissionTotal === right.submissionTotal &&
+    left.submissionMessage === right.submissionMessage &&
+    left.submissionSessionMessageCount === right.submissionSessionMessageCount &&
     sameIds(left.visibleFieldIds, right.visibleFieldIds) &&
     sameIds(left.visibleReportIds, right.visibleReportIds)
   );
@@ -451,6 +459,10 @@ export class PrimitiveFormElement extends LitElement {
               .idleLabel=${this.submitLabel}
               .validatingLabel=${this.validatingLabel}
               .submittingLabel=${this.submittingLabel}
+              .loaded=${state.submissionLoaded}
+              .total=${state.submissionTotal}
+              .progressMessage=${state.submissionMessage}
+              .sessionMessageCount=${state.submissionSessionMessageCount}
               @mlf-submit-request=${this.#handleSubmitRequest}
             ></mlf-submit-button>
           </div>
@@ -539,6 +551,10 @@ export class PrimitiveFormElement extends LitElement {
                 .idleLabel=${this.submitLabel}
                 .validatingLabel=${this.validatingLabel}
                 .submittingLabel=${this.submittingLabel}
+                .loaded=${state.submissionLoaded}
+                .total=${state.submissionTotal}
+                .progressMessage=${state.submissionMessage}
+                .sessionMessageCount=${state.submissionSessionMessageCount}
                 @mlf-submit-request=${this.#handleSubmitRequest}
               ></mlf-submit-button>
             </div>
@@ -675,6 +691,10 @@ export class PrimitiveFormElement extends LitElement {
       status: state.status,
       submitCount: state.submitCount,
       hasFormErrors: state.errors.form.length > 0,
+      submissionLoaded: state.submissionProgress?.loaded,
+      submissionTotal: state.submissionProgress?.total,
+      submissionMessage: state.submissionProgress?.message,
+      submissionSessionMessageCount: state.submissionProgress?.sessionMessageCount,
       visibleFieldIds: form.fields.filter((field) => field.state.visible).map((field) => field.id),
       visibleReportIds: form.reports
         .filter((report) => report.descriptor !== null || report.state.status !== "idle")

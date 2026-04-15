@@ -56,13 +56,26 @@ export class PrimitiveSubmitButtonElement extends LitElement {
   @property({ type: String }) accessor idleLabel = primitiveDefaultLabels.submit;
   @property({ type: String }) accessor validatingLabel = primitiveDefaultLabels.validating;
   @property({ type: String }) accessor submittingLabel = primitiveDefaultLabels.submitting;
+  @property({ type: Number }) accessor loaded: number | undefined = undefined;
+  @property({ type: Number }) accessor total: number | undefined = undefined;
+  @property({ type: String }) accessor progressMessage: string | undefined = undefined;
+  @property({ type: Number }) accessor sessionMessageCount: number | undefined = undefined;
 
   render() {
+    const progressLabel =
+      this.progressMessage ??
+      (typeof this.loaded === "number" && typeof this.total === "number" && this.total > 0
+        ? `${Math.round((this.loaded / this.total) * 100)}%`
+        : typeof this.sessionMessageCount === "number" && this.sessionMessageCount > 0
+          ? `${this.sessionMessageCount} msgs`
+          : undefined);
     const label =
       this.status === "validating"
         ? this.validatingLabel
         : this.status === "submitting"
-          ? this.submittingLabel
+          ? progressLabel
+            ? `${this.submittingLabel} ${progressLabel}`
+            : this.submittingLabel
           : this.idleLabel;
 
     return html`

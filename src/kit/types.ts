@@ -13,10 +13,7 @@ import type {
   FormSchema,
   FormValidator,
   InactiveFieldPolicy,
-  MaybePromise,
   Registry,
-  SubmitRequest,
-  TransportResponse,
   Transport,
 } from "@/engine";
 import type {
@@ -26,7 +23,57 @@ import type {
   PrimitiveTextOverrides,
 } from "@/primitives";
 
-export type JsonTransportMethod = "POST" | "PUT" | "PATCH" | "DELETE";
+export type {
+  ApiKeyAuthOptions,
+  AuthOptions,
+  BearerAuthOptions,
+  CacheOptions,
+  CapabilityRequirement,
+  CircuitBreakerOptions,
+  CircuitBreakerSharedState,
+  CircuitBreakerStateSnapshot,
+  CustomAuthOptions,
+  DedupOptions,
+  FanoutTransportFailure,
+  FanoutTransportOptions,
+  FanoutTransportResult,
+  FallbackTransportFailure,
+  FallbackTransportOptions,
+  GraphqlTransportOptions,
+  GrpcSessionTransportOptions,
+  GrpcStreamTransportOptions,
+  GrpcTransportOptions,
+  GrpcUnaryTransportOptions,
+  HedgedTransportOptions,
+  JsonTransportMethod,
+  JsonTransportOptions,
+  LoadBalancingTransportOptions,
+  PipelineStage,
+  PipelineTransportOptions,
+  QuorumFanoutTransportOptions,
+  RateLimitLeaseRequest,
+  RateLimitOptions,
+  RacingTransportOptions,
+  RetryOptions,
+  RoutingTransportOptions,
+  SessionTransportOptions,
+  SharedRateLimiter,
+  SharedRateLimiterLease,
+  SseTransportOptions,
+  TransportCacheEntry,
+  TransportCacheStore,
+  TransportCollection,
+  TransportContextAuthOptions,
+  TransportHealthSnapshot,
+  TransportHealthState,
+  TransportLogOptions,
+  TransportMetricsOptions,
+  TransportMiddleware,
+  TransportTelemetryEvent,
+  TransportTraceOptions,
+  WebSocketSessionTransportOptions,
+  WeightedRoutingTransportOptions,
+} from "@/transport";
 
 export interface KitDesignSystemSnapshot extends Omit<
   DesignSystemConfig,
@@ -45,65 +92,9 @@ export interface KitLabels {
   submitting?: string;
 }
 
-export interface JsonTransportOptions {
-  endpoint: string | URL;
-  fetch?: typeof globalThis.fetch;
-  method?: JsonTransportMethod;
-  headers?: HeadersInit;
-  credentials?: RequestCredentials;
-  body?: (request: SubmitRequest) => BodyInit | null | undefined;
-  parse?: (response: Response) => Promise<unknown>;
-}
-
-export type TransportCollection<TTransportId extends string = string> =
-  | Record<TTransportId, Transport>
-  | readonly Transport[];
-
-export interface RoutingTransportOptions<TTransportId extends string = string> {
-  transports: Record<TTransportId, Transport>;
-  selectTransport: (
-    request: SubmitRequest,
-    context: {
-      transportIds: readonly TTransportId[];
-    },
-  ) => MaybePromise<TTransportId>;
-}
-
-export interface FanoutTransportResult<TTransportId extends string = string> {
-  id: TTransportId | undefined;
-  index: number;
-  response: TransportResponse;
-}
-
-export interface FanoutTransportOptions<TTransportId extends string = string> {
-  transports: TransportCollection<TTransportId>;
-  merge?: (context: {
-    request: SubmitRequest;
-    results: readonly FanoutTransportResult<TTransportId>[];
-  }) => MaybePromise<unknown>;
-}
-
-export interface FallbackTransportFailure<TTransportId extends string = string> {
-  id: TTransportId | undefined;
-  index: number;
-  error: unknown;
-}
-
-export interface FallbackTransportOptions<TTransportId extends string = string> {
-  transports: TransportCollection<TTransportId>;
-  shouldFallback?: (
-    error: unknown,
-    context: {
-      request: SubmitRequest;
-      id: TTransportId | undefined;
-      index: number;
-      failures: readonly FallbackTransportFailure<TTransportId>[];
-    },
-  ) => MaybePromise<boolean>;
-}
-
-interface BaseMountFormOptions {
+export interface MountFormOptions {
   schema: FormSchema;
+  transport: Transport;
   registry?: Registry;
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
@@ -124,25 +115,6 @@ interface BaseMountFormOptions {
   primitiveText?: PrimitiveTextOverrides;
   onDesignSystemChange?: (resolved: ResolvedDesignSystem) => void;
 }
-
-interface EndpointMountTransportOptions {
-  endpoint: string | URL;
-  transport?: never;
-  transports?: never;
-  defaultBackend?: never;
-  transportOptions?: never;
-}
-
-interface SingleMountTransportOptions {
-  endpoint?: never;
-  transport: Transport;
-  transports?: never;
-  defaultBackend?: never;
-  transportOptions?: never;
-}
-
-export type MountFormOptions = BaseMountFormOptions &
-  (EndpointMountTransportOptions | SingleMountTransportOptions);
 
 export interface MountedForm {
   readonly form: FormController;

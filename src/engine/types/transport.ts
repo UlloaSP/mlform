@@ -1,55 +1,62 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import type {
+  SubmitRequest as BaseSubmitRequest,
+  SubmitResult as BaseSubmitResult,
+  Transport as BaseTransport,
+  TransportStreamEvent as BaseTransportStreamEvent,
+} from "@/transport";
 import type { NormalizedFieldConfig } from "./field";
 import type { NormalizedReportConfig, ReportStateSnapshot } from "./report";
 
-export interface SubmitRequest {
-  backend?: string;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
-  fields: readonly NormalizedFieldConfig[];
-  reports: readonly NormalizedReportConfig[];
-  signal?: AbortSignal;
-}
+export type {
+  CapabilityRequirement,
+  CircuitBreakerSharedState,
+  CircuitBreakerStateSnapshot,
+  RateLimitLeaseRequest,
+  SharedRateLimiter,
+  SharedRateLimiterLease,
+  SubmitRequestMetadata,
+  SubmitRequestTransportContext,
+  TransportAuthKind,
+  TransportBackpressureMode,
+  TransportCacheEntry,
+  TransportCacheStore,
+  TransportCapabilities,
+  TransportCollection,
+  TransportConsistency,
+  TransportDeliveryMode,
+  TransportHealthSnapshot,
+  TransportHealthState,
+  TransportPolicyContext,
+  TransportResponse,
+  TransportSession,
+  TransportSessionCloseEvent,
+  TransportSessionErrorEvent,
+  TransportSessionEvent,
+  TransportSessionMessage,
+  TransportSessionMessageEvent,
+  TransportSessionMetaEvent,
+  TransportSessionProgressEvent,
+  TransportSessionResultEvent,
+  TransportStreamChunkEvent,
+  TransportStreamErrorEvent,
+  TransportStreamMetaEvent,
+  TransportStreamProgressEvent,
+  TransportStreamReportPatchEvent,
+  TransportStreamReportReplaceEvent,
+} from "@/transport";
 
-export interface TransportResponse {
-  reports?: Record<string, unknown>;
-  meta?: Record<string, unknown>;
-  raw?: unknown;
-}
+export type SubmitRequest = BaseSubmitRequest<NormalizedFieldConfig, NormalizedReportConfig>;
 
-export interface SubmitResult {
-  backend?: string;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+export type SubmitResult = Omit<BaseSubmitResult, "reportStates"> & {
   reportStates: Record<string, ReportStateSnapshot>;
-  meta: Record<string, unknown>;
-  raw: unknown;
-}
+};
 
-export interface Transport {
-  submit: (request: SubmitRequest) => Promise<unknown>;
-}
+export type Transport = BaseTransport<NormalizedFieldConfig, NormalizedReportConfig>;
 
-export interface SingleTransportConfig {
-  transport: Transport;
-  transports?: never;
-  defaultBackend?: never;
-}
-
-export interface MultiTransportConfig {
-  transport?: never;
-  transports: Record<string, Transport>;
-  defaultBackend?: string;
-}
-
-export type FormTransportConfig = SingleTransportConfig | MultiTransportConfig;
+export type TransportStreamEvent = BaseTransportStreamEvent;
 
 export interface SubmitOptions {
   signal?: AbortSignal;

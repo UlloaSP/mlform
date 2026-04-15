@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import { MLFormError } from "@/shared";
+import { transportErrorCodes } from "@/transport";
 import type { FormValidationResult } from "./types";
 
-export class EngineError extends Error {
+export class EngineError extends MLFormError {
   constructor(message: string) {
     super(message);
     this.name = "EngineError";
@@ -48,6 +50,8 @@ export class ReportPayloadError extends SubmitError {
 }
 
 export class SubmissionAbortedError extends SubmitError {
+  readonly code = transportErrorCodes.ABORTED;
+
   constructor(message = "Form submission was aborted.", cause?: unknown) {
     super(message, cause);
     this.name = "SubmissionAbortedError";
@@ -64,3 +68,6 @@ export const isAbortLikeError = (error: unknown): boolean => {
     (error instanceof Error && error.name === "AbortError")
   );
 };
+
+export { TransportError, transportErrorCodes } from "@/transport";
+export type { TransportErrorCode } from "@/transport";

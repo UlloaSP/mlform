@@ -100,7 +100,7 @@ mountForm(container, {
 });
 ```
 
-Use middleware to compose auth, retries, circuit breaking, rate limiting, caching, deduplication, and request or response transforms:
+Use middleware to compose auth, retries, circuit breaking, rate limiting, caching, deduplication, tracing, metrics, and request or response transforms:
 
 ```ts
 import {
@@ -108,17 +108,28 @@ import {
   mountForm,
   pipe,
   withAuth,
+  withMetrics,
   withCircuitBreaker,
   withRateLimit,
   withRetry,
+  withTracing,
 } from "mlform";
 
 const transport = pipe(
   createJsonTransport({ endpoint: "/api/predict" }),
   withAuth({ type: "bearer", token: () => getAccessToken() }),
+  withTracing({
+    traceparent: () => getTraceparent(),
+    scope: "predict-form",
+  }),
   withRetry({ attempts: 3 }),
   withCircuitBreaker({ failureThreshold: 5, resetTimeout: 60_000 }),
   withRateLimit({ maxConcurrent: 4, perSecond: 8 }),
+  withMetrics({
+    emit(event) {
+      console.log(event.kind, event.scope, event.durationMs);
+    },
+  }),
 );
 
 mountForm(container, {
@@ -127,4 +138,38 @@ mountForm(container, {
 });
 ```
 
-Streaming is optional. Any transport may expose `stream(request)` alongside `submit(request)`. `createJsonTransport` can do that through `stream(response, request)`.
+Transport capabilities are normalized under `transport.capabilities`:
+
+```ts
+transport.capabilities = {
+  modes: { submit: true, stream: false, session: false },
+  safety: { idempotent: false, retrySafe: false, cacheable: false, hedgeSafe: false },
+  limits: { maxPayloadBytes: 512_000 },
+  auth: { kinds: ["bearer", "transport-context"] },
+  delivery: { mode: "request-response", consistency: "best-effort", backpressure: "none" },
+};
+```
+
+Use `assertTransportCapabilities(transport, requirement, context)` when orchestration or app code must reject transports that cannot satisfy a policy.
+
+Streaming is optional. Any transport may expose `stream(request)` alongside `submit(request)`.
+
+Sessions are optional too. A transport may expose `openSession(request)` for long-lived channels such as WebSockets or custom RPC streams. Session transports surface progress to the engine through stream metadata and can publish incremental `report-replace`, `report-patch`, and `field-update` events.
+
+Built-in protocol helpers:
+
+- `createJsonTransport`
+- `createGraphqlTransport`
+- `createSseTransport`
+- `createWebSocketSessionTransport`
+- `createGrpcUnaryTransport`
+- `createGrpcStreamTransport`
+- `createGrpcSessionTransport`
+- `createGrpcTransport`
+
+Shared policy adapters are pluggable. Use memory helpers in-process or bring your own distributed implementations for:
+
+- `TransportCacheStore`
+- `SharedRateLimiter`
+- `CircuitBreakerSharedState`
+- `TransportHealthState`

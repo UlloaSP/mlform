@@ -6,6 +6,7 @@ import { ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
 import type {
   NormalizedReportConfig,
+  PartialReportUpdatePolicy,
   ReportController,
   ReportDefinition,
   ReportStateSnapshot,
@@ -81,6 +82,7 @@ export type InternalReportController = ReportController & {
   update(result: SubmitResult): Promise<void>;
   markLoading(): void;
   reset(): void;
+  readonly partialUpdatePolicy: PartialReportUpdatePolicy;
 };
 
 export const createReportController = ({
@@ -100,6 +102,9 @@ export const createReportController = ({
     },
     get config() {
       return readonlyConfig;
+    },
+    get partialUpdatePolicy() {
+      return definition.partialUpdatePolicy ?? "trust";
     },
     get state() {
       return cloneReportStateSnapshot(

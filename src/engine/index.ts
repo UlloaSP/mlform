@@ -18,8 +18,11 @@ export {
   RegistryError,
   SubmissionAbortedError,
   SubmitError,
+  TransportError,
+  transportErrorCodes,
   ValidationError,
 } from "./errors";
+export type { TransportErrorCode } from "./errors";
 export { createForm } from "./form";
 export {
   createRegistry,
@@ -83,8 +86,19 @@ export type {
   SubmitErrorContext,
   SubmitOptions,
   SubmitRequest,
+  SubmitRequestTransportContext,
   SubmitResult,
   Transport,
+  TransportAuthKind,
+  TransportBackpressureMode,
+  TransportCapabilities,
+  TransportConsistency,
+  TransportDeliveryMode,
+  TransportPolicyContext,
+  TransportSession,
+  TransportSessionEvent,
+  TransportSessionMessage,
+  TransportStreamEvent,
   TransportResponse,
   NotCondition,
 } from "./types";

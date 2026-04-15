@@ -18,9 +18,10 @@ import type {
 import type {
   AfterSubmitContext,
   BeforeSubmitContext,
-  FormTransportConfig,
   SubmitOptions,
   SubmitResult,
+  Transport,
+  TransportStreamEvent,
   SubmitErrorContext,
 } from "./transport";
 import type { Registry } from "./registry";
@@ -35,6 +36,19 @@ export interface FormValidationResult {
   formErrors: string[];
 }
 
+export interface SubmissionProgressState {
+  loaded?: number;
+  total?: number;
+  message?: string;
+  meta: Record<string, unknown>;
+  chunkCount: number;
+  sessionState?: "opening" | "open" | "closing" | "closed";
+  bufferedMessages?: number;
+  sessionMessageCount?: number;
+  lastSessionMessageType?: string;
+  lastEventType?: TransportStreamEvent["type"];
+}
+
 export interface FormState {
   status: FormStatus;
   submitCount: number;
@@ -43,6 +57,7 @@ export interface FormState {
   touched: boolean;
   values: Record<string, unknown>;
   reportStates: Record<string, ReportStateSnapshot>;
+  submissionProgress: SubmissionProgressState | null;
   errors: {
     form: string[];
     fields: Record<string, string[]>;
@@ -94,9 +109,10 @@ export interface FormSchema {
   reports?: ReportConfig[];
 }
 
-interface BaseCreateFormConfig {
+export interface CreateFormConfig {
   schema: FormSchema;
   registry: Registry;
+  transport: Transport;
   initialValues?: Record<string, unknown>;
   validators?: FormValidator[];
   hooks?: FormHooks;
@@ -107,8 +123,6 @@ interface BaseCreateFormConfig {
   listenerErrorPolicy?: "ignore" | "throw-aggregate";
   onListenerError?: (error: unknown) => void;
 }
-
-export type CreateFormConfig = BaseCreateFormConfig & FormTransportConfig;
 
 export interface FormController {
   readonly fields: readonly FieldController[];

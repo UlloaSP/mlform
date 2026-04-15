@@ -26,6 +26,7 @@ export default defineConfig({
         "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
         "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
         "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
+        "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
       },
       name: "mlform",
       formats: ["es"],
@@ -46,6 +47,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      mlform: resolve(rootDir, "src/index.ts"),
+      "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
+      "mlform/engine": resolve(rootDir, "src/engine/index.ts"),
+      "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
+      "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
+      "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
     },
   },
   define: {

@@ -64,6 +64,10 @@
       "types": "./dist/types/src/engine/index.d.ts",
       "import": "./dist/mlform/engine.mjs"
     },
+    "./transport": {
+      "types": "./dist/types/src/transport/index.d.ts",
+      "import": "./dist/mlform/transport.mjs"
+    },
     "./primitives": {
       "types": "./dist/types/src/primitives/index.d.ts",
       "import": "./dist/mlform/primitives.mjs"

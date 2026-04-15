@@ -2314,13 +2314,12 @@ describe("engine", () => {
     });
   });
 
-  it("routes submissions to named transport backends", async () => {
-    const localSubmit = vi.fn().mockResolvedValue({ reports: {} });
-    const remoteSubmit = vi.fn().mockResolvedValue({
+  it("passes optional backend selection through transport requests", async () => {
+    const submit = vi.fn().mockImplementation(async ({ backend }: { backend?: string }) => ({
       reports: {
-        classifier: { prediction: "remote" },
+        classifier: { prediction: backend ?? "default" },
       },
-    });
+    }));
     const form = createForm({
       schema: {
         fields: [
@@ -2338,55 +2337,21 @@ describe("engine", () => {
         ],
       },
       registry: createBuiltinRegistry(),
-      transports: {
-        local: { submit: localSubmit },
-        remote: { submit: remoteSubmit },
-      },
-      defaultBackend: "local",
+      transport: { submit },
     });
 
     form.setValues({ name: "Alice" });
 
-    await expect(form.submit({ backend: "missing" })).rejects.toThrow(
-      'Unknown transport backend "missing".',
-    );
-    expect(localSubmit).not.toHaveBeenCalled();
-    expect(remoteSubmit).not.toHaveBeenCalled();
-
     const result = await form.submit({ backend: "remote" });
 
-    expect(localSubmit).not.toHaveBeenCalled();
-    expect(remoteSubmit).toHaveBeenCalledWith(
+    expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
         backend: "remote",
         values: { name: "Alice" },
       }),
     );
     expect(result.backend).toBe("remote");
-  });
-
-  it("rejects backend selection for single-transport forms", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
-    const form = createForm({
-      schema: {
-        fields: [
-          {
-            kind: "text",
-            label: "Name",
-            required: true,
-          },
-        ],
-      },
-      registry: createBuiltinRegistry(),
-      transport: { submit },
-    });
-
-    form.setValues({ name: "Alice" });
-
-    await expect(form.submit({ backend: "remote" })).rejects.toThrow(
-      'Transport backend "remote" cannot be selected for a single-transport form.',
-    );
-    expect(submit).not.toHaveBeenCalled();
+    expect(result.reports.classifier).toEqual({ prediction: "remote" });
   });
 
   it("marks reports as loading while submit is in flight", async () => {
@@ -2919,5 +2884,80 @@ describe("engine", () => {
     expect(form.state.status).toBe("idle");
     expect(form.state.lastResult).toBeNull();
     expect(form.getValues()).toEqual({ name: "Initial" });
+  });
+
+  it("applies incremental field and report stream updates before final result", async () => {
+    let releaseStream: (() => void) | undefined;
+
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            required: true,
+          },
+        ],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+        async *stream() {
+          yield {
+            type: "field-update",
+            fieldId: "name",
+            value: "Bob",
+          } as const;
+          yield {
+            type: "report-replace",
+            reportId: "risk",
+            payload: {
+              prediction: "streaming",
+            },
+          } as const;
+          await new Promise<void>((resolve) => {
+            releaseStream = resolve;
+          });
+          yield {
+            type: "result",
+            result: {
+              reports: {
+                risk: {
+                  prediction: "final",
+                },
+              },
+            },
+          } as const;
+        },
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+
+    const pending = form.submit();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(form.getValues()).toEqual({ name: "Bob" });
+    expect(form.state.values).toEqual({ name: "Bob" });
+    expect(form.getReport("risk")?.state).toMatchObject({
+      status: "ready",
+      payload: {
+        prediction: "streaming",
+      },
+    });
+
+    releaseStream?.();
+    await pending;
+
+    expect(form.getReport("risk")?.state.payload).toEqual({
+      prediction: "final",
+    });
   });
 });

@@ -2,8 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { attachDesignSystem, type DesignSystemConfig } from "@/design-system";
-import { createForm, type Transport } from "@/engine";
+import { createForm } from "@/engine";
 import { mountForm as mountPrimitiveForm } from "@/primitives";
+import { kitErrorMessages } from "./constants";
 import {
   cloneEngineRegistry,
   resolveDesignSystemRegistry,
@@ -11,43 +12,12 @@ import {
   resolveKitLabels,
   resolvePrimitiveRegistry,
 } from "./defaults";
-import { kitErrorMessages } from "./constants";
-import { createJsonTransport } from "./transport";
 import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./types";
 
 const mountedFormRef = Symbol("mlform.kit.mounted");
 
 type KitContainer = HTMLElement & {
   [mountedFormRef]?: MountedForm;
-};
-
-type KitTransportConfig = {
-  transport: Transport;
-};
-
-const resolveTransportConfig = (options: MountFormOptions): KitTransportConfig => {
-  const hasEndpoint = "endpoint" in options && options.endpoint !== undefined;
-  const hasTransport = "transport" in options && options.transport !== undefined;
-
-  if (Number(hasEndpoint) + Number(hasTransport) > 1) {
-    throw new TypeError(kitErrorMessages.conflictingTransport);
-  }
-
-  if (hasTransport) {
-    return {
-      transport: options.transport,
-    };
-  }
-
-  if (hasEndpoint) {
-    return {
-      transport: createJsonTransport({
-        endpoint: options.endpoint,
-      }),
-    };
-  }
-
-  throw new TypeError(kitErrorMessages.missingTransport);
 };
 
 const assertDesignSystemSnapshot: (
@@ -67,11 +37,10 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const labels = resolveKitLabels(options.labels);
   const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
-  const transportConfig = resolveTransportConfig(options);
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
-    ...transportConfig,
+    transport: options.transport,
     initialValues: options.initialValues,
     validators: options.validators,
     hooks: options.hooks,

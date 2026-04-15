@@ -51,3 +51,37 @@ const schema = {
   reports: [{ kind: "classifier", label: "Prediction" }],
 };
 ```
+
+Transport-breaking changes since the early transport helpers:
+
+- `transport.capabilities` is now normalized:
+  - `modes`
+  - `safety`
+  - `limits`
+  - `auth`
+  - `delivery`
+- `withMetrics` now takes `{ emit(event) }` instead of separate callbacks.
+- shared policy stores are scoped:
+  - `TransportCacheStore.get(scope, key)`
+  - `SharedRateLimiter.acquire(scope, lease)`
+  - `CircuitBreakerSharedState.get(scope)`
+  - `TransportHealthState.getSnapshot(scope, transportId)`
+- `SubmitRequest.metadata.estimatedPayloadBytes` is populated when MLForm can estimate payload size.
+- session transports should expose `session.capabilities.backpressure` and may expose `bufferedMessages`.
+
+Minimal capability migration example:
+
+```ts
+const transport = {
+  async submit(request) {
+    return callBackend(request.serializedValues);
+  },
+  capabilities: {
+    modes: { submit: true, stream: false, session: false },
+    safety: { idempotent: false, retrySafe: false, cacheable: false, hedgeSafe: false },
+    limits: {},
+    auth: { kinds: ["none"] },
+    delivery: { mode: "request-response", consistency: "unknown", backpressure: "none" },
+  },
+};
+```

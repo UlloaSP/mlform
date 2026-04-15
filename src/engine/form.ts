@@ -22,16 +22,16 @@ import type {
   FormState,
   InactiveFieldPolicy,
   SelectorSubscriptionOptions,
-  SingleTransportConfig,
 } from "./types";
 
-const isSingleTransportConfig = (
-  config: CreateFormConfig,
-): config is CreateFormConfig & SingleTransportConfig => {
-  return "transport" in config && config.transport !== undefined;
+const assertTransport = (transport: CreateFormConfig["transport"]): void => {
+  if (!transport || typeof transport.submit !== "function") {
+    throw new EngineError("createForm requires a transport with a submit(request) function.");
+  }
 };
 
 export const createForm = (config: CreateFormConfig): FormController => {
+  assertTransport(config.transport);
   const normalizedSchema = normalizeSchema(config.schema, config.registry);
   const store = createStore(createInitialEngineState(), {
     listenerErrorPolicy: config.listenerErrorPolicy ?? "ignore",
@@ -219,42 +219,23 @@ export const createForm = (config: CreateFormConfig): FormController => {
     inactiveFieldPolicy: config.inactiveFieldPolicy,
   });
 
-  const formSubmitter = isSingleTransportConfig(config)
-    ? createFormSubmitter({
-        store,
-        transport: config.transport,
-        hooks: config.hooks,
-        hookFailurePolicy: config.hookFailurePolicy,
-        normalizedSchema,
-        fields,
-        reports,
-        validate: () => formValidator.validate(),
-        getSubmitCount,
-        markReportsLoading,
-        resetReports,
-        syncDerivedFieldState,
-        shouldResetInactiveFields,
-        resolveInactiveFieldPolicy,
-        inactiveFieldPolicy: config.inactiveFieldPolicy,
-      })
-    : createFormSubmitter({
-        store,
-        transports: config.transports,
-        defaultBackend: config.defaultBackend,
-        hooks: config.hooks,
-        hookFailurePolicy: config.hookFailurePolicy,
-        normalizedSchema,
-        fields,
-        reports,
-        validate: () => formValidator.validate(),
-        getSubmitCount,
-        markReportsLoading,
-        resetReports,
-        syncDerivedFieldState,
-        shouldResetInactiveFields,
-        resolveInactiveFieldPolicy,
-        inactiveFieldPolicy: config.inactiveFieldPolicy,
-      });
+  const formSubmitter = createFormSubmitter({
+    store,
+    transport: config.transport,
+    hooks: config.hooks,
+    hookFailurePolicy: config.hookFailurePolicy,
+    normalizedSchema,
+    fields,
+    reports,
+    validate: () => formValidator.validate(),
+    getSubmitCount,
+    markReportsLoading,
+    resetReports,
+    syncDerivedFieldState,
+    shouldResetInactiveFields,
+    resolveInactiveFieldPolicy,
+    inactiveFieldPolicy: config.inactiveFieldPolicy,
+  });
 
   const controller: FormController = {
     get fields() {

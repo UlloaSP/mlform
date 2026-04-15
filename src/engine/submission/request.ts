@@ -24,6 +24,14 @@ export type SubmissionValueRecords = {
   serializedFieldValues: Record<string, unknown>;
 };
 
+export const estimatePayloadBytes = (value: unknown): number | undefined => {
+  try {
+    return new TextEncoder().encode(JSON.stringify(value)).byteLength;
+  } catch {
+    return undefined;
+  }
+};
+
 export const cloneSubmissionValueRecords = (
   records: SubmissionValueRecords,
 ): SubmissionValueRecords => ({

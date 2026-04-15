@@ -50,12 +50,14 @@ export interface ReportPayloadContext<TConfig extends ReportConfig = ReportConfi
 }
 
 export type ReportPayloadValidationPolicy = "report-error" | "fail-submit";
+export type PartialReportUpdatePolicy = "trust" | "validate" | "defer";
 
 export interface ReportDefinition<TConfig extends ReportConfig = ReportConfig> {
   kind: string;
   schema: ZodType<TConfig>;
   payloadSchema?: ZodType<unknown>;
   payloadValidationPolicy?: ReportPayloadValidationPolicy;
+  partialUpdatePolicy?: PartialReportUpdatePolicy;
   clonePayload?: (payload: unknown, config: TConfig) => unknown;
   resolvePayload?: (
     config: TConfig,
