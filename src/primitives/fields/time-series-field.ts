@@ -112,7 +112,7 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
           var(--mlf-time-series-action-border, var(--mlf-color-border, #cbd5e1));
         background: var(
           --mlf-time-series-action-bg,
-          color-mix(in srgb, var(--mlf-color-accent, #1e40af) 9%, #ffffff)
+          color-mix(in srgb, var(--mlf-color-accent, #1e40af) 9%, var(--mlf-color-surface, #ffffff))
         );
         color: var(--mlf-time-series-action-text, var(--mlf-color-text, #0f172a));
         font: inherit;
@@ -143,7 +143,11 @@ export class PrimitiveTimeSeriesFieldElement extends PrimitiveFieldElement {
       .remove-btn:hover:not(:disabled) {
         background: var(
           --mlf-time-series-action-bg-hover,
-          color-mix(in srgb, var(--mlf-color-accent, #1e40af) 16%, #ffffff)
+          color-mix(
+            in srgb,
+            var(--mlf-color-accent, #1e40af) 16%,
+            var(--mlf-color-surface, #ffffff)
+          )
         );
         border-color: var(--mlf-time-series-action-border-hover, var(--mlf-color-accent, #1e40af));
         transform: translateY(-1px);
