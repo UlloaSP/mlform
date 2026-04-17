@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { css, html } from "lit";
+import { css, html, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
-import { PrimitiveReportElement } from "../base-report-element";
+import { PrimitiveAsyncReportElement } from "../base-async-report-element";
 import { primitiveTagNames } from "../constants";
 import { isRecord } from "../utils";
 
@@ -88,9 +88,9 @@ const clampPercent = (value: number, min: number, max: number): number => {
 };
 
 @customElement(primitiveTagNames.regressorReport)
-export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
+export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement {
   static styles = [
-    PrimitiveReportElement.styles,
+    PrimitiveAsyncReportElement.styles,
     css`
       :host {
         --marker-size: 14px;
@@ -167,6 +167,10 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
       }
     `,
   ];
+
+  protected shouldFetchTransportResult(): boolean {
+    return this.props.explanations === true && super.shouldFetchTransportResult();
+  }
 
   render() {
     const payload = this.props.payload;
@@ -246,6 +250,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveReportElement {
         ${executionTime
           ? html`<div class="meta">${text.regressorExecutionTime(executionTime)}</div>`
           : html``}
+        ${this.props.explanations === true ? this.renderTransportPanel(text) : nothing}
       </section>
     `;
   }

@@ -5,7 +5,11 @@ import { css, LitElement, type CSSResultGroup } from "lit";
 import { property } from "lit/decorators.js";
 import type { ReportController, ReportDescriptor } from "@/engine";
 import { primitiveStaticText, type PrimitiveText } from "./constants";
-import type { PrimitiveReportRenderContext } from "./types";
+import type {
+  PrimitiveReportRenderContext,
+  PrimitiveReportRequest,
+  PrimitiveReportTransport,
+} from "./types";
 
 // report-frame.ts owns the subscription to ReportController and passes
 // descriptor + context as properties to this element.  No second subscription
@@ -32,6 +36,8 @@ export abstract class PrimitiveReportElement extends LitElement {
   @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
   @property({ attribute: false }) accessor context: PrimitiveReportRenderContext | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
+  @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
+  @property({ attribute: false }) accessor request: PrimitiveReportRequest | null = null;
 
   protected get props(): Record<string, unknown> {
     return this.descriptor?.props ?? {};

@@ -4,7 +4,12 @@
 import { css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
-import type { ReportController, ReportDescriptor, ReportStateSnapshot } from "@/engine";
+import type {
+  ReportController,
+  ReportDescriptor,
+  ReportStateSnapshot,
+  SubmitResult,
+} from "@/engine";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -12,7 +17,13 @@ import {
   primitiveTagNames,
   type PrimitiveText,
 } from "../constants";
-import type { PrimitiveRegistry, PrimitiveReportRenderContext } from "../types";
+import type {
+  ExplanationTransport,
+  PrimitiveReportRequest,
+  PrimitiveReportTransport,
+  PrimitiveRegistry,
+  PrimitiveReportRenderContext,
+} from "../types";
 import { toText } from "../utils";
 
 let reportFrameSequence = 0;
@@ -92,6 +103,9 @@ export class PrimitiveReportFrameElement extends LitElement {
   @property({ attribute: false }) accessor controller: ReportController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
+  @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
+  @property({ attribute: false }) accessor explanationTransport: ExplanationTransport | undefined;
+  @property({ attribute: false }) accessor lastResult: SubmitResult | null = null;
 
   @state() private accessor descriptor: ReportDescriptor | null = null;
   @state() private accessor reportState: ReportStateSnapshot | null = null;
@@ -100,6 +114,8 @@ export class PrimitiveReportFrameElement extends LitElement {
   #memoizedContext: PrimitiveReportRenderContext | undefined;
   #memoizedController: ReportController | undefined;
   #memoizedDescriptor: ReportDescriptor | null = null;
+  #memoizedLastResult: SubmitResult | null = null;
+  #memoizedRequest: PrimitiveReportRequest | null = null;
 
   readonly #binding = new ControllerBinding<ReportController>(this, (ctrl) => {
     this.descriptor = ctrl?.descriptor ?? null;
@@ -151,12 +167,17 @@ export class PrimitiveReportFrameElement extends LitElement {
   #renderResolvedRenderer(tagName: string) {
     const tag = unsafeStatic(tagName);
     const context = this.#getContext();
+    const reportTransport = this.transport ?? this.explanationTransport;
+    const reportRequest = this.reportState?.status === "ready" ? this.#getReportRequest() : null;
+
     return html`
       <${tag}
         .controller=${this.controller}
         .descriptor=${this.descriptor}
         .context=${context}
         .text=${this.text}
+        .transport=${reportTransport}
+        .request=${reportRequest}
       ></${tag}>
     `;
   }
@@ -189,6 +210,41 @@ export class PrimitiveReportFrameElement extends LitElement {
           ? props.description
           : undefined,
     };
+  }
+
+  /**
+   * Builds a PrimitiveReportRequest from the last submit result, memoized by
+   * result identity so report renderers only re-fetch when a new submit completes.
+   */
+  #getReportRequest(): PrimitiveReportRequest | null {
+    const result = this.lastResult;
+
+    if (!result || !this.controller) {
+      return null;
+    }
+
+    if (
+      result === this.#memoizedLastResult &&
+      this.#memoizedRequest?.reportId === this.controller.id
+    ) {
+      return this.#memoizedRequest;
+    }
+
+    const request: PrimitiveReportRequest = {
+      reportId: this.controller.id,
+      backend: result.backend,
+      values: result.values,
+      fieldValues: result.fieldValues,
+      serializedValues: result.serializedValues,
+      serializedFieldValues: result.serializedFieldValues,
+      reports: result.reports,
+      meta: result.meta,
+      raw: result.raw,
+    };
+
+    this.#memoizedLastResult = result;
+    this.#memoizedRequest = request;
+    return request;
   }
 }
 

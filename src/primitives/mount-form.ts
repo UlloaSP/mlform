@@ -46,6 +46,8 @@ export const mountForm = (
     submittingLabel: string;
     reportPane: NonNullable<MountFormOptions["reportPane"]>;
     text: PrimitiveText;
+    reportTransport: MountFormOptions["reportTransport"];
+    explanationTransport: MountFormOptions["explanationTransport"];
   };
   const registry = resolveRegistry(options.registry);
   const text = resolvePrimitiveText(options.text);
@@ -64,6 +66,8 @@ export const mountForm = (
   host.submittingLabel = options.submittingLabel ?? primitiveDefaultLabels.submitting;
   host.reportPane = options.reportPane ?? "auto";
   host.text = text;
+  host.reportTransport = options.reportTransport ?? options.explanationTransport;
+  host.explanationTransport = options.explanationTransport ?? options.reportTransport;
 
   container.replaceChildren(host);
 

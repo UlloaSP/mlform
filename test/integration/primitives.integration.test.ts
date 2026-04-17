@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
   ValidationError,
@@ -10,7 +11,12 @@ import {
   type FieldDefinition,
 } from "@/engine";
 import { PrimitiveFormElement } from "@/primitives/components/form-root";
-import { createPrimitiveRegistry, mountForm } from "@/primitives";
+import {
+  PrimitiveAsyncReportElement,
+  createBuiltinPrimitiveRegistry,
+  createPrimitiveRegistry,
+  mountForm,
+} from "@/primitives";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -1083,6 +1089,133 @@ describe("primitives", () => {
     container.remove();
   });
 
+  it("renders transport content inside classifier reports when explanations are enabled", async () => {
+    const explainTransport = {
+      submit: vi.fn().mockResolvedValue("root\n|- income <= 1000\n  |- approve"),
+    };
+
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+            required: true,
+          },
+        ],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+            label: "Risk",
+            explanations: true,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              prediction: "approve",
+              probabilities: [0.85, 0.15],
+            },
+          },
+        }),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      reportTransport: explainTransport,
+    });
+
+    await flush();
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "Alice";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    const submitHost = getShadow(mounted.host).querySelector("mlf-submit-button");
+    const submitButton = getShadow(submitHost).querySelector("button");
+    submitButton?.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+    // Allow the async explanation fetch to resolve.
+    await flush();
+    await flush();
+
+    expect(explainTransport.submit).toHaveBeenCalledTimes(1);
+    const callArg = explainTransport.submit.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(callArg.reportId).toBe("risk");
+    expect(callArg.values).toBeDefined();
+
+    const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
+    const renderer = getShadow(reportFrame).querySelector("mlf-classifier-report");
+    expect(renderer).not.toBeNull();
+    expect(getShadow(renderer).textContent).toContain("income <= 1000");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("renders transport errors inside built-in reports", async () => {
+    const explainTransport = {
+      submit: vi.fn().mockRejectedValue(new Error("503")),
+    };
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+        reports: [
+          {
+            kind: "regressor",
+            id: "score",
+            label: "Score",
+            explanations: true,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue({ reports: { score: 0.9 } }),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      reportTransport: explainTransport,
+    });
+
+    await flush();
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "Alice";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    getShadow(getShadow(mounted.host).querySelector("mlf-submit-button"))
+      .querySelector("button")
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+
+    const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
+    const renderer = getShadow(reportFrame).querySelector("mlf-regressor-report");
+    expect(renderer).not.toBeNull();
+    expect(getShadow(renderer).textContent).toContain("Error: 503");
+
+    mounted.unmount();
+    container.remove();
+  });
+
   it("does not request a root update for repeated keystrokes that leave render state unchanged", async () => {
     const form = createForm({
       schema: {
@@ -1348,6 +1481,309 @@ describe("primitives", () => {
     mounted.unmount();
 
     expect(container.childElementCount).toBe(0);
+    container.remove();
+  });
+
+  it("passes report transport and request to custom report renderers on each submit", async () => {
+    if (!customElements.get("test-probe-report")) {
+      class TestProbeReportElement extends PrimitiveAsyncReportElement {
+        render() {
+          const result = this.transportResult;
+          const rawLabel =
+            typeof result === "object" && result !== null && "label" in result
+              ? (result as { label?: unknown }).label
+              : "";
+          const label =
+            typeof rawLabel === "string"
+              ? rawLabel
+              : typeof rawLabel === "number" || typeof rawLabel === "boolean"
+                ? `${rawLabel}`
+                : "";
+
+          return html`
+            <div data-status=${this.transportResultStatus}>${this.transportResultStatus}</div>
+            <div>${this.request?.reportId ?? ""}</div>
+            <div>${label}</div>
+          `;
+        }
+      }
+
+      customElements.define("test-probe-report", TestProbeReportElement);
+    }
+
+    const registry = createBuiltinRegistry();
+
+    registry.registerReport({
+      kind: "probe-report",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "probe-report";
+            id?: string;
+            label?: string;
+          };
+        },
+      } as never,
+      resolvePayload(_config, context) {
+        return context.result.reports.probe;
+      },
+      describe(config, context) {
+        return {
+          component: "probe-report",
+          props: {
+            id: config.id,
+            label: config.label ?? "Probe",
+            payload: context.payload,
+          },
+        };
+      },
+    });
+
+    const reportTransport = {
+      submit: vi
+        .fn()
+        .mockImplementation(
+          async (request: { reportId: string; values: Record<string, unknown> }) => ({
+            label: request.values.name,
+            reportId: request.reportId,
+          }),
+        ),
+    };
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", id: "name", label: "Name", required: true }],
+        reports: [{ kind: "probe-report", id: "probe", label: "Probe" }],
+      },
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            probe: {
+              ok: true,
+            },
+          },
+        }),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      registry: createBuiltinPrimitiveRegistry().registerReport(
+        "probe-report",
+        "test-probe-report",
+      ),
+      reportTransport,
+    });
+
+    await flush();
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "Alice";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    getShadow(getShadow(mounted.host).querySelector("mlf-submit-button"))
+      .querySelector("button")
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+
+    let reportRenderer = getShadow(
+      getShadow(mounted.host).querySelector("mlf-report-frame"),
+    ).querySelector("test-probe-report");
+    const firstCallCount = reportTransport.submit.mock.calls.length;
+    expect(firstCallCount).toBeGreaterThan(0);
+    expect(reportTransport.submit.mock.calls[firstCallCount - 1]?.[0]).toMatchObject({
+      reportId: "probe",
+      values: { name: "Alice" },
+    });
+    expect(getShadow(reportRenderer).textContent).toContain("done");
+    expect(getShadow(reportRenderer).textContent).toContain("Alice");
+
+    textInput.value = "Bob";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    getShadow(getShadow(mounted.host).querySelector("mlf-submit-button"))
+      .querySelector("button")
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+    await flush();
+    await flush();
+
+    reportRenderer = getShadow(
+      getShadow(mounted.host).querySelector("mlf-report-frame"),
+    ).querySelector("test-probe-report");
+    const secondCallCount = reportTransport.submit.mock.calls.length;
+    expect(secondCallCount).toBeGreaterThan(firstCallCount);
+    expect(reportTransport.submit.mock.calls[secondCallCount - 1]?.[0]).toMatchObject({
+      reportId: "probe",
+      values: { name: "Bob" },
+    });
+    expect(getShadow(reportRenderer).textContent).toContain("Bob");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("passes request to custom report renderers even without report transport", async () => {
+    if (!customElements.get("test-request-only-report")) {
+      class TestRequestOnlyReportElement extends HTMLElement {
+        #request:
+          | {
+              reportId?: string;
+              values?: Record<string, unknown>;
+            }
+          | null
+          | undefined;
+
+        #descriptor:
+          | {
+              props?: Record<string, unknown>;
+            }
+          | null
+          | undefined;
+
+        set request(
+          value:
+            | {
+                reportId?: string;
+                values?: Record<string, unknown>;
+              }
+            | null
+            | undefined,
+        ) {
+          this.#request = value;
+          this.render();
+        }
+
+        get request() {
+          return this.#request;
+        }
+
+        set descriptor(
+          value:
+            | {
+                props?: Record<string, unknown>;
+              }
+            | null
+            | undefined,
+        ) {
+          this.#descriptor = value;
+          this.render();
+        }
+
+        get descriptor() {
+          return this.#descriptor;
+        }
+
+        connectedCallback() {
+          this.render();
+        }
+
+        render() {
+          const reportId = this.request?.reportId ?? "";
+          const name =
+            typeof this.request?.values?.name === "string" ? this.request.values.name : "";
+          const enabled = this.descriptor?.props?.explanations === true ? "yes" : "no";
+          this.textContent = `${reportId}|${name}|${enabled}`;
+        }
+      }
+
+      customElements.define("test-request-only-report", TestRequestOnlyReportElement);
+    }
+
+    const registry = createBuiltinRegistry();
+
+    registry.registerReport({
+      kind: "probe-request-report",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "probe-request-report";
+            id?: string;
+            label?: string;
+            explanations?: boolean;
+          };
+        },
+      } as never,
+      resolvePayload(_config, context) {
+        return context.result.reports.probe;
+      },
+      describe(config, context) {
+        return {
+          component: "probe-request-report",
+          props: {
+            id: config.id,
+            label: config.label ?? "Probe",
+            payload: context.payload,
+            explanations: config.explanations ?? false,
+          },
+        };
+      },
+    });
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", id: "name", label: "Name", required: true }],
+        reports: [
+          {
+            kind: "probe-request-report",
+            id: "probe",
+            label: "Probe",
+            explanations: true,
+          } as never,
+        ],
+      },
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            probe: {
+              ok: true,
+            },
+          },
+        }),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form, {
+      registry: createBuiltinPrimitiveRegistry().registerReport(
+        "probe-request-report",
+        "test-request-only-report",
+      ),
+    });
+
+    await flush();
+
+    const textInput = getFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    textInput.value = "Alice";
+    textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    getShadow(getShadow(mounted.host).querySelector("mlf-submit-button"))
+      .querySelector("button")
+      ?.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
+
+    await flush();
+    await flush();
+    await flush();
+
+    const renderer = getShadow(
+      getShadow(mounted.host).querySelector("mlf-report-frame"),
+    ).querySelector("test-request-only-report");
+    expect(renderer?.textContent).toContain("probe|Alice|yes");
+
+    mounted.unmount();
     container.remove();
   });
 

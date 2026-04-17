@@ -2,8 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html } from "lit";
+import { nothing } from "lit";
 import { customElement } from "lit/decorators.js";
-import { PrimitiveReportElement } from "../base-report-element";
+import { PrimitiveAsyncReportElement } from "../base-async-report-element";
 import { primitiveTagNames } from "../constants";
 import { isRecord, toText } from "../utils";
 
@@ -40,9 +41,9 @@ const toProbabilityRows = (
 };
 
 @customElement(primitiveTagNames.classifierReport)
-export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
+export class PrimitiveClassifierReportElement extends PrimitiveAsyncReportElement {
   static styles = [
-    PrimitiveReportElement.styles,
+    PrimitiveAsyncReportElement.styles,
     css`
       .rows {
         display: grid;
@@ -112,6 +113,10 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
     `,
   ];
 
+  protected shouldFetchTransportResult(): boolean {
+    return this.props.explanations === true && super.shouldFetchTransportResult();
+  }
+
   render() {
     const payload = this.props.payload;
     const error = typeof this.props.error === "string" ? this.props.error : null;
@@ -159,6 +164,7 @@ export class PrimitiveClassifierReportElement extends PrimitiveReportElement {
           : html`
               <div class="compact">${toText(prediction, text.classifierUnknownPrediction)}</div>
             `}
+        ${this.props.explanations === true ? this.renderTransportPanel(text) : nothing}
       </section>
     `;
   }

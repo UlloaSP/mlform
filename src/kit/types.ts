@@ -18,8 +18,10 @@ import type {
 } from "@/engine";
 import type {
   PrimitiveContainerStrategy,
+  ExplanationTransport,
   PrimitiveLayout,
   PrimitiveRegistry,
+  PrimitiveReportTransport,
   PrimitiveTextOverrides,
 } from "@/primitives";
 
@@ -111,6 +113,8 @@ export interface MountFormOptions {
   layout?: PrimitiveLayout;
   containerStrategy?: PrimitiveContainerStrategy;
   reportPane?: "auto" | "always" | "hidden";
+  reportTransport?: PrimitiveReportTransport;
+  explanationTransport?: ExplanationTransport;
   labels?: KitLabels;
   primitiveText?: PrimitiveTextOverrides;
   onDesignSystemChange?: (resolved: ResolvedDesignSystem) => void;

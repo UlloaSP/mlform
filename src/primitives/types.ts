@@ -24,6 +24,36 @@ export interface PrimitiveRegistry {
   clone(): PrimitiveRegistry;
 }
 
+/**
+ * Request passed to a PrimitiveReportTransport when a report becomes ready.
+ * Contains the full submit result so a report renderer can fetch any
+ * post-submit data it needs, plus the `reportId` identifying that report.
+ */
+export interface PrimitiveReportRequest {
+  reportId: string;
+  backend?: string;
+  values: Record<string, unknown>;
+  fieldValues: Record<string, unknown>;
+  serializedValues: Record<string, unknown>;
+  serializedFieldValues: Record<string, unknown>;
+  reports: Record<string, unknown>;
+  meta: Record<string, unknown>;
+  raw: unknown;
+  signal?: AbortSignal;
+}
+
+/**
+ * Transport for fetching post-submit report content.
+ * Receives the full submit result + report context; may return any value.
+ * Renderers decide how to display loading, success, and error states.
+ */
+export interface PrimitiveReportTransport {
+  submit: (request: PrimitiveReportRequest) => Promise<unknown>;
+}
+
+export type ExplanationRequest = PrimitiveReportRequest;
+export type ExplanationTransport = PrimitiveReportTransport;
+
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
   layout?: PrimitiveLayout;
@@ -35,6 +65,10 @@ export interface MountFormOptions {
   submittingLabel?: string;
   reportPane?: "auto" | "always" | "hidden";
   text?: PrimitiveTextOverrides;
+  /** Optional transport for report renderers that fetch extra data after submit. */
+  reportTransport?: PrimitiveReportTransport;
+  /** Optional transport for fetching explanations on reports that have `explanations: true`. */
+  explanationTransport?: ExplanationTransport;
 }
 
 export interface MountedForm {
@@ -77,6 +111,8 @@ export interface PrimitiveReportRendererElement extends HTMLElement {
   descriptor?: ReportDescriptor | null;
   context?: PrimitiveReportRenderContext;
   text?: PrimitiveText;
+  transport?: PrimitiveReportTransport;
+  request?: PrimitiveReportRequest | null;
 }
 
 export interface PrimitiveSubmitStartDetail {

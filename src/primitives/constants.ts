@@ -10,6 +10,7 @@ export const primitiveTagNames = {
   unsupportedComponent: "mlf-unsupported-component",
   fieldFrame: "mlf-field-frame",
   reportFrame: "mlf-report-frame",
+  explanationPanel: "mlf-explanation-panel",
   textField: "mlf-text-field",
   numberField: "mlf-number-field",
   booleanField: "mlf-boolean-field",
@@ -59,6 +60,9 @@ export interface PrimitiveText {
   regressorEmpty: string;
   regressorAriaLabel: string;
   regressorExecutionTime: (value: string) => string;
+  explanationLabel: string;
+  explanationAriaLabel: string;
+  explanationLoadingLabel: string;
   booleanTrue: string;
   booleanFalse: string;
   fieldReady: string;
@@ -102,6 +106,9 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
   regressorEmpty: "No regression output yet.",
   regressorAriaLabel: "Regressor report",
   regressorExecutionTime: (value: string): string => `Execution time: ${value}`,
+  explanationLabel: "Explanation",
+  explanationAriaLabel: "Model explanation",
+  explanationLoadingLabel: "Loading explanation...",
   booleanTrue: "True",
   booleanFalse: "False",
   fieldReady: "Value ready.",

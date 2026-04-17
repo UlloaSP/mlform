@@ -6,6 +6,7 @@ import "./components/submit-button";
 import "./components/unsupported-component";
 import "./components/field-frame";
 import "./components/report-frame";
+import "./components/explanation-panel";
 import "./components/form-root";
 import "./fields/text-field";
 import "./fields/number-field";

@@ -12,7 +12,12 @@ import {
   primitiveTagNames,
   type PrimitiveText,
 } from "../constants";
-import type { PrimitiveLayout, PrimitiveRegistry } from "../types";
+import type {
+  ExplanationTransport,
+  PrimitiveLayout,
+  PrimitiveRegistry,
+  PrimitiveReportTransport,
+} from "../types";
 
 type FormRenderState = {
   status: FormStatus;
@@ -364,6 +369,8 @@ export class PrimitiveFormElement extends LitElement {
     | "always"
     | "hidden" = "auto";
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
+  @property({ attribute: false }) accessor reportTransport: PrimitiveReportTransport | undefined;
+  @property({ attribute: false }) accessor explanationTransport: ExplanationTransport | undefined;
 
   @state() private accessor formState: FormRenderState | null = null;
   #unsubscribe: (() => void) | null = null;
@@ -396,6 +403,7 @@ export class PrimitiveFormElement extends LitElement {
     }
 
     const text = this.text;
+    const reportTransport = this.reportTransport ?? this.explanationTransport;
     const visibleFields = state.visibleFieldIds
       .map((fieldId) => form.getField(fieldId))
       .filter((field): field is NonNullable<typeof field> => field !== undefined);
@@ -489,6 +497,8 @@ export class PrimitiveFormElement extends LitElement {
                           .controller=${report}
                           .registry=${this.registry}
                           .text=${text}
+                          .transport=${reportTransport}
+                          .lastResult=${this.form?.state.lastResult ?? null}
                         ></mlf-report-frame>
                       `,
                     )}
@@ -509,6 +519,7 @@ export class PrimitiveFormElement extends LitElement {
     showReports: boolean,
   ) {
     const text = this.text;
+    const reportTransport = this.reportTransport ?? this.explanationTransport;
 
     return html`
       <div class="root split">
@@ -581,6 +592,8 @@ export class PrimitiveFormElement extends LitElement {
                                     .controller=${report}
                                     .registry=${this.registry}
                                     .text=${text}
+                                    .transport=${reportTransport}
+                                    .lastResult=${this.form?.state.lastResult ?? null}
                                   ></mlf-report-frame>
                                 `,
                               )}

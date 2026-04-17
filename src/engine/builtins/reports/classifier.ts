@@ -10,6 +10,7 @@ type ClassifierReportConfig = BaseReportConfig & {
   kind: "classifier";
   labels?: string[];
   details?: boolean;
+  explanations?: boolean;
 };
 
 export const classifierReportDefinition: ReportDefinition<ClassifierReportConfig> = {
@@ -20,6 +21,7 @@ export const classifierReportDefinition: ReportDefinition<ClassifierReportConfig
     ...baseReportShape,
     labels: z.array(z.string()).optional(),
     details: z.boolean().optional().default(true),
+    explanations: z.boolean().optional().default(false),
   }),
   resolvePayload(_config, context) {
     return (
@@ -44,6 +46,7 @@ export const classifierReportDefinition: ReportDefinition<ClassifierReportConfig
         state: context.state.status,
         details: config.details,
         labels: config.labels,
+        explanations: config.explanations,
         ...config.ui,
       },
     };

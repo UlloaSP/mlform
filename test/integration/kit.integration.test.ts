@@ -581,6 +581,63 @@ describe("kit integration", () => {
     container.remove();
   });
 
+  it("forwards report transport to built-in reports through the kit mount", async () => {
+    const reportTransport = {
+      submit: vi.fn().mockResolvedValue(["tree root", "leaf a", "leaf b"]),
+    };
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, {
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              prediction: "high",
+              labels: ["low", "high"],
+              probabilities: [0.15, 0.85],
+            },
+          },
+        }),
+      },
+      reportTransport,
+      schema: {
+        fields: [{ kind: "text", id: "name", label: "Name", required: true }],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+            label: "Risk",
+            explanations: true,
+          },
+        ],
+      },
+      initialValues: {
+        name: "Alice",
+      },
+    });
+
+    await mounted.form.submit();
+    await flush();
+    await flush();
+    await flush();
+
+    expect(reportTransport.submit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reportId: "risk",
+        values: {
+          name: "Alice",
+        },
+      }),
+    );
+
+    const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
+    const reportRenderer = getShadow(reportFrame).querySelector("mlf-classifier-report");
+    expect(getShadow(reportRenderer).textContent).toContain("tree root");
+
+    mounted.unmount();
+    container.remove();
+  });
+
   it("rejects invalid transport configuration at mount time", () => {
     const container = document.createElement("div");
 

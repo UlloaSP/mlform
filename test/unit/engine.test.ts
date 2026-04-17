@@ -1831,6 +1831,77 @@ describe("engine", () => {
     });
   });
 
+  it("classifier descriptor includes explanations: true when configured", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+          },
+        ],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+            label: "Risk",
+            explanations: true,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              prediction: "high",
+              probabilities: [0.1, 0.9],
+            },
+          },
+        }),
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+    await form.submit();
+
+    expect(form.reports[0]?.descriptor?.props.explanations).toBe(true);
+    expect(form.reports[0]?.descriptor?.props.id).toBe("risk");
+  });
+
+  it("classifier descriptor defaults explanations to false when not configured", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "text",
+            label: "Name",
+          },
+        ],
+        reports: [
+          {
+            kind: "classifier",
+            id: "risk",
+            label: "Risk",
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: { prediction: "low", probabilities: [0.9, 0.1] },
+          },
+        }),
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+    await form.submit();
+
+    expect(form.reports[0]?.descriptor?.props.explanations).toBe(false);
+  });
+
   it("throws ValidationError when submit is attempted with invalid data", async () => {
     const form = createForm({
       schema: {

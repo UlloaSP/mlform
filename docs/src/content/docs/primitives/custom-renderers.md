@@ -30,4 +30,4 @@ mountForm(container, {
 | `resolveReport(component)`           | Resolve a report tag.                            |
 | `clone()`                            | Copy a registry for isolated mutation.           |
 
-Custom elements receive `controller`, `descriptor`, and context properties. Re-render when those properties change.
+Custom report elements receive `controller`, `descriptor`, `context`, `transport`, and `request` properties. Use `transport.submit(request)` to fetch post-submit content, or extend `PrimitiveAsyncReportElement` from `mlform/primitives` to reuse that lifecycle.
