@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css, html } from "lit";
-import { nothing } from "lit";
 import { customElement } from "lit/decorators.js";
 import { PrimitiveAsyncReportElement } from "../base-async-report-element";
 import { primitiveTagNames } from "../constants";
@@ -113,10 +112,6 @@ export class PrimitiveClassifierReportElement extends PrimitiveAsyncReportElemen
     `,
   ];
 
-  protected shouldFetchTransportResult(): boolean {
-    return this.props.explanations === true && super.shouldFetchTransportResult();
-  }
-
   render() {
     const payload = this.props.payload;
     const error = typeof this.props.error === "string" ? this.props.error : null;
@@ -164,7 +159,7 @@ export class PrimitiveClassifierReportElement extends PrimitiveAsyncReportElemen
           : html`
               <div class="compact">${toText(prediction, text.classifierUnknownPrediction)}</div>
             `}
-        ${this.props.explanations === true ? this.renderTransportPanel(text) : nothing}
+        ${this.renderTransportPanel(text)}
       </section>
     `;
   }

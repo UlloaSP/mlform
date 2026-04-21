@@ -106,3 +106,24 @@ export type {
   WeightedRoutingTransportOptions,
 } from "@/transport";
 export type { KitDesignSystemSnapshot, KitLabels, MountFormOptions, MountedForm } from "@/kit";
+export type {
+  ExplanationRequest,
+  ExplanationTransport,
+  PrimitiveExplanationRenderContext,
+  PrimitiveExplanationRendererElement,
+} from "@/primitives";
+export { defineExplanationDefinition, createExplanationController } from "@/engine";
+export type {
+  AfterExplanationContext,
+  ExplanationConfig,
+  ExplanationController,
+  ExplanationDefinition,
+  ExplanationDescriptor,
+  ExplanationDescriptorContext,
+  ExplanationErrorContext,
+  ExplanationFetchRequest,
+  ExplanationFetchTransport,
+  ExplanationStateSnapshot,
+  ExplanationStatus,
+  NormalizedExplanationConfig,
+} from "@/engine";

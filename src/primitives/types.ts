@@ -2,6 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
+  ExplanationController,
+  ExplanationDescriptor,
+  ExplanationFetchRequest,
+  ExplanationFetchTransport,
   FieldController,
   FieldDescriptor,
   FormController,
@@ -17,10 +21,21 @@ export type PrimitiveLayout = "stacked" | "split";
 export type PrimitiveContainerStrategy = "error" | "replace";
 
 export interface PrimitiveRegistry {
+  // --- Fields ---
   registerField(component: string, tagName: string): PrimitiveRegistry;
-  registerReport(component: string, tagName: string): PrimitiveRegistry;
+  unregisterField(component: string): PrimitiveRegistry;
   resolveField(component: string): string | undefined;
+
+  // --- Reports ---
+  registerReport(component: string, tagName: string): PrimitiveRegistry;
+  unregisterReport(component: string): PrimitiveRegistry;
   resolveReport(component: string): string | undefined;
+
+  // --- Explanations ---
+  registerExplanation(component: string, tagName: string): PrimitiveRegistry;
+  unregisterExplanation(component: string): PrimitiveRegistry;
+  resolveExplanation(component: string): string | undefined;
+
   clone(): PrimitiveRegistry;
 }
 
@@ -51,8 +66,13 @@ export interface PrimitiveReportTransport {
   submit: (request: PrimitiveReportRequest) => Promise<unknown>;
 }
 
-export type ExplanationRequest = PrimitiveReportRequest;
-export type ExplanationTransport = PrimitiveReportTransport;
+/**
+ * Re-exports of engine explanation types for convenience in the primitives
+ * layer. Explanation transport is now per-plugin (defined in ExplanationDefinition)
+ * rather than a global mount-time option.
+ */
+export type ExplanationRequest = ExplanationFetchRequest;
+export type ExplanationTransport = ExplanationFetchTransport;
 
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
@@ -67,8 +87,6 @@ export interface MountFormOptions {
   text?: PrimitiveTextOverrides;
   /** Optional transport for report renderers that fetch extra data after submit. */
   reportTransport?: PrimitiveReportTransport;
-  /** Optional transport for fetching explanations on reports that have `explanations: true`. */
-  explanationTransport?: ExplanationTransport;
 }
 
 export interface MountedForm {
@@ -99,6 +117,12 @@ export interface PrimitiveReportRenderContext {
   description?: string;
 }
 
+export interface PrimitiveExplanationRenderContext {
+  regionId: string;
+  label?: string;
+  description?: string;
+}
+
 export interface PrimitiveFieldRendererElement extends HTMLElement {
   controller?: FieldController;
   descriptor?: FieldDescriptor | null;
@@ -113,6 +137,13 @@ export interface PrimitiveReportRendererElement extends HTMLElement {
   text?: PrimitiveText;
   transport?: PrimitiveReportTransport;
   request?: PrimitiveReportRequest | null;
+}
+
+export interface PrimitiveExplanationRendererElement extends HTMLElement {
+  controller?: ExplanationController;
+  descriptor?: ExplanationDescriptor | null;
+  context?: PrimitiveExplanationRenderContext;
+  text?: PrimitiveText;
 }
 
 export interface PrimitiveSubmitStartDetail {

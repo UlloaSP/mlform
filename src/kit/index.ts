@@ -41,7 +41,7 @@ export {
   withRetry,
   withTracing,
   withTimeout,
-} from "./transport";
+} from "@/transport";
 export type {
   ApiKeyAuthOptions,
   AuthOptions,

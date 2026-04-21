@@ -18,7 +18,6 @@ import {
   type PrimitiveText,
 } from "../constants";
 import type {
-  ExplanationTransport,
   PrimitiveReportRequest,
   PrimitiveReportTransport,
   PrimitiveRegistry,
@@ -104,7 +103,6 @@ export class PrimitiveReportFrameElement extends LitElement {
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
   @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
-  @property({ attribute: false }) accessor explanationTransport: ExplanationTransport | undefined;
   @property({ attribute: false }) accessor lastResult: SubmitResult | null = null;
 
   @state() private accessor descriptor: ReportDescriptor | null = null;
@@ -167,7 +165,7 @@ export class PrimitiveReportFrameElement extends LitElement {
   #renderResolvedRenderer(tagName: string) {
     const tag = unsafeStatic(tagName);
     const context = this.#getContext();
-    const reportTransport = this.transport ?? this.explanationTransport;
+    const reportTransport = this.transport;
     const reportRequest = this.reportState?.status === "ready" ? this.#getReportRequest() : null;
 
     return html`

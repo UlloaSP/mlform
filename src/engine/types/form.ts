@@ -10,6 +10,11 @@ import type {
   SelectorSubscriptionOptions,
 } from "./field";
 import type {
+  ExplanationConfig,
+  ExplanationController,
+  ExplanationStateSnapshot,
+} from "./explanation";
+import type {
   NormalizedReportConfig,
   ReportConfig,
   ReportController,
@@ -57,6 +62,7 @@ export interface FormState {
   touched: boolean;
   values: Record<string, unknown>;
   reportStates: Record<string, ReportStateSnapshot>;
+  explanationStates: Record<string, ExplanationStateSnapshot>;
   submissionProgress: SubmissionProgressState | null;
   errors: {
     form: string[];
@@ -96,17 +102,32 @@ export interface AfterValidateContext {
   submitCount: number;
 }
 
+export interface AfterExplanationContext {
+  explanationId: string;
+  kind: string;
+  result: unknown;
+}
+
+export interface ExplanationErrorContext {
+  explanationId: string;
+  kind: string;
+  error: unknown;
+}
+
 export interface FormHooks {
   beforeValidate?: (context: BeforeValidateContext) => MaybePromise<void>;
   afterValidate?: (context: AfterValidateContext) => MaybePromise<void>;
   beforeSubmit?: (context: BeforeSubmitContext) => MaybePromise<void>;
   afterSubmit?: (context: AfterSubmitContext) => MaybePromise<void>;
   onSubmitError?: (context: SubmitErrorContext) => MaybePromise<void>;
+  afterExplanation?: (context: AfterExplanationContext) => MaybePromise<void>;
+  onExplanationError?: (context: ExplanationErrorContext) => MaybePromise<void>;
 }
 
 export interface FormSchema {
   fields: FieldConfig[];
   reports?: ReportConfig[];
+  explanations?: ExplanationConfig[];
 }
 
 export interface CreateFormConfig {
@@ -127,9 +148,11 @@ export interface CreateFormConfig {
 export interface FormController {
   readonly fields: readonly FieldController[];
   readonly reports: readonly ReportController[];
+  readonly explanations: readonly ExplanationController[];
   readonly state: FormState;
   getField(id: string): FieldController | undefined;
   getReport(id: string): ReportController | undefined;
+  getExplanation(id: string): ExplanationController | undefined;
   getValues(): Record<string, unknown>;
   setValues(values: Record<string, unknown>): void;
   validate(): Promise<FormValidationResult>;

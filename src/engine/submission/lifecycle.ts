@@ -7,17 +7,20 @@ import type { SubmitResult } from "../types";
 type SubmissionTransitionOptions = {
   store: EngineStore;
   resetReports: () => void;
+  resetExplanations: () => void;
   syncAfterSubmissionTransition: () => void;
 };
 
 export const createSubmissionLifecycle = ({
   store,
   resetReports,
+  resetExplanations,
   syncAfterSubmissionTransition,
 }: SubmissionTransitionOptions) => {
   return {
     start(submissionVersion: number) {
       store.batch(() => {
+        resetExplanations();
         store.update((current) =>
           transitionEngineState(current, {
             type: "start-submission",
@@ -43,6 +46,7 @@ export const createSubmissionLifecycle = ({
     abort(message: string) {
       store.batch(() => {
         resetReports();
+        resetExplanations();
         store.update((current) =>
           transitionEngineState(current, {
             type: "submission-aborted",
@@ -56,6 +60,7 @@ export const createSubmissionLifecycle = ({
     fail(message: string) {
       store.batch(() => {
         resetReports();
+        resetExplanations();
         store.update((current) =>
           transitionEngineState(current, {
             type: "submission-error",

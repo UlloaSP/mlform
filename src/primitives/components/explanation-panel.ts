@@ -3,25 +3,25 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { primitiveStaticText, primitiveTagNames, type PrimitiveText } from "../constants";
-import type { ExplanationRequest, ExplanationTransport } from "../types";
+import { html as staticHtml, unsafeStatic } from "lit/static-html.js";
+import type {
+  ExplanationController,
+  ExplanationDescriptor,
+  ExplanationFetchRequest,
+  ExplanationStateSnapshot,
+  SubmitResult,
+} from "@/engine";
+import { ControllerBinding } from "../controller-binding";
+import {
+  primitiveIdPrefixes,
+  primitiveStaticText,
+  primitiveTagNames,
+  type PrimitiveText,
+} from "../constants";
+import type { PrimitiveExplanationRenderContext, PrimitiveRegistry } from "../types";
+import { toText } from "../utils";
 
-type ExplanationStatus = "idle" | "loading" | "done" | "error";
-
-const extractErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string" && error.trim().length > 0) return error;
-  return String(error);
-};
-
-const renderResultText = (result: unknown): string => {
-  if (typeof result === "string") return result;
-  try {
-    return JSON.stringify(result, null, 2);
-  } catch {
-    return String(result);
-  }
-};
+let explanationPanelSequence = 0;
 
 @customElement(primitiveTagNames.explanationPanel)
 export class PrimitiveExplanationPanelElement extends LitElement {
@@ -30,183 +30,235 @@ export class PrimitiveExplanationPanelElement extends LitElement {
       display: block;
     }
 
-    .divider {
-      border: none;
-      border-top: var(--mlf-border-width, 1px) solid
-        var(--mlf-report-border, var(--mlf-color-border, #e2e8f0));
-      margin: 0;
+    :host([hidden]) {
+      display: none;
     }
 
     .panel {
-      padding-top: 0.75rem;
+      display: grid;
+      gap: 0.9rem;
+      padding: 1.5rem 2rem;
+      border-radius: var(--mlf-report-radius, 12px);
+      border: var(--mlf-border-width, 1px) solid
+        var(--mlf-report-border, var(--mlf-color-border, #e2e8f0));
+      background: var(--mlf-report-bg, var(--mlf-color-surface, #ffffff));
+      box-shadow:
+        0 2px 4px var(--mlf-report-shadow-soft, rgba(0, 0, 0, 0.04)),
+        0 8px 16px var(--mlf-report-shadow, rgba(0, 0, 0, 0.04));
     }
 
-    .heading {
-      margin: 0 0 0.5rem;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 1rem;
+    }
+
+    .copy {
+      display: grid;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .label {
+      margin: 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--mlf-report-label-color, var(--mlf-color-text-muted, #475569));
     }
 
-    .skeleton {
-      height: 5rem;
-      border-radius: var(--mlf-radius-md, 16px);
-      border: var(--mlf-border-width, 1px) solid
-        var(--mlf-report-border, var(--mlf-color-border, #e2e8f0));
-      background: linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--mlf-color-surface-muted, #f8fafc) 92%, transparent) 0%,
-        color-mix(in srgb, var(--mlf-color-accent, #1e40af) 10%, var(--mlf-color-surface, #fff)) 50%,
-        color-mix(in srgb, var(--mlf-color-surface-muted, #f8fafc) 92%, transparent) 100%
-      );
-      background-size: 220% 100%;
-      animation: shimmer 1.6s linear infinite;
-    }
-
-    .error {
-      padding: 0.75rem 1rem;
-      border-radius: var(--mlf-radius-md, 16px);
-      border: var(--mlf-border-width, 1px) solid
-        color-mix(in srgb, var(--mlf-color-danger, #dc2626) 32%, transparent);
-      background: color-mix(in srgb, var(--mlf-color-danger, #dc2626) 10%, transparent);
-      color: var(--mlf-report-error-color, var(--mlf-color-danger, #dc2626));
-      font-size: 0.84rem;
-      font-family: var(
-        --mlf-font-family-mono,
-        "IBM Plex Mono",
-        "SFMono-Regular",
-        Consolas,
-        "Liberation Mono",
-        monospace
-      );
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .content {
+    .description {
       margin: 0;
-      padding: 0.875rem 1rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font: 500 0.82rem/1.5
-        var(
-          --mlf-font-family-mono,
-          "IBM Plex Mono",
-          "SFMono-Regular",
-          Consolas,
-          "Liberation Mono",
-          monospace
-        );
-      color: var(--mlf-color-text, #0f172a);
-      border-radius: var(--mlf-radius-md, 16px);
-      border: var(--mlf-border-width, 1px) solid
-        var(--mlf-report-border, var(--mlf-color-border, #e2e8f0));
-      background: var(--mlf-report-bg, var(--mlf-color-surface, #ffffff));
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--mlf-report-description-color, var(--mlf-color-text, #0f172a));
     }
 
-    @keyframes shimmer {
-      0% {
-        background-position: 200% 0;
-      }
-      100% {
-        background-position: -20% 0;
-      }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 1.8rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
+      background: var(
+        --mlf-report-meta-bg,
+        color-mix(in srgb, var(--mlf-color-accent, #1e40af) 10%, transparent)
+      );
+      color: var(--mlf-report-meta-color, var(--mlf-color-secondary, #475569));
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
   `;
 
-  @property({ attribute: false }) accessor transport: ExplanationTransport | undefined;
-  @property({ attribute: false }) accessor request: ExplanationRequest | null = null;
+  @property({ attribute: false }) accessor controller: ExplanationController | undefined;
+  @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
+  @property({ attribute: false }) accessor lastResult: SubmitResult | null = null;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
-  @state() private accessor explanationStatus: ExplanationStatus = "idle";
-  @state() private accessor explanationResult: unknown = undefined;
-  @state() private accessor explanationError: string | null = null;
+  @state() private accessor descriptor: ExplanationDescriptor | null = null;
+  @state() private accessor explanationState: ExplanationStateSnapshot | null = null;
 
-  #abortController: AbortController | null = null;
-  #lastFetchedRequest: ExplanationRequest | null = null;
+  readonly #instanceId = ++explanationPanelSequence;
+  #memoizedLastResult: SubmitResult | null = null;
+  #memoizedRequest: ExplanationFetchRequest | null = null;
+  #memoizedContext: PrimitiveExplanationRenderContext | undefined;
+  #memoizedController: ExplanationController | undefined;
+  #memoizedDescriptor: ExplanationDescriptor | null = null;
 
-  protected willUpdate(changed: Map<string, unknown>): void {
-    if (changed.has("request") || changed.has("transport")) {
-      void this.#fetchExplanation();
+  readonly #binding = new ControllerBinding<ExplanationController>(this, (ctrl) => {
+    this.descriptor = ctrl?.descriptor ?? null;
+    this.explanationState = ctrl?.state ?? null;
+  });
+
+  protected willUpdate(changedProperties: Map<string, unknown>): void {
+    if (changedProperties.has("controller")) {
+      this.#binding.bind(this.controller);
+    }
+
+    if (changedProperties.has("lastResult") || changedProperties.has("controller")) {
+      this.#maybeFetch();
     }
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.#abortController?.abort();
-    this.#abortController = null;
+    this.controller?.abort();
   }
 
   render() {
-    if (this.explanationStatus === "idle") {
+    const descriptor = this.descriptor;
+    const state = this.explanationState;
+
+    if (!descriptor || !state) {
       return html``;
     }
 
-    const text = this.text;
+    const props = descriptor.props;
+    const component = this.registry?.resolveExplanation(descriptor.component);
 
     return html`
-      <hr class="divider" />
       <div class="panel">
-        <p class="heading">${text.explanationLabel}</p>
-        ${this.#renderContent(text)}
+        <div class="header">
+          <div class="copy">
+            <p class="label">
+              ${toText(props.label, this.controller?.config.label ?? this.text.explanationLabel)}
+            </p>
+            ${props.description
+              ? html`<p class="description">${toText(props.description)}</p>`
+              : html``}
+          </div>
+          <span class="status">${state.status}</span>
+        </div>
+
+        ${component
+          ? this.#renderResolvedRenderer(component)
+          : html`
+              <mlf-unsupported-component
+                role="explanation"
+                component=${descriptor.component}
+                .text=${this.text}
+              ></mlf-unsupported-component>
+            `}
       </div>
     `;
   }
 
-  #renderContent(text: PrimitiveText) {
-    switch (this.explanationStatus) {
-      case "loading":
-        return html`<div class="skeleton" aria-label=${text.explanationLoadingLabel}></div>`;
-      case "error":
-        return html`<div class="error">Error: ${this.explanationError}</div>`;
-      case "done":
-        return html`<pre class="content" role="region" aria-label=${text.explanationAriaLabel}>
-${renderResultText(this.explanationResult)}</pre
-        >`;
-      default:
-        return html``;
-    }
+  #renderResolvedRenderer(tagName: string) {
+    const tag = unsafeStatic(tagName);
+    const context = this.#getContext();
+
+    return staticHtml`
+      <${tag}
+        .controller=${this.controller}
+        .descriptor=${this.descriptor}
+        .context=${context}
+        .text=${this.text}
+      ></${tag}>
+    `;
   }
 
-  async #fetchExplanation(): Promise<void> {
-    if (!this.transport || !this.request) {
+  #getContext(): PrimitiveExplanationRenderContext | undefined {
+    if (
+      this.controller === this.#memoizedController &&
+      this.descriptor === this.#memoizedDescriptor
+    ) {
+      return this.#memoizedContext;
+    }
+
+    const context = this.#createContext(this.descriptor?.props ?? {});
+    this.#memoizedController = this.controller;
+    this.#memoizedDescriptor = this.descriptor;
+    this.#memoizedContext = context;
+    return context;
+  }
+
+  #createContext(props: Record<string, unknown>): PrimitiveExplanationRenderContext | undefined {
+    if (!this.controller) {
+      return undefined;
+    }
+
+    return {
+      regionId: `${primitiveIdPrefixes.explanationRegion}-${this.controller.id}-${this.#instanceId}`,
+      label:
+        typeof props.label === "string" && props.label.length > 0
+          ? props.label
+          : (this.controller.config.label ?? undefined),
+      description:
+        typeof props.description === "string" && props.description.length > 0
+          ? props.description
+          : undefined,
+    };
+  }
+
+  /**
+   * Builds an ExplanationFetchRequest from the last submit result, memoized by
+   * result identity. Triggers controller.fetch() once per unique result.
+   */
+  #maybeFetch(): void {
+    const result = this.lastResult;
+    const ctrl = this.controller;
+
+    if (!result || !ctrl) {
       return;
     }
 
-    // Same request object reference → already fetched or fetching.
-    if (this.request === this.#lastFetchedRequest) {
+    if (ctrl.state.status !== "idle") {
       return;
     }
 
-    this.#abortController?.abort();
-    const ac = new AbortController();
-    this.#abortController = ac;
-    this.#lastFetchedRequest = this.request;
+    const request = this.#getRequest(result, ctrl.id);
+    void ctrl.fetch(request);
+  }
 
-    this.explanationStatus = "loading";
-    this.explanationError = null;
-    this.explanationResult = undefined;
-
-    try {
-      const result = await this.transport.submit({ ...this.request, signal: ac.signal });
-
-      if (ac.signal.aborted) {
-        return;
-      }
-
-      this.explanationResult = result;
-      this.explanationStatus = "done";
-    } catch (err: unknown) {
-      if (ac.signal.aborted) {
-        return;
-      }
-
-      this.explanationError = extractErrorMessage(err);
-      this.explanationStatus = "error";
+  #getRequest(result: SubmitResult, explanationId: string): ExplanationFetchRequest {
+    if (
+      result === this.#memoizedLastResult &&
+      this.#memoizedRequest?.explanationId === explanationId
+    ) {
+      return this.#memoizedRequest!;
     }
+
+    const request: ExplanationFetchRequest = {
+      explanationId,
+      backend: result.backend,
+      values: result.values,
+      fieldValues: result.fieldValues,
+      serializedValues: result.serializedValues,
+      serializedFieldValues: result.serializedFieldValues,
+      reports: result.reports,
+      meta: result.meta,
+      raw: result.raw,
+    };
+
+    this.#memoizedLastResult = result;
+    this.#memoizedRequest = request;
+    return request;
   }
 }
 

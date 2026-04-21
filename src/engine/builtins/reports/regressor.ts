@@ -10,7 +10,6 @@ type RegressorReportConfig = BaseReportConfig & {
   kind: "regressor";
   unit?: string;
   precision?: number;
-  explanations?: boolean;
 };
 
 export const regressorReportDefinition: ReportDefinition<RegressorReportConfig> = {
@@ -21,7 +20,6 @@ export const regressorReportDefinition: ReportDefinition<RegressorReportConfig> 
     ...baseReportShape,
     unit: z.string().optional(),
     precision: z.number().int().nonnegative().optional().default(2),
-    explanations: z.boolean().optional().default(false),
   }),
   resolvePayload(_config, context) {
     return (
@@ -46,7 +44,6 @@ export const regressorReportDefinition: ReportDefinition<RegressorReportConfig> 
         state: context.state.status,
         unit: config.unit,
         precision: config.precision,
-        explanations: config.explanations,
         ...config.ui,
       },
     };

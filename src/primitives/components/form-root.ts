@@ -4,7 +4,12 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { SubmissionAbortedError, type FormController, type FormStatus } from "@/engine";
+import {
+  SubmissionAbortedError,
+  type ExplanationController,
+  type FormController,
+  type FormStatus,
+} from "@/engine";
 import {
   primitiveDefaultLabels,
   primitiveEventNames,
@@ -12,12 +17,7 @@ import {
   primitiveTagNames,
   type PrimitiveText,
 } from "../constants";
-import type {
-  ExplanationTransport,
-  PrimitiveLayout,
-  PrimitiveRegistry,
-  PrimitiveReportTransport,
-} from "../types";
+import type { PrimitiveLayout, PrimitiveRegistry, PrimitiveReportTransport } from "../types";
 
 type FormRenderState = {
   status: FormStatus;
@@ -29,6 +29,7 @@ type FormRenderState = {
   submissionSessionMessageCount?: number;
   visibleFieldIds: string[];
   visibleReportIds: string[];
+  explanationIds: string[];
 };
 
 const sameIds = (left: readonly string[], right: readonly string[]): boolean => {
@@ -45,7 +46,8 @@ const sameFormRenderState = (left: FormRenderState, right: FormRenderState): boo
     left.submissionMessage === right.submissionMessage &&
     left.submissionSessionMessageCount === right.submissionSessionMessageCount &&
     sameIds(left.visibleFieldIds, right.visibleFieldIds) &&
-    sameIds(left.visibleReportIds, right.visibleReportIds)
+    sameIds(left.visibleReportIds, right.visibleReportIds) &&
+    sameIds(left.explanationIds, right.explanationIds)
   );
 };
 
@@ -370,7 +372,6 @@ export class PrimitiveFormElement extends LitElement {
     | "hidden" = "auto";
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
   @property({ attribute: false }) accessor reportTransport: PrimitiveReportTransport | undefined;
-  @property({ attribute: false }) accessor explanationTransport: ExplanationTransport | undefined;
 
   @state() private accessor formState: FormRenderState | null = null;
   #unsubscribe: (() => void) | null = null;
@@ -403,7 +404,7 @@ export class PrimitiveFormElement extends LitElement {
     }
 
     const text = this.text;
-    const reportTransport = this.reportTransport ?? this.explanationTransport;
+    const reportTransport = this.reportTransport;
     const visibleFields = state.visibleFieldIds
       .map((fieldId) => form.getField(fieldId))
       .filter((field): field is NonNullable<typeof field> => field !== undefined);
@@ -503,6 +504,7 @@ export class PrimitiveFormElement extends LitElement {
                       `,
                     )}
                   </div>
+                  ${this.#renderExplanations(form, state, text)}
                 </div>
               </aside>
             `
@@ -519,7 +521,7 @@ export class PrimitiveFormElement extends LitElement {
     showReports: boolean,
   ) {
     const text = this.text;
-    const reportTransport = this.reportTransport ?? this.explanationTransport;
+    const reportTransport = this.reportTransport;
 
     return html`
       <div class="root split">
@@ -605,12 +607,40 @@ export class PrimitiveFormElement extends LitElement {
                               <p class="empty-report-copy">${text.reportsEmptyBody}</p>
                             </div>
                           `}
+                      ${this.#renderExplanations(form, state, text)}
                     </div>
                   </div>
                 </section>
               `
             : html``}
         </div>
+      </div>
+    `;
+  }
+
+  #renderExplanations(form: FormController, state: FormRenderState, text: PrimitiveText) {
+    const explanations = state.explanationIds
+      .map((id) => form.getExplanation(id))
+      .filter((e): e is NonNullable<typeof e> => e !== undefined);
+
+    if (explanations.length === 0) {
+      return html``;
+    }
+
+    return html`
+      <div class="collection" part="explanation-list">
+        ${repeat(
+          explanations,
+          (explanation: ExplanationController) => explanation.id,
+          (explanation: ExplanationController) => html`
+            <mlf-explanation-panel
+              .controller=${explanation}
+              .registry=${this.registry}
+              .text=${text}
+              .lastResult=${form.state.lastResult ?? null}
+            ></mlf-explanation-panel>
+          `,
+        )}
       </div>
     `;
   }
@@ -712,6 +742,7 @@ export class PrimitiveFormElement extends LitElement {
       visibleReportIds: form.reports
         .filter((report) => report.descriptor !== null || report.state.status !== "idle")
         .map((report) => report.id),
+      explanationIds: form.explanations.map((explanation) => explanation.id),
     };
   }
 }

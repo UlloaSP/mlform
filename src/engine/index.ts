@@ -12,6 +12,7 @@ export {
   textFieldDefinition,
   timeSeriesFieldDefinition,
 } from "./builtins";
+export { createExplanationController } from "./explanations";
 export {
   EngineError,
   ReportPayloadError,
@@ -26,6 +27,7 @@ export type { TransportErrorCode } from "./errors";
 export { createForm } from "./form";
 export {
   createRegistry,
+  defineExplanationDefinition,
   defineFieldDefinition,
   defineReportDefinition,
   EngineRegistry,
@@ -38,16 +40,28 @@ export {
 } from "./equality";
 export { identity, isPromiseLike } from "./utils";
 export type {
+  AfterExplanationContext,
   AllConditions,
   AfterSubmitContext,
   AfterValidateContext,
   AnyConditions,
+  BaseExplanationConfig,
   BaseFieldConfig,
   BaseReportConfig,
   BeforeSubmitContext,
   BeforeValidateContext,
   CreateFormConfig,
   DeclarativeFieldCondition,
+  ExplanationConfig,
+  ExplanationController,
+  ExplanationDefinition,
+  ExplanationDescriptor,
+  ExplanationDescriptorContext,
+  ExplanationErrorContext,
+  ExplanationFetchRequest,
+  ExplanationFetchTransport,
+  ExplanationStateSnapshot,
+  ExplanationStatus,
   FieldConfig,
   FieldComparisonCondition,
   FieldCondition,
@@ -72,6 +86,7 @@ export type {
   FormValidationResult,
   InactiveFieldPolicy,
   MaybePromise,
+  NormalizedExplanationConfig,
   NormalizedFieldConfig,
   NormalizedReportConfig,
   Registry,

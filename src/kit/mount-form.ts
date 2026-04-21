@@ -61,7 +61,6 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     reportPane: options.reportPane,
     text: options.primitiveText,
     reportTransport: options.reportTransport,
-    explanationTransport: options.explanationTransport,
   });
   const designSystem = attachDesignSystem(mountedPrimitive.host, {
     config: initialDesignSystem,

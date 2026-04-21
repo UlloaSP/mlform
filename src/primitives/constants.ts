@@ -172,4 +172,5 @@ export const primitiveIdPrefixes = {
   fieldErrors: "mlf-field-errors",
   fieldControl: "mlf-field-control",
   reportRegion: "mlf-report-region",
+  explanationRegion: "mlf-explanation-region",
 } as const;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { css, html, nothing } from "lit";
+import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import { PrimitiveAsyncReportElement } from "../base-async-report-element";
 import { primitiveTagNames } from "../constants";
@@ -168,10 +168,6 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
     `,
   ];
 
-  protected shouldFetchTransportResult(): boolean {
-    return this.props.explanations === true && super.shouldFetchTransportResult();
-  }
-
   render() {
     const payload = this.props.payload;
     const error = typeof this.props.error === "string" ? this.props.error : null;
@@ -250,7 +246,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
         ${executionTime
           ? html`<div class="meta">${text.regressorExecutionTime(executionTime)}</div>`
           : html``}
-        ${this.props.explanations === true ? this.renderTransportPanel(text) : nothing}
+        ${this.renderTransportPanel(text)}
       </section>
     `;
   }

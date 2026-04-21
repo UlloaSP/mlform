@@ -3,6 +3,7 @@
 
 export type MaybePromise<T> = T | PromiseLike<T>;
 
+export * from "./explanation";
 export * from "./field";
 export * from "./form";
 export * from "./registry";

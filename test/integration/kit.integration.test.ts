@@ -2,7 +2,12 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { SubmissionAbortedError } from "@/engine";
+import * as z from "zod";
+import {
+  SubmissionAbortedError,
+  createBuiltinRegistry,
+  defineExplanationDefinition,
+} from "@/engine";
 import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
@@ -607,7 +612,6 @@ describe("kit integration", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
-            explanations: true,
           },
         ],
       },
@@ -722,5 +726,106 @@ describe("kit integration", () => {
 
     mounted.unmount();
     container.remove();
+  });
+
+  it("mounts explanation plugins, renders explanation panels, and triggers fetch after submit", async () => {
+    const explanationResult = { feature_importance: { name: 0.9 } };
+    const transportSubmit = vi.fn().mockResolvedValue(explanationResult);
+    const registry = createBuiltinRegistry();
+
+    registry.registerExplanation(
+      defineExplanationDefinition({
+        kind: "shap",
+        schema: z
+          .object({
+            kind: z.literal("shap"),
+            id: z.string().optional(),
+            label: z.string().optional(),
+          })
+          .passthrough(),
+        transport: () => ({ submit: transportSubmit }),
+        describe: (_config, ctx) => ({
+          component: "shap-renderer",
+          props: { status: ctx.state.status },
+        }),
+      }),
+    );
+
+    const container = document.createElement("div");
+    document.body.append(container);
+
+    const mounted = mountForm(container, {
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              prediction: "high",
+              labels: ["low", "high"],
+              probabilities: [0.2, 0.8],
+            },
+          },
+        }),
+      },
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+        reports: [{ kind: "classifier", id: "risk", label: "Risk" }],
+        explanations: [{ kind: "shap", label: "SHAP Values" }],
+      },
+      initialValues: { name: "Alice" },
+    });
+
+    await flush();
+
+    expect(mounted.form.explanations).toHaveLength(1);
+    expect(mounted.form.explanations[0]?.id).toBe("shap-values");
+    expect(mounted.form.explanations[0]?.state.status).toBe("idle");
+    expect(mounted.form.state.explanationStates["shap-values"]?.status).toBe("idle");
+
+    await mounted.form.submit();
+    await flush();
+    await flush();
+    await flush();
+
+    expect(transportSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        explanationId: "shap-values",
+        values: { name: "Alice" },
+        reports: expect.objectContaining({ risk: expect.any(Object) }),
+      }),
+    );
+
+    expect(mounted.form.explanations[0]?.state.status).toBe("done");
+    expect(mounted.form.explanations[0]?.state.result).toEqual(explanationResult);
+    expect(mounted.form.state.explanationStates["shap-values"]?.status).toBe("done");
+
+    const shadow = getShadow(mounted.host);
+    expect(shadow.querySelector("mlf-explanation-panel")).not.toBeNull();
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("supports unregisterExplanation on the engine registry", () => {
+    const registry = createBuiltinRegistry();
+
+    const def = defineExplanationDefinition({
+      kind: "shap",
+      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+      transport: () => ({ submit: vi.fn() }),
+      describe: () => null,
+    });
+
+    registry.registerExplanation(def);
+    expect(registry.getExplanation("shap")).toBeDefined();
+    expect(registry.listExplanations()).toHaveLength(1);
+
+    registry.unregisterExplanation("shap");
+    expect(registry.getExplanation("shap")).toBeUndefined();
+    expect(registry.listExplanations()).toHaveLength(0);
+
+    // Re-registration after unregister must not throw.
+    expect(() => registry.registerExplanation(def)).not.toThrow();
+    expect(registry.getExplanation("shap")).toBeDefined();
   });
 });

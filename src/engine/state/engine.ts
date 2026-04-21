@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
+  ExplanationStateSnapshot,
   FieldStateSnapshot,
   FormStatus,
   ReportStateSnapshot,
@@ -24,6 +25,7 @@ export interface EngineState {
   formErrors: string[];
   fieldStates: Record<string, InternalFieldState>;
   reportStates: Record<string, ReportStateSnapshot>;
+  explanationStates: Record<string, ExplanationStateSnapshot>;
   submissionProgress: SubmissionProgressState | null;
   lifecycleVersion: number;
   activeValidationVersion: number;
@@ -53,6 +55,7 @@ export const createInitialEngineState = (): EngineState => ({
   formErrors: [],
   fieldStates: {},
   reportStates: {},
+  explanationStates: {},
   submissionProgress: null,
   lifecycleVersion: 0,
   activeValidationVersion: 0,

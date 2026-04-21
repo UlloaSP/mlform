@@ -82,13 +82,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "lint": "vp lint --fix",
-    "type": "vp exec tsc -p tsconfig.json --noEmit",
-    "build": "vp build",
-    "test": "vp test run",
-    "test:watch": "vp test",
+    "typecheck": "vp exec tsc -p tsconfig.json --noEmit",
     "coverage": "vp test run --coverage",
-    "ci": "vp lint --fix && vp exec tsc -p tsconfig.json --noEmit && vp test run && vp build",
+    "ci": "vp check && vp run typecheck && vp test run && vp build",
     "prepare": "vp config"
   },
   "dependencies": {

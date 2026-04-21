@@ -3,6 +3,7 @@
 
 import { shallowEquality } from "./equality";
 import { EngineError } from "./errors";
+import { createExplanationController, type InternalExplanationController } from "./explanations";
 import { createFieldController, type InternalFieldController, type RefreshOptions } from "./fields";
 import { createReportController, type InternalReportController } from "./reports";
 import { normalizeSchema } from "./schema";
@@ -135,18 +136,48 @@ export const createForm = (config: CreateFormConfig): FormController => {
     });
   });
 
+  const explanations: InternalExplanationController[] = normalizedSchema.explanations.map(
+    (explanationConfig) => {
+      const definition = config.registry.getExplanation(explanationConfig.kind);
+      if (!definition) {
+        throw new EngineError(
+          `Explanation definition "${explanationConfig.kind}" disappeared during form creation.`,
+        );
+      }
+
+      return createExplanationController({
+        config: explanationConfig,
+        definition,
+        store,
+        hooks: config.hooks,
+      });
+    },
+  );
+
   const fieldMap = new Map<string, InternalFieldController>(
     fields.map((field) => [field.id, field]),
   );
   const reportMap = new Map<string, InternalReportController>(
     reports.map((report) => [report.id, report]),
   );
+  const explanationMap = new Map<string, InternalExplanationController>(
+    explanations.map((explanation) => [explanation.id, explanation]),
+  );
   const readonlyFields = Object.freeze([...fields]) as readonly InternalFieldController[];
   const readonlyReports = Object.freeze([...reports]) as readonly InternalReportController[];
+  const readonlyExplanations = Object.freeze([
+    ...explanations,
+  ]) as readonly InternalExplanationController[];
 
   const resetReports = (): void => {
     for (const report of reports) {
       report.reset();
+    }
+  };
+
+  const resetExplanations = (): void => {
+    for (const explanation of explanations) {
+      explanation.reset();
     }
   };
 
@@ -231,6 +262,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
     getSubmitCount,
     markReportsLoading,
     resetReports,
+    resetExplanations,
     syncDerivedFieldState,
     shouldResetInactiveFields,
     resolveInactiveFieldPolicy,
@@ -244,6 +276,9 @@ export const createForm = (config: CreateFormConfig): FormController => {
     get reports() {
       return readonlyReports;
     },
+    get explanations() {
+      return readonlyExplanations;
+    },
     get state() {
       return getPublicState();
     },
@@ -252,6 +287,9 @@ export const createForm = (config: CreateFormConfig): FormController => {
     },
     getReport(id) {
       return reportMap.get(id);
+    },
+    getExplanation(id) {
+      return explanationMap.get(id);
     },
     getValues() {
       return getValues();
@@ -327,6 +365,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
           field.reset();
         }
         resetReports();
+        resetExplanations();
         formSubmitter.reset();
 
         store.update((current) => transitionEngineState(current, { type: "reset" }));
