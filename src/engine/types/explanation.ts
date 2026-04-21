@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { ZodType } from "zod";
+import type { PresentationContent, PresentationSummary } from "../declarative/presentation";
 
 export type ExplanationStatus = "idle" | "loading" | "done" | "error";
 
@@ -35,6 +36,11 @@ export interface ExplanationDescriptorContext {
   state: ExplanationStateSnapshot;
 }
 
+export interface ExplanationFetchContext<TConfig extends ExplanationConfig = ExplanationConfig> {
+  config: NormalizedExplanationConfig<TConfig>;
+  explanationId: string;
+}
+
 /**
  * Minimal transport interface used to fetch explanation data from an external
  * service. Defined in engine types so ExplanationController can reference it
@@ -57,6 +63,39 @@ export interface ExplanationFetchTransport {
   submit: (request: ExplanationFetchRequest) => Promise<unknown>;
 }
 
+export type ExplanationFetchFactory<TConfig extends ExplanationConfig = ExplanationConfig> = (
+  context: ExplanationFetchContext<TConfig>,
+) => ExplanationFetchTransport;
+
+export interface ExplanationRenderSpecContext<
+  TConfig extends ExplanationConfig = ExplanationConfig,
+  TResult = unknown,
+> {
+  config: NormalizedExplanationConfig<TConfig>;
+  explanationId: string;
+  state: ExplanationStateSnapshot;
+  result: TResult;
+}
+
+export interface ExplanationRenderSpec<
+  TConfig extends ExplanationConfig = ExplanationConfig,
+  TResult = unknown,
+> {
+  summary?: (
+    context: ExplanationRenderSpecContext<TConfig, TResult>,
+  ) => PresentationSummary | undefined;
+  content: (context: ExplanationRenderSpecContext<TConfig, TResult>) => PresentationContent;
+}
+
+export interface DeclarativeExplanationKind<
+  TConfig extends ExplanationConfig = ExplanationConfig,
+  TResult = unknown,
+> {
+  kind: string;
+  schema: ZodType<TConfig>;
+  fetch: ExplanationFetchFactory<TConfig>;
+  render: ExplanationRenderSpec<TConfig, TResult>;
+}
 /**
  * Plugin definition for an explanation kind. Each explanation plugin must
  * provide a Zod schema for its config, a transport factory, and a describe

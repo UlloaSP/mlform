@@ -2,6 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { RegistryError } from "../errors";
+import { defineExplanationKind } from "../declarative/explanation";
+import { defineFieldKind } from "../declarative/field";
+import { defineReportKind } from "../declarative/report";
 import type {
   ExplanationConfig,
   ExplanationDefinition,
@@ -113,3 +116,5 @@ export const defineReportDefinition = <TConfig extends ReportConfig>(
 export const defineExplanationDefinition = <TConfig extends ExplanationConfig>(
   definition: ExplanationDefinition<TConfig>,
 ): ExplanationDefinition<TConfig> => definition;
+
+export { defineExplanationKind, defineFieldKind, defineReportKind };

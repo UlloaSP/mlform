@@ -105,12 +105,15 @@ export const createPrimitiveRegistry = (): PrimitiveRegistry => {
 
 export const createBuiltinPrimitiveRegistry = (): PrimitiveRegistry => {
   return createPrimitiveRegistry()
+    .registerField("declarative-field", primitiveTagNames.declarativeField)
     .registerField("text-field", primitiveTagNames.textField)
     .registerField("number-field", primitiveTagNames.numberField)
     .registerField("boolean-field", primitiveTagNames.booleanField)
     .registerField("category-field", primitiveTagNames.categoryField)
     .registerField("date-field", primitiveTagNames.dateField)
     .registerField("time-series-field", primitiveTagNames.timeSeriesField)
+    .registerReport("declarative-report", primitiveTagNames.declarativeReport)
     .registerReport("classifier-report", primitiveTagNames.classifierReport)
-    .registerReport("regressor-report", primitiveTagNames.regressorReport);
+    .registerReport("regressor-report", primitiveTagNames.regressorReport)
+    .registerExplanation("declarative-explanation", primitiveTagNames.declarativeExplanation);
 };

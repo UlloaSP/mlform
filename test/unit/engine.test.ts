@@ -14,6 +14,9 @@ import {
   createBuiltinRegistry,
   createForm,
   defineExplanationDefinition,
+  defineExplanationKind,
+  defineFieldKind,
+  defineReportKind,
   shallowEquality,
 } from "@/engine";
 
@@ -3346,5 +3349,246 @@ describe("engine", () => {
     expect(() => registry.registerExplanation(def)).not.toThrow();
     expect(registry.getExplanation("shap")).toBeDefined();
     expect(registry.listExplanations()).toHaveLength(1);
+  });
+
+  it("creates declarative custom fields with generated descriptors", async () => {
+    const registry = createBuiltinRegistry();
+
+    registry.registerField(
+      defineFieldKind({
+        kind: "score",
+        schema: z.object({
+          kind: z.literal("score"),
+          id: z.string().optional(),
+          label: z.string(),
+          min: z.number().default(0),
+          max: z.number().default(100),
+          step: z.number().optional(),
+          ui: z.record(z.string(), z.unknown()).optional(),
+        }),
+        value: {
+          default: () => 0,
+          normalize: (value) => Number(value ?? 0),
+          serialize: (value) => value,
+        },
+        validate: ({ value, config }) =>
+          value < config.min || value > config.max ? ["Score out of range."] : [],
+        render: {
+          widget: "number",
+          hints: ({ config }) => ({
+            min: config.min,
+            max: config.max,
+            step: config.step ?? 1,
+            unit: "%",
+          }),
+        },
+      }),
+    );
+
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "score",
+            label: "Score",
+            min: 10,
+            max: 20,
+            step: 5,
+            ui: {
+              placeholder: "Pick score",
+            },
+          },
+        ],
+      },
+      registry,
+      transport: { submit: vi.fn() },
+    });
+
+    expect(form.fields[0]?.descriptor).toEqual({
+      component: "declarative-field",
+      meta: expect.objectContaining({
+        declarative: true,
+        widget: "number",
+      }),
+      props: expect.objectContaining({
+        label: "Score",
+        widget: "number",
+        min: 10,
+        max: 20,
+        step: 5,
+        unit: "%",
+        placeholder: "Pick score",
+        value: 0,
+      }),
+    });
+
+    form.setValues({ score: 30 });
+    const validation = await form.validate();
+
+    expect(validation.valid).toBe(false);
+    expect(validation.fields.score).toEqual(["Score out of range."]);
+  });
+
+  it("creates declarative custom reports with summary and presentation content", async () => {
+    const registry = createBuiltinRegistry();
+
+    registry.registerReport(
+      defineReportKind({
+        kind: "risk-summary",
+        schema: z.object({
+          kind: z.literal("risk-summary"),
+          id: z.string().optional(),
+          label: z.string().optional(),
+          source: z.string().optional(),
+        }),
+        resolve: ({ report, result }) => result.reports[report.source],
+        render: {
+          summary: ({ payload }) => ({
+            title: "Risk summary",
+            value: (payload as { score: number }).score,
+            tone: (payload as { score: number }).score > 0.8 ? "danger" : "neutral",
+          }),
+          content: ({ payload }) => [
+            {
+              type: "metric",
+              label: "Score",
+              value: (payload as { score: number }).score,
+            },
+            {
+              type: "list",
+              label: "Drivers",
+              items: (payload as { drivers: string[] }).drivers,
+            },
+          ],
+        },
+      }),
+    );
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+        reports: [{ kind: "risk-summary", id: "risk", label: "Risk" }],
+      },
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              score: 0.91,
+              drivers: ["income", "savings"],
+            },
+          },
+        }),
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+    await form.submit();
+
+    expect(form.reports[0]?.descriptor).toEqual({
+      component: "declarative-report",
+      meta: expect.objectContaining({
+        declarative: true,
+      }),
+      props: expect.objectContaining({
+        label: "Risk",
+        summary: expect.objectContaining({
+          title: "Risk summary",
+          value: 0.91,
+          tone: "danger",
+        }),
+        content: expect.arrayContaining([
+          expect.objectContaining({
+            type: "metric",
+            label: "Score",
+            value: 0.91,
+          }),
+          expect.objectContaining({
+            type: "list",
+            label: "Drivers",
+            items: ["income", "savings"],
+          }),
+        ]),
+      }),
+    });
+  });
+
+  it("creates declarative custom explanations with generated descriptors and fetch adapters", async () => {
+    const explanationTransport = vi.fn().mockResolvedValue({
+      top_features: [
+        { feature: "income", score: 0.9 },
+        { feature: "debt", score: -0.4 },
+      ],
+    });
+    const registry = createBuiltinRegistry();
+
+    registry.registerExplanation(
+      defineExplanationKind({
+        kind: "shap",
+        schema: z.object({
+          kind: z.literal("shap"),
+          id: z.string().optional(),
+          label: z.string().optional(),
+        }),
+        fetch: ({ explanationId: _explanationId }) => ({
+          submit: explanationTransport,
+        }),
+        render: {
+          summary: ({ state }) => ({
+            title: "SHAP",
+            tone: state.status === "error" ? "danger" : "neutral",
+          }),
+          content: ({ result }) => ({
+            type: "table",
+            label: "Feature impact",
+            columns: ["feature", "score"],
+            rows: ((result as { top_features: Array<{ feature: string; score: number }> })
+              .top_features ?? []) as Array<Record<string, unknown>>,
+          }),
+        },
+      }),
+    );
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+        explanations: [{ kind: "shap", label: "Explain" }],
+      },
+      registry,
+      transport: { submit: vi.fn() },
+    });
+
+    const ctrl = form.explanations[0]!;
+    await ctrl.fetch({
+      explanationId: ctrl.id,
+      values: { name: "Alice" },
+      fieldValues: { name: "Alice" },
+      serializedValues: { name: "Alice" },
+      serializedFieldValues: { name: "Alice" },
+      reports: {},
+      meta: {},
+      raw: {},
+    });
+
+    expect(explanationTransport).toHaveBeenCalledTimes(1);
+    expect(ctrl.descriptor).toEqual({
+      component: "declarative-explanation",
+      meta: expect.objectContaining({
+        declarative: true,
+      }),
+      props: expect.objectContaining({
+        label: "Explain",
+        state: "done",
+        summary: expect.objectContaining({
+          title: "SHAP",
+        }),
+        content: expect.arrayContaining([
+          expect.objectContaining({
+            type: "table",
+            label: "Feature impact",
+          }),
+        ]),
+      }),
+    });
   });
 });

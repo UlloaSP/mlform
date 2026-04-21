@@ -144,6 +144,51 @@ export interface FieldDescriptorContext {
   state: FieldStateSnapshot;
 }
 
+export type FieldWidget = "text" | "number" | "boolean" | "select" | "date" | "time-series";
+
+export type FieldRenderHints = Record<string, unknown>;
+
+export interface FieldValueAdapter<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
+  default?: (config: TConfig) => TValue;
+  normalize?: (value: unknown, config: TConfig) => TValue;
+  clone?: (value: TValue, config: TConfig) => TValue;
+  isEqual?: (previous: TValue, next: TValue, config: TConfig) => boolean;
+  serialize?: (value: TValue, config: TConfig) => unknown;
+}
+
+export interface FieldValidationFnContext<
+  TConfig extends FieldConfig = FieldConfig,
+  TValue = unknown,
+> extends FieldValidationContext<TConfig> {
+  config: TConfig;
+  value: TValue;
+}
+
+export interface FieldRenderSpecContext<
+  TConfig extends FieldConfig = FieldConfig,
+  TValue = unknown,
+> {
+  config: TConfig;
+  fieldId: string;
+  state: FieldStateSnapshot;
+  value: TValue;
+}
+
+export interface FieldRenderSpec<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
+  widget: FieldWidget;
+  hints?:
+    | FieldRenderHints
+    | ((context: FieldRenderSpecContext<TConfig, TValue>) => FieldRenderHints);
+}
+
+export interface DeclarativeFieldKind<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
+  kind: string;
+  schema: ZodType<TConfig>;
+  value?: FieldValueAdapter<TConfig, TValue>;
+  validate?: (context: FieldValidationFnContext<TConfig, TValue>) => MaybePromise<string[]>;
+  render: FieldRenderSpec<TConfig, TValue>;
+}
+
 export interface FieldDefinition<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
   kind: string;
   schema: ZodType<TConfig>;

@@ -23,6 +23,32 @@ const normalizeCategoryOption = (option: CategoryOption): { label: string; value
   return typeof option === "string" ? { label: option, value: option } : option;
 };
 
+const resolveFieldFeedbackComponent = (
+  component: string,
+  props: Record<string, unknown>,
+): string => {
+  if (component !== "declarative-field") {
+    return component;
+  }
+
+  switch (props.widget) {
+    case "text":
+      return "text-field";
+    case "number":
+      return "number-field";
+    case "boolean":
+      return "boolean-field";
+    case "select":
+      return "category-field";
+    case "date":
+      return "date-field";
+    case "time-series":
+      return "time-series-field";
+    default:
+      return component;
+  }
+};
+
 @customElement(primitiveTagNames.fieldFrame)
 export class PrimitiveFieldFrameElement extends LitElement {
   static styles = css`
@@ -344,8 +370,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
     state: FieldStateSnapshot,
   ): string {
     const text = this.text;
+    const resolvedComponent = resolveFieldFeedbackComponent(component, props);
 
-    switch (component) {
+    switch (resolvedComponent) {
       case "text-field": {
         const value = typeof props.value === "string" ? props.value : "";
         return value.length > 0 ? text.fieldTextRecorded(value.length) : text.fieldReady;
@@ -383,7 +410,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
     props: Record<string, unknown>,
     state: FieldStateSnapshot,
   ): boolean {
-    switch (component) {
+    const resolvedComponent = resolveFieldFeedbackComponent(component, props);
+
+    switch (resolvedComponent) {
       case "text-field":
         return typeof state.value === "string" && state.value.trim().length > 0;
       case "date-field":

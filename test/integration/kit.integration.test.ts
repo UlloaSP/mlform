@@ -7,6 +7,9 @@ import {
   SubmissionAbortedError,
   createBuiltinRegistry,
   defineExplanationDefinition,
+  defineExplanationKind,
+  defineFieldKind,
+  defineReportKind,
 } from "@/engine";
 import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
 
@@ -31,6 +34,16 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
     "mlf-text-field, mlf-number-field, mlf-boolean-field, mlf-category-field, mlf-date-field, mlf-time-series-field",
   );
   return getShadow(renderer).querySelector("[aria-label]") as HTMLElement;
+};
+
+const getDeclarativeFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
+  const fieldFrame = getShadow(host).querySelectorAll("mlf-field-frame").item(index) as HTMLElement;
+  const renderer = getShadow(fieldFrame).querySelector("mlf-declarative-field") as HTMLElement;
+  const rendererShadow = getShadow(renderer);
+  const builtinRenderer = rendererShadow.querySelector(
+    "mlf-text-field, mlf-number-field, mlf-boolean-field, mlf-category-field, mlf-date-field, mlf-time-series-field",
+  ) as HTMLElement;
+  return getShadow(builtinRenderer).querySelector("[aria-label]") as HTMLElement;
 };
 
 describe("kit integration", () => {
@@ -827,5 +840,164 @@ describe("kit integration", () => {
     // Re-registration after unregister must not throw.
     expect(() => registry.registerExplanation(def)).not.toThrow();
     expect(registry.getExplanation("shap")).toBeDefined();
+  });
+
+  it("mounts declarative custom fields, reports, and explanations without primitive registry wiring", async () => {
+    const explanationSubmit = vi.fn().mockResolvedValue({
+      top_features: [
+        { feature: "income", score: 0.82 },
+        { feature: "savings", score: 0.31 },
+      ],
+    });
+    const registry = createBuiltinRegistry();
+
+    registry.registerField(
+      defineFieldKind({
+        kind: "score",
+        schema: z.object({
+          kind: z.literal("score"),
+          id: z.string().optional(),
+          label: z.string(),
+          min: z.number().default(0),
+          max: z.number().default(100),
+          step: z.number().optional(),
+          ui: z.record(z.string(), z.unknown()).optional(),
+        }),
+        value: {
+          default: () => 0,
+          normalize: (value) => Number(value ?? 0),
+          serialize: (value) => value,
+        },
+        validate: ({ value, config }) =>
+          value < config.min || value > config.max ? ["Score out of range."] : [],
+        render: {
+          widget: "number",
+          hints: ({ config }) => ({
+            min: config.min,
+            max: config.max,
+            step: config.step ?? 1,
+            unit: "%",
+            placeholder: "Enter score",
+          }),
+        },
+      }),
+    );
+
+    registry.registerReport(
+      defineReportKind({
+        kind: "risk-summary",
+        schema: z.object({
+          kind: z.literal("risk-summary"),
+          id: z.string().optional(),
+          label: z.string().optional(),
+          source: z.string().optional(),
+        }),
+        resolve: ({ report, result }) => result.reports[report.source],
+        render: {
+          summary: ({ payload }) => ({
+            title: "Risk summary",
+            value: (payload as { score: number }).score,
+            tone: (payload as { score: number }).score > 0.8 ? "danger" : "neutral",
+          }),
+          content: ({ payload }) => [
+            {
+              type: "metric",
+              label: "Score",
+              value: (payload as { score: number }).score,
+            },
+            {
+              type: "list",
+              label: "Drivers",
+              items: (payload as { drivers: string[] }).drivers,
+            },
+          ],
+        },
+      }),
+    );
+
+    registry.registerExplanation(
+      defineExplanationKind({
+        kind: "shap",
+        schema: z.object({
+          kind: z.literal("shap"),
+          id: z.string().optional(),
+          label: z.string().optional(),
+        }),
+        fetch: () => ({ submit: explanationSubmit }),
+        render: {
+          summary: ({ state }) => ({
+            title: "SHAP",
+            tone: state.status === "error" ? "danger" : "neutral",
+          }),
+          content: ({ result }) => ({
+            type: "table",
+            label: "Feature impact",
+            columns: ["feature", "score"],
+            rows: ((result as { top_features: Array<Record<string, unknown>> }).top_features ??
+              []) as Array<Record<string, unknown>>,
+          }),
+        },
+      }),
+    );
+
+    const container = document.createElement("div");
+    document.body.append(container);
+
+    const mounted = mountForm(container, {
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              score: 0.91,
+              drivers: ["income", "savings"],
+            },
+          },
+        }),
+      },
+      schema: {
+        fields: [{ kind: "score", label: "Score", min: 0, max: 100, step: 5 }],
+        reports: [{ kind: "risk-summary", id: "risk", label: "Risk" }],
+        explanations: [{ kind: "shap", label: "SHAP Values" }],
+      },
+      initialValues: { score: 85 },
+    });
+
+    await flush();
+
+    const scoreInput = getDeclarativeFieldControlHost(mounted.host, 0) as HTMLInputElement;
+    expect(scoreInput.getAttribute("aria-label")).toContain("Score");
+    expect(scoreInput.value).toBe("85");
+
+    await mounted.form.submit();
+    await flush();
+    await flush();
+    await flush();
+
+    expect(explanationSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        explanationId: "shap-values",
+        values: { score: 85 },
+      }),
+    );
+
+    const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame") as HTMLElement;
+    const reportRenderer = getShadow(reportFrame).querySelector(
+      "mlf-declarative-report",
+    ) as HTMLElement;
+    expect(getShadow(reportRenderer).textContent).toContain("Risk summary");
+    expect(getShadow(reportRenderer).textContent).toContain("income");
+
+    const explanationPanel = getShadow(mounted.host).querySelector(
+      "mlf-explanation-panel",
+    ) as HTMLElement;
+    const explanationRenderer = getShadow(explanationPanel).querySelector(
+      "mlf-declarative-explanation",
+    ) as HTMLElement;
+    expect(getShadow(explanationRenderer).textContent).toContain("Feature impact");
+    expect(getShadow(explanationRenderer).textContent).toContain("income");
+
+    mounted.unmount();
+    container.remove();
   });
 });

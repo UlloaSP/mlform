@@ -1,34 +1,41 @@
 ---
 title: Custom Reports
-description: Define report kinds that understand custom backend payloads.
+description: Define report kinds with declarative rendering and low boilerplate.
 ---
 
-A custom report definition validates config, resolves payloads, and describes what a renderer should mount.
+Use `defineReportKind` for the normal extension path. It lets you resolve payloads and return a small presentation tree instead of building a custom renderer for each report.
 
 ```ts
 import { z } from "zod";
-import { createBuiltinRegistry } from "mlform/engine";
+import { createBuiltinRegistry, defineReportKind } from "mlform/engine";
 
-const explanationReport = {
-  kind: "explanation",
+const riskSummaryReport = defineReportKind({
+  kind: "risk-summary",
   schema: z.object({
     id: z.string().optional(),
-    kind: z.literal("explanation"),
+    kind: z.literal("risk-summary"),
     label: z.string().optional(),
     source: z.string().optional(),
   }),
-  resolvePayload: (config, context) => context.result.reports[config.source ?? config.id],
-  describe: (config, context) => ({
-    component: "explanation-report",
-    props: {
-      label: config.label ?? "Explanation",
-      payload: context.payload,
-      error: context.state.error,
-    },
-  }),
-};
+  resolve: ({ report, result }) => result.reports[report.source],
+  render: {
+    summary: ({ payload }) => ({
+      title: payload.label ?? "Risk",
+      value: payload.score,
+      tone: payload.score > 0.8 ? "danger" : "neutral",
+    }),
+    content: ({ payload }) => [
+      { type: "metric", label: "Score", value: payload.score },
+      { type: "list", label: "Drivers", items: payload.drivers },
+    ],
+  },
+});
 
-const registry = createBuiltinRegistry().registerReport(explanationReport);
+const registry = createBuiltinRegistry().registerReport(riskSummaryReport);
 ```
 
-If `resolvePayload` throws, MLForm marks only that report as `error`; the form submission can still complete for other reports.
+`render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.
+
+If `resolve` throws, MLForm marks only that report as `error`; the form submission can still complete for other reports.
+
+Use `defineReportDefinition` plus a custom primitive renderer only when you need a fully custom visual contract.

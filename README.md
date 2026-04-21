@@ -120,6 +120,47 @@ Built-in themes: `neutral`, `cobalt`, `graphite`, `sage`, and `sunset`.
 
 Built-in recipes: `default`, `minimal`, `soft`, and `contrast`.
 
+## Declarative Custom Kinds
+
+Use `defineFieldKind`, `defineReportKind`, and `defineExplanationKind` when you want custom domain kinds without building a custom renderer for the normal path.
+
+```ts
+import { createBuiltinRegistry, defineFieldKind } from "mlform/engine";
+import { z } from "zod";
+
+const registry = createBuiltinRegistry();
+
+registry.registerField(
+  defineFieldKind({
+    kind: "score",
+    schema: z.object({
+      kind: z.literal("score"),
+      id: z.string().optional(),
+      label: z.string(),
+      min: z.number().default(0),
+      max: z.number().default(100),
+    }),
+    value: {
+      default: () => 0,
+      normalize: (value) => Number(value ?? 0),
+      serialize: (value) => value,
+    },
+    validate: ({ value, config }) =>
+      value < config.min || value > config.max ? ["Score out of range."] : [],
+    render: {
+      widget: "number",
+      hints: ({ config }) => ({
+        min: config.min,
+        max: config.max,
+        unit: "%",
+      }),
+    },
+  }),
+);
+```
+
+This keeps the API focused on domain config, validation, and small render hints. Drop to low-level `define*Definition` and `mlform/primitives` only for rare fully custom rendering cases.
+
 ## Documentation
 
 - Product docs: https://ulloasp.github.io/mlform/
