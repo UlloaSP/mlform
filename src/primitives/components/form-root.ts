@@ -23,6 +23,7 @@ type FormRenderState = {
   status: FormStatus;
   submitCount: number;
   hasFormErrors: boolean;
+  hasLastResult: boolean;
   submissionLoaded?: number;
   submissionTotal?: number;
   submissionMessage?: string;
@@ -41,6 +42,7 @@ const sameFormRenderState = (left: FormRenderState, right: FormRenderState): boo
     left.status === right.status &&
     left.submitCount === right.submitCount &&
     left.hasFormErrors === right.hasFormErrors &&
+    left.hasLastResult === right.hasLastResult &&
     left.submissionLoaded === right.submissionLoaded &&
     left.submissionTotal === right.submissionTotal &&
     left.submissionMessage === right.submissionMessage &&
@@ -734,6 +736,7 @@ export class PrimitiveFormElement extends LitElement {
       status: state.status,
       submitCount: state.submitCount,
       hasFormErrors: state.errors.form.length > 0,
+      hasLastResult: state.lastResult !== null,
       submissionLoaded: state.submissionProgress?.loaded,
       submissionTotal: state.submissionProgress?.total,
       submissionMessage: state.submissionProgress?.message,
@@ -742,7 +745,8 @@ export class PrimitiveFormElement extends LitElement {
       visibleReportIds: form.reports
         .filter((report) => report.descriptor !== null || report.state.status !== "idle")
         .map((report) => report.id),
-      explanationIds: form.explanations.map((explanation) => explanation.id),
+      explanationIds:
+        state.lastResult !== null ? form.explanations.map((explanation) => explanation.id) : [],
     };
   }
 }

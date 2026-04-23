@@ -48,6 +48,14 @@ const renderCellValue = (value: unknown): TemplateResult => {
 const renderNode = (node: PresentationNode, index: number): TemplateResult => {
   switch (node.type) {
     case "text":
+      if (typeof node.value === "string" && node.value.includes("\n")) {
+        return html`
+          <section class="node text ${toneClass(node.tone)}" data-node-index=${index}>
+            ${node.label ? html`<p class="node-label">${node.label}</p>` : nothing}
+            <pre class="node-text">${node.value}</pre>
+          </section>
+        `;
+      }
       return html`
         <section class="node text ${toneClass(node.tone)}" data-node-index=${index}>
           ${node.label ? html`<p class="node-label">${node.label}</p>` : nothing}

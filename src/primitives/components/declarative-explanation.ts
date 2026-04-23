@@ -6,6 +6,7 @@ import { customElement } from "lit/decorators.js";
 import type { PresentationNode, PresentationSummary } from "@/engine";
 import { PrimitiveExplanationElement } from "../base-explanation-element";
 import { primitiveTagNames } from "../constants";
+import { toText } from "../utils";
 import { renderPresentationNodes, renderPresentationSummary } from "./presentation";
 
 @customElement(primitiveTagNames.declarativeExplanation)
@@ -139,19 +140,34 @@ export class PrimitiveDeclarativeExplanationElement extends PrimitiveExplanation
         overflow-x: auto;
         white-space: pre-wrap;
       }
+
+      .chromeless-text {
+        margin: 0;
+        white-space: pre-wrap;
+        color: var(--mlf-color-text, #0f172a);
+      }
     `,
   ];
 
   render() {
     const props = this.props;
     const nodes = Array.isArray(props.content) ? (props.content as PresentationNode[]) : [];
+    const chromeless = props.chromeless === true;
+    const chromelessTextNode =
+      chromeless && nodes.length === 1 && nodes[0]?.type === "text" && !nodes[0].label
+        ? nodes[0]
+        : null;
     const summary =
-      props.summary && typeof props.summary === "object"
+      !chromeless && props.summary && typeof props.summary === "object"
         ? (props.summary as PresentationSummary)
         : null;
 
+    if (chromelessTextNode) {
+      return html`<pre class="chromeless-text">${toText(chromelessTextNode.value)}</pre>`;
+    }
+
     return html`
-      ${renderPresentationSummary(summary, this.explanationContext?.label)}
+      ${renderPresentationSummary(summary, chromeless ? undefined : this.explanationContext?.label)}
       ${renderPresentationNodes(nodes)}
     `;
   }

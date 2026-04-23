@@ -741,7 +741,7 @@ describe("kit integration", () => {
     container.remove();
   });
 
-  it("mounts explanation plugins, renders explanation panels, and triggers fetch after submit", async () => {
+  it("mounts explanation plugins, renders explanation panels only after submit, and triggers fetch after submit", async () => {
     const explanationResult = { feature_importance: { name: 0.9 } };
     const transportSubmit = vi.fn().mockResolvedValue(explanationResult);
     const registry = createBuiltinRegistry();
@@ -794,6 +794,7 @@ describe("kit integration", () => {
     expect(mounted.form.explanations[0]?.id).toBe("shap-values");
     expect(mounted.form.explanations[0]?.state.status).toBe("idle");
     expect(mounted.form.state.explanationStates["shap-values"]?.status).toBe("idle");
+    expect(getShadow(mounted.host).querySelector("mlf-explanation-panel")).toBeNull();
 
     await mounted.form.submit();
     await flush();
