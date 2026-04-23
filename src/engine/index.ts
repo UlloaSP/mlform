@@ -9,8 +9,8 @@ export {
   dateFieldDefinition,
   numberFieldDefinition,
   regressorReportDefinition,
+  seriesFieldDefinition,
   textFieldDefinition,
-  timeSeriesFieldDefinition,
 } from "./builtins";
 export { createExplanationController } from "./explanations";
 export {

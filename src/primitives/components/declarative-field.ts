@@ -28,9 +28,9 @@ const widgetToComponent = {
     component: "date-field",
     tagName: primitiveTagNames.dateField,
   },
-  "time-series": {
-    component: "time-series-field",
-    tagName: primitiveTagNames.timeSeriesField,
+  series: {
+    component: "series-field",
+    tagName: primitiveTagNames.seriesField,
   },
 } as const;
 

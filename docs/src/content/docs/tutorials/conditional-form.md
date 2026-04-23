@@ -44,4 +44,4 @@ Mistakes to avoid:
 | Expecting hidden values in submit payloads | Set `inactiveFieldPolicy: "include"` if the backend needs them. |
 | Using function conditions in JSON schemas  | Use declarative conditions when schemas come from a backend.    |
 
-Next: [Time Series Forecasting](./time-series-forecasting/).
+Next: [Series Forecasting](./series-forecasting/).

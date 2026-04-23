@@ -1,6 +1,6 @@
 ---
 title: Forecasting con series temporales
-description: Campo time-series y salida regressor.
+description: Campo series y salida regressor.
 ---
 
 ```ts
@@ -8,11 +8,13 @@ const schema = {
   fields: [
     {
       id: "history",
-      kind: "time-series",
+      kind: "series",
       label: "Monthly revenue",
+      field1: { kind: "date", label: "field1", required: true },
+      field2: { kind: "number", label: "field2", required: true, step: 0.1 },
       minPoints: 3,
-      granularity: "month",
-      ordered: true,
+      granularity: "date",
+      ordered: "asc",
       uniqueTimestamps: true,
       unit: "USD",
     },

@@ -19,12 +19,12 @@ const schema: FormSchema = {
 
 ## Main Types
 
-| Type             | Purpose                                                                                  |
-| ---------------- | ---------------------------------------------------------------------------------------- |
-| `FormSchema`     | Top-level object with `fields` and optional `reports`.                                   |
-| `FieldConfig`    | One user input. Built-ins use `kind` values such as `text`, `number`, and `time-series`. |
-| `ReportConfig`   | One model output panel. Built-ins use `classifier` and `regressor`.                      |
-| `FieldCondition` | Declarative or function-based rule for `hiddenWhen`, `disabledWhen`, or `readOnlyWhen`.  |
+| Type             | Purpose                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `FormSchema`     | Top-level object with `fields` and optional `reports`.                                  |
+| `FieldConfig`    | One user input. Built-ins use `kind` values such as `text`, `number`, and `series`.     |
+| `ReportConfig`   | One model output panel. Built-ins use `classifier` and `regressor`.                     |
+| `FieldCondition` | Declarative or function-based rule for `hiddenWhen`, `disabledWhen`, or `readOnlyWhen`. |
 
 ## Normalization
 

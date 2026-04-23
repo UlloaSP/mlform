@@ -81,6 +81,12 @@ export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | 
     return errors;
   },
   describe(config, context) {
+    const useRange =
+      config.min !== undefined &&
+      config.max !== undefined &&
+      !config.required &&
+      context.state.value !== null;
+
     return makeFieldDescriptor("number-field", config as NormalizedFieldConfig<NumberFieldConfig>, {
       value: context.state.value,
       min: config.min,
@@ -88,6 +94,7 @@ export const numberFieldDefinition: FieldDefinition<NumberFieldConfig, number | 
       step: config.step,
       unit: config.unit,
       placeholder: config.placeholder ?? "",
+      input: useRange ? "range" : "text",
       state: context.state.status,
       errors: context.state.errors,
     });

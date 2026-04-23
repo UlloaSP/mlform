@@ -244,51 +244,75 @@ describe("engine", () => {
     expect(form.getField("date")?.state.errors).toContain("Date must be on or before 2026-12-31.");
   });
 
-  it("treats time-series range restrictions as field validation instead of schema parse failures", async () => {
-    const form = createForm({
-      schema: {
-        fields: [
-          {
-            id: "series",
-            kind: "time-series",
-            label: "Series",
-            minPoints: 3,
-            maxPoints: 1,
-            minDate: "2026-12-31",
-            maxDate: "2026-01-01",
-            minValue: 100,
-            maxValue: 10,
-            defaultValue: [{ timestamp: "2025-06-15", value: 5 }],
-          },
-        ],
-      },
-      registry: createBuiltinRegistry(),
-      transport: {
-        submit: vi.fn(),
-      },
-    });
+  it("rejects series configs when minPoints exceeds maxPoints during schema normalization", () => {
+    expect(() =>
+      createForm({
+        schema: {
+          fields: [
+            {
+              id: "series",
+              kind: "series",
+              label: "Series",
+              field1: { kind: "date", label: "field1", required: true },
+              field2: { kind: "number", label: "field2", required: true },
+              minPoints: 3,
+              maxPoints: 1,
+              minDate: "2026-12-31",
+              maxDate: "2026-01-01",
+              minValue: 100,
+              maxValue: 10,
+              defaultValue: [{ field1: "2025-06-15", field2: 5 }],
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: {
+          submit: vi.fn(),
+        },
+      }),
+    ).toThrow("minPoints to be less than or equal to maxPoints");
+  });
 
-    expect(form.getField("series")?.state.errors).toContain(
-      "Minimum number of points cannot exceed maximum number of points.",
-    );
-    expect(form.getField("series")?.state.errors).toContain(
-      "Minimum date cannot be after maximum date.",
-    );
-    expect(form.getField("series")?.state.errors).toContain(
-      "Minimum value cannot exceed maximum value.",
-    );
-    expect(form.getField("series")?.state.errors).toContain("Minimum number of points is 3.");
-    expect(form.getField("series")?.state.errors).toContain("Date must be on or after 2026-12-31.");
-    expect(form.getField("series")?.state.errors).toContain("Minimum value is 100.");
+  it("rejects nested series sub-fields during schema normalization", () => {
+    expect(() =>
+      createForm({
+        schema: {
+          fields: [
+            {
+              kind: "series",
+              label: "Nested series",
+              field1: { kind: "series", label: "field1" },
+              field2: { kind: "number", label: "field2" },
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: {
+          submit: vi.fn(),
+        },
+      }),
+    ).toThrow('cannot nest series in "field1"');
+  });
 
-    const validation = await form.validate();
-
-    expect(validation.valid).toBe(false);
-    expect(validation.fields.series).toContain(
-      "Minimum number of points cannot exceed maximum number of points.",
-    );
-    expect(validation.fields.series).toContain("Minimum date cannot be after maximum date.");
-    expect(validation.fields.series).toContain("Minimum value cannot exceed maximum value.");
+  it("rejects unknown series sub-field kinds during schema normalization", () => {
+    expect(() =>
+      createForm({
+        schema: {
+          fields: [
+            {
+              kind: "series",
+              label: "Unknown series",
+              field1: { kind: "date", label: "field1" },
+              field2: { kind: "mystery", label: "field2" },
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: {
+          submit: vi.fn(),
+        },
+      }),
+    ).toThrow('unknown sub-field kind "mystery"');
   });
 
   it("supports selector subscriptions and field-level subscriptions", () => {
@@ -2748,12 +2772,12 @@ describe("engine", () => {
   });
 
   it("isolates submit hooks, transport payloads, and returned results from engine state", async () => {
-    const inputSeries = [{ timestamp: "2026-01-01", value: 10 }];
-    const normalizedSeries = [{ timestamp: new Date("2026-01-01"), value: 10 }];
-    const serializedSeries = [{ timestamp: "2026-01-01", value: 10 }];
+    const inputSeries = [{ field1: "2026-01-01", field2: 10 }];
+    const normalizedSeries = [{ field1: new Date("2026-01-01"), field2: 10 }];
+    const serializedSeries = [{ field1: "2026-01-01", field2: 10 }];
     const beforeSubmit = vi.fn(({ values }: { values: Record<string, unknown> }) => {
       expect(values).toEqual({ series: normalizedSeries });
-      (values.series as { timestamp: Date; value: number }[])[0]!.value = 20;
+      (values.series as { field1: Date; field2: number }[])[0]!.field2 = 20;
     });
     const submit = vi
       .fn()
@@ -2767,23 +2791,25 @@ describe("engine", () => {
         }) => {
           expect(values).toEqual({ series: normalizedSeries });
           expect(serializedValues).toEqual({ series: serializedSeries });
-          (values.series as { timestamp: Date; value: number }[])[0]!.value = 30;
-          (serializedValues.series as { timestamp: string; value: number }[])[0]!.value = 40;
+          (values.series as { field1: Date; field2: number }[])[0]!.field2 = 30;
+          (serializedValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
 
           return { reports: {} };
         },
       );
     const afterSubmit = vi.fn(({ result }: { result: { values: Record<string, unknown> } }) => {
       expect(result.values).toEqual({ series: normalizedSeries });
-      (result.values.series as { timestamp: Date; value: number }[])[0]!.value = 50;
+      (result.values.series as { field1: Date; field2: number }[])[0]!.field2 = 50;
     });
 
     const form = createForm({
       schema: {
         fields: [
           {
-            kind: "time-series",
+            kind: "series",
             label: "Series",
+            field1: { kind: "date", label: "field1", required: true },
+            field2: { kind: "number", label: "field2", required: true },
           },
         ],
       },
@@ -2807,7 +2833,7 @@ describe("engine", () => {
     expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
     expect(result.values).toEqual({ series: normalizedSeries });
 
-    (result.values.series as { timestamp: Date; value: number }[])[0]!.value = 60;
+    (result.values.series as { field1: Date; field2: number }[])[0]!.field2 = 60;
 
     expect(form.getValues()).toEqual({ series: normalizedSeries });
     expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });

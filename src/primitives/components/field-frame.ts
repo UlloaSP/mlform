@@ -42,8 +42,8 @@ const resolveFieldFeedbackComponent = (
       return "category-field";
     case "date":
       return "date-field";
-    case "time-series":
-      return "time-series-field";
+    case "series":
+      return "series-field";
     default:
       return component;
   }
@@ -396,9 +396,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
         const falseLabel = toText(props.falseLabel, text.booleanFalse);
         return text.fieldBooleanSelection(state.value === true ? trueLabel : falseLabel);
       }
-      case "time-series-field": {
+      case "series-field": {
         const points = Array.isArray(props.value) ? props.value.length : 0;
-        return text.fieldTimeSeriesRecorded(points);
+        return text.fieldSeriesRecorded(points);
       }
       default:
         return text.fieldReady;
@@ -428,7 +428,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
         );
       case "boolean-field":
         return this.#hasExplicitConfiguredValue() || state.dirty || state.touched;
-      case "time-series-field":
+      case "series-field":
         return Array.isArray(props.value) && props.value.length > 0;
       default:
         return state.value !== null && state.value !== undefined && state.value !== "";

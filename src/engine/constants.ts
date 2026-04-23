@@ -17,7 +17,7 @@ export const builtinFieldKinds = {
   boolean: "boolean",
   category: "category",
   date: "date",
-  timeSeries: "time-series",
+  series: "series",
 } as const;
 
 export const builtinReportLabels = {

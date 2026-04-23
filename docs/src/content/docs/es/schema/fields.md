@@ -5,14 +5,14 @@ description: Tipos de campo integrados y opciones compartidas.
 
 Tipos de campo integrados:
 
-| Kind          | Valor            | Opciones                                                                                                                     |
-| ------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `text`        | `string`         | `placeholder`, `minLength`, `maxLength`, `pattern`                                                                           |
-| `number`      | `number \| null` | `min`, `max`, `step`, `unit`, `placeholder`                                                                                  |
-| `boolean`     | `boolean`        | `required` exige `true`                                                                                                      |
-| `category`    | `string \| null` | `options` como strings o `{ label, value }`                                                                                  |
-| `date`        | `Date \| null`   | `min`, `max`, `step`                                                                                                         |
-| `time-series` | array de puntos  | `minPoints`, `maxPoints`, `granularity`, `ordered`, `uniqueTimestamps`, `minDate`, `maxDate`, `minValue`, `maxValue`, `unit` |
+| Kind       | Valor            | Opciones                                                                                                                     |
+| ---------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `text`     | `string`         | `placeholder`, `minLength`, `maxLength`, `pattern`                                                                           |
+| `number`   | `number \| null` | `min`, `max`, `step`, `unit`, `placeholder`                                                                                  |
+| `boolean`  | `boolean`        | `required` exige `true`                                                                                                      |
+| `category` | `string \| null` | `options` como strings o `{ label, value }`                                                                                  |
+| `date`     | `Date \| null`   | `min`, `max`, `step`                                                                                                         |
+| `series`   | array de puntos  | `minPoints`, `maxPoints`, `granularity`, `ordered`, `uniqueTimestamps`, `minDate`, `maxDate`, `minValue`, `maxValue`, `unit` |
 
 Opciones compartidas:
 

@@ -144,7 +144,7 @@ export interface FieldDescriptorContext {
   state: FieldStateSnapshot;
 }
 
-export type FieldWidget = "text" | "number" | "boolean" | "select" | "date" | "time-series";
+export type FieldWidget = "text" | "number" | "boolean" | "select" | "date" | "series";
 
 export type FieldRenderHints = Record<string, unknown>;
 

@@ -20,6 +20,55 @@ export interface NormalizedFormSchema {
   explanations: NormalizedExplanationConfig[];
 }
 
+const validateSeriesSubField = (
+  parentLabel: string,
+  name: "field1" | "field2",
+  field: unknown,
+  registry: Registry,
+): void => {
+  if (typeof field !== "object" || field === null) {
+    throw new EngineError(`Series field "${parentLabel}" requires "${name}" configuration.`);
+  }
+
+  const kind =
+    "kind" in field && typeof (field as { kind?: unknown }).kind === "string"
+      ? (field as { kind: string }).kind
+      : "";
+
+  if (kind.length === 0) {
+    throw new EngineError(`Series field "${parentLabel}" requires "${name}.kind".`);
+  }
+
+  if (kind === "series") {
+    throw new EngineError(`Series field "${parentLabel}" cannot nest series in "${name}".`);
+  }
+
+  if (!registry.getField(kind)) {
+    throw new RegistryError(
+      `Series field "${parentLabel}" uses unknown sub-field kind "${kind}" in "${name}".`,
+    );
+  }
+};
+
+const validateSeriesFieldConfig = (field: FieldConfig, registry: Registry): void => {
+  if (field.kind !== "series") {
+    return;
+  }
+
+  validateSeriesSubField(field.label, "field1", field.field1, registry);
+  validateSeriesSubField(field.label, "field2", field.field2, registry);
+
+  if (
+    typeof field.minPoints === "number" &&
+    typeof field.maxPoints === "number" &&
+    field.minPoints > field.maxPoints
+  ) {
+    throw new EngineError(
+      `Series field "${field.label}" requires minPoints to be less than or equal to maxPoints.`,
+    );
+  }
+};
+
 const resolveId = (
   explicitId: string | undefined,
   fallbackLabel: string,
@@ -60,6 +109,7 @@ const normalizeField = (
   }
 
   const parsed = definition.schema.parse(field) as FieldConfig;
+  validateSeriesFieldConfig(parsed, registry);
   const id = resolveId(parsed.id, parsed.label, usedIds, `field-${index + 1}`);
 
   return {

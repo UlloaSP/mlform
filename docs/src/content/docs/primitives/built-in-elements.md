@@ -16,7 +16,7 @@ description: Custom elements registered by MLForm primitives.
 | `mlf-boolean-field`         | Boolean field renderer.                            |
 | `mlf-category-field`        | Category field renderer.                           |
 | `mlf-date-field`            | Date field renderer.                               |
-| `mlf-time-series-field`     | Time-series field renderer.                        |
+| `mlf-series-field`          | Series field renderer.                             |
 | `mlf-classifier-report`     | Classifier report renderer.                        |
 | `mlf-regressor-report`      | Regressor report renderer.                         |
 

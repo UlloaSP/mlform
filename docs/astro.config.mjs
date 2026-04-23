@@ -20,7 +20,7 @@ const sidebar = [
       { label: "Classification Workflow", slug: "tutorials/classification-workflow" },
       { label: "Regression Workflow", slug: "tutorials/regression-workflow" },
       { label: "Conditional Form", slug: "tutorials/conditional-form" },
-      { label: "Time Series Forecasting", slug: "tutorials/time-series-forecasting" },
+      { label: "Series Forecasting", slug: "tutorials/series-forecasting" },
     ],
   },
   {

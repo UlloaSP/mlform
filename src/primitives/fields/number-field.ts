@@ -71,6 +71,87 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
       .unit:empty {
         display: none;
       }
+
+      .range-wrapper {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .range-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        min-width: 0;
+      }
+
+      .range-value {
+        color: var(--mlf-number-unit-color, var(--mlf-color-text-muted, #475569));
+        font-size: 0.9rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: right;
+      }
+
+      input[type="range"].control {
+        min-height: auto;
+        padding: 0;
+        border: none;
+        border-radius: 999px;
+        background: transparent;
+        box-shadow: none;
+        appearance: none;
+        cursor: pointer;
+      }
+
+      input[type="range"].control:focus-visible {
+        outline: none;
+        box-shadow: none;
+      }
+
+      input[type="range"].control:disabled {
+        background: transparent;
+      }
+
+      input[type="range"].control::-webkit-slider-runnable-track {
+        height: 0.4rem;
+        border-radius: 999px;
+        background: var(--mlf-range-track, var(--mlf-color-border, #d1d5db));
+      }
+
+      input[type="range"].control::-moz-range-track {
+        height: 0.4rem;
+        border-radius: 999px;
+        background: var(--mlf-range-track, var(--mlf-color-border, #d1d5db));
+      }
+
+      input[type="range"].control::-webkit-slider-thumb {
+        width: 1.1rem;
+        height: 1.1rem;
+        margin-top: -0.35rem;
+        border: 2px solid var(--mlf-range-thumb-border, #ffffff);
+        border-radius: 50%;
+        background: var(--mlf-range-thumb, var(--mlf-color-accent, #1e40af));
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+        appearance: none;
+      }
+
+      input[type="range"].control::-moz-range-thumb {
+        width: 1.1rem;
+        height: 1.1rem;
+        border: 2px solid var(--mlf-range-thumb-border, #ffffff);
+        border-radius: 50%;
+        background: var(--mlf-range-thumb, var(--mlf-color-accent, #1e40af));
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+      }
+
+      input[type="range"].control:focus-visible::-webkit-slider-thumb {
+        box-shadow: 0 0 0 4px var(--mlf-input-shadow-focus, rgba(29, 78, 216, 0.18));
+      }
+
+      input[type="range"].control:focus-visible::-moz-range-thumb {
+        box-shadow: 0 0 0 4px var(--mlf-input-shadow-focus, rgba(29, 78, 216, 0.18));
+      }
     `,
   ];
 
@@ -80,6 +161,7 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
   render() {
     const props = this.props;
     const context = this.fieldContext;
+    const inputMode = props.input === "range" ? "range" : "text";
     const committedValue =
       typeof props.value === "number"
         ? String(props.value)
@@ -97,6 +179,38 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
     const numericValue = typeof props.value === "number" ? props.value : undefined;
     const minValue = typeof props.min === "number" ? props.min : undefined;
     const maxValue = typeof props.max === "number" ? props.max : undefined;
+    const rangeValue = value.length > 0 ? value : committedValue;
+
+    if (inputMode === "range") {
+      return html`
+        <div class="range-wrapper">
+          <div class="range-header">
+            <span class="range-value">${rangeValue}${unit ? ` ${unit}` : ""}</span>
+          </div>
+          <input
+            class="control"
+            type="range"
+            id=${context?.controlId ?? ""}
+            .value=${rangeValue}
+            min=${ifDefined(minValue)}
+            max=${ifDefined(maxValue)}
+            step=${ifDefined(typeof props.step === "number" ? String(props.step) : undefined)}
+            aria-label=${context?.label ?? toText(props.label)}
+            aria-describedby=${ifDefined(context?.describedBy)}
+            aria-invalid=${String(context?.invalid ?? false)}
+            aria-valuenow=${ifDefined(numericValue)}
+            aria-valuemin=${ifDefined(minValue)}
+            aria-valuemax=${ifDefined(maxValue)}
+            ?required=${Boolean(props.required)}
+            ?disabled=${Boolean(this.fieldContext?.disabled)}
+            ?readonly=${Boolean(this.fieldContext?.readOnly)}
+            @input=${this.#handleRangeInput}
+            @blur=${this.#handleBlur}
+          />
+        </div>
+        ${this.renderAssistiveText()}
+      `;
+    }
 
     return html`
       <div class=${wrapperClass} style=${`--mlf-number-unit-width: ${unitWidth};`}>
@@ -149,6 +263,13 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
         : this.props.value === null || this.props.value === undefined
           ? ""
           : toText(this.props.value);
+  };
+
+  #handleRangeInput = (event: Event): void => {
+    const value = (event.target as HTMLInputElement).value;
+    const parsed = Number(value);
+    this.draftValue = value;
+    this.commitValue(Number.isNaN(parsed) ? null : parsed);
   };
 
   #getCommittedValue(value: string): string | number | null {

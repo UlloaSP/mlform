@@ -7,8 +7,8 @@ import { booleanFieldDefinition } from "./fields/boolean";
 import { categoryFieldDefinition } from "./fields/category";
 import { dateFieldDefinition } from "./fields/date";
 import { numberFieldDefinition } from "./fields/number";
+import { seriesFieldDefinition } from "./fields/series";
 import { textFieldDefinition } from "./fields/text";
-import { timeSeriesFieldDefinition } from "./fields/time-series";
 import { classifierReportDefinition } from "./reports/classifier";
 import { regressorReportDefinition } from "./reports/regressor";
 
@@ -19,8 +19,8 @@ export {
   dateFieldDefinition,
   numberFieldDefinition,
   regressorReportDefinition,
+  seriesFieldDefinition,
   textFieldDefinition,
-  timeSeriesFieldDefinition,
 };
 
 export const builtinFieldDefinitions = [
@@ -29,7 +29,7 @@ export const builtinFieldDefinitions = [
   booleanFieldDefinition,
   categoryFieldDefinition,
   dateFieldDefinition,
-  timeSeriesFieldDefinition,
+  seriesFieldDefinition,
 ] as const;
 
 export const builtinReportDefinitions = [
@@ -46,7 +46,7 @@ export const createBuiltinRegistry = (): Registry => {
     .registerField(booleanFieldDefinition)
     .registerField(categoryFieldDefinition)
     .registerField(dateFieldDefinition)
-    .registerField(timeSeriesFieldDefinition)
+    .registerField(seriesFieldDefinition)
     .registerReport(classifierReportDefinition)
     .registerReport(regressorReportDefinition);
 

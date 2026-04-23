@@ -3,7 +3,7 @@ title: Validation
 description: Combine built-in constraints, custom validators, and hooks.
 ---
 
-Validation runs before submit. Built-in fields validate their own constraints, such as text length, number ranges, category membership, date bounds, and time-series ordering.
+Validation runs before submit. Built-in fields validate their own constraints, such as text length, number ranges, category membership, date bounds, and series ordering.
 
 Use form validators for cross-field rules:
 

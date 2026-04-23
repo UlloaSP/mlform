@@ -3,7 +3,7 @@ title: Series Temporales
 description: Recoge pares ordenados de timestamp y valor.
 ---
 
-Usa `time-series` cuando un modelo necesita una secuencia de observaciones numericas con fecha.
+Usa `series` cuando un modelo necesita una secuencia de observaciones numericas con fecha.
 
 ```ts
 mountForm(container, {
@@ -12,8 +12,10 @@ mountForm(container, {
     fields: [
       {
         id: "history",
-        kind: "time-series",
+        kind: "series",
         label: "Demand history",
+        field1: { kind: "date", label: "field1", required: true },
+        field2: { kind: "number", label: "field2", required: true, step: 0.1 },
         minPoints: 3,
         maxPoints: 24,
         granularity: "date",

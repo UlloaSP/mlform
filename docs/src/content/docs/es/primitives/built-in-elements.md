@@ -16,6 +16,6 @@ description: Custom elements registrados por MLForm primitives.
 | `mlf-boolean-field`         | Campo boolean.                        |
 | `mlf-category-field`        | Campo category.                       |
 | `mlf-date-field`            | Campo date.                           |
-| `mlf-time-series-field`     | Campo time-series.                    |
+| `mlf-series-field`          | Campo series.                         |
 | `mlf-classifier-report`     | Informe classifier.                   |
 | `mlf-regressor-report`      | Informe regressor.                    |

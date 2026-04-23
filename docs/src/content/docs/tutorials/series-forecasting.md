@@ -14,8 +14,10 @@ mountForm(container, {
     fields: [
       {
         id: "history",
-        kind: "time-series",
+        kind: "series",
         label: "Demand history",
+        field1: { kind: "date", label: "field1", required: true },
+        field2: { kind: "number", label: "field2", required: true, step: 0.1 },
         minPoints: 3,
         maxPoints: 24,
         granularity: "date",

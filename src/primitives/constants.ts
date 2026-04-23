@@ -19,7 +19,7 @@ export const primitiveTagNames = {
   booleanField: "mlf-boolean-field",
   categoryField: "mlf-category-field",
   dateField: "mlf-date-field",
-  timeSeriesField: "mlf-time-series-field",
+  seriesField: "mlf-series-field",
   classifierReport: "mlf-classifier-report",
   regressorReport: "mlf-regressor-report",
 } as const;
@@ -76,12 +76,12 @@ export interface PrimitiveText {
   fieldCategorySelected: (label: string) => string;
   fieldSelectedDate: (value: string) => string;
   fieldBooleanSelection: (label: string) => string;
-  fieldTimeSeriesRecorded: (count: number) => string;
-  timeSeriesAddRow: string;
-  timeSeriesRemoveRow: string;
-  timeSeriesTimestamp: string;
-  timeSeriesValue: string;
-  timeSeriesEmpty: string;
+  fieldSeriesRecorded: (count: number) => string;
+  seriesAddRow: string;
+  seriesRemoveRow: string;
+  seriesTimestamp: string;
+  seriesValue: string;
+  seriesEmpty: string;
   formMetaFields: (count: number) => string;
   formMetaReports: (count: number) => string;
   formMetaSubmits: (count: number) => string;
@@ -123,13 +123,13 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
   fieldCategorySelected: (label: string): string => `Category selected: ${label}.`,
   fieldSelectedDate: (value: string): string => `Selected date: ${value}.`,
   fieldBooleanSelection: (label: string): string => `Selection recorded: ${label}.`,
-  fieldTimeSeriesRecorded: (count: number): string =>
+  fieldSeriesRecorded: (count: number): string =>
     `Series ready (${count} ${count === 1 ? "point" : "points"}).`,
-  timeSeriesAddRow: "Add point",
-  timeSeriesRemoveRow: "Remove point",
-  timeSeriesTimestamp: "Timestamp",
-  timeSeriesValue: "Value",
-  timeSeriesEmpty: "No points yet.",
+  seriesAddRow: "Add point",
+  seriesRemoveRow: "Remove point",
+  seriesTimestamp: "Timestamp",
+  seriesValue: "Value",
+  seriesEmpty: "No points yet.",
   formMetaFields: (count: number): string => `${count} fields`,
   formMetaReports: (count: number): string => `${count} reports`,
   formMetaSubmits: (count: number): string => `${count} submits`,

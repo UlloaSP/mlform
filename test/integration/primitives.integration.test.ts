@@ -36,7 +36,7 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   const fieldFrame = getShadow(host).querySelectorAll("mlf-field-frame").item(index) as HTMLElement;
   const fieldShadow = getShadow(fieldFrame);
   const renderer = fieldShadow.querySelector(
-    "mlf-text-field, mlf-number-field, mlf-boolean-field, mlf-category-field, mlf-date-field, mlf-time-series-field",
+    "mlf-text-field, mlf-number-field, mlf-boolean-field, mlf-category-field, mlf-date-field, mlf-series-field",
   );
   return getShadow(renderer).querySelector("[aria-label]") as HTMLElement;
 };
@@ -219,9 +219,11 @@ describe("primitives", () => {
           },
           {
             id: "history",
-            kind: "time-series",
+            kind: "series",
             label: "History",
             required: true,
+            field1: { kind: "date", label: "field1", required: true },
+            field2: { kind: "number", label: "field2", required: true },
           },
         ],
       },
@@ -231,7 +233,7 @@ describe("primitives", () => {
         age: 24,
         tier: "Internal",
         "launch-date": "2026-07-10",
-        history: [{ timestamp: "2026-07-10", value: 10 }],
+        history: [{ field1: "2026-07-10", field2: 10 }],
       },
       transport: {
         submit: vi.fn(),
@@ -268,7 +270,7 @@ describe("primitives", () => {
       .querySelectorAll("mlf-field-frame")
       .item(4) as HTMLElement;
     const timeSeriesRenderer = getShadow(timeSeriesFieldFrame).querySelector(
-      "mlf-time-series-field",
+      "mlf-series-field",
     ) as HTMLElement;
     const removeButton = getShadow(timeSeriesRenderer).querySelector(
       'button[aria-label^="Remove point"]',
@@ -320,6 +322,73 @@ describe("primitives", () => {
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
     expect(getShadow(fieldFrame).textContent).toContain("Value must be a valid number.");
     expect(numberInput.getAttribute("aria-invalid")).toBe("true");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("renders constrained optional numbers with default values as range controls", async () => {
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "number",
+            id: "temperature",
+            label: "Temperature",
+            min: 0,
+            max: 100,
+            step: 5,
+            unit: "C",
+            defaultValue: 25,
+          },
+          {
+            kind: "number",
+            id: "required-temperature",
+            label: "Required temperature",
+            min: 0,
+            max: 100,
+            defaultValue: 25,
+            required: true,
+          },
+        ],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn(),
+      },
+    });
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const fieldFrames = getShadow(mounted.host).querySelectorAll("mlf-field-frame");
+    const rangeRenderer = getShadow(fieldFrames.item(0)).querySelector(
+      "mlf-number-field",
+    ) as HTMLElement;
+    const rangeInput = getShadow(rangeRenderer).querySelector(
+      'input[type="range"]',
+    ) as HTMLInputElement;
+    const rangeValue = getShadow(rangeRenderer).querySelector(".range-value");
+
+    expect(rangeInput).toBeTruthy();
+    expect(rangeInput.value).toBe("25");
+    expect(rangeValue?.textContent).toContain("25 C");
+
+    rangeInput.value = "40";
+    rangeInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await flush();
+
+    expect(form.getField("temperature")?.state.value).toBe(40);
+    expect(getShadow(fieldFrames.item(0)).textContent).toContain("Valid number: 40 C.");
+
+    const textRenderer = getShadow(fieldFrames.item(1)).querySelector(
+      "mlf-number-field",
+    ) as HTMLElement;
+    expect(getShadow(textRenderer).querySelector('input[type="text"]')).toBeTruthy();
+    expect(getShadow(textRenderer).querySelector('input[type="range"]')).toBeNull();
 
     mounted.unmount();
     container.remove();
@@ -398,13 +467,17 @@ describe("primitives", () => {
           },
           {
             id: "history",
-            kind: "time-series",
+            kind: "series",
             label: "History",
+            field1: { kind: "date", label: "field1", required: true },
+            field2: {
+              kind: "number",
+              label: "field2",
+              required: true,
+              min: 100,
+              max: 200,
+            },
             minPoints: 2,
-            minDate: "2026-01-10",
-            maxDate: "2026-01-20",
-            minValue: 100,
-            maxValue: 200,
           },
         ],
       },
@@ -436,7 +509,7 @@ describe("primitives", () => {
       .querySelectorAll("mlf-field-frame")
       .item(3) as HTMLElement;
     const timeSeriesRenderer = getShadow(timeSeriesFieldFrame).querySelector(
-      "mlf-time-series-field",
+      "mlf-series-field",
     ) as HTMLElement;
     const timeSeriesShadow = getShadow(timeSeriesRenderer);
     const addButton = timeSeriesShadow.querySelector(
@@ -469,9 +542,8 @@ describe("primitives", () => {
     );
     expect(form.getField("history")?.state.errors).toContain("Minimum number of points is 2.");
     expect(form.getField("history")?.state.errors).toContain(
-      "Date must be on or after 2026-01-10.",
+      "Row 1 (field2): Minimum value is 100.",
     );
-    expect(form.getField("history")?.state.errors).toContain("Minimum value is 100.");
 
     const fieldFrames = getShadow(mounted.host).querySelectorAll("mlf-field-frame");
     expect(getShadow(fieldFrames.item(0)).textContent).toContain("Minimum length is 5 characters.");
@@ -769,17 +841,18 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("renders and edits time-series fields through the default primitive registry", async () => {
+  it("renders and edits series fields through the default primitive registry", async () => {
     const form = createForm({
       schema: {
         fields: [
           {
-            kind: "time-series",
+            kind: "series",
             label: "Demand history",
-            unit: "MW",
+            field1: { kind: "date", label: "field1", required: true },
+            field2: { kind: "number", label: "field2", required: true, unit: "MW" },
             defaultValue: [
-              { timestamp: "2026-07-10", value: 10 },
-              { timestamp: "2026-07-11", value: 12 },
+              { field1: "2026-07-10", field2: 10 },
+              { field1: "2026-07-11", field2: 12 },
             ],
           },
         ],
@@ -799,7 +872,7 @@ describe("primitives", () => {
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
     expect(getShadow(fieldFrame).textContent).toContain("Series ready (2 points).");
 
-    const renderer = getShadow(fieldFrame).querySelector("mlf-time-series-field") as HTMLElement;
+    const renderer = getShadow(fieldFrame).querySelector("mlf-series-field") as HTMLElement;
     const rendererShadow = getShadow(renderer);
     const valueInputs = rendererShadow.querySelectorAll(
       'input[inputmode="decimal"]',
@@ -811,8 +884,8 @@ describe("primitives", () => {
     await flush();
 
     expect(form.getField("demand-history")?.state.value).toEqual([
-      { timestamp: new Date("2026-07-10"), value: 10 },
-      { timestamp: new Date("2026-07-11"), value: 14.5 },
+      { field1: new Date("2026-07-10"), field2: 10 },
+      { field1: new Date("2026-07-11"), field2: 14.5 },
     ]);
 
     const addButton = rendererShadow.querySelector(
@@ -822,6 +895,10 @@ describe("primitives", () => {
     await flush();
 
     expect(form.getField("demand-history")?.state.value).toHaveLength(3);
+    const dateInputs = rendererShadow.querySelectorAll(
+      'input[type="date"]',
+    ) as NodeListOf<HTMLInputElement>;
+    expect(dateInputs[2]?.value).toBe("");
     expect(rendererShadow.textContent).toContain("MW");
 
     const removeButtons = rendererShadow.querySelectorAll(
@@ -836,14 +913,16 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("does not commit identical time-series rows twice on blur after a value edit", async () => {
+  it("does not commit identical series rows twice on blur after a value edit", async () => {
     const form = createForm({
       schema: {
         fields: [
           {
-            kind: "time-series",
+            kind: "series",
             label: "Demand history",
-            defaultValue: [{ timestamp: "2026-07-10", value: 10 }],
+            field1: { kind: "date", label: "field1", required: true },
+            field2: { kind: "number", label: "field2", required: true },
+            defaultValue: [{ field1: "2026-07-10", field2: 10 }],
           },
         ],
       },
@@ -861,12 +940,12 @@ describe("primitives", () => {
 
     const field = form.getField("demand-history");
     if (!field) {
-      throw new Error("Expected time-series field.");
+      throw new Error("Expected series field.");
     }
     const setValueSpy = vi.spyOn(field, "setValue");
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
-    const renderer = getShadow(fieldFrame).querySelector("mlf-time-series-field") as HTMLElement;
+    const renderer = getShadow(fieldFrame).querySelector("mlf-series-field") as HTMLElement;
     const valueInput = getShadow(renderer).querySelector(
       'input[inputmode="decimal"]',
     ) as HTMLInputElement;

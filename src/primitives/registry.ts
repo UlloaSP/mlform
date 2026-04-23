@@ -111,7 +111,7 @@ export const createBuiltinPrimitiveRegistry = (): PrimitiveRegistry => {
     .registerField("boolean-field", primitiveTagNames.booleanField)
     .registerField("category-field", primitiveTagNames.categoryField)
     .registerField("date-field", primitiveTagNames.dateField)
-    .registerField("time-series-field", primitiveTagNames.timeSeriesField)
+    .registerField("series-field", primitiveTagNames.seriesField)
     .registerReport("declarative-report", primitiveTagNames.declarativeReport)
     .registerReport("classifier-report", primitiveTagNames.classifierReport)
     .registerReport("regressor-report", primitiveTagNames.regressorReport)

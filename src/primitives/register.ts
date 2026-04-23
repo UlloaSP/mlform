@@ -16,6 +16,6 @@ import "./fields/number-field";
 import "./fields/boolean-field";
 import "./fields/category-field";
 import "./fields/date-field";
-import "./fields/time-series-field";
+import "./fields/series-field";
 import "./reports/classifier-report";
 import "./reports/regressor-report";

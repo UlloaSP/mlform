@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { booleanFieldDefinition, numberFieldDefinition, timeSeriesFieldDefinition } from "@/engine";
+import { booleanFieldDefinition, numberFieldDefinition, seriesFieldDefinition } from "@/engine";
 
 describe("builtin definitions", () => {
   it("keeps number field normalization behavior", () => {
@@ -41,44 +41,41 @@ describe("builtin definitions", () => {
     expect(descriptor.props.falseLabel).toBe("Off");
   });
 
-  it("normalizes and serializes time-series values", () => {
-    const config = timeSeriesFieldDefinition.schema.parse({
-      kind: "time-series",
+  it("normalizes and serializes series values", () => {
+    const config = seriesFieldDefinition.schema.parse({
+      kind: "series",
       label: "History",
+      field1: { kind: "date", label: "field1", required: true },
+      field2: { kind: "number", label: "field2", required: true },
       granularity: "date",
     });
 
-    const normalized = timeSeriesFieldDefinition.normalizeValue?.(
-      [
-        { timestamp: "2026-01-01", value: "10" },
-        { timestamp: "2026-01-02", value: 12 },
-        { timestamp: "invalid", value: 99 },
-      ],
+    const normalized = seriesFieldDefinition.normalizeValue?.(
+      [{ field1: "2026-01-01", field2: "10" }, ["2026-01-02", 12], { nope: "invalid" }],
       config,
     );
 
     expect(normalized).toHaveLength(2);
-    expect(normalized?.[0]?.value).toBe(10);
-    expect(normalized?.[1]?.timestamp).toBeInstanceOf(Date);
-    expect(timeSeriesFieldDefinition.serializeValue?.(normalized ?? [], config)).toEqual([
-      { timestamp: "2026-01-01", value: 10 },
-      { timestamp: "2026-01-02", value: 12 },
+    expect(normalized?.[0]?.field2).toBe(10);
+    expect(normalized?.[1]?.field1).toBeInstanceOf(Date);
+    expect(seriesFieldDefinition.serializeValue?.(normalized ?? [], config)).toEqual([
+      { field1: "2026-01-01", field2: 10 },
+      { field1: "2026-01-02", field2: 12 },
     ]);
   });
 
-  it("validates time-series ordering and uniqueness", () => {
-    const config = timeSeriesFieldDefinition.schema.parse({
-      kind: "time-series",
+  it("validates series sub-fields", () => {
+    const config = seriesFieldDefinition.schema.parse({
+      kind: "series",
       label: "History",
-      ordered: "asc",
-      uniqueTimestamps: true,
+      field1: { kind: "date", label: "field1", required: true },
+      field2: { kind: "number", label: "field2", required: true, min: 10 },
     });
 
-    const errors = timeSeriesFieldDefinition.validate?.(
+    const errors = seriesFieldDefinition.validate?.(
       [
-        { timestamp: new Date("2026-01-02"), value: 10 },
-        { timestamp: new Date("2026-01-01"), value: 12 },
-        { timestamp: new Date("2026-01-01"), value: 13 },
+        { field1: null, field2: 5 },
+        { field1: new Date("2026-01-01"), field2: 12 },
       ],
       config,
       {
@@ -89,6 +86,7 @@ describe("builtin definitions", () => {
       },
     );
 
-    expect(errors).toContain("Timestamps must be sorted in ascending order.");
+    expect(errors).toContain("Row 1 (field1): This field is required.");
+    expect(errors).toContain("Row 1 (field2): Minimum value is 10.");
   });
 });
