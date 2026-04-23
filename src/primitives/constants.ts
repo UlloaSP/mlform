@@ -22,6 +22,10 @@ export const primitiveTagNames = {
   seriesField: "mlf-series-field",
   classifierReport: "mlf-classifier-report",
   regressorReport: "mlf-regressor-report",
+  longTextField: "mlf-long-text-field",
+  singleChoiceField: "mlf-single-choice-field",
+  multiChoiceField: "mlf-multi-choice-field",
+  ratingField: "mlf-rating-field",
 } as const;
 
 export const primitiveEventNames = {

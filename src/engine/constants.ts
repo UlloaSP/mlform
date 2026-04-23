@@ -18,6 +18,10 @@ export const builtinFieldKinds = {
   category: "category",
   date: "date",
   series: "series",
+  longText: "long-text",
+  singleChoice: "single-choice",
+  multiChoice: "multi-choice",
+  rating: "rating",
 } as const;
 
 export const builtinReportLabels = {

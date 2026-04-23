@@ -7,9 +7,13 @@ export {
   categoryFieldDefinition,
   classifierReportDefinition,
   dateFieldDefinition,
+  longTextFieldDefinition,
+  multiChoiceFieldDefinition,
   numberFieldDefinition,
+  ratingFieldDefinition,
   regressorReportDefinition,
   seriesFieldDefinition,
+  singleChoiceFieldDefinition,
   textFieldDefinition,
 } from "./builtins";
 export { createExplanationController } from "./explanations";

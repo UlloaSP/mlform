@@ -27,6 +27,7 @@ export default defineConfig({
         "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
         "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
         "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
+        "mlform/questionnaire": resolve(rootDir, "src/questionnaire/index.ts"),
       },
       name: "mlform",
       formats: ["es"],
@@ -53,6 +54,7 @@ export default defineConfig({
       "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
       "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
       "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
+      "mlform/questionnaire": resolve(rootDir, "src/questionnaire/index.ts"),
     },
   },
   define: {
