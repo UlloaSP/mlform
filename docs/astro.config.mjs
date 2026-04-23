@@ -84,6 +84,7 @@ const sidebar = [
       { label: "Registries", slug: "engine/registries" },
       { label: "Custom Fields", slug: "engine/custom-fields" },
       { label: "Custom Reports", slug: "engine/custom-reports" },
+      { label: "Custom Explanations", slug: "engine/custom-explanations" },
     ],
   },
   {

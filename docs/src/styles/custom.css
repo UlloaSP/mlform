@@ -1,20 +1,5 @@
-:root {
-  --sl-color-accent-low: #dff2ee;
-  --sl-color-accent: #0d7f70;
-  --sl-color-accent-high: #083f39;
-  --sl-color-white: #fbfdfc;
-  --sl-color-gray-1: #edf4f1;
-  --sl-color-gray-2: #d3ded9;
-  --sl-color-gray-3: #a5b5ae;
-  --sl-color-gray-4: #687973;
-  --sl-color-gray-5: #3e4b47;
-  --sl-color-gray-6: #222b29;
-  --sl-color-black: #101413;
-  --sl-font: ui-sans-serif, "Segoe UI", "Aptos", sans-serif;
-  --sl-font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-}
-
-:root[data-theme="dark"] {
+:root,
+[data-theme="dark"] ::backdrop {
   --sl-color-accent-low: #0f302c;
   --sl-color-accent: #5bd6c7;
   --sl-color-accent-high: #c9fff7;
@@ -26,6 +11,24 @@
   --sl-color-gray-5: #303c38;
   --sl-color-gray-6: #1d2522;
   --sl-color-black: #0b100f;
+  --sl-font: ui-sans-serif, "Segoe UI", "Aptos", sans-serif;
+  --sl-font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+
+:root[data-theme="light"],
+[data-theme="light"] ::backdrop {
+  --sl-color-accent-low: #dff2ee;
+  --sl-color-accent: #0d7f70;
+  --sl-color-accent-high: #083f39;
+  --sl-color-white: #101413;
+  --sl-color-gray-1: #222b29;
+  --sl-color-gray-2: #3e4b47;
+  --sl-color-gray-3: #687973;
+  --sl-color-gray-4: #a5b5ae;
+  --sl-color-gray-5: #d3ded9;
+  --sl-color-gray-6: #edf4f1;
+  --sl-color-gray-7: #f6faf8;
+  --sl-color-black: #fbfdfc;
 }
 
 .site-title {
