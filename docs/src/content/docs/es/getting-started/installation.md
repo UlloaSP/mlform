@@ -9,6 +9,12 @@ Instala el paquete runtime en una aplicacion:
 npm install mlform
 ```
 
+Si quieres instalar exactamente la version documentada aqui, fija `0.1.4`:
+
+```bash
+npm install mlform@0.1.4
+```
+
 Para este repositorio, usa Vite+:
 
 ```bash
@@ -23,5 +29,7 @@ El paquete declara Node.js `>=24.9.0` para desarrollo local y CI. El sitio de do
 ```bash
 cd docs
 vp install
+vp run typecheck
+vp run build
 vp run dev
 ```

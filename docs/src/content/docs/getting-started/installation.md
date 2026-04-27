@@ -9,6 +9,12 @@ Install the runtime package in an application:
 npm install mlform
 ```
 
+If you want the exact release documented here, install `0.1.4` explicitly:
+
+```bash
+npm install mlform@0.1.4
+```
+
 Import from the root package for normal application use:
 
 ```ts
@@ -37,6 +43,8 @@ The package declares Node.js `>=24.9.0` for local development and CI. The docs w
 ```bash
 cd docs
 vp install
+vp run typecheck
+vp run build
 vp run dev
 ```
 
