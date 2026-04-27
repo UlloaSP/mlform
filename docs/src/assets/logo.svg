@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
+  <title id="title">MLForm</title>
+  <rect width="160" height="160" rx="24" fill="#101413"/>
+  <path d="M32 110V50h20l28 36 28-36h20v60h-20V78l-23 29H75L52 78v32H32Z" fill="#fbfdfc"/>
+  <path d="M36 124h88" stroke="#5bd6c7" stroke-width="10" stroke-linecap="round"/>
+</svg>

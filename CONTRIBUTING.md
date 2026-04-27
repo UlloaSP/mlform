@@ -52,12 +52,12 @@ This project adheres to a code of conduct. By participating, you agree to uphold
 
 ## Development Setup
 
-MLForm is built with TypeScript, Vite, and Lit. We use npm for dependency management.
+MLForm is built with TypeScript, Vite+, and Lit. We use `vp` for dependency management, checks, tests, and builds.
 
 ### Prerequisites
 
-- Node.js 22.14.0 or newer
-- npm 11 (bundled with Node.js 22.14)
+- Node.js 24.9.0 or newer
+- `vp`
 - Git
 
 ### Installation
@@ -65,25 +65,25 @@ MLForm is built with TypeScript, Vite, and Lit. We use npm for dependency manage
 1. Install dependencies:
 
    ```bash
-   npm install
+   vp install
    ```
 
 2. Run the test suite once to verify the environment:
 
    ```bash
-   npm test
+   vp test
    ```
 
 3. (Optional) Enable editor integrations for Biome, TypeScript, and ESLint-compatible tooling.
 
-### Useful Scripts
+### Useful Commands
 
-- `npm run lint` — Biome linting and formatting checks (runs with `--write` locally)
-- `npm run type` — TypeScript type checking
-- `npm run test` — Vitest in single-run mode
-- `npm run test:watch` — Vitest in watch mode
-- `npm run build` — Vite production build
-- `npm run coverage` — Vitest coverage report
+- `vp check` — format, lint, and TypeScript checks
+- `vp run typecheck` — explicit TypeScript type check
+- `vp test` — Vitest watch mode
+- `vp test run` — Vitest single-run mode
+- `vp run coverage` — Vitest coverage report
+- `vp build` — production build
 
 ## Project Structure
 
@@ -139,13 +139,13 @@ All changes must be covered by automated tests.
 
 ```bash
 # Run all unit tests
-npm run test
+vp test run
 
 # Run in watch mode during development
-npm run test:watch
+vp test
 
 # Generate coverage reports (stored in coverage/)
-npm run coverage
+vp run coverage
 ```
 
 ### Test Expectations
@@ -157,13 +157,13 @@ npm run coverage
 
 ## Code Style
 
-We rely on Biome, TypeScript, and Vitest for quality gates.
+We rely on Vite+, TypeScript, and Vitest for quality gates.
 
 ### Tooling
 
-- **Biome** (`npm run lint`) for linting and formatting.
-- **TypeScript** (`npm run type`) for static analysis.
-- **Vitest** (`npm run test`) for testing.
+- **Vite+** (`vp check`) for linting, formatting, and integrated checks.
+- **TypeScript** (`vp run typecheck`) for static analysis.
+- **Vitest** (`vp test`, `vp test run`) for testing.
 
 ### Guidelines
 
@@ -185,9 +185,9 @@ We rely on Biome, TypeScript, and Vitest for quality gates.
 2. Run all checks before pushing:
 
    ```bash
-   npm run lint
-   npm run type
-   npm run test
+   vp check
+   vp run typecheck
+   vp test run
    ```
 
 3. Push your branch:
@@ -210,15 +210,18 @@ We rely on Biome, TypeScript, and Vitest for quality gates.
 
 ```markdown
 ## Summary
+
 Explain what this PR changes and why.
 
 ## Testing
-- [ ] npm run lint
-- [ ] npm run type
-- [ ] npm run test
-- [ ] npm run coverage (if applicable)
+
+- [ ] vp check
+- [ ] vp run typecheck
+- [ ] vp test run
+- [ ] vp run coverage (if applicable)
 
 ## Additional Notes
+
 Include screenshots, follow-up tasks, or related issues.
 ```
 
@@ -234,26 +237,32 @@ Before filing a bug report:
 
 ```markdown
 ## Bug Description
+
 Clear summary of the issue.
 
 ## Steps to Reproduce
+
 1. Step one
 2. Step two
 3. ...
 
 ## Expected Behavior
+
 What should happen.
 
 ## Actual Behavior
+
 What actually happens.
 
 ## Environment
+
 - OS: (e.g., Windows 11, macOS 15, Ubuntu 24.04)
 - Node.js version: (e.g., 22.14.0)
-- npm version: (e.g., 11.5.1)
+- vp version: (e.g., 1.x)
 - MLForm version: (e.g., 0.1.3)
 
 ## Additional Context
+
 Screenshots, logs, or related issues.
 ```
 
@@ -270,18 +279,23 @@ We welcome ideas for new features or improvements. Please:
 
 ```markdown
 ## Feature Description
+
 What would you like to add or change?
 
 ## Use Case
+
 Why is this needed?
 
 ## Proposed Solution
+
 How might it work?
 
 ## Alternatives Considered
+
 Other approaches you evaluated.
 
 ## Additional Context
+
 Links, mockups, or related resources.
 ```
 

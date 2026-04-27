@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
+import { MLFormError } from "@/shared";
+import { transportErrorCodes } from "@/transport";
+import type { FormValidationResult } from "./types";
+
+export class EngineError extends MLFormError {
+  constructor(message: string) {
+    super(message);
+    this.name = "EngineError";
+  }
+}
+
+export class RegistryError extends EngineError {
+  constructor(message: string) {
+    super(message);
+    this.name = "RegistryError";
+  }
+}
+
+export class ValidationError extends EngineError {
+  readonly result: FormValidationResult;
+
+  constructor(result: FormValidationResult) {
+    super("Form validation failed.");
+    this.name = "ValidationError";
+    this.result = result;
+  }
+}
+
+export class SubmitError extends EngineError {
+  readonly cause: unknown;
+
+  constructor(message: string, cause: unknown) {
+    super(message);
+    this.name = "SubmitError";
+    this.cause = cause;
+  }
+}
+
+export class ReportPayloadError extends SubmitError {
+  readonly reportId: string;
+
+  constructor(reportId: string, message: string, cause: unknown) {
+    super(`Invalid payload for report "${reportId}": ${message}`, cause);
+    this.name = "ReportPayloadError";
+    this.reportId = reportId;
+  }
+}
+
+export class SubmissionAbortedError extends SubmitError {
+  readonly code = transportErrorCodes.ABORTED;
+
+  constructor(message = "Form submission was aborted.", cause?: unknown) {
+    super(message, cause);
+    this.name = "SubmissionAbortedError";
+  }
+}
+
+export const createAbortError = (reason?: string): SubmissionAbortedError => {
+  return new SubmissionAbortedError(reason ? `Form submission was aborted: ${reason}` : undefined);
+};
+
+export const isAbortLikeError = (error: unknown): boolean => {
+  return (
+    error instanceof SubmissionAbortedError ||
+    (error instanceof Error && error.name === "AbortError")
+  );
+};
+
+export { TransportError, transportErrorCodes } from "@/transport";
+export type { TransportErrorCode } from "@/transport";
