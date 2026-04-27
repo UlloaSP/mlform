@@ -122,6 +122,8 @@ export {
   defineExplanationKind,
   defineFieldKind,
   defineReportKind,
+  executeExplanations,
+  executeFormPipeline,
 } from "@/engine";
 export type {
   AfterExplanationContext,
@@ -134,6 +136,8 @@ export type {
   ExplanationDescriptor,
   ExplanationDescriptorContext,
   ExplanationErrorContext,
+  ExplanationExecutionContext,
+  ExplanationExecutionResult,
   ExplanationFetchContext,
   ExplanationFetchFactory,
   ExplanationFetchRequest,
@@ -149,6 +153,10 @@ export type {
   FieldValueAdapter,
   FieldWidget,
   NormalizedExplanationConfig,
+  PipelineArtifactAdapter,
+  PipelineArtifactContext,
+  PipelineResult,
+  ExecuteFormPipelineOptions,
   PresentationNode,
   PresentationSummary,
   ReportRenderSpec,

@@ -17,6 +17,7 @@ import {
   defineExplanationKind,
   defineFieldKind,
   defineReportKind,
+  executeFormPipeline,
   shallowEquality,
 } from "@/engine";
 
@@ -3324,6 +3325,269 @@ describe("engine", () => {
     await form.submit();
 
     expect(ctrl.state.status).toBe("idle");
+  });
+
+  it("executes pipeline without explanations when explanationMode is none", async () => {
+    const submitResult = {
+      reports: {
+        risk: {
+          prediction: "low",
+        },
+      },
+      meta: {
+        requestId: "abc",
+      },
+      raw: {
+        outputs: [{ prediction: "low" }],
+      },
+    };
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue(submitResult),
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+
+    const result = await executeFormPipeline({
+      form,
+      explanationMode: "none",
+    });
+
+    expect(result.submitResult.reports).toEqual(submitResult.reports);
+    expect(result.submitResult.meta).toEqual(submitResult.meta);
+    expect(result.submitResult.raw).toEqual(submitResult.raw);
+    expect(result.explanationResults).toEqual({});
+    expect(result.explanationErrors).toEqual({});
+    expect(result.artifacts).toEqual({});
+  });
+
+  it("executes explanations, preserves partial failures, and derives artifacts", async () => {
+    const afterExplanation = vi.fn();
+    const onExplanationError = vi.fn();
+    const explanationTransport = vi.fn(async ({ explanationId }: { explanationId: string }) => {
+      if (explanationId === "shap-error") {
+        throw new Error("explanation failed");
+      }
+
+      return {
+        id: explanationId,
+        score: 0.9,
+      };
+    });
+    const registry = createBuiltinRegistry();
+
+    registry.registerExplanation(
+      defineExplanationDefinition({
+        kind: "shap",
+        schema: z
+          .object({
+            kind: z.literal("shap"),
+            id: z.string().optional(),
+            label: z.string().optional(),
+          })
+          .passthrough(),
+        transport: () => ({ submit: explanationTransport }),
+        describe: () => null,
+      }),
+    );
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+        explanations: [
+          { kind: "shap", id: "shap-ok" },
+          { kind: "shap", id: "shap-error" },
+        ],
+      },
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {
+            risk: {
+              prediction: "high",
+            },
+          },
+          meta: {
+            source: "predict",
+          },
+          raw: {
+            outputs: [{ prediction: "high" }],
+          },
+        }),
+      },
+      hooks: {
+        afterExplanation,
+        onExplanationError,
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+
+    const result = await executeFormPipeline({
+      form,
+      artifactAdapter: {
+        derive({ submitResult, explanationResults, explanationErrors }) {
+          return {
+            outputs: (submitResult.raw as { outputs: unknown[] }).outputs,
+            explainErrors: explanationErrors,
+            explanationIds: Object.keys(explanationResults),
+          };
+        },
+      },
+    });
+
+    expect(explanationTransport).toHaveBeenCalledTimes(2);
+    expect(result.explanationResults).toEqual({
+      "shap-ok": {
+        id: "shap-ok",
+        score: 0.9,
+      },
+    });
+    expect(result.explanationErrors).toEqual({
+      "shap-error": "explanation failed",
+    });
+    expect(result.artifacts).toEqual({
+      outputs: [{ prediction: "high" }],
+      explainErrors: {
+        "shap-error": "explanation failed",
+      },
+      explanationIds: ["shap-ok"],
+    });
+    expect(afterExplanation).toHaveBeenCalledWith({
+      explanationId: "shap-ok",
+      kind: "shap",
+      result: {
+        id: "shap-ok",
+        score: 0.9,
+      },
+    });
+    expect(onExplanationError).toHaveBeenCalledWith({
+      explanationId: "shap-error",
+      kind: "shap",
+      error: expect.any(Error),
+    });
+  });
+
+  it("rejects pipeline when artifact derivation fails", async () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {},
+          meta: {},
+          raw: {},
+        }),
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+
+    await expect(
+      executeFormPipeline({
+        form,
+        artifactAdapter: {
+          derive() {
+            throw new Error("artifact failed");
+          },
+        },
+      }),
+    ).rejects.toThrow("artifact failed");
+  });
+
+  it("rejects pipeline when form submit fails", async () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+      },
+      registry: createBuiltinRegistry(),
+      transport: {
+        submit: vi.fn().mockRejectedValue(new Error("submit failed")),
+      },
+    });
+
+    form.setValues({ name: "Alice" });
+
+    await expect(executeFormPipeline({ form })).rejects.toBeInstanceOf(SubmitError);
+  });
+
+  it("forwards external abort signals into explanation fetches", async () => {
+    const registry = createBuiltinRegistry();
+    let capturedSignal: AbortSignal | undefined;
+    let resolveReady: (() => void) | undefined;
+
+    registry.registerExplanation(
+      defineExplanationDefinition({
+        kind: "shap",
+        schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+        transport: () => ({
+          submit: vi.fn(
+            ({ signal }: { signal?: AbortSignal }) =>
+              new Promise((_resolve, reject) => {
+                capturedSignal = signal;
+                resolveReady?.();
+                signal?.addEventListener(
+                  "abort",
+                  () => {
+                    reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+                  },
+                  { once: true },
+                );
+              }),
+          ),
+        }),
+        describe: () => null,
+      }),
+    );
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name", required: true }],
+        explanations: [{ kind: "shap", id: "shap" }],
+      },
+      registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: {},
+          meta: {},
+          raw: {},
+        }),
+      },
+    });
+    const ctrl = form.explanations[0]!;
+    const abortController = new AbortController();
+    const ready = new Promise<void>((resolve) => {
+      resolveReady = resolve;
+    });
+
+    const pending = ctrl.fetch({
+      explanationId: ctrl.id,
+      values: {},
+      fieldValues: {},
+      serializedValues: {},
+      serializedFieldValues: {},
+      reports: {},
+      meta: {},
+      raw: {},
+      signal: abortController.signal,
+    });
+
+    await ready;
+    abortController.abort("stop-explanations");
+    await pending;
+
+    expect(capturedSignal).toBeDefined();
+    expect(capturedSignal?.aborted).toBe(true);
+    expect(ctrl.state.status).toBe("idle");
+    expect(ctrl.state.result).toBeUndefined();
+    expect(ctrl.state.error).toBeNull();
   });
 
   it("throws RegistryError for duplicate explanation kind registration", () => {

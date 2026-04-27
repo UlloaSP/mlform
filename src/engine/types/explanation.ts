@@ -129,7 +129,8 @@ export interface ExplanationController {
   /**
    * Trigger an explanation fetch using the definition's transport. The
    * request must contain the full submit result context; the controller
-   * appends an AbortSignal internally.
+   * appends an AbortSignal internally and combines it with any caller-provided
+   * signal.
    * Idempotent when status is not "idle" — call reset() first to refetch.
    */
   fetch(request: ExplanationFetchRequest): Promise<void>;

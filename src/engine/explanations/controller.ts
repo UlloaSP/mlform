@@ -49,6 +49,42 @@ const setExplanationState = (
   }));
 };
 
+const combineAbortSignals = (signals: Array<AbortSignal | undefined>) => {
+  const filtered = signals.filter((signal): signal is AbortSignal => signal !== undefined);
+  if (filtered.length === 0) {
+    return {
+      signal: undefined,
+      cleanup: () => {},
+    };
+  }
+
+  const controller = new AbortController();
+  const cleanups: Array<() => void> = [];
+
+  for (const signal of filtered) {
+    if (signal.aborted) {
+      controller.abort(signal.reason);
+      return {
+        signal: controller.signal,
+        cleanup: () => {},
+      };
+    }
+
+    const onAbort = () => controller.abort(signal.reason);
+    signal.addEventListener("abort", onAbort, { once: true });
+    cleanups.push(() => signal.removeEventListener("abort", onAbort));
+  }
+
+  return {
+    signal: controller.signal,
+    cleanup: () => {
+      for (const cleanup of cleanups) {
+        cleanup();
+      }
+    },
+  };
+};
+
 export type InternalExplanationController = ExplanationController & {
   reset(): void;
 };
@@ -102,11 +138,13 @@ export const createExplanationController = ({
       });
 
       const transport = definition.transport(readonlyConfig);
+      const { signal: combinedSignal, cleanup } = combineAbortSignals([request.signal, ac.signal]);
 
       try {
-        const result = await transport.submit({ ...request, signal: ac.signal });
+        const result = await transport.submit({ ...request, signal: combinedSignal });
 
-        if (ac.signal.aborted) {
+        if (ac.signal.aborted || combinedSignal?.aborted) {
+          setExplanationState(store, readonlyConfig.id, idleState);
           return;
         }
 
@@ -122,7 +160,8 @@ export const createExplanationController = ({
           result,
         });
       } catch (err: unknown) {
-        if (ac.signal.aborted || isAbortLikeError(err)) {
+        if (ac.signal.aborted || combinedSignal?.aborted || isAbortLikeError(err)) {
+          setExplanationState(store, readonlyConfig.id, idleState);
           return;
         }
 
@@ -143,6 +182,7 @@ export const createExplanationController = ({
         if (abortController === ac) {
           abortController = null;
         }
+        cleanup();
       }
     },
     abort() {

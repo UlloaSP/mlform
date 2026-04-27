@@ -17,6 +17,7 @@ export {
   textFieldDefinition,
 } from "./builtins";
 export { createExplanationController } from "./explanations";
+export { executeExplanations, executeFormPipeline } from "./submission";
 export {
   EngineError,
   ReportPayloadError,
@@ -70,6 +71,8 @@ export type {
   ExplanationDescriptor,
   ExplanationDescriptorContext,
   ExplanationErrorContext,
+  ExplanationExecutionContext,
+  ExplanationExecutionResult,
   ExplanationFetchRequest,
   ExplanationFetchTransport,
   ExplanationRenderSpec,
@@ -121,6 +124,10 @@ export type {
   ReportStatus,
   PresentationNode,
   PresentationSummary,
+  PipelineArtifactAdapter,
+  PipelineArtifactContext,
+  PipelineResult,
+  ExecuteFormPipelineOptions,
   SelectorSubscriptionOptions,
   SubmitCountCondition,
   SubmitErrorContext,
