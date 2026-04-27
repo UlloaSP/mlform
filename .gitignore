@@ -37,6 +37,9 @@ coverage/
 
 # Build artifacts
 stats/
+docs/dist/
+docs/.astro/
+docs/build/
 
 # Environment files
 .env

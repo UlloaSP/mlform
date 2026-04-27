@@ -1,0 +1,123 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
+import type { PrimitiveRegistry } from "./types";
+import { primitiveTagNames } from "./constants";
+
+const reservedCustomElementNames = new Set([
+  "annotation-xml",
+  "color-profile",
+  "font-face",
+  "font-face-src",
+  "font-face-uri",
+  "font-face-format",
+  "font-face-name",
+  "missing-glyph",
+]);
+
+const isValidCustomElementName = (tagName: string): boolean => {
+  return (
+    /^[a-z][-.0-9_a-z]*-[-.0-9_a-z]*[a-z0-9]$/.test(tagName) &&
+    !reservedCustomElementNames.has(tagName)
+  );
+};
+
+const assertTagName = (tagName: string): void => {
+  if (!isValidCustomElementName(tagName)) {
+    throw new TypeError(
+      `Invalid primitive renderer tag name "${tagName}". Expected a valid custom element name.`,
+    );
+  }
+};
+
+class EnginePrimitiveRegistry implements PrimitiveRegistry {
+  readonly #fields = new Map<string, string>();
+  readonly #reports = new Map<string, string>();
+  readonly #explanations = new Map<string, string>();
+
+  registerField(component: string, tagName: string): PrimitiveRegistry {
+    assertTagName(tagName);
+    this.#fields.set(component, tagName);
+    return this;
+  }
+
+  unregisterField(component: string): PrimitiveRegistry {
+    this.#fields.delete(component);
+    return this;
+  }
+
+  registerReport(component: string, tagName: string): PrimitiveRegistry {
+    assertTagName(tagName);
+    this.#reports.set(component, tagName);
+    return this;
+  }
+
+  unregisterReport(component: string): PrimitiveRegistry {
+    this.#reports.delete(component);
+    return this;
+  }
+
+  registerExplanation(component: string, tagName: string): PrimitiveRegistry {
+    assertTagName(tagName);
+    this.#explanations.set(component, tagName);
+    return this;
+  }
+
+  unregisterExplanation(component: string): PrimitiveRegistry {
+    this.#explanations.delete(component);
+    return this;
+  }
+
+  resolveField(component: string): string | undefined {
+    return this.#fields.get(component);
+  }
+
+  resolveReport(component: string): string | undefined {
+    return this.#reports.get(component);
+  }
+
+  resolveExplanation(component: string): string | undefined {
+    return this.#explanations.get(component);
+  }
+
+  clone(): PrimitiveRegistry {
+    const next = new EnginePrimitiveRegistry();
+
+    for (const [component, tagName] of this.#fields) {
+      next.registerField(component, tagName);
+    }
+
+    for (const [component, tagName] of this.#reports) {
+      next.registerReport(component, tagName);
+    }
+
+    for (const [component, tagName] of this.#explanations) {
+      next.registerExplanation(component, tagName);
+    }
+
+    return next;
+  }
+}
+
+export const createPrimitiveRegistry = (): PrimitiveRegistry => {
+  return new EnginePrimitiveRegistry();
+};
+
+export const createBuiltinPrimitiveRegistry = (): PrimitiveRegistry => {
+  return createPrimitiveRegistry()
+    .registerField("declarative-field", primitiveTagNames.declarativeField)
+    .registerField("text-field", primitiveTagNames.textField)
+    .registerField("number-field", primitiveTagNames.numberField)
+    .registerField("boolean-field", primitiveTagNames.booleanField)
+    .registerField("category-field", primitiveTagNames.categoryField)
+    .registerField("date-field", primitiveTagNames.dateField)
+    .registerField("series-field", primitiveTagNames.seriesField)
+    .registerField("long-text-field", primitiveTagNames.longTextField)
+    .registerField("single-choice-field", primitiveTagNames.singleChoiceField)
+    .registerField("multi-choice-field", primitiveTagNames.multiChoiceField)
+    .registerField("rating-field", primitiveTagNames.ratingField)
+    .registerReport("declarative-report", primitiveTagNames.declarativeReport)
+    .registerReport("classifier-report", primitiveTagNames.classifierReport)
+    .registerReport("regressor-report", primitiveTagNames.regressorReport)
+    .registerExplanation("declarative-explanation", primitiveTagNames.declarativeExplanation);
+};

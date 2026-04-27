@@ -5,209 +5,281 @@
 [![npm version](https://img.shields.io/npm/v/mlform.svg)](https://www.npmjs.com/package/mlform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Composable form generation for machine learning workflows. MLForm turns JSON schemas into responsive web components, validates user input with Zod, and connects submissions to your predictive backend.
+Schema-driven forms for machine learning applications.
 
-## Table of contents
+MLForm gives you a predictable UI layer between users and model backends. You describe inputs and reports with a schema, MLForm renders accessible Web Components, validates values, submits structured payloads, and displays model results in the same host container.
 
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Quick start](#quick-start)
-- [Schema essentials](#schema-essentials)
-- [Machine learning responses](#machine-learning-responses)
-- [Extensibility](#extensibility)
-- [Runtime utilities](#runtime-utilities)
-- [Tooling & scripts](#tooling--scripts)
-- [Documentation & resources](#documentation--resources)
-- [Contributing](#contributing)
-- [License](#license)
+Version `0.1.4` is the current release in this repository.
 
-## Overview
+## Why MLForm
 
-MLForm is a TypeScript-first library that renders adaptive forms as standards-based Web Components built with Lit. Provide a predictable JSON schema, plug in your ML inference endpoint, and receive validated input alongside structured model responses. The library ships with batteries included for common field types and ML output strategies, while remaining extensible for custom domains.
+Most ML product forms drift over time:
 
-## Features
+- the frontend shape stops matching the backend contract
+- validation rules end up duplicated across components
+- model outputs are rendered ad hoc in each screen
+- design and accessibility regress when teams move fast
 
-- Dynamic rendering of form layouts driven by strongly typed JSON signatures
-- Built-in integration with regression and classification endpoints via fetch
-- Prepackaged strategies for text, number, boolean, category, and date inputs
-- Subscription API (`onSubmit`) and accessors (`lastInputs`, `lastResponse`) for reactive UIs
-- Lazy-loaded Web Components that stay framework-agnostic and usable in any SPA or vanilla app
-- Zod-powered validation, JSON Schema generation, and type definitions out of the box
+MLForm solves that by centering everything on an explicit schema and a transport layer.
 
-## Installation
+Use it for:
+
+- prediction forms
+- scoring and approval tools
+- forecasting dashboards
+- internal review consoles
+- embedded model workflows inside larger apps
+
+## Install
+
+For application usage:
 
 ```bash
 npm install mlform
 ```
 
-> Requirements: Node.js >= 22.14 and npm >= 9.
+Import from the root package unless you specifically need a lower-level surface:
 
-The package exposes ESM builds and bundled type declarations. Consumers can tree-shake imports such as `mlform`, `mlform/extensions`, and `mlform/strategies` with modern bundlers (Vite, Webpack, Rollup, etc.).
-
-## Quick start
-
-```typescript
-import { MLForm } from "mlform";
-
-const mlForm = new MLForm("https://api.example.com/predict");
-
-const schema = {
-	inputs: [
-		{ type: "text", title: "Full Name", required: true },
-		{ type: "number", title: "Age", min: 0, max: 120, required: true },
-		{
-			type: "category",
-			title: "Department",
-			options: ["Engineering", "Sales", "Marketing"],
-			required: true,
-		},
-	],
-	outputs: [{ type: "classifier", title: "Access Level" }],
-};
-
-mlForm.onSubmit((inputs, response) => {
-	console.log("User inputs", inputs);
-	console.log("Prediction", response);
-});
-
-const container = document.getElementById("form-container")!;
-await mlForm.toHTMLElement(schema, container);
+```ts
+import { createJsonTransport, mountForm } from "mlform";
 ```
+
+## Quick Start
+
+Create a host element:
 
 ```html
-<div id="form-container"></div>
-<script type="module" src="./main.ts"></script>
+<div id="prediction-form"></div>
 ```
 
-MLForm mounts a custom `<ml-layout>` shell, injects the appropriate field components, and dispatches an `ml-submit` event internally when the user submits the form. Responses from your backend are automatically forwarded to registered listeners and mirrored in the report slot.
+Mount a form:
 
-## Schema essentials
+```ts
+import { createJsonTransport, mountForm } from "mlform";
 
-Schemas follow the `Signature` type exported from `mlform/core` (re-exported as `Signature` in the root package). Each entry is validated with Zod before rendering.
+const container = document.querySelector("#prediction-form");
 
-### Input field types
+if (!container) {
+  throw new Error("Missing #prediction-form container.");
+}
 
-| Type | Description | Key options |
-| --- | --- | --- |
-| `text` | Single-line text input | `minLength`, `maxLength`, `pattern`, `placeholder`, `value` |
-| `number` | Numeric input with constraints | `min`, `max`, `step`, `value` |
-| `boolean` | Checkbox or toggle | `required` |
-| `category` | Select or radio options | `options`, `multiple` |
-| `date` | Date picker | `min`, `max`, `format`, `value` |
+const mounted = mountForm(container as HTMLElement, {
+  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  schema: {
+    fields: [
+      {
+        id: "prompt",
+        kind: "text",
+        label: "Prompt",
+        required: true,
+        minLength: 3,
+      },
+      {
+        id: "threshold",
+        kind: "number",
+        label: "Confidence threshold",
+        min: 0,
+        max: 1,
+        step: 0.05,
+        defaultValue: 0.75,
+      },
+    ],
+    reports: [
+      {
+        id: "prediction",
+        kind: "classifier",
+        label: "Prediction",
+      },
+    ],
+  },
+  labels: {
+    submit: "Run prediction",
+    submitting: "Running...",
+  },
+  layout: "split",
+  designSystem: {
+    mode: "auto",
+    theme: "cobalt",
+    recipe: "soft",
+  },
+});
 
-Every field shares a base structure of `title`, optional `description`, and an explicit `required` flag (defaulting to `true`).
+window.addEventListener("beforeunload", () => mounted.unmount());
+```
 
-### Model output types
-
-| Type | Use case | Typical payload |
-| --- | --- | --- |
-| `classifier` | Discrete predictions | `prediction`, `confidence`, `probabilities`, `execution_time` |
-| `regressor` | Continuous predictions | `prediction`, `confidence_interval`, `std_deviation`, `execution_time` |
-
-You can combine multiple outputs within the same schema to present downstream analytics alongside user inputs.
-
-## Machine learning responses
-
-During submission MLForm issues a POST request to the backend URL configured in the constructor. The body contains the normalized user inputs and the requested model metadata. Responses are projected into the report slot and emitted to listeners.
+The default JSON transport sends:
 
 ```json
-// Request payload
 {
-	"inputs": {
-		"Full Name": "Jane Doe",
-		"Age": 34,
-		"Department": "Engineering"
-	}
+  "inputs": {
+    "prompt": "Example text",
+    "threshold": 0.75
+  }
 }
 ```
+
+Return reports keyed by report id:
 
 ```json
-// Expected response
 {
-	"outputs": [
-		{
-			"type": "classifier",
-			"prediction": "admin",
-			"confidence": 0.92,
-			"probabilities": {
-				"viewer": 0.05,
-				"editor": 0.03,
-				"admin": 0.92
-			},
-			"execution_time": 37
-		}
-	]
+  "reports": {
+    "prediction": {
+      "label": "Approved",
+      "confidence": 0.91,
+      "probabilities": {
+        "Approved": 0.91,
+        "Rejected": 0.09
+      }
+    }
+  },
+  "meta": {
+    "model": "credit-risk-v2"
+  }
 }
 ```
 
-Runtime helpers:
+## What You Get
 
-- `mlForm.onSubmit(callback)` returns an unsubscribe function and delivers both the parsed inputs and the transformed backend response.
-- `mlForm.lastInputs` and `mlForm.lastResponse` expose the latest submission synchronously.
-- `DescriptorService` handles lazy loading and rendering of ML report components so predictions are shown without additional wiring.
+- Schema-driven fields, reports, conditions, defaults, and serialization
+- Accessible Web Components for form inputs, submit actions, and result rendering
+- Built-in JSON transport plus composable transport middleware
+- Headless engine APIs for custom orchestration and registries
+- Runtime design system with themes, recipes, density, motion, and token overrides
+- Extension points for custom field, report, and explanation kinds
 
-## Extensibility
+Built-in fields:
 
-MLForm is built around strategy classes that map schema entries to UI components. You can add or replace strategies for bespoke controls or ML result renderers.
+- `text`
+- `number`
+- `boolean`
+- `category`
+- `date`
+- `time-series`
 
-```typescript
-import { MLForm } from "mlform";
-import { FieldStrategy } from "mlform/extensions";
+Built-in reports:
 
-class ColorPickerStrategy extends FieldStrategy {
-	constructor() {
-		super("color", ColorSchema, () => import("./color-field"));
-	}
+- `classifier`
+- `regressor`
 
-	buildControl(field) {
-		return {
-			tag: "color-field",
-			props: { value: field.value, label: field.title },
-		};
-	}
-}
+Built-in themes:
 
-const mlForm = new MLForm("https://api.example.com/predict");
-mlForm.register(new ColorPickerStrategy());
+- `neutral`
+- `cobalt`
+- `graphite`
+- `sage`
+- `sunset`
+
+Built-in recipes:
+
+- `default`
+- `minimal`
+- `soft`
+- `contrast`
+
+## Package Surfaces
+
+| Surface                | Use it for                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| `mlform`               | Application-first API for mounting forms with sensible defaults.                         |
+| `mlform/kit`           | Explicit kit entrypoint with mount, transport, labels, and lifecycle utilities.          |
+| `mlform/engine`        | Headless state, validation, registries, hooks, conditions, and submission orchestration. |
+| `mlform/primitives`    | Web Component renderers and custom renderer registries.                                  |
+| `mlform/design-system` | Themes, recipes, tokens, mode resolution, and host integration.                          |
+| `mlform/transport`     | Transport composition, middleware, resilience policies, and orchestration helpers.       |
+
+## Custom Domain Kinds
+
+When built-in kinds are not enough, define your own field and report kinds without rewriting the normal rendering path.
+
+```ts
+import { createBuiltinRegistry, defineFieldKind } from "mlform/engine";
+import { z } from "zod";
+
+const registry = createBuiltinRegistry();
+
+registry.registerField(
+  defineFieldKind({
+    kind: "score",
+    schema: z.object({
+      kind: z.literal("score"),
+      id: z.string().optional(),
+      label: z.string(),
+      min: z.number().default(0),
+      max: z.number().default(100),
+    }),
+    value: {
+      default: () => 0,
+      normalize: (value) => Number(value ?? 0),
+      serialize: (value) => value,
+    },
+    validate: ({ value, config }) =>
+      value < config.min || value > config.max ? ["Score out of range."] : [],
+    render: {
+      widget: "number",
+      hints: ({ config }) => ({
+        min: config.min,
+        max: config.max,
+        unit: "%",
+      }),
+    },
+  }),
+);
 ```
 
-Use the default strategies exported from `mlform/strategies` as references when crafting new descriptors. Updates and removals follow the same pattern via `mlForm.update()` and `mlForm.unregister()`.
+Stay at the declarative `define*Kind` layer unless you truly need fully custom rendering or low-level primitive behavior.
 
-## Runtime utilities
+## Typical Flow
 
-- `mlForm.validateSchema(signature)` returns a Zod safe-parse result, useful for testing incoming schemas before rendering.
-- `mlForm.schema()` produces a JSON Schema (draft 2020-12) for your current registry configuration, enabling schema introspection or documentation workflows.
+1. Define the schema with `fields` and `reports`.
+2. Mount the form with `mountForm`.
+3. Point the transport at your model endpoint or custom backend adapter.
+4. Return normalized reports from the backend.
+5. Customize theme, recipe, labels, or registries only where your product needs it.
 
-## Tooling & scripts
+## Documentation
 
-The repository uses npm as the package manager and Vite for bundling.
+- Docs home: https://ulloasp.github.io/mlform/
+- Quick start: https://ulloasp.github.io/mlform/getting-started/quick-start/
+- Installation: https://ulloasp.github.io/mlform/getting-started/installation/
+- Backend contract: https://ulloasp.github.io/mlform/guides/backend-contract/
+- Transport guide: https://ulloasp.github.io/mlform/kit/transport/
+- Design system: https://ulloasp.github.io/mlform/design-system/overview/
+- API reference: https://ulloasp.github.io/mlform/reference/kit/
+- Migration guide: https://ulloasp.github.io/mlform/migration/from-legacy-mlform/
+- Versioning notes: https://ulloasp.github.io/mlform/support/versioning/
 
-- `npm run lint` – format-aware linting powered by Biome.
-- `npm run type` – TypeScript project checks with `tsc --noEmit`.
-- `npm run test` / `npm run coverage` – unit tests and coverage via Vitest and V8 instrumentation.
-- `npm run build` – generates the production-ready `dist/` bundle and declaration files.
-- `npm run ci` – convenience task combining lint, type checks, tests, and build.
+## Development
 
-CI/CD pipelines verify linting, type safety, tests across Node 18/20/22, build integrity, documentation, and dependency audits. Releases are published to both GitHub and npm through GitHub Actions.
+This repository uses Vite+. Do not use `npm`, `pnpm`, or `yarn` directly for workspace tasks in this repo.
 
-## Documentation & resources
+Run the main package checks:
 
-- Product documentation: https://ulloasp.github.io/mlform/
-- Examples and guides: `docs/`
-- Bundle visualizations: `stats/bundle_size_treemap.html`
-- Issue tracker: https://github.com/UlloaSP/mlform/issues
+```bash
+vp install
+vp check
+vp test
+vp build
+```
 
-## Contributing
+Docs live in `docs/`:
 
-We welcome issues, feature requests, and pull requests.
+```bash
+cd docs
+vp install
+vp run typecheck
+vp run build
+vp run dev
+```
 
-1. Fork the repository and create a feature branch.
-2. Run `npm install` followed by `npm run lint`, `npm run type`, and `npm run test` before committing.
-3. Add or update tests and documentation alongside code changes (target 80%+ coverage).
-4. Use Conventional Commit messages when possible.
-5. Open a pull request describing your change and expected impact.
+The main package targets Node.js `>=24.9.0`.
+
+## Release Notes
+
+For `0.1.4`, use the repository release entry and the published docs as the source of truth:
+
+- GitHub releases: https://github.com/UlloaSP/mlform/releases
+- npm package: https://www.npmjs.com/package/mlform
 
 ## License
 
-MLForm is released under the MIT License. See `LICENSE` for details.
+MIT

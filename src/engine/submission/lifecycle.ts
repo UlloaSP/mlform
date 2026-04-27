@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
+import { transitionEngineState, type EngineStore } from "../state";
+import type { SubmitResult } from "../types";
+
+type SubmissionTransitionOptions = {
+  store: EngineStore;
+  resetReports: () => void;
+  resetExplanations: () => void;
+  syncAfterSubmissionTransition: () => void;
+};
+
+export const createSubmissionLifecycle = ({
+  store,
+  resetReports,
+  resetExplanations,
+  syncAfterSubmissionTransition,
+}: SubmissionTransitionOptions) => {
+  return {
+    start(submissionVersion: number) {
+      store.batch(() => {
+        resetExplanations();
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "start-submission",
+            submissionVersion,
+          }),
+        );
+
+        syncAfterSubmissionTransition();
+      });
+    },
+    succeed(result: SubmitResult) {
+      store.batch(() => {
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "submission-success",
+            result,
+          }),
+        );
+
+        syncAfterSubmissionTransition();
+      });
+    },
+    abort(message: string) {
+      store.batch(() => {
+        resetReports();
+        resetExplanations();
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "submission-aborted",
+            message,
+          }),
+        );
+
+        syncAfterSubmissionTransition();
+      });
+    },
+    fail(message: string) {
+      store.batch(() => {
+        resetReports();
+        resetExplanations();
+        store.update((current) =>
+          transitionEngineState(current, {
+            type: "submission-error",
+            message,
+          }),
+        );
+
+        syncAfterSubmissionTransition();
+      });
+    },
+    clear(submissionVersion: number) {
+      store.update((current) =>
+        transitionEngineState(current, {
+          type: "clear-active-submission",
+          submissionVersion,
+        }),
+      );
+    },
+  };
+};
