@@ -222,7 +222,7 @@ jobs:
         id: publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: vp pm publish --provenance --access public
+        run: vp pm publish --access public -- --provenance
         if: steps.version_check.outputs.version_changed == 'true'
 
       - name: Skip publish
