@@ -259,7 +259,7 @@ What actually happens.
 - OS: (e.g., Windows 11, macOS 15, Ubuntu 24.04)
 - Node.js version: (e.g., 22.14.0)
 - vp version: (e.g., 1.x)
-- MLForm version: (e.g., 0.1.4)
+- MLForm version: (e.g., 0.1.5)
 
 ## Additional Context
 

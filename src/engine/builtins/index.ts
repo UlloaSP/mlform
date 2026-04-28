@@ -5,6 +5,7 @@ import { createRegistry } from "../registry";
 import type { Registry } from "../types";
 import { booleanFieldDefinition } from "./fields/boolean";
 import { categoryFieldDefinition } from "./fields/category";
+import { mappedCategoryFieldDefinition } from "./fields/mapped-category";
 import { dateFieldDefinition } from "./fields/date";
 import { longTextFieldDefinition } from "./fields/long-text";
 import { multiChoiceFieldDefinition } from "./fields/multi-choice";
@@ -21,6 +22,7 @@ export {
   categoryFieldDefinition,
   classifierReportDefinition,
   dateFieldDefinition,
+  mappedCategoryFieldDefinition,
   longTextFieldDefinition,
   multiChoiceFieldDefinition,
   numberFieldDefinition,
@@ -36,6 +38,7 @@ export const builtinFieldDefinitions = [
   numberFieldDefinition,
   booleanFieldDefinition,
   categoryFieldDefinition,
+  mappedCategoryFieldDefinition,
   dateFieldDefinition,
   seriesFieldDefinition,
   longTextFieldDefinition,
@@ -57,6 +60,7 @@ export const createBuiltinRegistry = (): Registry => {
     .registerField(numberFieldDefinition)
     .registerField(booleanFieldDefinition)
     .registerField(categoryFieldDefinition)
+    .registerField(mappedCategoryFieldDefinition)
     .registerField(dateFieldDefinition)
     .registerField(seriesFieldDefinition)
     .registerField(longTextFieldDefinition)

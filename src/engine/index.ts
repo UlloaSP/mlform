@@ -7,6 +7,7 @@ export {
   categoryFieldDefinition,
   classifierReportDefinition,
   dateFieldDefinition,
+  mappedCategoryFieldDefinition,
   longTextFieldDefinition,
   multiChoiceFieldDefinition,
   numberFieldDefinition,

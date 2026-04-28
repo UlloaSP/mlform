@@ -116,6 +116,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
             resetInactiveToInitial: shouldResetInactiveFields(),
             inactiveFieldPolicy: config.inactiveFieldPolicy,
           });
+
+          applyMappedCategoryEffects(_fieldId, nextValues);
         });
       },
     });
@@ -157,6 +159,80 @@ export const createForm = (config: CreateFormConfig): FormController => {
   const fieldMap = new Map<string, InternalFieldController>(
     fields.map((field) => [field.id, field]),
   );
+
+  // Build mapped-category lookup and validate mapping targets
+  const mappedCategoryConfigs = new Map<
+    string,
+    { options: Array<{ label: string; value: string; mapping: Record<string, unknown> }> }
+  >();
+  for (const field of fields) {
+    if (field.kind === "mapped-category") {
+      const fieldConfig = field.config as unknown as {
+        options: Array<{ label: string; value: string; mapping: Record<string, unknown> }>;
+      };
+      // Validate all mapping targets exist
+      for (const option of fieldConfig.options) {
+        if (option.mapping) {
+          for (const targetId of Object.keys(option.mapping)) {
+            if (!fieldMap.has(targetId)) {
+              throw new EngineError(
+                `mapped-category "${field.id}": mapping references unknown field "${targetId}".`,
+              );
+            }
+          }
+        }
+      }
+      mappedCategoryConfigs.set(field.id, fieldConfig);
+    }
+  }
+
+  const applyMappedCategoryEffects = (
+    fieldId: string,
+    nextValues: Record<string, unknown>,
+  ): void => {
+    const masterConfig = mappedCategoryConfigs.get(fieldId);
+    if (!masterConfig) return;
+
+    const selectedValue = nextValues[fieldId];
+    const selectedOption = masterConfig.options.find((opt) => opt.value === selectedValue);
+    if (!selectedOption?.mapping) return;
+
+    for (const [targetId, targetValue] of Object.entries(selectedOption.mapping)) {
+      const targetField = fieldMap.get(targetId);
+      if (!targetField) {
+        throw new EngineError(
+          `mapped-category "${fieldId}": target field "${targetId}" not found in schema.`,
+        );
+      }
+
+      const coerced = targetField.coerceValue(targetValue);
+
+      // Validate coerced value against target field definition
+      const targetDef = config.registry.getField(targetField.kind);
+      if (targetDef?.validate) {
+        const errors = targetDef.validate(coerced, targetField.config, {
+          field: targetField.config,
+          values: nextValues,
+          submitCount: getSubmitCount(),
+          validationVersion: 0,
+        });
+        if (Array.isArray(errors) && errors.length > 0) {
+          throw new EngineError(
+            `mapped-category "${fieldId}": value ${JSON.stringify(targetValue)} invalid for "${targetId}": ${errors.join(", ")}`,
+          );
+        }
+      }
+
+      const currentState = store.getState().fieldStates[targetId];
+      if (currentState) {
+        targetField.commitState({
+          ...currentState,
+          value: coerced,
+        });
+      }
+    }
+  };
+
   const reportMap = new Map<string, InternalReportController>(
     reports.map((report) => [report.id, report]),
   );
@@ -345,6 +421,10 @@ export const createForm = (config: CreateFormConfig): FormController => {
           resetInactiveToInitial: shouldResetInactiveFields(),
           inactiveFieldPolicy: config.inactiveFieldPolicy,
         });
+
+        for (const [fieldId] of updates) {
+          applyMappedCategoryEffects(fieldId, finalValues);
+        }
       });
     },
     validate() {

@@ -56,6 +56,7 @@ const sidebar = [
     items: [
       { label: "Overview", slug: "schema/overview" },
       { label: "Fields", slug: "schema/fields" },
+      { label: "Mapped Category", slug: "schema/mapped-category" },
       { label: "Reports", slug: "schema/reports" },
       { label: "Conditions", slug: "schema/conditions" },
       { label: "Initial Values", slug: "schema/initial-values" },

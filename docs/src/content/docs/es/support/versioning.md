@@ -3,7 +3,7 @@ title: Versionado
 description: Cómo la documentación sigue las versiones de MLForm.
 ---
 
-La linea de release actual en este repositorio es `0.1.4`.
+La linea de release actual en este repositorio es `0.1.5`.
 
 La documentación publicada sigue la rama principal mantenida salvo que una nota de release indique otra cosa. En la práctica, eso significa que la documentación debería describir la release actual de npm después de cada publicación etiquetada, aunque puede adelantarse brevemente entre merges y el siguiente corte de release.
 

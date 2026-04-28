@@ -3881,4 +3881,242 @@ describe("engine", () => {
       }),
     });
   });
+
+  describe("mapped-category", () => {
+    const createMappedCategoryForm = (overrides?: Record<string, unknown>) =>
+      createForm({
+        schema: {
+          fields: [
+            {
+              kind: "mapped-category",
+              label: "Color",
+              options: [
+                {
+                  label: "Rojo",
+                  value: "red",
+                  mapping: { "is-red": 1, "is-green": 0, "is-blue": 0 },
+                },
+                {
+                  label: "Verde",
+                  value: "green",
+                  mapping: { "is-red": 0, "is-green": 1, "is-blue": 0 },
+                },
+                {
+                  label: "Azul",
+                  value: "blue",
+                  mapping: { "is-red": 0, "is-green": 0, "is-blue": 1 },
+                },
+              ],
+            },
+            {
+              kind: "number",
+              label: "is_red",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_green",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_blue",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: {
+          submit: vi.fn().mockResolvedValue({ raw: {} }),
+        },
+        ...overrides,
+      });
+
+    it("updates subordinate fields when master value changes", () => {
+      const form = createMappedCategoryForm();
+      const master = form.getField("color")!;
+
+      master.setValue("red");
+
+      expect(form.getField("is-red")!.state.value).toBe(1);
+      expect(form.getField("is-green")!.state.value).toBe(0);
+      expect(form.getField("is-blue")!.state.value).toBe(0);
+
+      master.setValue("green");
+
+      expect(form.getField("is-red")!.state.value).toBe(0);
+      expect(form.getField("is-green")!.state.value).toBe(1);
+      expect(form.getField("is-blue")!.state.value).toBe(0);
+    });
+
+    it("subordinate fields remain hidden but receive values", () => {
+      const form = createMappedCategoryForm();
+      form.getField("color")!.setValue("blue");
+
+      const isBlue = form.getField("is-blue")!;
+      expect(isBlue.state.value).toBe(1);
+      expect(isBlue.state.visible).toBe(false);
+    });
+
+    it("supports multiple independent masters", () => {
+      const form = createForm({
+        schema: {
+          fields: [
+            {
+              kind: "mapped-category",
+              label: "Color",
+              options: [
+                {
+                  label: "Rojo",
+                  value: "red",
+                  mapping: { "is-red": 1, "is-green": 0 },
+                },
+                {
+                  label: "Verde",
+                  value: "green",
+                  mapping: { "is-red": 0, "is-green": 1 },
+                },
+              ],
+            },
+            {
+              kind: "mapped-category",
+              label: "Size",
+              options: [
+                {
+                  label: "Small",
+                  value: "small",
+                  mapping: { "is-small": 1, "is-large": 0 },
+                },
+                {
+                  label: "Large",
+                  value: "large",
+                  mapping: { "is-small": 0, "is-large": 1 },
+                },
+              ],
+            },
+            {
+              kind: "number",
+              label: "is_red",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_green",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_small",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_large",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: {
+          submit: vi.fn().mockResolvedValue({ raw: {} }),
+        },
+      });
+
+      form.getField("color")!.setValue("red");
+      form.getField("size")!.setValue("large");
+
+      expect(form.getField("is-red")!.state.value).toBe(1);
+      expect(form.getField("is-green")!.state.value).toBe(0);
+      expect(form.getField("is-small")!.state.value).toBe(0);
+      expect(form.getField("is-large")!.state.value).toBe(1);
+    });
+
+    it("includes subordinate values in submission", async () => {
+      const submitMock = vi.fn().mockResolvedValue({ raw: {} });
+      const form = createMappedCategoryForm({ transport: { submit: submitMock } });
+
+      form.getField("color")!.setValue("red");
+      await form.submit();
+
+      expect(submitMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fieldValues: expect.objectContaining({
+            "is-red": 1,
+            "is-green": 0,
+            "is-blue": 0,
+          }),
+        }),
+      );
+    });
+
+    it("descriptor uses category-field component", () => {
+      const form = createMappedCategoryForm();
+      const master = form.getField("color")!;
+
+      expect(master.descriptor.component).toBe("category-field");
+      expect(master.descriptor.props).toEqual(
+        expect.objectContaining({
+          options: [
+            { label: "Rojo", value: "red" },
+            { label: "Verde", value: "green" },
+            { label: "Azul", value: "blue" },
+          ],
+        }),
+      );
+    });
+
+    it("does not apply mapping for unknown option value", () => {
+      const form = createMappedCategoryForm();
+      const master = form.getField("color")!;
+
+      // Set a valid value first
+      master.setValue("red");
+      expect(form.getField("is-red")!.state.value).toBe(1);
+
+      // Set to null (deselect) — no mapping applied, subordinates keep previous values
+      master.setValue(null);
+      expect(form.getField("is-red")!.state.value).toBe(1);
+    });
+
+    it("throws when mapping references unknown field at form creation", () => {
+      expect(() =>
+        createForm({
+          schema: {
+            fields: [
+              {
+                kind: "mapped-category",
+                label: "Color",
+                options: [
+                  {
+                    label: "Rojo",
+                    value: "red",
+                    mapping: { "nonexistent-field": 1 },
+                  },
+                ],
+              },
+            ],
+          },
+          registry: createBuiltinRegistry(),
+          transport: { submit: vi.fn() },
+        }),
+      ).toThrow(/mapped-category.*nonexistent-field/);
+    });
+
+    it("applies mapping via setValues", () => {
+      const form = createMappedCategoryForm();
+
+      form.setValues({ color: "blue" });
+
+      expect(form.getField("is-red")!.state.value).toBe(0);
+      expect(form.getField("is-green")!.state.value).toBe(0);
+      expect(form.getField("is-blue")!.state.value).toBe(1);
+    });
+  });
 });
