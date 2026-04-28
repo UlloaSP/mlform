@@ -29,6 +29,7 @@ export interface BaseFieldConfig {
   readOnlyWhen?: FieldCondition;
   asyncValidationDebounceMs?: number;
   inactiveFieldPolicy?: InactiveFieldPolicy;
+  includeInSubmission?: boolean;
   valuePath?: string | string[];
   defaultValue?: unknown;
   ui?: Record<string, unknown>;

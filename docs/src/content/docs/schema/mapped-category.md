@@ -5,6 +5,8 @@ description: A category field that automatically fills subordinate fields based 
 
 The `mapped-category` field solves a common ML problem: models often expect one-hot encoded or structured inputs (e.g., `is_red`, `is_green`, `is_blue`), but exposing those raw fields to users creates bad UX and allows impossible combinations. Instead of showing N separate inputs, `mapped-category` presents a single dropdown and silently writes the correct values to hidden subordinate fields.
 
+By default, the `mapped-category` field itself is not submitted. The backend receives only the subordinate fields unless you explicitly set `includeInSubmission: true`.
+
 ## How It Works
 
 1. User selects an option from the dropdown (renders identically to a regular `category` field).
@@ -47,7 +49,7 @@ Unlike regular `category`, plain string options are **not** allowed — the `map
 
 ### Shared Options
 
-`mapped-category` supports all [shared field options](/schema/fields/) (`id`, `label`, `description`, `required`, `defaultValue`, `hiddenWhen`, `disabledWhen`, `readonlyWhen`, `ui`).
+`mapped-category` supports all [shared field options](/schema/fields/) (`id`, `label`, `description`, `required`, `defaultValue`, `hiddenWhen`, `disabledWhen`, `readonlyWhen`, `ui`, `includeInSubmission`).
 
 ## Subordinate Fields
 
@@ -130,6 +132,8 @@ When user selects "Green", the submission payload includes:
 ```json
 { "is_red": 0, "is_green": 1, "is_blue": 0, "size": 42 }
 ```
+
+The master field value (`color: "green"`) is omitted by default. If your backend needs both forms, set `includeInSubmission: true` on the `mapped-category` field.
 
 ### Example 2: Subscription Tier (Multi-Field Mapping)
 
@@ -394,6 +398,7 @@ console.log(values.is_blue); // 0
 - **UI**: Renders as a standard `<mlf-category-field>` — no new web component needed.
 - **Mapping direction**: Unidirectional. Master → subordinates only. Changing a subordinate field directly does **not** update the master.
 - **Atomicity**: All mapping writes happen in a single batch. Subscribers receive one notification.
+- **Submission**: `mapped-category` is excluded from submission by default; set `includeInSubmission: true` to submit both the master and subordinate values.
 - **`inactiveFieldPolicy`**: Subordinate fields should use `"include"` to appear in submission payloads when hidden.
 - **Validation**: Target field IDs are validated at form creation. Mapped values are validated against target field definitions at runtime.
 - **No cycles**: The engine does not detect cycles between mapped-category fields. Avoid mapping one mapped-category to another.

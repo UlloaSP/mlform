@@ -25,7 +25,14 @@ Shared options:
   description: "Used for notifications.",
   required: true,
   defaultValue: "",
+  includeInSubmission: true,
   hiddenWhen: { kind: "field-value", field: "anonymous", equals: true },
   ui: { autocomplete: "email" }
 }
 ```
+
+Shared field options also include:
+
+- `inactiveFieldPolicy`: Controls whether hidden/disabled fields are submitted.
+- `includeInSubmission`: Set to `false` to keep a field out of `values`, `fieldValues`, `serializedValues`, and `serializedFieldValues`.
+- `valuePath`: Writes the field into a nested payload path while keeping flat `fieldValues`.

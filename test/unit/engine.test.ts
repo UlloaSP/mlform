@@ -4054,6 +4054,69 @@ describe("engine", () => {
           }),
         }),
       );
+      expect(submitMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fieldValues: expect.not.objectContaining({
+            color: "red",
+          }),
+        }),
+      );
+    });
+
+    it("can opt mapped-category back into submission", async () => {
+      const submitMock = vi.fn().mockResolvedValue({ raw: {} });
+      const form = createForm({
+        schema: {
+          fields: [
+            {
+              kind: "mapped-category",
+              label: "Color",
+              includeInSubmission: true,
+              options: [
+                {
+                  label: "Rojo",
+                  value: "red",
+                  mapping: { "is-red": 1, "is-green": 0, "is-blue": 0 },
+                },
+              ],
+            },
+            {
+              kind: "number",
+              label: "is_red",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_green",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_blue",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: { submit: submitMock },
+      });
+
+      form.getField("color")!.setValue("red");
+      await form.submit();
+
+      expect(submitMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fieldValues: expect.objectContaining({
+            color: "red",
+            "is-red": 1,
+            "is-green": 0,
+            "is-blue": 0,
+          }),
+        }),
+      );
     });
 
     it("descriptor uses category-field component", () => {

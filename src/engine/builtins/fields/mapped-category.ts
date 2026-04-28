@@ -31,6 +31,7 @@ export const mappedCategoryFieldDefinition: FieldDefinition<
   schema: z.object({
     kind: z.literal("mapped-category"),
     ...baseFieldShape,
+    includeInSubmission: z.boolean().optional().default(false),
     options: z.array(mappedCategoryOptionSchema).min(1),
   }),
   getDefaultValue(config) {

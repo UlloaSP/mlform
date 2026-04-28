@@ -45,6 +45,10 @@ export const shouldIncludeFieldInSubmission = (
   field: SubmissionField,
   resolveInactiveFieldPolicy: (field: SubmissionField) => "include" | "omit" | "reset-on-hide",
 ): boolean => {
+  if (field.config.includeInSubmission === false) {
+    return false;
+  }
+
   const policy = resolveInactiveFieldPolicy(field);
   const state = field.state;
   const isInactive = !state.visible || state.disabled;
