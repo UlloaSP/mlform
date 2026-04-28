@@ -4119,6 +4119,54 @@ describe("engine", () => {
       );
     });
 
+    it("accepts mapping keys written with underscores", () => {
+      const form = createForm({
+        schema: {
+          fields: [
+            {
+              kind: "mapped-category",
+              label: "Color",
+              options: [
+                {
+                  label: "Rojo",
+                  value: "red",
+                  mapping: { is_red: 1, is_green: 0, is_blue: 0 },
+                },
+              ],
+            },
+            {
+              kind: "number",
+              label: "is_red",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_green",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+            {
+              kind: "number",
+              label: "is_blue",
+              hidden: true,
+              inactiveFieldPolicy: "include",
+            },
+          ],
+        },
+        registry: createBuiltinRegistry(),
+        transport: {
+          submit: vi.fn().mockResolvedValue({ raw: {} }),
+        },
+      });
+
+      form.getField("color")!.setValue("red");
+
+      expect(form.getField("is-red")!.state.value).toBe(1);
+      expect(form.getField("is-green")!.state.value).toBe(0);
+      expect(form.getField("is-blue")!.state.value).toBe(0);
+    });
+
     it("descriptor uses category-field component", () => {
       const form = createMappedCategoryForm();
       const master = form.getField("color")!;

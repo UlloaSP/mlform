@@ -16,6 +16,7 @@ import {
 } from "./state";
 import { createFormSubmitter } from "./submission";
 import { createFormValidator } from "./validation";
+import { slugify } from "./utils";
 import { cloneValue } from "./values";
 import type {
   CreateFormConfig,
@@ -159,6 +160,9 @@ export const createForm = (config: CreateFormConfig): FormController => {
   const fieldMap = new Map<string, InternalFieldController>(
     fields.map((field) => [field.id, field]),
   );
+  const resolveMappedTargetField = (targetId: string): InternalFieldController | undefined => {
+    return fieldMap.get(targetId) ?? fieldMap.get(slugify(targetId));
+  };
 
   // Build mapped-category lookup and validate mapping targets
   const mappedCategoryConfigs = new Map<
@@ -174,7 +178,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
       for (const option of fieldConfig.options) {
         if (option.mapping) {
           for (const targetId of Object.keys(option.mapping)) {
-            if (!fieldMap.has(targetId)) {
+            if (!resolveMappedTargetField(targetId)) {
               throw new EngineError(
                 `mapped-category "${field.id}": mapping references unknown field "${targetId}".`,
               );
@@ -198,7 +202,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
     if (!selectedOption?.mapping) return;
 
     for (const [targetId, targetValue] of Object.entries(selectedOption.mapping)) {
-      const targetField = fieldMap.get(targetId);
+      const targetField = resolveMappedTargetField(targetId);
       if (!targetField) {
         throw new EngineError(
           `mapped-category "${fieldId}": target field "${targetId}" not found in schema.`,
@@ -223,7 +227,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
         }
       }
 
-      const currentState = store.getState().fieldStates[targetId];
+      const currentState = store.getState().fieldStates[targetField.id];
       if (currentState) {
         targetField.commitState({
           ...currentState,

@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
