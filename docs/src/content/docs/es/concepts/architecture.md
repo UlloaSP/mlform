@@ -12,7 +12,12 @@ MLForm se divide en cuatro superficies publicas.
 | Primitives    | `mlform/primitives`     | Web Components integrados y registry de renderers.               |
 | Design system | `mlform/design-system`  | Themes, recipes, resolucion de tokens e integracion con el host. |
 
-Usa el kit en codigo de aplicacion. Baja a engine o primitives solo para renderers, registries o capas de integracion personalizadas.
+Usa el kit en codigo de aplicacion. Ahora expone:
+
+- `mountForm()`, `mountWizardForm()`, `mountTabsForm()` y `mountAccordionForm()` para layouts integrados
+- `createFormView()` para layouts headless personalizados
+
+Baja a engine o primitives solo para renderers, registries o capas de integracion personalizadas.
 
 ```ts
 import { createJsonTransport, mountForm } from "mlform";

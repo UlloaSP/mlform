@@ -1,0 +1,128 @@
+---
+type Props = {
+  locale: "en" | "es";
+};
+
+import showcaseEntryUrl from "../lib/layout-showcase-entry.ts?url";
+
+const { locale } = Astro.props;
+
+const copy =
+  locale === "es"
+    ? {
+        routeId: "layout-showcase-live-es",
+        intro:
+          "La página de abajo monta las cinco variantes en vivo con el mismo schema, el mismo report y el mismo transport determinista.",
+        noteTitle: "Qué demuestra",
+        noteBody:
+          "En MLForm, el schema define la semántica y el layout define la presentación. El engine y el transport siguen siendo los mismos mientras cambia la experiencia del host.",
+        cards: [
+          ["Página única", "Camino rápido por defecto, sin contrato de layout extra.", "one-page"],
+          ["Wizard", "Flujo guiado por pasos con validación entre secciones.", "wizard"],
+          ["Tabs", "Navegación libre con shell built-in de estilo aplicación.", "tabs"],
+          [
+            "Accordion",
+            "Divulgación progresiva densa, con varias secciones abiertas.",
+            "accordion",
+          ],
+          [
+            "Shell headless personalizada",
+            "Chrome propio del host construido con `createFormView()` y primitive frames.",
+            "custom",
+          ],
+        ] as const,
+        usageTitle: "Cuándo usar cada uno",
+        fitLabel: "Mejor encaje",
+        usage: [
+          ["`mountForm()`", "Flujo simple de envío en una sola página."],
+          ["`mountWizardForm()`", "Onboarding lineal, compliance o pasos con revisión."],
+          [
+            "`mountTabsForm()`",
+            "Formularios estilo aplicación donde el usuario puede saltar libremente.",
+          ],
+          [
+            "`mountAccordionForm()`",
+            "Layouts densos o mobile-first con divulgación progresiva.",
+          ],
+          ["`createFormView()`", "Shells específicas del producto, sidebars, dashboards o embebidos."],
+        ] as const,
+      }
+    : {
+        routeId: "layout-showcase-live-en",
+        intro:
+          "The page below mounts all five variants live with the same schema, the same report, and the same deterministic mock transport.",
+        noteTitle: "What this proves",
+        noteBody:
+          "In MLForm, schema defines semantics and layout defines presentation. The engine and transport stay the same while the host experience changes.",
+        cards: [
+          ["One-page", "Fast default path with no extra layout contract.", "one-page"],
+          ["Wizard", "Guided step flow with validation gates between sections.", "wizard"],
+          ["Tabs", "Free navigation with a built-in application-style shell.", "tabs"],
+          ["Accordion", "Dense progressive disclosure with multi-open sections.", "accordion"],
+          [
+            "Custom headless shell",
+            "Host-owned chrome built from `createFormView()` and primitive frames.",
+            "custom",
+          ],
+        ] as const,
+        usageTitle: "When to use each",
+        fitLabel: "Best fit",
+        usage: [
+          ["`mountForm()`", "Simple one-page submission flow."],
+          ["`mountWizardForm()`", "Linear onboarding, compliance, or review gates."],
+          ["`mountTabsForm()`", "App-style forms where the user can jump around freely."],
+          ["`mountAccordionForm()`", "Dense or mobile-first layouts with progressive disclosure."],
+          ["`createFormView()`", "Product-specific shells, sidebars, dashboards, or embedded workflows."],
+        ] as const,
+      };
+---
+
+<p>{copy.intro}</p>
+
+<div class="surface-note">
+  <strong>{copy.noteTitle}</strong><br />
+  {copy.noteBody}
+</div>
+
+<div
+  id={copy.routeId}
+  class="layout-showcase-live"
+  data-layout-showcase-locale={locale}
+>
+  <div class="layout-showcase-grid">
+    {
+      copy.cards.map(([title, body, host]) => (
+        <section class="layout-showcase-card">
+          <div class="layout-showcase-copy">
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </div>
+          <div data-layout-showcase-host={host} class="layout-showcase-host"></div>
+        </section>
+      ))
+    }
+  </div>
+</div>
+
+<script type="module" src={showcaseEntryUrl}></script>
+
+<h2 id="when-to-use-each">{copy.usageTitle}</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Surface</th>
+      <th>{copy.fitLabel}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {
+      copy.usage.map(([surface, fit]) => (
+        <tr>
+          <td set:html={surface}></td>
+          <td>{fit}</td>
+        </tr>
+      ))
+    }
+  </tbody>
+</table>

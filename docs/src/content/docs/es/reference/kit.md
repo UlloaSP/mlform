@@ -5,8 +5,15 @@ description: APIs de MLForm orientadas a aplicaciones.
 
 Exports:
 
+- `createFormView(options)`
+- `mountWizardForm(container, options)`
+- `mountTabsForm(container, options)`
+- `mountAccordionForm(container, options)`
 - `mountForm(container, options)`
 - `unmountForm(mounted)`
+- `walkLayoutNodes(layout, visitor)`
+- `flattenLayoutNodes(layout)`
+- `collectLayoutReferences(layout)`
 - `createJsonTransport(options)`
 - `createRoutingTransport(options)`
 - `createFanoutTransport(options)`
@@ -29,8 +36,28 @@ Exports:
 
 Tipos:
 
+- `CreateFormViewOptions`
+- `FormLayoutConfig`
+- `FormViewController`
+- `FormViewSnapshot`
+- `FormViewState`
+- `WizardLayoutConfig`
+- `WizardStepConfig`
+- `WizardState`
+- `TabsLayoutConfig`
+- `TabLayoutConfig`
+- `TabsState`
+- `AccordionLayoutConfig`
+- `AccordionSectionConfig`
+- `AccordionState`
 - `MountFormOptions`
+- `MountWizardFormOptions`
+- `MountTabsFormOptions`
+- `MountAccordionFormOptions`
 - `MountedForm`
+- `MountedWizardForm`
+- `MountedTabsForm`
+- `MountedAccordionForm`
 - `JsonTransportOptions`
 - `JsonTransportMethod`
 - `RoutingTransportOptions`
@@ -51,6 +78,14 @@ Tipos:
 - `KitDesignSystemSnapshot`
 
 `MountFormOptions` requiere `schema` y un `transport`.
+
+`createFormView()` devuelve una API headless.
+
+`mountWizardForm()` monta el wizard oficial.
+
+`mountTabsForm()` monta el layout oficial de tabs.
+
+`mountAccordionForm()` monta el layout oficial de accordion.
 
 Compón routing, fan-out, fallback, auth, retries, streaming y transforms dentro de `transport`.
 

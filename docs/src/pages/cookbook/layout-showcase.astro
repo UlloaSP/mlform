@@ -1,0 +1,27 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import LayoutShowcasePage from "../../components/LayoutShowcasePage.astro";
+
+const frontmatter = {
+  title: "Layout Showcase",
+  description: "See one schema rendered as one-page, wizard, tabs, accordion, and custom headless host.",
+  editUrl: false as const,
+};
+---
+
+<StarlightPage
+  frontmatter={frontmatter}
+  hasSidebar={true}
+  headings={[]}
+>
+  <h2 id="overview">Overview</h2>
+  <ul>
+    <li><code>mountForm()</code> for one-page</li>
+    <li><code>mountWizardForm()</code> for guided steps</li>
+    <li><code>mountTabsForm()</code> for free section switching</li>
+    <li><code>mountAccordionForm()</code> for progressive disclosure</li>
+    <li><code>createFormView()</code> for a custom host shell</li>
+  </ul>
+
+  <LayoutShowcasePage locale="en" />
+</StarlightPage>

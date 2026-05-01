@@ -75,10 +75,6 @@
     "./design-system": {
       "types": "./dist/types/src/design-system/index.d.ts",
       "import": "./dist/mlform/design-system.mjs"
-    },
-    "./questionnaire": {
-      "types": "./dist/types/src/questionnaire/index.d.ts",
-      "import": "./dist/mlform/questionnaire.mjs"
     }
   },
   "publishConfig": {

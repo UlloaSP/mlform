@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { fileURLToPath } from "node:url";
 
 const sidebar = [
   {
@@ -67,7 +68,17 @@ const sidebar = [
     label: "Kit",
     collapsed: true,
     items: [
+      { label: "Headless Kit", slug: "kit/headless-kit" },
+      { label: "Layout Overview", slug: "kit/layout-overview" },
+      { label: "Layout Schema", slug: "kit/layout-schema" },
+      { label: "createFormView", slug: "kit/create-form-view" },
+      { label: "Custom Layouts", slug: "kit/custom-layouts" },
+      { label: "Layout Recipes", slug: "kit/layout-recipes" },
+      { label: "Layout Errors", slug: "kit/layout-errors" },
       { label: "mountForm", slug: "kit/mount-form" },
+      { label: "Wizard Layout", slug: "kit/wizard-layout" },
+      { label: "Tabs Layout", slug: "kit/tabs-layout" },
+      { label: "Accordion Layout", slug: "kit/accordion-layout" },
       { label: "Transport", slug: "kit/transport" },
       { label: "Lifecycle", slug: "kit/lifecycle" },
       { label: "Labels", slug: "kit/labels" },
@@ -117,6 +128,18 @@ const sidebar = [
     collapsed: true,
     items: [
       { label: "Authenticated Requests", slug: "cookbook/authenticated-requests" },
+      { label: "Custom Wizard", slug: "cookbook/custom-wizard-from-headless-kit" },
+      { label: "Tabbed Forms", slug: "cookbook/tabbed-forms" },
+      { label: "Tabs Built-in vs Headless", slug: "cookbook/tabs-built-in-vs-headless" },
+      { label: "Accordion Forms", slug: "cookbook/accordion-forms" },
+      { label: "Accordion Built-in vs Headless", slug: "cookbook/accordion-built-in-vs-headless" },
+      { label: "Layout Showcase", link: "/cookbook/layout-showcase/" },
+      { label: "Review Before Submit", slug: "cookbook/review-confirm-submit" },
+      { label: "Progressive Disclosure Layout", slug: "cookbook/progressive-disclosure-layout" },
+      { label: "Layout From Backend Metadata", slug: "cookbook/layout-from-backend-metadata" },
+      { label: "React Headless Layout", slug: "cookbook/react-headless-layout" },
+      { label: "Vue Headless Layout", slug: "cookbook/vue-headless-layout" },
+      { label: "Vanilla Headless Layout", slug: "cookbook/vanilla-dom-headless-layout" },
       { label: "Local Model Transport", slug: "cookbook/local-model-transport" },
       { label: "Multi-step Forms", slug: "cookbook/multi-step-forms" },
       { label: "Live Preview", slug: "cookbook/live-preview" },
@@ -153,6 +176,13 @@ const sidebar = [
 export default defineConfig({
   site: "https://ulloasp.github.io",
   base: "/mlform",
+  vite: {
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL("../src", import.meta.url)),
+      },
+    },
+  },
   integrations: [
     starlight({
       title: "MLForm",
