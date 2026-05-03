@@ -1,35 +1,52 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { createForm } from "@/engine";
+import { createForm } from "@/runtime";
+import type { PresentationRegistry } from "@/presentation";
+import { createMlRegistryPack } from "@/builtins-ml";
 import { kitErrorMessages } from "./constants";
 import {
-  cloneEngineRegistry,
+  cloneSchemaRegistry,
   resolveDesignSystemRegistry,
   resolvePrimitiveRegistry,
 } from "./defaults";
 import { resolveFormLayout } from "./layout";
 import { collectLayoutReferences, flattenLayoutNodes } from "./layout-utils";
-import { createIndexedPanelState } from "./panel-nav";
 import type {
-  AccordionState,
   CreateFormViewOptions,
   FormViewController,
-  FormViewExplanationItem,
-  FormViewFieldItem,
-  FormViewReportItem,
   FormViewSnapshot,
   FormViewState,
-  WizardState,
 } from "./types";
+import { buildFormViewSnapshot, createViewState } from "./view-snapshot";
+import {
+  assertAccordionLayout,
+  assertAccordionSection,
+  getActiveLayoutNodes,
+  validateCurrentWizardStep,
+} from "./view-navigation";
 
-export const createFormView = (options: CreateFormViewOptions): FormViewController => {
-  const engineRegistry = cloneEngineRegistry(options.registry);
+type InternalCreateFormViewOptions = CreateFormViewOptions & {
+  presentationRegistry?: PresentationRegistry;
+  behaviors?: import("@/runtime").RuntimeBehavior[];
+};
+
+export const createFormView = (options: InternalCreateFormViewOptions): FormViewController => {
+  const defaultPack =
+    !options.registry || !options.presentationRegistry || !options.behaviors
+      ? createMlRegistryPack()
+      : null;
+  const engineRegistry = options.registry
+    ? cloneSchemaRegistry(options.registry)
+    : defaultPack!.registry;
+  const presentationRegistry =
+    options.presentationRegistry?.clone() ?? defaultPack!.presentationRegistry;
   const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
+    behaviors: options.behaviors ?? defaultPack?.behaviors,
     transport: options.transport,
     initialValues: options.initialValues,
     validators: options.validators,
@@ -77,142 +94,8 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       nodeIndex.set(node.id, node);
     }
   }
-
-  const getWizardState = (): WizardState | null => {
-    const panel = createIndexedPanelState(
-      "wizard-step",
-      stepIndex,
-      wizardSteps.map((step) => step.id),
-    );
-    if (!panel) {
-      return null;
-    }
-
-    return {
-      stepIndex: panel.index,
-      stepCount: panel.count,
-      currentStepId: panel.currentId,
-      canNext: form.state.status !== "validating" && form.state.status !== "submitting",
-      canPrev: panel.canGoPrev,
-      isLastStep: panel.index === panel.count - 1,
-    };
-  };
-
-  const getTabsState = () => {
-    const panel = createIndexedPanelState(
-      "tab",
-      activeTabIndex,
-      tabs.map((tab) => tab.id),
-    );
-    if (!panel) {
-      return null;
-    }
-
-    return {
-      activeTabIndex: panel.index,
-      tabCount: panel.count,
-      currentTabId: panel.currentId,
-      canGoNext: panel.canGoNext,
-      canGoPrev: panel.canGoPrev,
-    };
-  };
-
-  const getAccordionState = (): AccordionState | null => {
-    if (accordionSections.length === 0) {
-      return null;
-    }
-
-    return {
-      openSectionIds: accordionSections
-        .map((section) => section.id)
-        .filter((sectionId) => openSectionIds.has(sectionId)),
-      sectionCount: accordionSections.length,
-    };
-  };
-
-  const getState = (): FormViewState => ({
-    form: form.state,
-    wizard: getWizardState(),
-    tabs: getTabsState(),
-    accordion: getAccordionState(),
-  });
-
-  const isVisibleInLayout = (stepId: string | null, tabId: string | null): boolean => {
-    if (resolvedLayout.layout.kind !== "wizard") {
-      if (resolvedLayout.layout.kind === "tabs") {
-        const currentTabId = tabs[activeTabIndex]?.id ?? null;
-        return tabId === currentTabId;
-      }
-
-      if (resolvedLayout.layout.kind === "accordion") {
-        return tabId !== null && openSectionIds.has(tabId);
-      }
-
-      return true;
-    }
-
-    const currentStepId = wizardSteps[stepIndex]?.id ?? null;
-    return stepId === currentStepId;
-  };
-
-  const buildSnapshot = (): FormViewSnapshot => {
-    const fields = form.fields.map<FormViewFieldItem>((field) => {
-      const stepId = resolvedLayout.maps.fieldStepIds.get(field.id) ?? null;
-      const tabId = resolvedLayout.maps.fieldTabIds.get(field.id) ?? null;
-      return {
-        id: field.id,
-        kind: field.kind,
-        config: field.config,
-        controller: field,
-        state: field.state,
-        descriptor: field.descriptor,
-        stepId,
-        tabId,
-        visibleInLayout: isVisibleInLayout(stepId, tabId),
-      };
-    });
-    const reports = form.reports.map<FormViewReportItem>((report) => {
-      const stepId = resolvedLayout.maps.reportStepIds.get(report.id) ?? null;
-      const tabId = resolvedLayout.maps.reportTabIds.get(report.id) ?? null;
-      return {
-        id: report.id,
-        kind: report.kind,
-        config: report.config,
-        controller: report,
-        state: report.state,
-        descriptor: report.descriptor,
-        stepId,
-        tabId,
-        visibleInLayout: isVisibleInLayout(stepId, tabId),
-      };
-    });
-    const explanations = form.explanations.map<FormViewExplanationItem>((explanation) => {
-      const stepId = resolvedLayout.maps.explanationStepIds.get(explanation.id) ?? null;
-      const tabId = resolvedLayout.maps.explanationTabIds.get(explanation.id) ?? null;
-      return {
-        id: explanation.id,
-        kind: explanation.kind,
-        config: explanation.config,
-        controller: explanation,
-        state: explanation.state,
-        descriptor: explanation.descriptor,
-        stepId,
-        tabId,
-        visibleInLayout: isVisibleInLayout(stepId, tabId),
-      };
-    });
-
-    return {
-      form: form.state,
-      layout: resolvedLayout.layout,
-      fields,
-      reports,
-      explanations,
-      wizard: getWizardState(),
-      tabs: getTabsState(),
-      accordion: getAccordionState(),
-    };
-  };
+  const getState = (): FormViewState =>
+    createViewState(form, resolvedLayout.layout, stepIndex, activeTabIndex, openSectionIds);
 
   const getSnapshot = (): FormViewSnapshot => {
     const currentFormState = form.state;
@@ -231,7 +114,14 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     cachedStepIndex = stepIndex;
     cachedActiveTabIndex = activeTabIndex;
     cachedOpenSectionKey = currentOpenSectionKey;
-    cachedSnapshot = buildSnapshot();
+    cachedSnapshot = buildFormViewSnapshot({
+      form,
+      presentationRegistry,
+      resolvedLayout,
+      stepIndex,
+      activeTabIndex,
+      openSectionIds,
+    });
     return cachedSnapshot;
   };
 
@@ -242,39 +132,9 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     }
   };
 
-  const validateCurrentStep = async (): Promise<boolean> => {
-    if (resolvedLayout.layout.kind !== "wizard") {
-      return false;
-    }
-
-    const currentStepId = wizardSteps[stepIndex]?.id;
-    if (!currentStepId) {
-      return false;
-    }
-
-    const stepFields = form.fields.filter(
-      (field) =>
-        resolvedLayout.maps.fieldStepIds.get(field.id) === currentStepId && field.state.visible,
-    );
-    const results = await Promise.all(stepFields.map((field) => field.validate()));
-    return results.every((result) => result.errors.length === 0);
-  };
-
   form.subscribe(() => {
     notify();
   });
-
-  const assertAccordionLayout = (): void => {
-    if (resolvedLayout.layout.kind !== "accordion") {
-      throw new TypeError(kitErrorMessages.nonAccordionToggleSection);
-    }
-  };
-
-  const assertKnownAccordionSection = (sectionId: string): void => {
-    if (!accordionSections.some((section) => section.id === sectionId)) {
-      throw new TypeError(kitErrorMessages.unknownAccordionSection(sectionId));
-    }
-  };
 
   return Object.freeze({
     form,
@@ -307,18 +167,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       return getSnapshot().explanations.filter((explanation) => explanation.visibleInLayout);
     },
     getActiveLayoutNodes() {
-      switch (resolvedLayout.layout.kind) {
-        case "single-page":
-          return resolvedLayout.layout.children;
-        case "wizard":
-          return resolvedLayout.layout.steps[stepIndex]?.children ?? [];
-        case "tabs":
-          return resolvedLayout.layout.tabs[activeTabIndex]?.children ?? [];
-        case "accordion":
-          return resolvedLayout.layout.sections
-            .filter((section) => openSectionIds.has(section.id))
-            .flatMap((section) => section.children);
-      }
+      return getActiveLayoutNodes(resolvedLayout, stepIndex, activeTabIndex, openSectionIds);
     },
     getLayoutReferences() {
       return layoutReferences;
@@ -343,7 +192,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
         return false;
       }
 
-      const valid = await validateCurrentStep();
+      const valid = await validateCurrentWizardStep(form, resolvedLayout, stepIndex);
       if (!valid) {
         return false;
       }
@@ -432,8 +281,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       return true;
     },
     toggleSection(sectionId: string) {
-      assertAccordionLayout();
-      assertKnownAccordionSection(sectionId);
+      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
       if (openSectionIds.has(sectionId)) {
         openSectionIds.delete(sectionId);
       } else {
@@ -442,27 +290,25 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       notify();
     },
     openSection(sectionId: string) {
-      assertAccordionLayout();
-      assertKnownAccordionSection(sectionId);
+      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
       if (!openSectionIds.has(sectionId)) {
         openSectionIds.add(sectionId);
         notify();
       }
     },
     closeSection(sectionId: string) {
-      assertAccordionLayout();
-      assertKnownAccordionSection(sectionId);
+      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
       if (openSectionIds.delete(sectionId)) {
         notify();
       }
     },
     openAllSections() {
-      assertAccordionLayout();
+      assertAccordionLayout(resolvedLayout);
       openSectionIds = new Set(accordionSections.map((section) => section.id));
       notify();
     },
     closeAllSections() {
-      assertAccordionLayout();
+      assertAccordionLayout(resolvedLayout);
       openSectionIds = new Set();
       notify();
     },

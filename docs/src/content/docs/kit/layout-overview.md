@@ -26,7 +26,7 @@ Use these surfaces:
 | `mountTabsForm()`      | built-in tabs UI                                                    |
 | `mountAccordionForm()` | built-in accordion UI                                               |
 | `createFormView()`     | headless app-facing API for custom layouts                          |
-| `mlform/engine`        | low-level state orchestration when the kit is still too opinionated |
+| `mlform/runtime`       | low-level state orchestration when the kit is still too opinionated |
 
 ## Why layout is external
 

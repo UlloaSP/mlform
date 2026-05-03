@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { css, LitElement } from "lit";
+import { LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
-import type { FieldController, FieldDescriptor, FieldStateSnapshot } from "@/engine";
+import type { FieldController, FieldStateSnapshot } from "@/runtime";
+import type { FieldDescriptor } from "@/presentation";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -14,173 +15,21 @@ import {
 } from "../constants";
 import type { PrimitiveFieldRenderContext, PrimitiveRegistry } from "../types";
 import { joinMessages, toText } from "../utils";
+import { fieldFrameStyles } from "./field-frame-styles";
+import { createFieldSuccessMessage, hasIntroducedValue } from "./field-frame-feedback";
 
 let fieldFrameSequence = 0;
 
-type CategoryOption = string | { label: string; value: string };
-
-const normalizeCategoryOption = (option: CategoryOption): { label: string; value: string } => {
-  return typeof option === "string" ? { label: option, value: option } : option;
-};
-
-const resolveFieldFeedbackComponent = (
-  component: string,
-  props: Record<string, unknown>,
-): string => {
-  if (component !== "declarative-field") {
-    return component;
-  }
-
-  switch (props.widget) {
-    case "text":
-      return "text-field";
-    case "number":
-      return "number-field";
-    case "boolean":
-      return "boolean-field";
-    case "select":
-      return "category-field";
-    case "date":
-      return "date-field";
-    case "series":
-      return "series-field";
-    default:
-      return component;
-  }
-};
-
 @customElement(primitiveTagNames.fieldFrame)
 export class PrimitiveFieldFrameElement extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    :host([hidden]) {
-      display: none;
-    }
-
-    .tile {
-      position: relative;
-      display: grid;
-      gap: 0.85rem;
-      overflow: hidden;
-      padding: 1.5rem 2rem;
-      border-radius: var(--mlf-field-radius, 12px);
-      border: var(--mlf-border-width, 1px) solid
-        var(--mlf-field-border, var(--mlf-color-border, #e2e8f0));
-      background: var(--mlf-field-bg, var(--mlf-color-surface, #ffffff));
-      box-shadow: 0 4px 12px var(--mlf-field-shadow, rgba(0, 0, 0, 0.04));
-      transition: box-shadow 0.2s ease;
-    }
-
-    .tile:hover {
-      box-shadow: 0 6px 18px var(--mlf-field-shadow-hover, rgba(0, 0, 0, 0.06));
-    }
-
-    .tile::before {
-      content: "";
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 6px;
-      background: var(--mlf-field-accent, var(--mlf-color-accent, #1e40af));
-      transition: background 0.2s ease;
-    }
-
-    .tile.success::before {
-      background: var(--mlf-field-accent-success, var(--mlf-color-success, #059669));
-    }
-
-    .tile.error::before {
-      background: var(--mlf-field-accent-error, var(--mlf-color-danger, #dc2626));
-    }
-
-    .header {
-      display: flex;
-      align-items: start;
-      justify-content: space-between;
-      gap: 1rem;
-      min-width: 0;
-    }
-
-    .label {
-      margin: 0;
-      min-width: 0;
-      color: var(--mlf-field-label-color, var(--mlf-color-text, #0f172a));
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.2;
-      overflow-wrap: anywhere;
-    }
-
-    .help-btn {
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background: var(--mlf-help-btn-bg, var(--mlf-color-accent, #1e40af));
-      color: var(--mlf-help-btn-color, #ffffff);
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .help-btn:hover:not(:disabled) {
-      background: var(--mlf-help-btn-bg-hover, var(--mlf-color-accent-hover, #1d4ed8));
-    }
-
-    .help-btn:disabled {
-      background: var(--mlf-help-btn-bg-disabled, var(--mlf-color-text-muted, #475569));
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    .description {
-      display: none;
-      min-width: 0;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      color: var(--mlf-field-description-color, var(--mlf-color-secondary, #475569));
-      white-space: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .description.show {
-      display: block;
-    }
-
-    .control-slot {
-      min-width: fit-content;
-    }
-
-    .feedback {
-      min-width: 0;
-      font-size: 0.8rem;
-      line-height: 1.5;
-      white-space: normal;
-      overflow-wrap: anywhere;
-    }
-
-    .feedback.success {
-      color: var(--mlf-field-feedback-success, var(--mlf-color-success, #059669));
-    }
-
-    .feedback.error {
-      color: var(--mlf-field-feedback-error, var(--mlf-color-danger, #dc2626));
-    }
-  `;
+  static styles = fieldFrameStyles;
 
   @property({ attribute: false }) accessor controller: FieldController | undefined;
+  @property({ attribute: false }) accessor descriptor: FieldDescriptor | null = null;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
-  @state() private accessor descriptor: FieldDescriptor | null = null;
+  @state() private accessor resolvedDescriptor: FieldDescriptor | null = null;
   @state() private accessor fieldState: FieldStateSnapshot | null = null;
   @state() private accessor descriptionVisible = false;
 
@@ -192,9 +41,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
   #memoizedErrorId = "";
 
   readonly #binding = new ControllerBinding<FieldController>(this, (ctrl) => {
-    this.descriptor = ctrl?.descriptor ?? null;
+    this.resolvedDescriptor = this.descriptor;
     this.fieldState = ctrl?.state ?? null;
-    if (!this.descriptor?.props.description) {
+    if (!this.resolvedDescriptor?.props.description) {
       this.descriptionVisible = false;
     }
   });
@@ -203,10 +52,18 @@ export class PrimitiveFieldFrameElement extends LitElement {
     if (changedProperties.has("controller")) {
       this.#binding.bind(this.controller);
     }
+
+    if (changedProperties.has("descriptor")) {
+      this.resolvedDescriptor = this.descriptor;
+    }
+
+    if (changedProperties.has("descriptor") && !this.resolvedDescriptor?.props.description) {
+      this.descriptionVisible = false;
+    }
   }
 
   render() {
-    const descriptor = this.descriptor;
+    const descriptor = this.resolvedDescriptor;
     const state = this.fieldState;
 
     if (!descriptor || !state || !state.visible) {
@@ -217,16 +74,21 @@ export class PrimitiveFieldFrameElement extends LitElement {
     const component = this.registry?.resolveField(descriptor.component);
     const label = toText(props.label, this.controller?.config.label ?? "");
     const description = toText(props.description);
-    const hasIntroducedValue = this.#hasIntroducedValue(descriptor.component, props, state);
+    const hasValue = hasIntroducedValue(
+      descriptor.component,
+      props,
+      state,
+      this.controller?.config.defaultValue,
+    );
     const errorLabel = joinMessages(state.errors);
-    const successLabel = this.#createSuccessMessage(descriptor.component, props, state);
-    const showError = errorLabel.length > 0 && (state.touched || hasIntroducedValue);
+    const successLabel = createFieldSuccessMessage(descriptor.component, props, state, this.text);
+    const showError = errorLabel.length > 0 && (state.touched || hasValue);
     const feedback = showError
       ? { tone: "error", message: errorLabel }
-      : hasIntroducedValue && state.valid
+      : hasValue && state.valid
         ? { tone: "success", message: successLabel }
         : null;
-    const toneClass = showError ? "error" : hasIntroducedValue && state.valid ? "success" : "";
+    const toneClass = showError ? "error" : hasValue && state.valid ? "success" : "";
 
     // errorId is stable (always present per field instance) so aria-describedby
     // never flickers — the aria-live on the sr-only span handles announcements.
@@ -293,10 +155,11 @@ export class PrimitiveFieldFrameElement extends LitElement {
   #renderResolvedRenderer(tagName: string, controlId: string, errorId: string) {
     const tag = unsafeStatic(tagName);
     const context = this.#getContext(controlId, errorId);
+    const descriptor = this.resolvedDescriptor;
     return html`
       <${tag}
         .controller=${this.controller}
-        .descriptor=${this.descriptor}
+        .descriptor=${descriptor}
         .context=${context}
         .text=${this.text}
       ></${tag}>
@@ -305,7 +168,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
   #getContext(controlId: string, errorId: string): PrimitiveFieldRenderContext | undefined {
     if (
-      this.descriptor === this.#memoizedDescriptor &&
+      this.resolvedDescriptor === this.#memoizedDescriptor &&
       this.fieldState === this.#memoizedFieldState &&
       controlId === this.#memoizedControlId &&
       errorId === this.#memoizedErrorId
@@ -314,12 +177,12 @@ export class PrimitiveFieldFrameElement extends LitElement {
     }
 
     const context = this.#createContext(
-      this.descriptor?.props ?? {},
+      this.resolvedDescriptor?.props ?? {},
       this.fieldState,
       controlId,
       errorId,
     );
-    this.#memoizedDescriptor = this.descriptor;
+    this.#memoizedDescriptor = this.resolvedDescriptor;
     this.#memoizedFieldState = this.fieldState;
     this.#memoizedControlId = controlId;
     this.#memoizedErrorId = errorId;
@@ -364,95 +227,8 @@ export class PrimitiveFieldFrameElement extends LitElement {
     };
   }
 
-  #createSuccessMessage(
-    component: string,
-    props: Record<string, unknown>,
-    state: FieldStateSnapshot,
-  ): string {
-    const text = this.text;
-    const resolvedComponent = resolveFieldFeedbackComponent(component, props);
-
-    switch (resolvedComponent) {
-      case "text-field": {
-        const value = typeof props.value === "string" ? props.value : "";
-        return value.length > 0 ? text.fieldTextRecorded(value.length) : text.fieldReady;
-      }
-      case "number-field": {
-        const unit = typeof props.unit === "string" ? ` ${props.unit}` : "";
-        return state.value === null || state.value === undefined || state.value === ""
-          ? text.fieldReady
-          : text.fieldValidNumber(state.value, unit);
-      }
-      case "category-field": {
-        const selected = this.#resolveCategorySelection(props, state.value);
-        return selected ? text.fieldCategorySelected(selected.label) : text.fieldSelectionReady;
-      }
-      case "date-field": {
-        const value = typeof props.value === "string" ? props.value : "";
-        return value.length > 0 ? text.fieldSelectedDate(value) : text.fieldDateReady;
-      }
-      case "boolean-field": {
-        const trueLabel = toText(props.trueLabel, text.booleanTrue);
-        const falseLabel = toText(props.falseLabel, text.booleanFalse);
-        return text.fieldBooleanSelection(state.value === true ? trueLabel : falseLabel);
-      }
-      case "series-field": {
-        const points = Array.isArray(props.value) ? props.value.length : 0;
-        return text.fieldSeriesRecorded(points);
-      }
-      default:
-        return text.fieldReady;
-    }
-  }
-
-  #hasIntroducedValue(
-    component: string,
-    props: Record<string, unknown>,
-    state: FieldStateSnapshot,
-  ): boolean {
-    const resolvedComponent = resolveFieldFeedbackComponent(component, props);
-
-    switch (resolvedComponent) {
-      case "text-field":
-        return typeof state.value === "string" && state.value.trim().length > 0;
-      case "date-field":
-        return typeof props.value === "string" && props.value.trim().length > 0;
-      case "category-field":
-        return this.#resolveCategorySelection(props, state.value) !== null;
-      case "number-field":
-        return (
-          state.value !== null &&
-          state.value !== undefined &&
-          state.value !== "" &&
-          !(typeof state.value === "number" && Number.isNaN(state.value))
-        );
-      case "boolean-field":
-        return this.#hasExplicitConfiguredValue() || state.dirty || state.touched;
-      case "series-field":
-        return Array.isArray(props.value) && props.value.length > 0;
-      default:
-        return state.value !== null && state.value !== undefined && state.value !== "";
-    }
-  }
-
-  #resolveCategorySelection(
-    props: Record<string, unknown>,
-    value: unknown,
-  ): { label: string; value: string } | null {
-    if (typeof value !== "string" || value.length === 0) {
-      return null;
-    }
-
-    const options = Array.isArray(props.options) ? (props.options as CategoryOption[]) : [];
-    return options.map(normalizeCategoryOption).find((option) => option.value === value) ?? null;
-  }
-
-  #hasExplicitConfiguredValue(): boolean {
-    return this.controller?.config.defaultValue !== undefined;
-  }
-
   #toggleDescription = (): void => {
-    if (!this.descriptor?.props.description) {
+    if (!this.resolvedDescriptor?.props.description) {
       return;
     }
 

@@ -3,7 +3,8 @@
 
 import { css, LitElement, type CSSResultGroup } from "lit";
 import { property } from "lit/decorators.js";
-import type { ReportController, ReportDescriptor } from "@/engine";
+import type { ReportDescriptor } from "@/presentation";
+import type { ReportController } from "@/runtime";
 import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type {
   PrimitiveReportRenderContext,

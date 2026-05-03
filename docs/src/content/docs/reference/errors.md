@@ -3,13 +3,13 @@ title: Errors
 description: Error classes thrown by MLForm engine and kit operations.
 ---
 
-| Error                    | Import path     | When it appears                                            |
-| ------------------------ | --------------- | ---------------------------------------------------------- |
-| `EngineError`            | `mlform/engine` | Base class for engine failures.                            |
-| `RegistryError`          | `mlform/engine` | Duplicate registration or missing registry contract.       |
-| `ValidationError`        | `mlform/engine` | `submit()` was blocked by validation. Includes `result`.   |
-| `SubmitError`            | `mlform/engine` | Transport or response processing failed. Includes `cause`. |
-| `SubmissionAbortedError` | `mlform/engine` | Pending submit was aborted.                                |
+| Error                    | Import path      | When it appears                                            |
+| ------------------------ | ---------------- | ---------------------------------------------------------- |
+| `EngineError`            | `mlform/runtime` | Base class for engine failures.                            |
+| `RegistryError`          | `mlform/runtime` | Duplicate registration or missing registry contract.       |
+| `ValidationError`        | `mlform/runtime` | `submit()` was blocked by validation. Includes `result`.   |
+| `SubmitError`            | `mlform/runtime` | Transport or response processing failed. Includes `cause`. |
+| `SubmissionAbortedError` | `mlform/runtime` | Pending submit was aborted.                                |
 
 ```ts
 try {

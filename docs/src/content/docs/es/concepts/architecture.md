@@ -8,7 +8,7 @@ MLForm se divide en cuatro superficies publicas.
 | Superficie    | Import                  | Responsabilidad                                                  |
 | ------------- | ----------------------- | ---------------------------------------------------------------- |
 | Kit           | `mlform` o `mlform/kit` | Ruta por defecto para montar formularios en aplicaciones.        |
-| Engine        | `mlform/engine`         | Estado, validacion, registry, hooks y flujo de envio.            |
+| Engine        | `mlform/runtime`        | Estado, validacion, registry, hooks y flujo de envio.            |
 | Primitives    | `mlform/primitives`     | Web Components integrados y registry de renderers.               |
 | Design system | `mlform/design-system`  | Themes, recipes, resolucion de tokens e integracion con el host. |
 
@@ -21,7 +21,7 @@ Baja a engine o primitives solo para renderers, registries o capas de integracio
 
 ```ts
 import { createJsonTransport, mountForm } from "mlform";
-import type { FormSchema } from "mlform/engine";
+import type { FormSchema } from "mlform/runtime";
 
 const schema: FormSchema = {
   fields: [{ kind: "text", label: "Prompt" }],

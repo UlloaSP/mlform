@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { booleanFieldDefinition, numberFieldDefinition, seriesFieldDefinition } from "@/engine";
+import { booleanFieldDefinition, numberFieldDefinition, seriesFieldDefinition } from "@/runtime";
 
 describe("builtin definitions", () => {
   it("keeps number field normalization behavior", () => {
@@ -18,7 +18,7 @@ describe("builtin definitions", () => {
       falseLabel: "Off",
     });
 
-    const descriptor = booleanFieldDefinition.describe(
+    const descriptor = booleanFieldDefinition.describe!(
       { ...config, id: "enabled" },
       {
         fieldId: "enabled",

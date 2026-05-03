@@ -3,12 +3,13 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createBuiltinRegistry, defineExplanationKind } from "@/engine";
+import { createMlRegistryPack } from "@/builtins-ml";
+import { defineExplanationKind } from "@/runtime";
 import { collectLayoutReferences, createFormView, flattenLayoutNodes } from "@/kit";
 
 describe("kit view", () => {
   it("builds an automatic single-page layout when layout is omitted", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     registry.registerExplanation(
       defineExplanationKind({
         kind: "mock-explanation",
@@ -106,7 +107,7 @@ describe("kit view", () => {
   });
 
   it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     registry.registerExplanation(
       defineExplanationKind({
         kind: "mock-explanation",

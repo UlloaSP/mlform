@@ -6,11 +6,12 @@ description: Usa MLForm sin la UI del kit cuando necesitas control headless.
 El engine mantiene schema normalizado, estado de campos, validación, condiciones, submit, informes y suscripciones.
 
 ```ts
-import { createBuiltinRegistry, createForm } from "mlform/engine";
+import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createForm } from "mlform/runtime";
 
 const form = createForm({
   schema,
-  registry: createBuiltinRegistry(),
+  registry: createMlRegistryPack().registry,
   transport: {
     async submit(request) {
       return {

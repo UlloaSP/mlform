@@ -8,20 +8,20 @@ MLForm is split into four public surfaces.
 | Surface       | Import                   | Responsibility                                           |
 | ------------- | ------------------------ | -------------------------------------------------------- |
 | Kit           | `mlform` or `mlform/kit` | Default mount path for applications.                     |
-| Engine        | `mlform/engine`          | State, validation, registry, hooks, and submit flow.     |
+| Engine        | `mlform/runtime`         | State, validation, registry, hooks, and submit flow.     |
 | Primitives    | `mlform/primitives`      | Built-in Web Components and primitive renderer registry. |
 | Design system | `mlform/design-system`   | Themes, recipes, token resolution, and host integration. |
 
 Use the kit for application code. It now exposes four app-facing paths:
 
 - `mountForm()`, `mountWizardForm()`, `mountTabsForm()`, and `mountAccordionForm()` for built-in DOM layouts
-- `createFormView()` for headless layout control without dropping to `mlform/engine`
+- `createFormView()` for headless layout control without dropping to `mlform/runtime`
 
 Drop to engine or primitives only when building custom renderers, registries, or integration layers.
 
 ```ts
 import { createJsonTransport, mountForm } from "mlform";
-import type { FormSchema } from "mlform/engine";
+import type { FormSchema } from "mlform/runtime";
 
 const schema: FormSchema = {
   fields: [{ kind: "text", label: "Prompt" }],

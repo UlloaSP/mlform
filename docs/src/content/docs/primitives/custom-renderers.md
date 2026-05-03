@@ -5,7 +5,7 @@ description: Map engine descriptors to custom Web Components.
 
 Use a primitive registry when you intentionally opt into the advanced path and return a custom `component` value from a low-level definition.
 
-For most custom kinds, prefer `defineFieldKind`, `defineReportKind`, or `defineExplanationKind` from `mlform/engine`. Those helpers use built-in declarative renderers and do not require primitive registry wiring.
+For most custom kinds, prefer `defineFieldKind`, `defineReportKind`, or `defineExplanationKind` from `mlform/runtime`. Those helpers use built-in declarative renderers and do not require primitive registry wiring.
 
 ```ts
 import { createBuiltinPrimitiveRegistry } from "mlform/primitives";

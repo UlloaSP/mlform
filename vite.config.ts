@@ -22,7 +22,11 @@ export default defineConfig({
     lib: {
       entry: {
         mlform: resolve(rootDir, "src/index.ts"),
-        "mlform/engine": resolve(rootDir, "src/engine/index.ts"),
+        "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
+        "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
+        "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
+        "mlform/builtins-ml": resolve(rootDir, "src/builtins-ml/index.ts"),
+        "mlform/behaviors": resolve(rootDir, "src/behaviors/index.ts"),
         "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
         "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
         "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
@@ -48,8 +52,12 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       mlform: resolve(rootDir, "src/index.ts"),
+      "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
+      "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
+      "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
+      "mlform/builtins-ml": resolve(rootDir, "src/builtins-ml/index.ts"),
+      "mlform/behaviors": resolve(rootDir, "src/behaviors/index.ts"),
       "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
-      "mlform/engine": resolve(rootDir, "src/engine/index.ts"),
       "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
       "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
       "mlform/transport": resolve(rootDir, "src/transport/index.ts"),

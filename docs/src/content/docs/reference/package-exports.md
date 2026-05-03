@@ -7,7 +7,7 @@ description: Public import paths exposed by MLForm.
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `mlform`               | Application-facing kit exports, including `mountForm`, `mountWizardForm`, `mountTabsForm`, `mountAccordionForm`, and `createFormView`. |
 | `mlform/kit`           | Same kit surface with explicit import path.                                                                                            |
-| `mlform/engine`        | Core form controller, registry, schema, transport, and types.                                                                          |
+| `mlform/runtime`       | Core form controller, registry, schema, transport, and types.                                                                          |
 | `mlform/primitives`    | Primitive Web Components and renderer registry.                                                                                        |
 | `mlform/design-system` | Theme, recipe, token, and runtime design system APIs.                                                                                  |
 

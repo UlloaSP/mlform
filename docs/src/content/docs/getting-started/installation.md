@@ -24,7 +24,7 @@ import { mountForm } from "mlform";
 Use subpath imports only when you need a specific layer:
 
 ```ts
-import { createForm } from "mlform/engine";
+import { createForm } from "mlform/runtime";
 import { createPrimitiveRegistry } from "mlform/primitives";
 import { defineTheme } from "mlform/design-system";
 ```

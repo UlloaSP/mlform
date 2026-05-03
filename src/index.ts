@@ -175,25 +175,27 @@ export type {
   PrimitiveReportRenderContext,
   PrimitiveReportRendererElement,
 } from "@/primitives";
+export { createExplanationController, executeExplanations, executeFormPipeline } from "@/runtime";
 export {
-  createExplanationController,
+  createRegistry,
   defineExplanationDefinition,
+  defineFieldDefinition,
+  defineReportDefinition,
+} from "@/schema";
+export {
   defineExplanationKind,
   defineFieldKind,
   defineReportKind,
-  executeExplanations,
-  executeFormPipeline,
-} from "@/engine";
+  toPresentationNodes,
+} from "@/presentation";
+export { createBuiltinMlRegistry, createMlRegistryPack } from "@/builtins-ml";
+export { createMappedCategoryBehavior } from "@/behaviors";
+export { createDefaultRegistryPack } from "@/packs";
 export type {
   AfterExplanationContext,
-  DeclarativeExplanationKind,
-  DeclarativeFieldKind,
-  DeclarativeReportKind,
   ExplanationConfig,
   ExplanationController,
   ExplanationDefinition,
-  ExplanationDescriptor,
-  ExplanationDescriptorContext,
   ExplanationErrorContext,
   ExplanationExecutionContext,
   ExplanationExecutionResult,
@@ -201,24 +203,35 @@ export type {
   ExplanationFetchFactory,
   ExplanationFetchRequest,
   ExplanationFetchTransport,
-  ExplanationRenderSpec,
-  ExplanationRenderSpecContext,
   ExplanationStateSnapshot,
   ExplanationStatus,
-  FieldRenderHints,
-  FieldRenderSpec,
-  FieldRenderSpecContext,
   FieldValidationFnContext,
   FieldValueAdapter,
-  FieldWidget,
   NormalizedExplanationConfig,
   PipelineArtifactAdapter,
   PipelineArtifactContext,
   PipelineResult,
   ExecuteFormPipelineOptions,
+  ReportResolveContext,
+} from "@/runtime";
+export type {
+  DeclarativeExplanationKind,
+  DeclarativeFieldKind,
+  DeclarativeReportKind,
+  ExplanationDescriptor,
+  ExplanationDescriptorContext,
+  ExplanationRenderSpec,
+  ExplanationRenderSpecContext,
+  FieldDescriptor,
+  FieldRenderHints,
+  FieldRenderSpec,
+  FieldRenderSpecContext,
+  FieldWidget,
+  PresentationContent,
   PresentationNode,
   PresentationSummary,
+  PresentationTone,
+  ReportDescriptor,
   ReportRenderSpec,
   ReportRenderSpecContext,
-  ReportResolveContext,
-} from "@/engine";
+} from "@/presentation";

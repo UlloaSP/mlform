@@ -7,7 +7,8 @@ Use `defineExplanationKind` when you want an explanation plugin with a fetch ada
 
 ```ts
 import { z } from "zod";
-import { createBuiltinRegistry, defineExplanationKind } from "mlform/engine";
+import { createMlRegistryPack } from "mlform/builtins-ml";
+import { defineExplanationKind } from "mlform/runtime";
 
 const shapExplanation = defineExplanationKind({
   kind: "shap",
@@ -48,7 +49,7 @@ const shapExplanation = defineExplanationKind({
   },
 });
 
-const registry = createBuiltinRegistry().registerExplanation(shapExplanation);
+const registry = createMlRegistryPack().registry.registerExplanation(shapExplanation);
 ```
 
 `fetch` receives the normalized config and returns the transport used by the explanation controller. `render.content` returns a small presentation tree, so you do not need a custom renderer for tables, notices, lists, metrics, or JSON payloads.

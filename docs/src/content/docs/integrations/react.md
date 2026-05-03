@@ -6,7 +6,7 @@ description: Mount MLForm from React with cleanup.
 ```tsx
 import { useEffect, useMemo, useRef } from "react";
 import { createJsonTransport, mountForm, type MountedForm } from "mlform";
-import type { FormSchema } from "mlform/engine";
+import type { FormSchema } from "mlform/runtime";
 
 export function PredictionForm() {
   const hostRef = useRef<HTMLDivElement>(null);

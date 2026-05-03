@@ -184,7 +184,7 @@ Built-in recipes:
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `mlform`               | Application-first API for mounting forms or building headless layouts with sensible defaults.                              |
 | `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `mountWizardForm`, `createFormView`, transport, labels, and lifecycle utilities. |
-| `mlform/engine`        | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
+| `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
 | `mlform/design-system` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
 | `mlform/transport`     | Transport composition, middleware, resilience policies, and orchestration helpers.                                         |
@@ -194,10 +194,11 @@ Built-in recipes:
 When built-in kinds are not enough, define your own field and report kinds without rewriting the normal rendering path.
 
 ```ts
-import { createBuiltinRegistry, defineFieldKind } from "mlform/engine";
+import { createMlRegistryPack } from "mlform/builtins-ml";
+import { defineFieldKind } from "mlform/runtime";
 import { z } from "zod";
 
-const registry = createBuiltinRegistry();
+const registry = createMlRegistryPack().registry;
 
 registry.registerField(
   defineFieldKind({

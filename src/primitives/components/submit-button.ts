@@ -3,7 +3,7 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { FormStatus } from "@/engine";
+import type { FormStatus } from "@/runtime";
 import { primitiveDefaultLabels, primitiveEventNames, primitiveTagNames } from "../constants";
 
 @customElement(primitiveTagNames.submitButton)

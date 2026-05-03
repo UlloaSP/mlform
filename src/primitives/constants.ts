@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FormStatus, ReportStatus } from "@/engine";
+import type { FormStatus, ReportStatus } from "@/runtime";
 
 export const primitiveTagNames = {
   form: "mlf-form",
