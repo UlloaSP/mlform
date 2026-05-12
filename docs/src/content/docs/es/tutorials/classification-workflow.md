@@ -1,6 +1,6 @@
 ---
 title: Flujo de clasificación
-description: Renderiza etiquetas, confianza, probabilidades y detalles.
+description: Renderiza etiquetas, confianza y probabilidades.
 ---
 
 Usa un informe `classifier` cuando el modelo elige una etiqueta o clase.
@@ -20,9 +20,6 @@ Respuesta recomendada:
       "probabilities": {
         "Approved": 0.91,
         "Rejected": 0.09
-      },
-      "details": {
-        "threshold": 0.75
       }
     }
   }

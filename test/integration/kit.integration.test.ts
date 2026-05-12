@@ -3,14 +3,14 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
+import { createMlRegistryPack } from "@/builtins-ml";
 import {
   SubmissionAbortedError,
-  createBuiltinRegistry,
   defineExplanationDefinition,
   defineExplanationKind,
   defineFieldKind,
   defineReportKind,
-} from "@/engine";
+} from "@/runtime";
 import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
@@ -744,7 +744,7 @@ describe("kit integration", () => {
   it("mounts explanation plugins, renders explanation panels only after submit, and triggers fetch after submit", async () => {
     const explanationResult = { feature_importance: { name: 0.9 } };
     const transportSubmit = vi.fn().mockResolvedValue(explanationResult);
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -821,7 +821,7 @@ describe("kit integration", () => {
   });
 
   it("supports unregisterExplanation on the engine registry", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     const def = defineExplanationDefinition({
       kind: "shap",
@@ -850,7 +850,7 @@ describe("kit integration", () => {
         { feature: "savings", score: 0.31 },
       ],
     });
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerField(
       defineFieldKind({
@@ -968,7 +968,7 @@ describe("kit integration", () => {
 
     const scoreInput = getDeclarativeFieldControlHost(mounted.host, 0) as HTMLInputElement;
     expect(scoreInput.getAttribute("aria-label")).toContain("Score");
-    expect(scoreInput.value).toBe("85");
+    expect(mounted.form.getField("score")?.state.value).toBe(85);
 
     await mounted.form.submit();
     await flush();

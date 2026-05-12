@@ -15,7 +15,7 @@ const schema = {
 };
 ```
 
-`classifier` acepta `labels` y `details`. `regressor` acepta `unit` y `precision`.
+`classifier` acepta `labels` y `showClassProbabilities`. `regressor` acepta `unit` y `precision`.
 
 Usa `source` cuando la clave del backend no coincida con el id:
 

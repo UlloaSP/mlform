@@ -7,7 +7,8 @@ Use `defineReportKind` for the normal extension path. It lets you resolve payloa
 
 ```ts
 import { z } from "zod";
-import { createBuiltinRegistry, defineReportKind } from "mlform/engine";
+import { createMlRegistryPack } from "mlform/builtins-ml";
+import { defineReportKind } from "mlform/runtime";
 
 const riskSummaryReport = defineReportKind({
   kind: "risk-summary",
@@ -31,7 +32,7 @@ const riskSummaryReport = defineReportKind({
   },
 });
 
-const registry = createBuiltinRegistry().registerReport(riskSummaryReport);
+const registry = createMlRegistryPack().registry.registerReport(riskSummaryReport);
 ```
 
 `render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.

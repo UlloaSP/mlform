@@ -7,7 +7,8 @@ import {
   type DesignSystemRegistry,
   mergeDesignSystemConfig,
 } from "@/design-system";
-import { createBuiltinRegistry, createRegistry, type Registry } from "@/engine";
+import { createMlRegistryPack } from "@/builtins-ml";
+import { createRegistry, type Registry } from "@/runtime";
 import { createBuiltinPrimitiveRegistry, type PrimitiveRegistry } from "@/primitives";
 import { primitiveDefaultLabels } from "@/primitives/constants";
 import type { KitLabels } from "./types";
@@ -22,9 +23,9 @@ export const defaultKitDesignSystem: DesignSystemConfig = {
   recipe: "default",
 };
 
-export const cloneEngineRegistry = (registry?: Registry): Registry => {
+export const cloneSchemaRegistry = (registry?: Registry): Registry => {
   if (!registry) {
-    return createBuiltinRegistry();
+    return createMlRegistryPack().registry;
   }
 
   const next = createRegistry();

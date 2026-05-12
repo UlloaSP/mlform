@@ -6,11 +6,11 @@ import { customElement, property, state } from "lit/decorators.js";
 import { html as staticHtml, unsafeStatic } from "lit/static-html.js";
 import type {
   ExplanationController,
-  ExplanationDescriptor,
   ExplanationFetchRequest,
   ExplanationStateSnapshot,
   SubmitResult,
-} from "@/engine";
+} from "@/runtime";
+import type { ExplanationDescriptor } from "@/presentation";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -101,7 +101,8 @@ export class PrimitiveExplanationPanelElement extends LitElement {
   @property({ attribute: false }) accessor lastResult: SubmitResult | null = null;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
-  @state() private accessor descriptor: ExplanationDescriptor | null = null;
+  @property({ attribute: false }) accessor descriptor: ExplanationDescriptor | null = null;
+  @state() private accessor resolvedDescriptor: ExplanationDescriptor | null = null;
   @state() private accessor explanationState: ExplanationStateSnapshot | null = null;
 
   readonly #instanceId = ++explanationPanelSequence;
@@ -112,13 +113,17 @@ export class PrimitiveExplanationPanelElement extends LitElement {
   #memoizedDescriptor: ExplanationDescriptor | null = null;
 
   readonly #binding = new ControllerBinding<ExplanationController>(this, (ctrl) => {
-    this.descriptor = ctrl?.descriptor ?? null;
+    this.resolvedDescriptor = this.descriptor;
     this.explanationState = ctrl?.state ?? null;
   });
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has("controller")) {
       this.#binding.bind(this.controller);
+    }
+
+    if (changedProperties.has("descriptor")) {
+      this.resolvedDescriptor = this.descriptor;
     }
 
     if (changedProperties.has("lastResult") || changedProperties.has("controller")) {
@@ -132,7 +137,7 @@ export class PrimitiveExplanationPanelElement extends LitElement {
   }
 
   render() {
-    const descriptor = this.descriptor;
+    const descriptor = this.resolvedDescriptor;
     const state = this.explanationState;
 
     if (!descriptor || !state) {
@@ -172,11 +177,12 @@ export class PrimitiveExplanationPanelElement extends LitElement {
   #renderResolvedRenderer(tagName: string) {
     const tag = unsafeStatic(tagName);
     const context = this.#getContext();
+    const descriptor = this.resolvedDescriptor;
 
     return staticHtml`
       <${tag}
         .controller=${this.controller}
-        .descriptor=${this.descriptor}
+        .descriptor=${descriptor}
         .context=${context}
         .text=${this.text}
       ></${tag}>
@@ -186,14 +192,14 @@ export class PrimitiveExplanationPanelElement extends LitElement {
   #getContext(): PrimitiveExplanationRenderContext | undefined {
     if (
       this.controller === this.#memoizedController &&
-      this.descriptor === this.#memoizedDescriptor
+      this.resolvedDescriptor === this.#memoizedDescriptor
     ) {
       return this.#memoizedContext;
     }
 
-    const context = this.#createContext(this.descriptor?.props ?? {});
+    const context = this.#createContext(this.resolvedDescriptor?.props ?? {});
     this.#memoizedController = this.controller;
-    this.#memoizedDescriptor = this.descriptor;
+    this.#memoizedDescriptor = this.resolvedDescriptor;
     this.#memoizedContext = context;
     return context;
   }

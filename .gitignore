@@ -1,3 +1,9 @@
+graphify-out/
+.graphify_python
+.graphify_ast.json
+.graphify_detect.json
+.graphify_uncached.txt
+
 # Logs
 logs
 *.log

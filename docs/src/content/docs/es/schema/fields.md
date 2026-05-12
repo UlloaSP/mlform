@@ -22,9 +22,14 @@ Opciones compartidas:
   kind: "text",
   label: "Email",
   description: "Used for notifications.",
+  showDescriptionInline: true,
   required: true,
   defaultValue: "",
   hiddenWhen: { kind: "field-value", field: "anonymous", equals: true },
   ui: { autocomplete: "email" }
 }
 ```
+
+Opciones compartidas adicionales:
+
+- `showDescriptionInline`: muestra `description` por defecto sin esperar al boton de ayuda.

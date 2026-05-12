@@ -116,7 +116,7 @@ export class PrimitiveClassifierReportElement extends PrimitiveAsyncReportElemen
     const payload = this.props.payload;
     const error = typeof this.props.error === "string" ? this.props.error : null;
     const context = this.reportContext;
-    const details = this.props.details !== false;
+    const showClassProbabilities = this.props.showClassProbabilities !== false;
     const text = this.text;
 
     if (error) {
@@ -141,7 +141,7 @@ export class PrimitiveClassifierReportElement extends PrimitiveAsyncReportElemen
         id=${context?.regionId ?? ""}
         aria-label=${context?.label ?? text.classifierAriaLabel}
       >
-        ${details && rows.length > 0
+        ${showClassProbabilities && rows.length > 0
           ? html`
               <div class="rows">
                 ${rows.map((row) => {

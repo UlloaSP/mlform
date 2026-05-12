@@ -74,7 +74,7 @@ MLForm is built with TypeScript, Vite+, and Lit. We use `vp` for dependency mana
    vp test
    ```
 
-3. (Optional) Enable editor integrations for Biome, TypeScript, and ESLint-compatible tooling.
+3. (Optional) Enable editor integrations for Oxc, TypeScript, and Vite+ tooling.
 
 ### Useful Commands
 
@@ -259,7 +259,7 @@ What actually happens.
 - OS: (e.g., Windows 11, macOS 15, Ubuntu 24.04)
 - Node.js version: (e.g., 22.14.0)
 - vp version: (e.g., 1.x)
-- MLForm version: (e.g., 0.1.4)
+- MLForm version: (e.g., 0.1.8)
 
 ## Additional Context
 

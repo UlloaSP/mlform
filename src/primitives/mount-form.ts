@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FormController } from "@/engine";
+import type { FormController } from "@/runtime";
+import { createMlRegistryPack } from "@/builtins-ml";
 import "./register";
 import {
   primitiveDefaultLabels,
@@ -16,6 +17,7 @@ import type {
   PrimitiveContainerStrategy,
   PrimitiveRegistry,
 } from "./types";
+import type { PresentationRegistry } from "@/presentation";
 
 const assertContainerStrategy = (
   container: HTMLElement,
@@ -30,6 +32,12 @@ const resolveRegistry = (registry: PrimitiveRegistry | undefined): PrimitiveRegi
   return registry ? registry.clone() : createBuiltinPrimitiveRegistry();
 };
 
+const resolvePresentationRegistry = (
+  registry: PresentationRegistry | undefined,
+): PresentationRegistry => {
+  return registry?.clone() ?? createMlRegistryPack().presentationRegistry;
+};
+
 export const mountForm = (
   container: HTMLElement,
   form: FormController,
@@ -38,6 +46,7 @@ export const mountForm = (
   const host = document.createElement(primitiveTagNames.form) as HTMLElement & {
     form: FormController;
     registry: PrimitiveRegistry;
+    presentationRegistry: PresentationRegistry;
     layout: NonNullable<MountFormOptions["layout"]>;
     formLabel: string;
     reportsLabel: string;
@@ -49,6 +58,7 @@ export const mountForm = (
     reportTransport: MountFormOptions["reportTransport"];
   };
   const registry = resolveRegistry(options.registry);
+  const presentationRegistry = resolvePresentationRegistry(options.presentationRegistry);
   const text = resolvePrimitiveText(options.text);
   const containerStrategy = options.containerStrategy ?? "error";
   const previousChildren = containerStrategy === "replace" ? Array.from(container.childNodes) : [];
@@ -57,6 +67,7 @@ export const mountForm = (
 
   host.form = form;
   host.registry = registry;
+  host.presentationRegistry = presentationRegistry;
   host.layout = options.layout ?? "stacked";
   host.formLabel = options.formLabel ?? primitiveDefaultLabels.form;
   host.reportsLabel = options.reportsLabel ?? primitiveDefaultLabels.reports;
@@ -75,6 +86,7 @@ export const mountForm = (
     form,
     host,
     registry,
+    presentationRegistry,
     text,
     unmount() {
       if (unmounted) {

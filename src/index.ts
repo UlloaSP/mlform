@@ -1,7 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export { defaultKitDesignSystem, defaultKitLabels, mountForm, unmountForm } from "@/kit";
+export {
+  collectLayoutReferences,
+  createFormView,
+  defaultKitDesignSystem,
+  defaultKitLabels,
+  flattenLayoutNodes,
+  mountForm,
+  mountAccordionForm,
+  mountTabsForm,
+  mountWizardForm,
+  unmountForm,
+  walkLayoutNodes,
+} from "@/kit";
 export {
   assertPayloadWithinLimits,
   assertTransportCapabilities,
@@ -105,7 +117,54 @@ export type {
   WebSocketSessionTransportOptions,
   WeightedRoutingTransportOptions,
 } from "@/transport";
-export type { KitDesignSystemSnapshot, KitLabels, MountFormOptions, MountedForm } from "@/kit";
+export type {
+  AccordionLayoutConfig,
+  AccordionMountUiOptions,
+  AccordionSectionConfig,
+  AccordionState,
+  CreateFormViewOptions,
+  FormLayoutConfig,
+  FormLayoutExplanationNode,
+  FormLayoutFieldNode,
+  FormLayoutGroupNode,
+  FormLayoutNode,
+  FormLayoutReportNode,
+  FormLayoutSectionNode,
+  FormViewController,
+  FormViewExplanationItem,
+  FormViewFieldItem,
+  FormViewReportItem,
+  FormViewSnapshot,
+  FormViewState,
+  KitDesignSystemSnapshot,
+  KitLabels,
+  MountedAccordionForm,
+  MountFormOptions,
+  MountedForm,
+  MountedTabsForm,
+  MountedWizardForm,
+  MountAccordionFormOptions,
+  MountTabsFormOptions,
+  MountWizardFormOptions,
+  PanelState,
+  ResolvedAccordionLayout,
+  ResolvedAccordionSection,
+  ResolvedFormLayout,
+  ResolvedFormLayoutExplanationNode,
+  ResolvedFormLayoutFieldNode,
+  ResolvedFormLayoutGroupNode,
+  ResolvedFormLayoutNode,
+  ResolvedFormLayoutReportNode,
+  ResolvedFormLayoutSectionNode,
+  ResolvedTabLayout,
+  ResolvedTabsLayout,
+  TabLayoutConfig,
+  TabsLayoutConfig,
+  TabsState,
+  WizardLayoutConfig,
+  WizardState,
+  WizardStepConfig,
+} from "@/kit";
 export type {
   ExplanationRequest,
   ExplanationTransport,
@@ -116,25 +175,27 @@ export type {
   PrimitiveReportRenderContext,
   PrimitiveReportRendererElement,
 } from "@/primitives";
+export { createExplanationController, executeExplanations, executeFormPipeline } from "@/runtime";
 export {
-  createExplanationController,
+  createRegistry,
   defineExplanationDefinition,
+  defineFieldDefinition,
+  defineReportDefinition,
+} from "@/schema";
+export {
   defineExplanationKind,
   defineFieldKind,
   defineReportKind,
-  executeExplanations,
-  executeFormPipeline,
-} from "@/engine";
+  toPresentationNodes,
+} from "@/presentation";
+export { createBuiltinMlRegistry, createMlRegistryPack } from "@/builtins-ml";
+export { createMappedCategoryBehavior } from "@/behaviors";
+export { createDefaultRegistryPack } from "@/packs";
 export type {
   AfterExplanationContext,
-  DeclarativeExplanationKind,
-  DeclarativeFieldKind,
-  DeclarativeReportKind,
   ExplanationConfig,
   ExplanationController,
   ExplanationDefinition,
-  ExplanationDescriptor,
-  ExplanationDescriptorContext,
   ExplanationErrorContext,
   ExplanationExecutionContext,
   ExplanationExecutionResult,
@@ -142,24 +203,35 @@ export type {
   ExplanationFetchFactory,
   ExplanationFetchRequest,
   ExplanationFetchTransport,
-  ExplanationRenderSpec,
-  ExplanationRenderSpecContext,
   ExplanationStateSnapshot,
   ExplanationStatus,
-  FieldRenderHints,
-  FieldRenderSpec,
-  FieldRenderSpecContext,
   FieldValidationFnContext,
   FieldValueAdapter,
-  FieldWidget,
   NormalizedExplanationConfig,
   PipelineArtifactAdapter,
   PipelineArtifactContext,
   PipelineResult,
   ExecuteFormPipelineOptions,
+  ReportResolveContext,
+} from "@/runtime";
+export type {
+  DeclarativeExplanationKind,
+  DeclarativeFieldKind,
+  DeclarativeReportKind,
+  ExplanationDescriptor,
+  ExplanationDescriptorContext,
+  ExplanationRenderSpec,
+  ExplanationRenderSpecContext,
+  FieldDescriptor,
+  FieldRenderHints,
+  FieldRenderSpec,
+  FieldRenderSpecContext,
+  FieldWidget,
+  PresentationContent,
   PresentationNode,
   PresentationSummary,
+  PresentationTone,
+  ReportDescriptor,
   ReportRenderSpec,
   ReportRenderSpecContext,
-  ReportResolveContext,
-} from "@/engine";
+} from "@/presentation";

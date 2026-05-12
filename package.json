@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.4",
+  "version": "0.1.8",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -60,9 +60,25 @@
       "types": "./dist/types/src/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
     },
-    "./engine": {
-      "types": "./dist/types/src/engine/index.d.ts",
-      "import": "./dist/mlform/engine.mjs"
+    "./runtime": {
+      "types": "./dist/types/src/runtime/index.d.ts",
+      "import": "./dist/mlform/runtime.mjs"
+    },
+    "./schema": {
+      "types": "./dist/types/src/schema/index.d.ts",
+      "import": "./dist/mlform/schema.mjs"
+    },
+    "./presentation": {
+      "types": "./dist/types/src/presentation/index.d.ts",
+      "import": "./dist/mlform/presentation.mjs"
+    },
+    "./builtins-ml": {
+      "types": "./dist/types/src/builtins-ml/index.d.ts",
+      "import": "./dist/mlform/builtins-ml.mjs"
+    },
+    "./behaviors": {
+      "types": "./dist/types/src/behaviors/index.d.ts",
+      "import": "./dist/mlform/behaviors.mjs"
     },
     "./transport": {
       "types": "./dist/types/src/transport/index.d.ts",
@@ -75,10 +91,6 @@
     "./design-system": {
       "types": "./dist/types/src/design-system/index.d.ts",
       "import": "./dist/mlform/design-system.mjs"
-    },
-    "./questionnaire": {
-      "types": "./dist/types/src/questionnaire/index.d.ts",
-      "import": "./dist/mlform/questionnaire.mjs"
     }
   },
   "publishConfig": {

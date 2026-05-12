@@ -3,17 +3,16 @@ title: Referencia Engine
 description: Estado, validacion, envio y registries.
 ---
 
-Exports importantes desde `mlform/engine`:
+Exports importantes desde `mlform/runtime` y módulos runtime relacionados:
 
 - `createForm`
 - `createRegistry`
-- `createBuiltinRegistry`
-- `EngineRegistry`
 - `EngineError`
 - `RegistryError`
 - `ValidationError`
 - `SubmitError`
 - `SubmissionAbortedError`
+- `createMlRegistryPack` desde `mlform/builtins-ml`
 
 Tipos importantes:
 

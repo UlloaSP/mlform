@@ -20,7 +20,7 @@ mountForm(document.querySelector("#prediction-form") as HTMLElement, {
 ```
 
 <div class="card-grid">
-  <div class="doc-card"><strong>Kit</strong>Mount forms with defaults for transport, primitives, labels, and design system.</div>
+  <div class="doc-card"><strong>Kit</strong>Mount built-in one-page, wizard, or tabs forms, or drive custom layouts through the headless view API.</div>
   <div class="doc-card"><strong>Engine</strong>Validate fields, track state, run hooks, and submit through any transport.</div>
   <div class="doc-card"><strong>Primitives</strong>Render built-in Web Components for fields, submit actions, and reports.</div>
   <div class="doc-card"><strong>Design system</strong>Apply themes, recipes, density, motion, and host app token overrides.</div>

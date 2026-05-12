@@ -2,7 +2,7 @@
 
 Documentation site for MLForm, built with Astro Starlight.
 
-The published site documents the current `0.1.4` release line and the latest maintained main branch content unless a release note states otherwise.
+The published site documents the current `0.1.8` release line and the latest maintained main branch content unless a release note states otherwise.
 
 ## Local Development
 
@@ -31,5 +31,5 @@ vp run preview
 ## Notes
 
 - Use `vp`, not `npm`, `pnpm`, or `yarn`, for this repository workflow.
-- Main package docs should match the public API shipped in `mlform@0.1.4`.
+- Main package docs should match the public API shipped in `mlform@0.1.8`.
 - If examples change in `README.md`, update the canonical docs pages too.

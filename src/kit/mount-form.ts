@@ -2,17 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { attachDesignSystem, type DesignSystemConfig } from "@/design-system";
-import { createForm } from "@/engine";
 import { mountForm as mountPrimitiveForm } from "@/primitives";
 import { kitErrorMessages } from "./constants";
-import {
-  cloneEngineRegistry,
-  resolveDesignSystemRegistry,
-  resolveKitDesignSystem,
-  resolveKitLabels,
-  resolvePrimitiveRegistry,
-} from "./defaults";
+import { resolveKitDesignSystem, resolveKitLabels } from "./defaults";
 import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./types";
+import { createFormView } from "./view";
 
 const mountedFormRef = Symbol("mlform.kit.mounted");
 
@@ -32,15 +26,14 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   const hostContainer = container as KitContainer;
   hostContainer[mountedFormRef]?.unmount();
 
-  const engineRegistry = cloneEngineRegistry(options.registry);
-  const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
-  const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
-  const labels = resolveKitLabels(options.labels);
-  const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
-  const form = createForm({
+  const view = createFormView({
     schema: options.schema,
-    registry: engineRegistry,
     transport: options.transport,
+    registry: options.registry,
+    presentationRegistry: options.presentationRegistry,
+    primitiveRegistry: options.primitiveRegistry,
+    designSystemRegistry: options.designSystemRegistry,
+    designSystem: options.designSystem,
     initialValues: options.initialValues,
     validators: options.validators,
     hooks: options.hooks,
@@ -48,9 +41,18 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     inactiveFieldPolicy: options.inactiveFieldPolicy,
     listenerErrorPolicy: options.listenerErrorPolicy,
     onListenerError: options.onListenerError,
+    reportPane: options.reportPane,
+    reportTransport: options.reportTransport,
+    labels: options.labels,
+    primitiveText: options.primitiveText,
+    containerStrategy: options.containerStrategy,
+    onDesignSystemChange: options.onDesignSystemChange,
   });
-  const mountedPrimitive = mountPrimitiveForm(container, form, {
-    registry: primitiveRegistry,
+  const labels = resolveKitLabels(options.labels);
+  const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
+  const mountedPrimitive = mountPrimitiveForm(container, view.form, {
+    registry: view.primitiveRegistry,
+    presentationRegistry: view.presentationRegistry,
     layout: options.layout,
     containerStrategy: options.containerStrategy,
     formLabel: labels.form,
@@ -64,18 +66,19 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   });
   const designSystem = attachDesignSystem(mountedPrimitive.host, {
     config: initialDesignSystem,
-    registry: designSystemRegistry,
+    registry: view.designSystemRegistry,
     onChange: options.onDesignSystemChange,
   });
 
   let unmounted = false;
 
   const mounted: MountedForm = Object.freeze({
-    form,
+    form: view.form,
     host: mountedPrimitive.host,
-    engineRegistry,
-    primitiveRegistry,
-    designSystemRegistry,
+    engineRegistry: view.engineRegistry,
+    presentationRegistry: view.presentationRegistry,
+    primitiveRegistry: view.primitiveRegistry,
+    designSystemRegistry: view.designSystemRegistry,
     designSystem,
     updateDesignSystem(config: DesignSystemConfig) {
       designSystem.update(config);
@@ -98,7 +101,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
         delete hostContainer[mountedFormRef];
       }
 
-      form.abortSubmit("unmount");
+      view.form.abortSubmit("unmount");
       designSystem.disconnect();
       mountedPrimitive.unmount();
     },
