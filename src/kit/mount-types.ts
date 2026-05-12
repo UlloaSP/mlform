@@ -23,6 +23,7 @@ import type {
   PrimitiveReportTransport,
   PrimitiveTextOverrides,
 } from "@/primitives";
+import type { PresentationRegistry } from "@/presentation";
 
 export interface KitDesignSystemSnapshot extends Omit<
   DesignSystemConfig,
@@ -45,6 +46,7 @@ export interface MountFormOptions {
   schema: FormSchema;
   transport: Transport;
   registry?: Registry;
+  presentationRegistry?: PresentationRegistry;
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
   designSystem?: DesignSystemConfig;
@@ -70,6 +72,7 @@ export interface MountedForm {
   readonly form: FormController;
   readonly host: HTMLElement;
   readonly engineRegistry: Registry;
+  readonly presentationRegistry: PresentationRegistry;
   readonly primitiveRegistry: PrimitiveRegistry;
   readonly designSystemRegistry: DesignSystemRegistry;
   readonly designSystem: AttachedDesignSystem;

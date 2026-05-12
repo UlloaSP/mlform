@@ -20,6 +20,8 @@ export type FormRenderState = {
   visibleFieldIds: string[];
   visibleReportIds: string[];
   explanationIds: string[];
+  reportStateKeys: string[];
+  explanationStateKeys: string[];
 };
 
 const sameIds = (left: readonly string[], right: readonly string[]): boolean => {
@@ -38,7 +40,9 @@ export const sameFormRenderState = (left: FormRenderState, right: FormRenderStat
     left.submissionSessionMessageCount === right.submissionSessionMessageCount &&
     sameIds(left.visibleFieldIds, right.visibleFieldIds) &&
     sameIds(left.visibleReportIds, right.visibleReportIds) &&
-    sameIds(left.explanationIds, right.explanationIds)
+    sameIds(left.explanationIds, right.explanationIds) &&
+    sameIds(left.reportStateKeys, right.reportStateKeys) &&
+    sameIds(left.explanationStateKeys, right.explanationStateKeys)
   );
 };
 
@@ -60,6 +64,14 @@ export const selectFormRenderState = (form: FormController): FormRenderState => 
       state.lastResult !== null
         ? form.explanations.map((explanation: ExplanationController) => explanation.id)
         : [],
+    reportStateKeys: form.reports.map(
+      (report) =>
+        `${report.id}:${report.state.status}:${report.state.payload === undefined}:${report.state.error === null}`,
+    ),
+    explanationStateKeys: form.explanations.map(
+      (explanation) =>
+        `${explanation.id}:${explanation.state.status}:${explanation.state.result === undefined}:${explanation.state.error === null}`,
+    ),
   };
 };
 

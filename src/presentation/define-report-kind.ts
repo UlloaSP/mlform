@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ReportConfig, ReportDefinition } from "@/schema";
-import type { DeclarativeReportKind, ReportPresenter } from "./index";
+import type { NormalizedReportConfig, ReportConfig, ReportDefinition } from "@/schema";
+import type {
+  DeclarativeReportKind,
+  ReportDescriptor,
+  ReportDescriptorContext,
+  ReportPresenter,
+} from "./index";
 import { toPresentationNodes } from "./types/presentation";
 
 export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
@@ -13,7 +18,10 @@ export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
   partialUpdatePolicy?: ReportDefinition<TConfig>["partialUpdatePolicy"];
   clonePayload?: ReportDefinition<TConfig>["clonePayload"];
   resolvePayload?: ReportDefinition<TConfig>["resolvePayload"];
-  describe?: (config: import("@/schema").NormalizedReportConfig<TConfig>, context: any) => any;
+  describe?: (
+    config: NormalizedReportConfig<TConfig>,
+    context: ReportDescriptorContext,
+  ) => ReportDescriptor | null;
   definition: ReportDefinition<TConfig>;
   presenter: ReportPresenter<TConfig>;
 };
@@ -39,7 +47,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
   const presenter: ReportPresenter<TConfig> = {
     kind: kind.kind,
     describe(config, context) {
-      if (context.state.status === "idle" && context.payload === undefined) {
+      if (context.payload === undefined && context.state.error === null) {
         return null;
       }
 

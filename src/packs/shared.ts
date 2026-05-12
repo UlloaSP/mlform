@@ -8,21 +8,21 @@ import type {
   ReportPresenter,
 } from "@/presentation";
 import type { RuntimeBehavior } from "@/runtime";
-import type { Registry } from "@/schema";
+import type { ExplanationConfig, FieldConfig, Registry, ReportConfig } from "@/schema";
 
 type DescriptorCapableFieldDefinition = {
   kind: string;
-  describe?: FieldPresenter<any, any>["describe"];
+  describe?: FieldPresenter<FieldConfig, unknown>["describe"];
 };
 
 type DescriptorCapableReportDefinition = {
   kind: string;
-  describe?: ReportPresenter<any>["describe"];
+  describe?: ReportPresenter<ReportConfig>["describe"];
 };
 
 type DescriptorCapableExplanationDefinition = {
   kind: string;
-  describe?: ExplanationPresenter<any>["describe"];
+  describe?: ExplanationPresenter<ExplanationConfig>["describe"];
 };
 
 export type RegistryPack = {
@@ -35,7 +35,7 @@ export const registerFieldPresenterFromDefinition = (
   presentationRegistry: PresentationRegistry,
   definition: DescriptorCapableFieldDefinition,
 ): void => {
-  if (!definition.describe) {
+  if (!definition.describe || presentationRegistry.getField(definition.kind)) {
     return;
   }
 
@@ -49,7 +49,7 @@ export const registerReportPresenterFromDefinition = (
   presentationRegistry: PresentationRegistry,
   definition: DescriptorCapableReportDefinition,
 ): void => {
-  if (!definition.describe) {
+  if (!definition.describe || presentationRegistry.getReport(definition.kind)) {
     return;
   }
 
@@ -63,7 +63,7 @@ export const registerExplanationPresenterFromDefinition = (
   presentationRegistry: PresentationRegistry,
   definition: DescriptorCapableExplanationDefinition,
 ): void => {
-  if (!definition.describe) {
+  if (!definition.describe || presentationRegistry.getExplanation(definition.kind)) {
     return;
   }
 
@@ -71,4 +71,21 @@ export const registerExplanationPresenterFromDefinition = (
     kind: definition.kind,
     describe: definition.describe,
   });
+};
+
+export const registerPresentersFromRegistry = (
+  presentationRegistry: PresentationRegistry,
+  registry: Registry,
+): void => {
+  for (const definition of registry.listFields()) {
+    registerFieldPresenterFromDefinition(presentationRegistry, definition);
+  }
+
+  for (const definition of registry.listReports()) {
+    registerReportPresenterFromDefinition(presentationRegistry, definition);
+  }
+
+  for (const definition of registry.listExplanations()) {
+    registerExplanationPresenterFromDefinition(presentationRegistry, definition);
+  }
 };

@@ -9,7 +9,7 @@ import { baseReportShape, resolveLegacyOutput } from "../shared";
 type ClassifierReportConfig = BaseReportConfig & {
   kind: "classifier";
   labels?: string[];
-  details?: boolean;
+  showClassProbabilities?: boolean;
 };
 
 export const classifierReportDefinition: ReportDefinition<ClassifierReportConfig> = {
@@ -19,7 +19,7 @@ export const classifierReportDefinition: ReportDefinition<ClassifierReportConfig
     kind: z.literal("classifier"),
     ...baseReportShape,
     labels: z.array(z.string()).optional(),
-    details: z.boolean().optional().default(true),
+    showClassProbabilities: z.boolean().optional().default(true),
   }),
   resolvePayload(_config, context) {
     return (
@@ -42,7 +42,7 @@ export const classifierReportDefinition: ReportDefinition<ClassifierReportConfig
         payload: context.payload,
         error: context.state.error,
         state: context.state.status,
-        details: config.details,
+        showClassProbabilities: config.showClassProbabilities,
         labels: config.labels,
         ...config.ui,
       },

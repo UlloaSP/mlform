@@ -4,6 +4,7 @@
 import { createForm } from "@/runtime";
 import type { PresentationRegistry } from "@/presentation";
 import { createMlRegistryPack } from "@/builtins-ml";
+import { registerPresentersFromRegistry } from "@/packs/shared";
 import { kitErrorMessages } from "./constants";
 import {
   cloneSchemaRegistry,
@@ -17,8 +18,10 @@ import type {
   FormViewController,
   FormViewSnapshot,
   FormViewState,
+  ResolvedFormLayoutNode,
 } from "./types";
-import { buildFormViewSnapshot, createViewState } from "./view-snapshot";
+import { createFormViewSnapshotCache } from "./view-snapshot-cache";
+import { createViewState } from "./view-snapshot";
 import {
   assertAccordionLayout,
   assertAccordionSection,
@@ -41,6 +44,9 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     : defaultPack!.registry;
   const presentationRegistry =
     options.presentationRegistry?.clone() ?? defaultPack!.presentationRegistry;
+  if (options.registry && !options.presentationRegistry) {
+    registerPresentersFromRegistry(presentationRegistry, engineRegistry);
+  }
   const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const form = createForm({
@@ -72,11 +78,6 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
           .map((section) => section.id)
       : [],
   );
-  let cachedFormState = form.state;
-  let cachedStepIndex = -1;
-  let cachedActiveTabIndex = -1;
-  let cachedOpenSectionKey = "";
-  let cachedSnapshot: FormViewSnapshot | null = null;
   const listeners = new Set<(snapshot: FormViewSnapshot) => void>();
 
   const wizardSteps =
@@ -85,10 +86,7 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
   const accordionSections =
     resolvedLayout.layout.kind === "accordion" ? resolvedLayout.layout.sections : ([] as const);
   const layoutReferences = collectLayoutReferences(resolvedLayout.layout);
-  const nodeIndex = new Map<
-    string,
-    (typeof flattenLayoutNodes extends (...args: any[]) => infer R ? R : never)[number]
-  >();
+  const nodeIndex = new Map<string, ResolvedFormLayoutNode>();
   for (const node of flattenLayoutNodes(resolvedLayout.layout)) {
     if ("id" in node) {
       nodeIndex.set(node.id, node);
@@ -97,33 +95,14 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
   const getState = (): FormViewState =>
     createViewState(form, resolvedLayout.layout, stepIndex, activeTabIndex, openSectionIds);
 
-  const getSnapshot = (): FormViewSnapshot => {
-    const currentFormState = form.state;
-    const currentOpenSectionKey = Array.from(openSectionIds).sort().join("|");
-    if (
-      cachedSnapshot &&
-      cachedFormState === currentFormState &&
-      cachedStepIndex === stepIndex &&
-      cachedActiveTabIndex === activeTabIndex &&
-      cachedOpenSectionKey === currentOpenSectionKey
-    ) {
-      return cachedSnapshot;
-    }
-
-    cachedFormState = currentFormState;
-    cachedStepIndex = stepIndex;
-    cachedActiveTabIndex = activeTabIndex;
-    cachedOpenSectionKey = currentOpenSectionKey;
-    cachedSnapshot = buildFormViewSnapshot({
-      form,
-      presentationRegistry,
-      resolvedLayout,
-      stepIndex,
-      activeTabIndex,
-      openSectionIds,
-    });
-    return cachedSnapshot;
-  };
+  const getSnapshot = createFormViewSnapshotCache({
+    form,
+    presentationRegistry,
+    resolvedLayout,
+    getStepIndex: () => stepIndex,
+    getActiveTabIndex: () => activeTabIndex,
+    getOpenSectionIds: () => openSectionIds,
+  });
 
   const notify = (): void => {
     const snapshot = getSnapshot();
@@ -139,6 +118,7 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
   return Object.freeze({
     form,
     engineRegistry,
+    presentationRegistry,
     primitiveRegistry,
     designSystemRegistry,
     get state(): FormViewState {

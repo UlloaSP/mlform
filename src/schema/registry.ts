@@ -19,9 +19,9 @@ export class RegistryError extends MLFormError {
   }
 }
 
-type StoredFieldDefinition = FieldDefinition<any, any>;
-type StoredReportDefinition = ReportDefinition<any>;
-type StoredExplanationDefinition = ExplanationDefinition<any>;
+type StoredFieldDefinition = FieldDefinition<FieldConfig, unknown>;
+type StoredReportDefinition = ReportDefinition<ReportConfig>;
+type StoredExplanationDefinition = ExplanationDefinition<ExplanationConfig>;
 
 class RegistryStore implements Registry {
   private readonly fieldDefinitions = new Map<string, StoredFieldDefinition>();
@@ -35,7 +35,7 @@ class RegistryStore implements Registry {
       throw new RegistryError(`Field kind "${definition.kind}" is already registered.`);
     }
 
-    this.fieldDefinitions.set(definition.kind, definition as StoredFieldDefinition);
+    this.fieldDefinitions.set(definition.kind, definition as unknown as StoredFieldDefinition);
     return this;
   }
 
@@ -49,7 +49,7 @@ class RegistryStore implements Registry {
       throw new RegistryError(`Report kind "${definition.kind}" is already registered.`);
     }
 
-    this.reportDefinitions.set(definition.kind, definition as StoredReportDefinition);
+    this.reportDefinitions.set(definition.kind, definition as unknown as StoredReportDefinition);
     return this;
   }
 
@@ -65,7 +65,10 @@ class RegistryStore implements Registry {
       throw new RegistryError(`Explanation kind "${definition.kind}" is already registered.`);
     }
 
-    this.explanationDefinitions.set(definition.kind, definition as StoredExplanationDefinition);
+    this.explanationDefinitions.set(
+      definition.kind,
+      definition as unknown as StoredExplanationDefinition,
+    );
     return this;
   }
 

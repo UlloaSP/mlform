@@ -1,15 +1,27 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ExplanationConfig, ExplanationDefinition } from "@/schema";
-import type { DeclarativeExplanationKind, ExplanationPresenter } from "./index";
+import type {
+  ExplanationConfig,
+  ExplanationDefinition,
+  NormalizedExplanationConfig,
+} from "@/schema";
+import type {
+  DeclarativeExplanationKind,
+  ExplanationDescriptor,
+  ExplanationDescriptorContext,
+  ExplanationPresenter,
+} from "./index";
 import { toPresentationNodes } from "./types/presentation";
 
 export type DefinedExplanationKind<TConfig extends ExplanationConfig, _TResult> = {
   kind: string;
   schema: import("zod").ZodType<TConfig>;
   transport: ExplanationDefinition<TConfig>["transport"];
-  describe?: (config: import("@/schema").NormalizedExplanationConfig<TConfig>, context: any) => any;
+  describe?: (
+    config: NormalizedExplanationConfig<TConfig>,
+    context: ExplanationDescriptorContext,
+  ) => ExplanationDescriptor | null;
   definition: ExplanationDefinition<TConfig>;
   presenter: ExplanationPresenter<TConfig>;
 };

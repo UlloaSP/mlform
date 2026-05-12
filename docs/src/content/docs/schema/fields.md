@@ -23,6 +23,7 @@ Shared options:
   kind: "text",
   label: "Email",
   description: "Used for notifications.",
+  showDescriptionInline: true,
   required: true,
   defaultValue: "",
   includeInSubmission: true,
@@ -33,6 +34,7 @@ Shared options:
 
 Shared field options also include:
 
+- `showDescriptionInline`: Shows `description` by default instead of waiting for the help button.
 - `inactiveFieldPolicy`: Controls whether hidden/disabled fields are submitted.
 - `includeInSubmission`: Set to `false` to keep a field out of `values`, `fieldValues`, `serializedValues`, and `serializedFieldValues`.
 - `valuePath`: Writes the field into a nested payload path while keeping flat `fieldValues`.

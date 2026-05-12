@@ -74,7 +74,7 @@ MLForm is built with TypeScript, Vite+, and Lit. We use `vp` for dependency mana
    vp test
    ```
 
-3. (Optional) Enable editor integrations for Biome, TypeScript, and ESLint-compatible tooling.
+3. (Optional) Enable editor integrations for Oxc, TypeScript, and Vite+ tooling.
 
 ### Useful Commands
 

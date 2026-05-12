@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { Registry as SchemaRegistry } from "@/schema";
+import type {
+  ExplanationDefinition,
+  FieldDefinition,
+  Registry as SchemaRegistry,
+  ReportDefinition,
+} from "@/schema";
 
 export interface Registry extends Omit<
   SchemaRegistry,
   "registerExplanation" | "registerField" | "registerReport"
 > {
-  registerField(definition: any): Registry;
-  registerReport(definition: any): Registry;
-  registerExplanation(definition: any): Registry;
+  registerField(definition: FieldDefinition): Registry;
+  registerReport(definition: ReportDefinition): Registry;
+  registerExplanation(definition: ExplanationDefinition): Registry;
 }

@@ -15,14 +15,25 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-05-04`
+- Last reviewed: `2026-05-12`
 - Current focus: remove old runtime compatibility surface
 
 ## Critical
 
 ### Oversized Source Files
 
-None currently. Root `AGENTS.md` size debt is cleared in `src/` for now.
+1. Source files still exceed the 300-line cap
+   - Scope:
+     - `src/design-system/runtime/design-system-controller.ts`
+     - `src/primitives/components/form-root-styles.ts`
+     - `src/primitives/fields/series-field.ts`
+     - `src/runtime/builtins/fields/series.ts`
+     - `src/runtime/submission/create-submitter.ts`
+     - `src/runtime/create-runtime.ts`
+     - `src/transport/composition/fanout.ts`
+   - Problem: files predate the cap and still need targeted splits
+   - User impact: higher review and maintenance cost in core runtime/UI paths
+   - Exit condition: split each file below 300 lines without changing behavior
 
 ## High
 
@@ -133,6 +144,7 @@ None currently. Root `AGENTS.md` size debt is cleared in `src/` for now.
 - `src/transport/internal.ts` split
 - `createBuiltinRegistry` removed
 - public `EngineRegistry` name removed
+- primitive form root now refreshes report/explanation descriptors when their live state changes
 
 ## Notes
 

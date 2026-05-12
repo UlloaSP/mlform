@@ -82,12 +82,21 @@ SOFTWARE.
 
 ## Development Dependencies
 
-### @biomejs/biome (MIT License)
+### oxlint (MIT License)
 
-**Version:** 2.1.2  
+**Version:** 1.58.0  
 **License:** MIT  
-**Project URL:** <https://biomejs.dev/>  
-**License URL:** <https://github.com/biomejs/biome/blob/main/LICENSE>
+**Project URL:** <https://oxc.rs/>  
+**License URL:** <https://github.com/oxc-project/oxc/blob/main/LICENSE>
+
+---
+
+### oxfmt (MIT License)
+
+**Version:** 0.43.0  
+**License:** MIT  
+**Project URL:** <https://oxc.rs/>  
+**License URL:** <https://github.com/oxc-project/oxc/blob/main/LICENSE>
 
 ---
 

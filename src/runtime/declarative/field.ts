@@ -47,6 +47,7 @@ const createDescriptor = <TConfig extends FieldConfig, TValue>(
       kind: config.kind,
       label: config.label,
       description: config.description ?? "",
+      showDescriptionInline: Boolean(config.showDescriptionInline),
       required: Boolean(config.required),
       disabled: Boolean(config.disabled),
       widget: kind.render.widget,

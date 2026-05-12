@@ -13,6 +13,7 @@ export interface BaseFieldConfig {
   kind: string;
   label: string;
   description?: string;
+  showDescriptionInline?: boolean;
   required?: boolean;
   disabled?: boolean;
   hidden?: boolean;

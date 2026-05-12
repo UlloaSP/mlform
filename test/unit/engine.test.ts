@@ -4,6 +4,8 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
+import type { FieldPresenter, ReportPresenter } from "@/presentation";
+import type { FieldConfig, ReportConfig } from "@/schema";
 import {
   EngineError,
   type FieldController,
@@ -27,8 +29,9 @@ const builtinPresentationRegistry = createMlRegistryPack().presentationRegistry;
 
 const describeField = (
   field: NonNullable<ReturnType<import("@/runtime").FormController["getField"]>>,
+  presentationRegistry = builtinPresentationRegistry,
 ) =>
-  builtinPresentationRegistry.getField(field.kind)?.describe(field.config, {
+  presentationRegistry.getField(field.kind)?.describe(field.config, {
     fieldId: field.id,
     state: field.state,
     value: field.state.value,
@@ -45,17 +48,21 @@ const describeReport = (
     result: form.state.lastResult,
   });
 
-const withFieldPresenter = (
-  definition: FieldDefinition<any, any> & {
-    describe: (config: any, context: any) => any;
+const withFieldPresenter = <TConfig extends FieldConfig, TValue>(
+  definition: FieldDefinition<TConfig, TValue> & {
+    describe: FieldPresenter<TConfig, TValue>["describe"];
   },
-): FieldDefinition<any, any> => definition;
+): FieldDefinition<TConfig, TValue> & {
+  describe: FieldPresenter<TConfig, TValue>["describe"];
+} => definition;
 
-const withReportPresenter = (
-  definition: ReportDefinition<any> & {
-    describe: (config: any, context: any) => any;
+const withReportPresenter = <TConfig extends ReportConfig>(
+  definition: ReportDefinition<TConfig> & {
+    describe: ReportPresenter<TConfig>["describe"];
   },
-): ReportDefinition<any> => definition;
+): ReportDefinition<TConfig> & {
+  describe: ReportPresenter<TConfig>["describe"];
+} => definition;
 
 describe("engine", () => {
   it("creates a headless form with normalized ids and descriptors", () => {
@@ -1442,39 +1449,43 @@ describe("engine", () => {
   });
 
   it("exposes a field validating status while async field validation is pending", async () => {
-    const registry = createMlRegistryPack().registry;
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
     let resolveValidation: ((errors: string[]) => void) | undefined;
 
-    registry.registerField(
-      withFieldPresenter({
-        kind: "pending-text",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "pending-text";
-              label: string;
-              id?: string;
-            };
-          },
-        } as never,
-        normalizeValue(value) {
-          return typeof value === "string" ? value : "";
-        },
-        validate: () =>
-          new Promise<string[]>((resolve) => {
-            resolveValidation = resolve;
-          }),
-        describe(config, context) {
-          return {
-            component: "pending-text",
-            props: {
-              id: config.id,
-              status: context.state.status,
-            },
+    const pendingTextDefinition = withFieldPresenter({
+      kind: "pending-text",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "pending-text";
+            label: string;
+            id?: string;
           };
         },
-      }),
-    );
+      } as never,
+      normalizeValue(value) {
+        return typeof value === "string" ? value : "";
+      },
+      validate: () =>
+        new Promise<string[]>((resolve) => {
+          resolveValidation = resolve;
+        }),
+      describe(config, context) {
+        return {
+          component: "pending-text",
+          props: {
+            id: config.id,
+            status: context.state.status,
+          },
+        };
+      },
+    });
+    registry.registerField(pendingTextDefinition);
+    pack.presentationRegistry.registerField({
+      kind: pendingTextDefinition.kind,
+      describe: pendingTextDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1496,7 +1507,9 @@ describe("engine", () => {
     await Promise.resolve();
 
     expect(form.getField("username")?.state.status).toBe("validating");
-    expect(describeField(form.getField("username")!)?.props.status).toBe("validating");
+    expect(describeField(form.getField("username")!, pack.presentationRegistry)?.props.status).toBe(
+      "validating",
+    );
 
     resolveValidation?.([]);
     const result = await pendingValidation;
@@ -1779,7 +1792,7 @@ describe("engine", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
-            details: true,
+            showClassProbabilities: true,
           },
         ],
       },
@@ -1829,6 +1842,7 @@ describe("engine", () => {
       props: expect.objectContaining({
         id: "risk",
         label: "Risk",
+        showClassProbabilities: true,
         payload: {
           labels: ["low", "high"],
           probabilities: [0.2, 0.8],
@@ -1947,6 +1961,7 @@ describe("engine", () => {
     await form.submit();
 
     expect(describeReport(form, form.reports[0]!)?.props.id).toBe("risk");
+    expect(describeReport(form, form.reports[0]!)?.props.showClassProbabilities).toBe(true);
     expect(describeReport(form, form.reports[0]!)?.props).not.toHaveProperty("explanations");
   });
 
@@ -2490,10 +2505,15 @@ describe("engine", () => {
   });
 
   it("marks reports as loading while submit is in flight", async () => {
-    let form: ReturnType<typeof createForm>;
+    const formRef: { current?: ReturnType<typeof createForm> } = {};
     const beforeSubmit = vi.fn(() => {
-      expect(form.getReport("classifier")?.state.status).toBe("loading");
-      expect(form.state.reportStates.classifier?.status).toBe("loading");
+      const activeForm = formRef.current;
+      expect(activeForm).toBeDefined();
+      if (!activeForm) {
+        return;
+      }
+      expect(activeForm.getReport("classifier")?.state.status).toBe("loading");
+      expect(activeForm.state.reportStates.classifier?.status).toBe("loading");
     });
     const submit = vi.fn().mockResolvedValue({
       reports: {
@@ -2501,7 +2521,7 @@ describe("engine", () => {
       },
     });
 
-    form = createForm({
+    const form = createForm({
       schema: {
         fields: [
           {
@@ -2523,6 +2543,7 @@ describe("engine", () => {
         beforeSubmit,
       },
     });
+    formRef.current = form;
 
     form.setValues({ name: "Alice" });
     await form.submit();

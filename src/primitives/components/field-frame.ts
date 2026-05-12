@@ -31,7 +31,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
   @state() private accessor resolvedDescriptor: FieldDescriptor | null = null;
   @state() private accessor fieldState: FieldStateSnapshot | null = null;
-  @state() private accessor descriptionVisible = false;
+  @state() private accessor descriptionVisibilityOverride: boolean | null = null;
 
   readonly #instanceId = ++fieldFrameSequence;
   #memoizedContext: PrimitiveFieldRenderContext | undefined;
@@ -44,7 +44,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
     this.resolvedDescriptor = this.descriptor;
     this.fieldState = ctrl?.state ?? null;
     if (!this.resolvedDescriptor?.props.description) {
-      this.descriptionVisible = false;
+      this.descriptionVisibilityOverride = null;
     }
   });
 
@@ -58,7 +58,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
     }
 
     if (changedProperties.has("descriptor") && !this.resolvedDescriptor?.props.description) {
-      this.descriptionVisible = false;
+      this.descriptionVisibilityOverride = null;
     }
   }
 
@@ -74,6 +74,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
     const component = this.registry?.resolveField(descriptor.component);
     const label = toText(props.label, this.controller?.config.label ?? "");
     const description = toText(props.description);
+    const descriptionVisible = this.#isDescriptionVisible(description);
     const hasValue = hasIntroducedValue(
       descriptor.component,
       props,
@@ -108,7 +109,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
             class="help-btn"
             type="button"
             aria-label=${this.text.helpActionLabel}
-            aria-expanded=${String(this.descriptionVisible)}
+            aria-expanded=${String(descriptionVisible)}
             aria-controls=${detailsId}
             ?disabled=${description.length === 0}
             @click=${this.#toggleDescription}
@@ -119,7 +120,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
         ${description
           ? html`
-              <div id=${detailsId} class="description ${this.descriptionVisible ? "show" : ""}">
+              <div id=${detailsId} class="description ${descriptionVisible ? "show" : ""}">
                 ${description}
               </div>
             `
@@ -232,8 +233,21 @@ export class PrimitiveFieldFrameElement extends LitElement {
       return;
     }
 
-    this.descriptionVisible = !this.descriptionVisible;
+    this.descriptionVisibilityOverride = !this.#isDescriptionVisible(
+      toText(this.resolvedDescriptor.props.description),
+    );
   };
+
+  #isDescriptionVisible(description: string): boolean {
+    if (description.length === 0) {
+      return false;
+    }
+
+    return (
+      this.descriptionVisibilityOverride ??
+      this.resolvedDescriptor?.props.showDescriptionInline === true
+    );
+  }
 }
 
 declare global {

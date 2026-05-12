@@ -7,6 +7,7 @@ import type {
   ResolvedDesignSystem,
   AttachedDesignSystem,
 } from "@/design-system";
+import type { PresentationRegistry } from "@/presentation";
 import type {
   ExplanationController,
   ExplanationDescriptor,
@@ -114,6 +115,7 @@ export interface CreateFormViewOptions extends Omit<MountFormOptions, "layout"> 
 export interface FormViewController {
   readonly form: FormController;
   readonly engineRegistry: Registry;
+  readonly presentationRegistry: PresentationRegistry;
   readonly primitiveRegistry: PrimitiveRegistry;
   readonly designSystemRegistry: DesignSystemRegistry;
   readonly state: FormViewState;

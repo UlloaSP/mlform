@@ -30,6 +30,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     schema: options.schema,
     transport: options.transport,
     registry: options.registry,
+    presentationRegistry: options.presentationRegistry,
     primitiveRegistry: options.primitiveRegistry,
     designSystemRegistry: options.designSystemRegistry,
     designSystem: options.designSystem,
@@ -51,6 +52,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
   const mountedPrimitive = mountPrimitiveForm(container, view.form, {
     registry: view.primitiveRegistry,
+    presentationRegistry: view.presentationRegistry,
     layout: options.layout,
     containerStrategy: options.containerStrategy,
     formLabel: labels.form,
@@ -74,6 +76,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     form: view.form,
     host: mountedPrimitive.host,
     engineRegistry: view.engineRegistry,
+    presentationRegistry: view.presentationRegistry,
     primitiveRegistry: view.primitiveRegistry,
     designSystemRegistry: view.designSystemRegistry,
     designSystem,

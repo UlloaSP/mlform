@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldConfig, FieldDefinition } from "@/schema";
+import type { FieldConfig, FieldDefinition, NormalizedFieldConfig } from "@/schema";
 import type {
   DeclarativeFieldKind,
+  FieldDescriptor,
+  FieldDescriptorContext,
   FieldPresenter,
   FieldRenderHints,
   FieldRenderSpecContext,
@@ -32,7 +34,10 @@ export type DefinedFieldKind<TConfig extends FieldConfig, TValue> = {
   isEqual?: (previous: TValue, next: TValue, config: TConfig) => boolean;
   serializeValue?: (value: TValue, config: TConfig) => unknown;
   validate?: FieldDefinition<TConfig, TValue>["validate"];
-  describe?: (config: import("@/schema").NormalizedFieldConfig<TConfig>, context: any) => any;
+  describe?: (
+    config: NormalizedFieldConfig<TConfig>,
+    context: FieldDescriptorContext & { value: TValue },
+  ) => FieldDescriptor;
   definition: FieldDefinition<TConfig, TValue>;
   presenter: FieldPresenter<TConfig, TValue>;
 };
@@ -76,6 +81,7 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
           kind: config.kind,
           label: config.label,
           description: config.description ?? "",
+          showDescriptionInline: Boolean(config.showDescriptionInline),
           required: Boolean(config.required),
           disabled: Boolean(config.disabled),
           widget: kind.render.widget,

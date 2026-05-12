@@ -6,9 +6,12 @@ import type { BaseExplanationConfig, BaseFieldConfig, BaseReportConfig } from "@
 import type { ExplanationPresenter, FieldPresenter, ReportPresenter } from "./index";
 
 export class PresentationRegistry {
-  private readonly fieldPresenters = new Map<string, FieldPresenter<any, any>>();
-  private readonly reportPresenters = new Map<string, ReportPresenter<any>>();
-  private readonly explanationPresenters = new Map<string, ExplanationPresenter<any>>();
+  private readonly fieldPresenters = new Map<string, FieldPresenter<BaseFieldConfig, unknown>>();
+  private readonly reportPresenters = new Map<string, ReportPresenter<BaseReportConfig>>();
+  private readonly explanationPresenters = new Map<
+    string,
+    ExplanationPresenter<BaseExplanationConfig>
+  >();
 
   registerField<TConfig extends BaseFieldConfig, TValue>(
     presenter: FieldPresenter<TConfig, TValue>,
@@ -17,7 +20,7 @@ export class PresentationRegistry {
       throw new RegistryError(`Field presenter "${presenter.kind}" is already registered.`);
     }
 
-    this.fieldPresenters.set(presenter.kind, presenter as FieldPresenter<any, any>);
+    this.fieldPresenters.set(presenter.kind, presenter as FieldPresenter<BaseFieldConfig, unknown>);
     return this;
   }
 
@@ -26,7 +29,7 @@ export class PresentationRegistry {
       throw new RegistryError(`Report presenter "${presenter.kind}" is already registered.`);
     }
 
-    this.reportPresenters.set(presenter.kind, presenter as ReportPresenter<any>);
+    this.reportPresenters.set(presenter.kind, presenter as ReportPresenter<BaseReportConfig>);
     return this;
   }
 
@@ -37,19 +40,22 @@ export class PresentationRegistry {
       throw new RegistryError(`Explanation presenter "${presenter.kind}" is already registered.`);
     }
 
-    this.explanationPresenters.set(presenter.kind, presenter as ExplanationPresenter<any>);
+    this.explanationPresenters.set(
+      presenter.kind,
+      presenter as ExplanationPresenter<BaseExplanationConfig>,
+    );
     return this;
   }
 
-  getField(kind: string): FieldPresenter<any, any> | undefined {
+  getField(kind: string): FieldPresenter<BaseFieldConfig, unknown> | undefined {
     return this.fieldPresenters.get(kind);
   }
 
-  getReport(kind: string): ReportPresenter<any> | undefined {
+  getReport(kind: string): ReportPresenter<BaseReportConfig> | undefined {
     return this.reportPresenters.get(kind);
   }
 
-  getExplanation(kind: string): ExplanationPresenter<any> | undefined {
+  getExplanation(kind: string): ExplanationPresenter<BaseExplanationConfig> | undefined {
     return this.explanationPresenters.get(kind);
   }
 

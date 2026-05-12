@@ -50,10 +50,12 @@ export const presentVisibleReports = (
           .map((reportId) => form.getReport(reportId))
           .filter((report): report is NonNullable<typeof report> => report !== undefined);
 
-  return reports.map((controller) => ({
-    controller,
-    descriptor: resolveReportDescriptor(controller, form, presentationRegistry),
-  }));
+  return reports
+    .map((controller) => ({
+      controller,
+      descriptor: resolveReportDescriptor(controller, form, presentationRegistry),
+    }))
+    .filter((report) => report.descriptor !== null);
 };
 
 export const presentExplanations = (

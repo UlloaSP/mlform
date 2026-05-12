@@ -4,6 +4,7 @@
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createMlRegistryPack } from "@/builtins-ml";
+import type { FieldPresenter, ReportPresenter } from "@/presentation";
 import {
   ValidationError,
   createForm,
@@ -11,6 +12,7 @@ import {
   type FieldDefinition,
   type ReportDefinition,
 } from "@/runtime";
+import type { FieldConfig, ReportConfig } from "@/schema";
 import { PrimitiveFormElement } from "@/primitives/components/form-root";
 import {
   PrimitiveAsyncReportElement,
@@ -42,17 +44,21 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   return getShadow(renderer).querySelector("[aria-label]") as HTMLElement;
 };
 
-const withFieldPresenter = (
-  definition: FieldDefinition<any, any> & {
-    describe: (config: any, context: any) => any;
+const withFieldPresenter = <TConfig extends FieldConfig, TValue>(
+  definition: FieldDefinition<TConfig, TValue> & {
+    describe: FieldPresenter<TConfig, TValue>["describe"];
   },
-): FieldDefinition<any, any> => definition;
+): FieldDefinition<TConfig, TValue> & {
+  describe: FieldPresenter<TConfig, TValue>["describe"];
+} => definition;
 
-const withReportPresenter = (
-  definition: ReportDefinition<any> & {
-    describe: (config: any, context: any) => any;
+const withReportPresenter = <TConfig extends ReportConfig>(
+  definition: ReportDefinition<TConfig> & {
+    describe: ReportPresenter<TConfig>["describe"];
   },
-): ReportDefinition<any> => definition;
+): ReportDefinition<TConfig> & {
+  describe: ReportPresenter<TConfig>["describe"];
+} => definition;
 
 describe("primitives", () => {
   it("rejects mounting into a non-empty container unless replacement is explicit", () => {
@@ -1417,37 +1423,41 @@ describe("primitives", () => {
       customElements.define("test-context-probe-field", TestContextProbeFieldElement);
     }
 
-    const registry = createMlRegistryPack().registry;
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerField(
-      withFieldPresenter({
-        kind: "context-probe",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "context-probe";
-              label: string;
-              description?: string;
-              id?: string;
-            };
-          },
-        } as never,
-        normalizeValue(value) {
-          return typeof value === "string" ? value : "";
-        },
-        describe(config, context) {
-          return {
-            component: "context-probe-field",
-            props: {
-              id: config.id,
-              label: config.label,
-              description: config.description ?? "",
-              value: context.state.value,
-            },
+    const contextProbeDefinition = withFieldPresenter({
+      kind: "context-probe",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "context-probe";
+            label: string;
+            description?: string;
+            id?: string;
           };
         },
-      } satisfies FieldDefinition),
-    );
+      } as never,
+      normalizeValue(value) {
+        return typeof value === "string" ? value : "";
+      },
+      describe(config, context) {
+        return {
+          component: "context-probe-field",
+          props: {
+            id: config.id,
+            label: config.label,
+            description: config.description ?? "",
+            value: context.state.value,
+          },
+        };
+      },
+    } satisfies FieldDefinition);
+    registry.registerField(contextProbeDefinition);
+    pack.presentationRegistry.registerField({
+      kind: contextProbeDefinition.kind,
+      describe: contextProbeDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1474,6 +1484,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
+      presentationRegistry: pack.presentationRegistry,
       reportPane: "hidden",
     });
 
@@ -1512,35 +1523,39 @@ describe("primitives", () => {
       customElements.define("test-probe-field", TestProbeFieldElement);
     }
 
-    const registry = createMlRegistryPack().registry;
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerField(
-      withFieldPresenter({
-        kind: "probe",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "probe";
-              label: string;
-              id?: string;
-            };
-          },
-        } as never,
-        normalizeValue(value) {
-          return typeof value === "string" ? value : "";
-        },
-        describe(config, context) {
-          return {
-            component: "probe-field",
-            props: {
-              id: config.id,
-              label: config.label,
-              value: context.state.value,
-            },
+    const probeDefinition = withFieldPresenter({
+      kind: "probe",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "probe";
+            label: string;
+            id?: string;
           };
         },
-      } satisfies FieldDefinition),
-    );
+      } as never,
+      normalizeValue(value) {
+        return typeof value === "string" ? value : "";
+      },
+      describe(config, context) {
+        return {
+          component: "probe-field",
+          props: {
+            id: config.id,
+            label: config.label,
+            value: context.state.value,
+          },
+        };
+      },
+    } satisfies FieldDefinition);
+    registry.registerField(probeDefinition);
+    pack.presentationRegistry.registerField({
+      kind: probeDefinition.kind,
+      describe: probeDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1566,6 +1581,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
+      presentationRegistry: pack.presentationRegistry,
       reportPane: "hidden",
     });
 
@@ -1607,35 +1623,39 @@ describe("primitives", () => {
       customElements.define("test-probe-report", TestProbeReportElement);
     }
 
-    const registry = createMlRegistryPack().registry;
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerReport(
-      withReportPresenter({
-        kind: "probe-report",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "probe-report";
-              id?: string;
-              label?: string;
-            };
-          },
-        } as never,
-        resolvePayload(_config, context) {
-          return context.result.reports.probe;
-        },
-        describe(config, context) {
-          return {
-            component: "probe-report",
-            props: {
-              id: config.id,
-              label: config.label ?? "Probe",
-              payload: context.payload,
-            },
+    const probeReportDefinition = withReportPresenter({
+      kind: "probe-report",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "probe-report";
+            id?: string;
+            label?: string;
           };
         },
-      }),
-    );
+      } as never,
+      resolvePayload(_config, context) {
+        return context.result.reports.probe;
+      },
+      describe(config, context) {
+        return {
+          component: "probe-report",
+          props: {
+            id: config.id,
+            label: config.label ?? "Probe",
+            payload: context.payload,
+          },
+        };
+      },
+    });
+    registry.registerReport(probeReportDefinition);
+    pack.presentationRegistry.registerReport({
+      kind: probeReportDefinition.kind,
+      describe: probeReportDefinition.describe,
+    });
 
     const reportTransport = {
       submit: vi
@@ -1672,6 +1692,7 @@ describe("primitives", () => {
         "probe-report",
         "test-probe-report",
       ),
+      presentationRegistry: pack.presentationRegistry,
       reportTransport,
     });
 
@@ -1798,37 +1819,41 @@ describe("primitives", () => {
       customElements.define("test-request-only-report", TestRequestOnlyReportElement);
     }
 
-    const registry = createMlRegistryPack().registry;
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerReport(
-      withReportPresenter({
-        kind: "probe-request-report",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "probe-request-report";
-              id?: string;
-              label?: string;
-              explanations?: boolean;
-            };
-          },
-        } as never,
-        resolvePayload(_config, context) {
-          return context.result.reports.probe;
-        },
-        describe(config, context) {
-          return {
-            component: "probe-request-report",
-            props: {
-              id: config.id,
-              label: config.label ?? "Probe",
-              payload: context.payload,
-              explanations: config.explanations ?? false,
-            },
+    const requestReportDefinition = withReportPresenter({
+      kind: "probe-request-report",
+      schema: {
+        parse(input: unknown) {
+          return input as {
+            kind: "probe-request-report";
+            id?: string;
+            label?: string;
+            explanations?: boolean;
           };
         },
-      }),
-    );
+      } as never,
+      resolvePayload(_config, context) {
+        return context.result.reports.probe;
+      },
+      describe(config, context) {
+        return {
+          component: "probe-request-report",
+          props: {
+            id: config.id,
+            label: config.label ?? "Probe",
+            payload: context.payload,
+            explanations: config.explanations ?? false,
+          },
+        };
+      },
+    });
+    registry.registerReport(requestReportDefinition);
+    pack.presentationRegistry.registerReport({
+      kind: requestReportDefinition.kind,
+      describe: requestReportDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1861,6 +1886,7 @@ describe("primitives", () => {
         "probe-request-report",
         "test-request-only-report",
       ),
+      presentationRegistry: pack.presentationRegistry,
     });
 
     await flush();
