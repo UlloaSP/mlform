@@ -3,7 +3,8 @@
 
 import { css, LitElement, type CSSResultGroup } from "lit";
 import { property } from "lit/decorators.js";
-import type { ExplanationController, ExplanationDescriptor } from "@/engine";
+import type { ExplanationDescriptor } from "@/presentation";
+import type { ExplanationController } from "@/runtime";
 import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type { PrimitiveExplanationRenderContext } from "./types";
 

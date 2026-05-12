@@ -3,17 +3,13 @@
 
 import {
   assertTransportCapabilities,
-  cloneCapabilities,
   inferTransportCapabilities,
   mergeTransportCapabilities,
 } from "../capabilities";
-import { TransportError } from "../errors";
 import {
   combineSignals,
-  createAggregateFailure,
   createAsyncQueue,
   createTransport,
-  isRecord,
   mergeFanoutResponses,
   normalizeTransportResponse,
   resolveStreamOrSubmit,
@@ -25,12 +21,12 @@ import type {
   FanoutTransportFailure,
   FanoutTransportOptions,
   FanoutTransportResult,
-  QuorumFanoutTransportOptions,
   SubmitRequest,
   Transport,
   TransportCapabilities,
   TransportStreamEvent,
 } from "../types";
+import { createFanoutFailure } from "./fanout-helpers";
 
 export const createFanoutTransport = <TTransportId extends string = string>(
   options: FanoutTransportOptions<TTransportId>,
@@ -116,7 +112,10 @@ export const createFanoutTransport = <TTransportId extends string = string>(
 
           try {
             const response = normalizeTransportResponse(
-              await entry.transport.submit({ ...transformedRequest, signal }),
+              await entry.transport.submit({
+                ...transformedRequest,
+                signal,
+              }),
             );
 
             if (abortPolicy === "abort-pending-on-first-success") {
@@ -166,23 +165,11 @@ export const createFanoutTransport = <TTransportId extends string = string>(
       const failurePolicy = options.failurePolicy ?? "fail-all";
 
       if (failures.length > 0 && failurePolicy === "fail-all") {
-        throw createAggregateFailure(
-          `createFanoutTransport failed for ${failures.map((f) => f.id ?? `transport[${f.index}]`).join(", ")}.`,
-          failures.map((failure) => ({
-            label: failure.id ?? `transport[${failure.index}]`,
-            error: failure.error,
-          })),
-        );
+        throw createFanoutFailure(failures);
       }
 
       if (results.length === 0 && failures.length > 0) {
-        throw createAggregateFailure(
-          `createFanoutTransport failed for ${failures.map((f) => f.id ?? `transport[${f.index}]`).join(", ")}.`,
-          failures.map((failure) => ({
-            label: failure.id ?? `transport[${failure.index}]`,
-            error: failure.error,
-          })),
-        );
+        throw createFanoutFailure(failures);
       }
 
       if (options.merge) {
@@ -315,23 +302,11 @@ export const createFanoutTransport = <TTransportId extends string = string>(
       }
 
       if (failures.length > 0 && failurePolicy === "fail-all") {
-        throw createAggregateFailure(
-          `createFanoutTransport failed for ${failures.map((f) => f.id ?? `transport[${f.index}]`).join(", ")}.`,
-          failures.map((failure) => ({
-            label: failure.id ?? `transport[${failure.index}]`,
-            error: failure.error,
-          })),
-        );
+        throw createFanoutFailure(failures);
       }
 
       if (results.length === 0 && failures.length > 0) {
-        throw createAggregateFailure(
-          `createFanoutTransport failed for ${failures.map((f) => f.id ?? `transport[${f.index}]`).join(", ")}.`,
-          failures.map((failure) => ({
-            label: failure.id ?? `transport[${failure.index}]`,
-            error: failure.error,
-          })),
-        );
+        throw createFanoutFailure(failures);
       }
 
       const finalResult = options.merge
@@ -354,61 +329,6 @@ export const createFanoutTransport = <TTransportId extends string = string>(
       capabilities: transportEntries.reduce<TransportCapabilities | undefined>((caps, entry) => {
         return mergeTransportCapabilities(caps, inferTransportCapabilities(entry.transport));
       }, undefined),
-    },
-  );
-};
-
-export const createQuorumFanoutTransport = <TTransportId extends string = string>(
-  options: QuorumFanoutTransportOptions<TTransportId>,
-): Transport => {
-  const base = createFanoutTransport({
-    ...options,
-    failurePolicy: "partial-success",
-  });
-
-  const assertQuorum = (result: unknown) => {
-    const normalized = normalizeTransportResponse(result);
-    const transportsMeta = normalized.meta?.transports;
-    const successCount = Array.isArray(transportsMeta)
-      ? transportsMeta.length
-      : isRecord(transportsMeta)
-        ? Object.keys(transportsMeta).length
-        : 0;
-
-    if (successCount < options.quorum) {
-      throw new TransportError(
-        `createQuorumFanoutTransport: quorum ${options.quorum} not reached.`,
-        {
-          code: "QUORUM_NOT_REACHED",
-          retryable: true,
-          details: {
-            required: options.quorum,
-            actual: successCount,
-          },
-        },
-      );
-    }
-
-    return result;
-  };
-
-  return createTransport(
-    async (request) => assertQuorum(await base.submit(request)),
-    async function* (request) {
-      const stream = await resolveStreamOrSubmit(base, request);
-      for await (const event of stream) {
-        if (event.type === "result") {
-          yield {
-            ...event,
-            result: assertQuorum(event.result),
-          };
-          continue;
-        }
-        yield event;
-      }
-    },
-    {
-      capabilities: cloneCapabilities(base.capabilities),
     },
   );
 };

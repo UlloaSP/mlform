@@ -2,8 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
+import { createMlRegistryPack } from "@/builtins-ml";
 import { attachDesignSystem } from "@/design-system";
-import { createBuiltinRegistry, createForm } from "@/engine";
+import { createForm } from "@/runtime";
 import { mountForm } from "@/primitives";
 
 const flush = async (): Promise<void> => {
@@ -18,7 +19,7 @@ describe("design-system integration", () => {
       schema: {
         fields: [{ kind: "text", label: "Prompt", required: true }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -101,7 +102,7 @@ describe("design-system integration", () => {
       schema: {
         fields: [{ kind: "text", label: "Prompt" }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -157,7 +158,7 @@ describe("design-system integration", () => {
       schema: {
         fields: [{ kind: "text", label: "Prompt" }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },

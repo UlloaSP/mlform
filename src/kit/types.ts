@@ -1,28 +1,69 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  AttachedDesignSystem,
-  DesignSystemConfig,
-  DesignSystemRegistry,
-  ResolvedDesignSystem,
-} from "@/design-system";
-import type {
-  FormController,
-  FormHooks,
-  FormSchema,
-  FormValidator,
-  InactiveFieldPolicy,
-  Registry,
-  Transport,
-} from "@/engine";
-import type {
-  PrimitiveContainerStrategy,
-  PrimitiveLayout,
-  PrimitiveRegistry,
-  PrimitiveReportTransport,
-  PrimitiveTextOverrides,
-} from "@/primitives";
+export type {
+  FormLayoutNode,
+  FormLayoutSectionNode,
+  FormLayoutGroupNode,
+  FormLayoutFieldNode,
+  FormLayoutReportNode,
+  FormLayoutExplanationNode,
+  SinglePageLayoutConfig,
+  WizardStepConfig,
+  WizardLayoutConfig,
+  TabLayoutConfig,
+  TabsLayoutConfig,
+  AccordionSectionConfig,
+  AccordionLayoutConfig,
+  FormLayoutConfig,
+  ResolvedFormLayoutNode,
+  ResolvedFormLayoutSectionNode,
+  ResolvedFormLayoutGroupNode,
+  ResolvedFormLayoutFieldNode,
+  ResolvedFormLayoutReportNode,
+  ResolvedFormLayoutExplanationNode,
+  ResolvedSinglePageLayout,
+  ResolvedWizardStep,
+  ResolvedWizardLayout,
+  ResolvedTabLayout,
+  ResolvedTabsLayout,
+  ResolvedAccordionSection,
+  ResolvedAccordionLayout,
+  ResolvedFormLayout,
+} from "./layout-types";
+
+export type {
+  KitDesignSystemSnapshot,
+  KitLabels,
+  MountFormOptions,
+  MountedForm,
+} from "./mount-types";
+
+export type {
+  WizardState,
+  TabsState,
+  AccordionState,
+  FormViewFieldItem,
+  FormViewReportItem,
+  FormViewExplanationItem,
+  FormViewState,
+  FormViewSnapshot,
+  CreateFormViewOptions,
+  FormViewController,
+  WizardMountUiOptions,
+  MountWizardFormOptions,
+  MountedWizardForm,
+  TabsMountUiOptions,
+  MountTabsFormOptions,
+  MountedTabsForm,
+  AccordionMountUiOptions,
+  MountAccordionFormOptions,
+  MountedAccordionForm,
+  LayoutReferences,
+  PanelState,
+} from "./view-types";
+
+export type { WizardLabels, WizardTextOverrides } from "./wizard-constants";
 
 export type {
   ApiKeyAuthOptions,
@@ -75,58 +116,3 @@ export type {
   WebSocketSessionTransportOptions,
   WeightedRoutingTransportOptions,
 } from "@/transport";
-
-export interface KitDesignSystemSnapshot extends Omit<
-  DesignSystemConfig,
-  "mode" | "theme" | "recipe"
-> {
-  mode: NonNullable<DesignSystemConfig["mode"]>;
-  theme: NonNullable<DesignSystemConfig["theme"]>;
-  recipe: NonNullable<DesignSystemConfig["recipe"]>;
-}
-
-export interface KitLabels {
-  form?: string;
-  reports?: string;
-  submit?: string;
-  validating?: string;
-  submitting?: string;
-}
-
-export interface MountFormOptions {
-  schema: FormSchema;
-  transport: Transport;
-  registry?: Registry;
-  primitiveRegistry?: PrimitiveRegistry;
-  designSystemRegistry?: DesignSystemRegistry;
-  designSystem?: DesignSystemConfig;
-  initialValues?: Record<string, unknown>;
-  validators?: FormValidator[];
-  hooks?: FormHooks;
-  hookFailurePolicy?: {
-    afterSubmit?: "fail-submit" | "preserve-success";
-  };
-  inactiveFieldPolicy?: InactiveFieldPolicy;
-  listenerErrorPolicy?: "ignore" | "throw-aggregate";
-  onListenerError?: (error: unknown) => void;
-  layout?: PrimitiveLayout;
-  containerStrategy?: PrimitiveContainerStrategy;
-  reportPane?: "auto" | "always" | "hidden";
-  reportTransport?: PrimitiveReportTransport;
-  labels?: KitLabels;
-  primitiveText?: PrimitiveTextOverrides;
-  onDesignSystemChange?: (resolved: ResolvedDesignSystem) => void;
-}
-
-export interface MountedForm {
-  readonly form: FormController;
-  readonly host: HTMLElement;
-  readonly engineRegistry: Registry;
-  readonly primitiveRegistry: PrimitiveRegistry;
-  readonly designSystemRegistry: DesignSystemRegistry;
-  readonly designSystem: AttachedDesignSystem;
-  updateDesignSystem(config: DesignSystemConfig): void;
-  replaceDesignSystem(config: KitDesignSystemSnapshot): void;
-  resetDesignSystem(): void;
-  unmount(): void;
-}

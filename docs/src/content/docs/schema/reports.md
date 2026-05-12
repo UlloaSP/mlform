@@ -15,7 +15,7 @@ const schema = {
 };
 ```
 
-`classifier` accepts optional `labels` and `details`. `regressor` accepts optional `unit` and `precision`.
+`classifier` accepts optional `labels` and `showClassProbabilities`. `regressor` accepts optional `unit` and `precision`.
 
 Use `source` when the backend key differs from the report id:
 

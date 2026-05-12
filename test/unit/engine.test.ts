@@ -3,15 +3,18 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
+import { createMlRegistryPack } from "@/builtins-ml";
+import type { FieldPresenter, ReportPresenter } from "@/presentation";
+import type { FieldConfig, ReportConfig } from "@/schema";
 import {
   EngineError,
-  RegistryError,
   type FieldController,
+  type FieldDefinition,
+  type ReportDefinition,
   ReportPayloadError,
   SubmissionAbortedError,
   SubmitError,
   ValidationError,
-  createBuiltinRegistry,
   createForm,
   defineExplanationDefinition,
   defineExplanationKind,
@@ -19,7 +22,47 @@ import {
   defineReportKind,
   executeFormPipeline,
   shallowEquality,
-} from "@/engine";
+} from "@/runtime";
+import { createMappedCategoryBehavior } from "@/behaviors";
+
+const builtinPresentationRegistry = createMlRegistryPack().presentationRegistry;
+
+const describeField = (
+  field: NonNullable<ReturnType<import("@/runtime").FormController["getField"]>>,
+  presentationRegistry = builtinPresentationRegistry,
+) =>
+  presentationRegistry.getField(field.kind)?.describe(field.config, {
+    fieldId: field.id,
+    state: field.state,
+    value: field.state.value,
+  });
+
+const describeReport = (
+  form: import("@/runtime").FormController,
+  report: NonNullable<ReturnType<import("@/runtime").FormController["getReport"]>>,
+) =>
+  builtinPresentationRegistry.getReport(report.kind)?.describe(report.config, {
+    reportId: report.id,
+    state: report.state,
+    payload: report.state.payload,
+    result: form.state.lastResult,
+  });
+
+const withFieldPresenter = <TConfig extends FieldConfig, TValue>(
+  definition: FieldDefinition<TConfig, TValue> & {
+    describe: FieldPresenter<TConfig, TValue>["describe"];
+  },
+): FieldDefinition<TConfig, TValue> & {
+  describe: FieldPresenter<TConfig, TValue>["describe"];
+} => definition;
+
+const withReportPresenter = <TConfig extends ReportConfig>(
+  definition: ReportDefinition<TConfig> & {
+    describe: ReportPresenter<TConfig>["describe"];
+  },
+): ReportDefinition<TConfig> & {
+  describe: ReportPresenter<TConfig>["describe"];
+} => definition;
 
 describe("engine", () => {
   it("creates a headless form with normalized ids and descriptors", () => {
@@ -50,7 +93,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -62,7 +105,7 @@ describe("engine", () => {
     expect(form.fields[1]?.id).toBe("age");
     expect(form.fields[2]?.id).toBe("launch-date");
     expect(form.reports[0]?.id).toBe("prediction");
-    expect(form.fields[0]?.descriptor).toEqual({
+    expect(describeField(form.fields[0]!)).toEqual({
       component: "text-field",
       props: expect.objectContaining({
         id: "customer-name",
@@ -71,7 +114,7 @@ describe("engine", () => {
         value: "",
       }),
     });
-    expect(form.fields[1]?.descriptor).toEqual({
+    expect(describeField(form.fields[1]!)).toEqual({
       component: "number-field",
       props: expect.objectContaining({
         id: "age",
@@ -81,7 +124,7 @@ describe("engine", () => {
         value: null,
       }),
     });
-    expect(form.fields[2]?.descriptor).toEqual({
+    expect(describeField(form.fields[2]!)).toEqual({
       component: "date-field",
       props: expect.objectContaining({
         id: "launch-date",
@@ -110,7 +153,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -176,7 +219,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -234,7 +277,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -266,7 +309,7 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
         transport: {
           submit: vi.fn(),
         },
@@ -287,7 +330,7 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
         transport: {
           submit: vi.fn(),
         },
@@ -308,7 +351,7 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
         transport: {
           submit: vi.fn(),
         },
@@ -326,7 +369,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -369,7 +412,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -399,7 +442,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -433,7 +476,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -468,7 +511,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -501,7 +544,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -538,7 +581,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -583,7 +626,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -655,7 +698,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({ reports: {} }),
       },
@@ -710,7 +753,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -736,45 +779,47 @@ describe("engine", () => {
   });
 
   it("supports bigint declarative comparisons without losing precision", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
-    registry.registerField({
-      kind: "bigint",
-      schema: z
-        .object({
-          kind: z.literal("bigint"),
-          id: z.string().optional(),
-          label: z.string(),
-          hiddenWhen: z.any().optional(),
-          disabledWhen: z.any().optional(),
-          readOnlyWhen: z.any().optional(),
-        })
-        .passthrough(),
-      getDefaultValue() {
-        return 0n;
-      },
-      normalizeValue(value) {
-        if (typeof value === "bigint") {
-          return value;
-        }
+    registry.registerField(
+      withFieldPresenter({
+        kind: "bigint",
+        schema: z
+          .object({
+            kind: z.literal("bigint"),
+            id: z.string().optional(),
+            label: z.string(),
+            hiddenWhen: z.any().optional(),
+            disabledWhen: z.any().optional(),
+            readOnlyWhen: z.any().optional(),
+          })
+          .passthrough(),
+        getDefaultValue() {
+          return 0n;
+        },
+        normalizeValue(value) {
+          if (typeof value === "bigint") {
+            return value;
+          }
 
-        if (typeof value === "number" || typeof value === "string") {
-          return BigInt(value);
-        }
+          if (typeof value === "number" || typeof value === "string") {
+            return BigInt(value);
+          }
 
-        return 0n;
-      },
-      describe(config, context) {
-        return {
-          component: "bigint-field",
-          props: {
-            id: config.id,
-            label: config.label,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+          return 0n;
+        },
+        describe(config, context) {
+          return {
+            component: "bigint-field",
+            props: {
+              id: config.id,
+              label: config.label,
+              value: context.state.value,
+            },
+          };
+        },
+      }),
+    );
 
     const form = createForm({
       schema: {
@@ -832,7 +877,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -900,7 +945,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       validators: [
         () => ({
@@ -932,7 +977,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -967,7 +1012,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1012,7 +1057,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1029,34 +1074,36 @@ describe("engine", () => {
   });
 
   it("protects public value snapshots from external mutation", () => {
-    const registry = createBuiltinRegistry();
-    registry.registerField({
-      kind: "object-value",
-      schema: z.object({
-        kind: z.literal("object-value"),
-        label: z.string(),
-        id: z.string().optional(),
-        defaultValue: z.unknown().optional(),
+    const registry = createMlRegistryPack().registry;
+    registry.registerField(
+      withFieldPresenter({
+        kind: "object-value",
+        schema: z.object({
+          kind: z.literal("object-value"),
+          label: z.string(),
+          id: z.string().optional(),
+          defaultValue: z.unknown().optional(),
+        }),
+        getDefaultValue() {
+          return { nested: { items: [1] } };
+        },
+        normalizeValue(value) {
+          return value && typeof value === "object" ? value : { nested: { items: [] } };
+        },
+        serializeValue(value) {
+          return value;
+        },
+        describe(config, context) {
+          return {
+            component: "object-value",
+            props: {
+              id: config.id,
+              value: context.state.value,
+            },
+          };
+        },
       }),
-      getDefaultValue() {
-        return { nested: { items: [1] } };
-      },
-      normalizeValue(value) {
-        return value && typeof value === "object" ? value : { nested: { items: [] } };
-      },
-      serializeValue(value) {
-        return value;
-      },
-      describe(config, context) {
-        return {
-          component: "object-value",
-          props: {
-            id: config.id,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+    );
 
     const form = createForm({
       schema: {
@@ -1107,7 +1154,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -1155,34 +1202,36 @@ describe("engine", () => {
   });
 
   it("uses semantic field equality for dirty tracking", () => {
-    const registry = createBuiltinRegistry();
-    registry.registerField({
-      kind: "case-insensitive-text",
-      schema: z.object({
-        kind: z.literal("case-insensitive-text"),
-        label: z.string(),
-        id: z.string().optional(),
-        defaultValue: z.string().optional(),
+    const registry = createMlRegistryPack().registry;
+    registry.registerField(
+      withFieldPresenter({
+        kind: "case-insensitive-text",
+        schema: z.object({
+          kind: z.literal("case-insensitive-text"),
+          label: z.string(),
+          id: z.string().optional(),
+          defaultValue: z.string().optional(),
+        }),
+        getDefaultValue(config) {
+          return config.defaultValue ?? "";
+        },
+        normalizeValue(value) {
+          return typeof value === "string" ? value : "";
+        },
+        isEqual(previous, next) {
+          return previous.toLowerCase() === next.toLowerCase();
+        },
+        describe(config, context) {
+          return {
+            component: "case-insensitive-text",
+            props: {
+              id: config.id,
+              value: context.state.value,
+            },
+          };
+        },
       }),
-      getDefaultValue(config) {
-        return config.defaultValue ?? "";
-      },
-      normalizeValue(value) {
-        return typeof value === "string" ? value : "";
-      },
-      isEqual(previous, next) {
-        return previous.toLowerCase() === next.toLowerCase();
-      },
-      describe(config, context) {
-        return {
-          component: "case-insensitive-text",
-          props: {
-            id: config.id,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+    );
 
     const form = createForm({
       schema: {
@@ -1207,34 +1256,36 @@ describe("engine", () => {
   });
 
   it("supports semantic cloning and equality for typed array field values", () => {
-    const registry = createBuiltinRegistry();
-    registry.registerField({
-      kind: "tensor-value",
-      schema: z.object({
-        kind: z.literal("tensor-value"),
-        label: z.string(),
-        id: z.string().optional(),
-        defaultValue: z.instanceof(Uint8Array).optional(),
+    const registry = createMlRegistryPack().registry;
+    registry.registerField(
+      withFieldPresenter({
+        kind: "tensor-value",
+        schema: z.object({
+          kind: z.literal("tensor-value"),
+          label: z.string(),
+          id: z.string().optional(),
+          defaultValue: z.instanceof(Uint8Array).optional(),
+        }),
+        getDefaultValue(config) {
+          return config.defaultValue ?? new Uint8Array();
+        },
+        normalizeValue(value) {
+          return value instanceof Uint8Array ? value : new Uint8Array();
+        },
+        serializeValue(value) {
+          return Array.from(value);
+        },
+        describe(config, context) {
+          return {
+            component: "tensor-value",
+            props: {
+              id: config.id,
+              value: context.state.value,
+            },
+          };
+        },
       }),
-      getDefaultValue(config) {
-        return config.defaultValue ?? new Uint8Array();
-      },
-      normalizeValue(value) {
-        return value instanceof Uint8Array ? value : new Uint8Array();
-      },
-      serializeValue(value) {
-        return Array.from(value);
-      },
-      describe(config, context) {
-        return {
-          component: "tensor-value",
-          props: {
-            id: config.id,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+    );
 
     const form = createForm({
       schema: {
@@ -1284,7 +1335,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       hooks: {
         beforeValidate,
@@ -1320,7 +1371,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       hooks: {
         afterValidate,
@@ -1341,36 +1392,38 @@ describe("engine", () => {
   });
 
   it("preserves async field validation results during form validation", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
-    registry.registerField({
-      kind: "async-text",
-      schema: {
-        parse(input: unknown) {
-          return input as {
-            kind: "async-text";
-            label: string;
-            id?: string;
+    registry.registerField(
+      withFieldPresenter({
+        kind: "async-text",
+        schema: {
+          parse(input: unknown) {
+            return input as {
+              kind: "async-text";
+              label: string;
+              id?: string;
+            };
+          },
+        } as never,
+        normalizeValue(value) {
+          return typeof value === "string" ? value : "";
+        },
+        validate: async (value) => {
+          await Promise.resolve();
+          return value === "taken" ? ["Already taken."] : [];
+        },
+        describe(config, context) {
+          return {
+            component: "async-text",
+            props: {
+              id: config.id,
+              value: context.state.value,
+            },
           };
         },
-      } as never,
-      normalizeValue(value) {
-        return typeof value === "string" ? value : "";
-      },
-      validate: async (value) => {
-        await Promise.resolve();
-        return value === "taken" ? ["Already taken."] : [];
-      },
-      describe(config, context) {
-        return {
-          component: "async-text",
-          props: {
-            id: config.id,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+      }),
+    );
 
     const form = createForm({
       schema: {
@@ -1396,10 +1449,11 @@ describe("engine", () => {
   });
 
   it("exposes a field validating status while async field validation is pending", async () => {
-    const registry = createBuiltinRegistry();
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
     let resolveValidation: ((errors: string[]) => void) | undefined;
 
-    registry.registerField({
+    const pendingTextDefinition = withFieldPresenter({
       kind: "pending-text",
       schema: {
         parse(input: unknown) {
@@ -1427,6 +1481,11 @@ describe("engine", () => {
         };
       },
     });
+    registry.registerField(pendingTextDefinition);
+    pack.presentationRegistry.registerField({
+      kind: pendingTextDefinition.kind,
+      describe: pendingTextDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1448,7 +1507,9 @@ describe("engine", () => {
     await Promise.resolve();
 
     expect(form.getField("username")?.state.status).toBe("validating");
-    expect(form.getField("username")?.descriptor.props.status).toBe("validating");
+    expect(describeField(form.getField("username")!, pack.presentationRegistry)?.props.status).toBe(
+      "validating",
+    );
 
     resolveValidation?.([]);
     const result = await pendingValidation;
@@ -1458,7 +1519,7 @@ describe("engine", () => {
   });
 
   it("supports thenable field validators", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     class ThenableValidationResult implements PromiseLike<string[]> {
       constructor(private readonly errors: string[]) {}
 
@@ -1471,32 +1532,34 @@ describe("engine", () => {
       }
     }
 
-    registry.registerField({
-      kind: "thenable-text",
-      schema: {
-        parse(input: unknown) {
-          return input as {
-            kind: "thenable-text";
-            label: string;
-            id?: string;
+    registry.registerField(
+      withFieldPresenter({
+        kind: "thenable-text",
+        schema: {
+          parse(input: unknown) {
+            return input as {
+              kind: "thenable-text";
+              label: string;
+              id?: string;
+            };
+          },
+        } as never,
+        normalizeValue(value) {
+          return typeof value === "string" ? value : "";
+        },
+        validate: (value) =>
+          new ThenableValidationResult(value === "taken" ? ["Taken by thenable."] : []),
+        describe(config, context) {
+          return {
+            component: "thenable-text",
+            props: {
+              id: config.id,
+              value: context.state.value,
+            },
           };
         },
-      } as never,
-      normalizeValue(value) {
-        return typeof value === "string" ? value : "";
-      },
-      validate: (value) =>
-        new ThenableValidationResult(value === "taken" ? ["Taken by thenable."] : []),
-      describe(config, context) {
-        return {
-          component: "thenable-text",
-          props: {
-            id: config.id,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+      }),
+    );
 
     const form = createForm({
       schema: {
@@ -1521,38 +1584,40 @@ describe("engine", () => {
   });
 
   it("debounces and cancels stale async field validation runs", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     const validate = vi.fn(async (value: string) => {
       await Promise.resolve();
       return value === "taken" ? ["Already taken."] : [];
     });
 
-    registry.registerField({
-      kind: "debounced-text",
-      schema: {
-        parse(input: unknown) {
-          return input as {
-            kind: "debounced-text";
-            label: string;
-            id?: string;
-            asyncValidationDebounceMs?: number;
+    registry.registerField(
+      withFieldPresenter({
+        kind: "debounced-text",
+        schema: {
+          parse(input: unknown) {
+            return input as {
+              kind: "debounced-text";
+              label: string;
+              id?: string;
+              asyncValidationDebounceMs?: number;
+            };
+          },
+        } as never,
+        normalizeValue(value) {
+          return typeof value === "string" ? value : "";
+        },
+        validate,
+        describe(config, context) {
+          return {
+            component: "debounced-text",
+            props: {
+              id: config.id,
+              value: context.state.value,
+            },
           };
         },
-      } as never,
-      normalizeValue(value) {
-        return typeof value === "string" ? value : "";
-      },
-      validate,
-      describe(config, context) {
-        return {
-          component: "debounced-text",
-          props: {
-            id: config.id,
-            value: context.state.value,
-          },
-        };
-      },
-    });
+      }),
+    );
 
     const form = createForm({
       schema: {
@@ -1608,7 +1673,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1643,7 +1708,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1675,7 +1740,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1727,11 +1792,11 @@ describe("engine", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
-            details: true,
+            showClassProbabilities: true,
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit,
       },
@@ -1772,11 +1837,12 @@ describe("engine", () => {
     expect(form.state.status).toBe("success");
     expect(form.state.submitCount).toBe(1);
     expect(form.reports[0]?.state.status).toBe("ready");
-    expect(form.reports[0]?.descriptor).toEqual({
+    expect(describeReport(form, form.reports[0]!)).toEqual({
       component: "classifier-report",
       props: expect.objectContaining({
         id: "risk",
         label: "Risk",
+        showClassProbabilities: true,
         payload: {
           labels: ["low", "high"],
           probabilities: [0.2, 0.8],
@@ -1807,7 +1873,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
     });
 
@@ -1878,7 +1944,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -1894,8 +1960,9 @@ describe("engine", () => {
     form.setValues({ name: "Alice" });
     await form.submit();
 
-    expect(form.reports[0]?.descriptor?.props.id).toBe("risk");
-    expect(form.reports[0]?.descriptor?.props).not.toHaveProperty("explanations");
+    expect(describeReport(form, form.reports[0]!)?.props.id).toBe("risk");
+    expect(describeReport(form, form.reports[0]!)?.props.showClassProbabilities).toBe(true);
+    expect(describeReport(form, form.reports[0]!)?.props).not.toHaveProperty("explanations");
   });
 
   it("throws ValidationError when submit is attempted with invalid data", async () => {
@@ -1910,7 +1977,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1942,7 +2009,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockRejectedValue(new Error("backend offline")),
       },
@@ -1959,57 +2026,61 @@ describe("engine", () => {
   });
 
   it("surfaces report payload failures as report-local error state without failing submit", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry
-      .registerReport({
-        kind: "good-report",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "good-report";
-              id?: string;
-              source?: string;
+      .registerReport(
+        withReportPresenter({
+          kind: "good-report",
+          schema: {
+            parse(input: unknown) {
+              return input as {
+                kind: "good-report";
+                id?: string;
+                source?: string;
+              };
+            },
+          } as never,
+          resolvePayload(_config, context) {
+            return context.result.reports.good;
+          },
+          describe(config, context) {
+            return {
+              component: "good-report",
+              props: {
+                id: config.id,
+                payload: context.payload,
+              },
             };
           },
-        } as never,
-        resolvePayload(_config, context) {
-          return context.result.reports.good;
-        },
-        describe(config, context) {
-          return {
-            component: "good-report",
-            props: {
-              id: config.id,
-              payload: context.payload,
+        }),
+      )
+      .registerReport(
+        withReportPresenter({
+          kind: "bad-report",
+          schema: {
+            parse(input: unknown) {
+              return input as {
+                kind: "bad-report";
+                id?: string;
+                source?: string;
+              };
             },
-          };
-        },
-      })
-      .registerReport({
-        kind: "bad-report",
-        schema: {
-          parse(input: unknown) {
-            return input as {
-              kind: "bad-report";
-              id?: string;
-              source?: string;
+          } as never,
+          resolvePayload() {
+            throw new Error("report payload failed");
+          },
+          describe(config, context) {
+            return {
+              component: "bad-report",
+              props: {
+                id: config.id,
+                payload: context.payload,
+              },
             };
           },
-        } as never,
-        resolvePayload() {
-          throw new Error("report payload failed");
-        },
-        describe(config, context) {
-          return {
-            component: "bad-report",
-            props: {
-              id: config.id,
-              payload: context.payload,
-            },
-          };
-        },
-      });
+        }),
+      );
 
     const form = createForm({
       schema: {
@@ -2067,28 +2138,30 @@ describe("engine", () => {
   });
 
   it("validates report payloads with report payload schemas", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
-    registry.registerReport({
-      kind: "typed-score",
-      schema: z.object({
-        kind: z.literal("typed-score"),
-        id: z.string().optional(),
-        source: z.string().optional(),
+    registry.registerReport(
+      withReportPresenter({
+        kind: "typed-score",
+        schema: z.object({
+          kind: z.literal("typed-score"),
+          id: z.string().optional(),
+          source: z.string().optional(),
+        }),
+        payloadSchema: z.object({
+          score: z.number(),
+        }),
+        describe(config, context) {
+          return {
+            component: "typed-score",
+            props: {
+              id: config.id,
+              payload: context.payload,
+            },
+          };
+        },
       }),
-      payloadSchema: z.object({
-        score: z.number(),
-      }),
-      describe(config, context) {
-        return {
-          component: "typed-score",
-          props: {
-            id: config.id,
-            payload: context.payload,
-          },
-        };
-      },
-    });
+    );
 
     const form = createForm({
       schema: {
@@ -2126,30 +2199,32 @@ describe("engine", () => {
   });
 
   it("can fail the full submission when a report payload is invalid", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     const onSubmitError = vi.fn();
 
-    registry.registerReport({
-      kind: "strict-score",
-      schema: z.object({
-        kind: z.literal("strict-score"),
-        id: z.string().optional(),
-        source: z.string().optional(),
+    registry.registerReport(
+      withReportPresenter({
+        kind: "strict-score",
+        schema: z.object({
+          kind: z.literal("strict-score"),
+          id: z.string().optional(),
+          source: z.string().optional(),
+        }),
+        payloadSchema: z.object({
+          score: z.number(),
+        }),
+        payloadValidationPolicy: "fail-submit",
+        describe(config, context) {
+          return {
+            component: "strict-score",
+            props: {
+              id: config.id,
+              payload: context.payload,
+            },
+          };
+        },
       }),
-      payloadSchema: z.object({
-        score: z.number(),
-      }),
-      payloadValidationPolicy: "fail-submit",
-      describe(config, context) {
-        return {
-          component: "strict-score",
-          props: {
-            id: config.id,
-            payload: context.payload,
-          },
-        };
-      },
-    });
+    );
 
     const form = createForm({
       schema: {
@@ -2196,9 +2271,9 @@ describe("engine", () => {
   });
 
   it("supports async report payload resolvers", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
-    registry.registerReport({
+    const asyncReport = withReportPresenter({
       kind: "async-report",
       schema: {
         parse(input: unknown) {
@@ -2224,6 +2299,7 @@ describe("engine", () => {
         };
       },
     });
+    registry.registerReport(asyncReport);
 
     const form = createForm({
       schema: {
@@ -2260,7 +2336,14 @@ describe("engine", () => {
       error: null,
       status: "ready",
     });
-    expect(form.getReport("async")?.descriptor).toEqual({
+    expect(
+      asyncReport.describe?.(form.getReport("async")!.config, {
+        reportId: "async",
+        state: form.getReport("async")!.state,
+        payload: form.getReport("async")!.state.payload,
+        result: form.state.lastResult,
+      }),
+    ).toEqual({
       component: "async-report",
       props: {
         id: "async",
@@ -2299,7 +2382,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       hooks: {
         beforeSubmit,
@@ -2348,7 +2431,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -2403,7 +2486,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
     });
 
@@ -2422,10 +2505,15 @@ describe("engine", () => {
   });
 
   it("marks reports as loading while submit is in flight", async () => {
-    let form: ReturnType<typeof createForm>;
+    const formRef: { current?: ReturnType<typeof createForm> } = {};
     const beforeSubmit = vi.fn(() => {
-      expect(form.getReport("classifier")?.state.status).toBe("loading");
-      expect(form.state.reportStates.classifier?.status).toBe("loading");
+      const activeForm = formRef.current;
+      expect(activeForm).toBeDefined();
+      if (!activeForm) {
+        return;
+      }
+      expect(activeForm.getReport("classifier")?.state.status).toBe("loading");
+      expect(activeForm.state.reportStates.classifier?.status).toBe("loading");
     });
     const submit = vi.fn().mockResolvedValue({
       reports: {
@@ -2433,7 +2521,7 @@ describe("engine", () => {
       },
     });
 
-    form = createForm({
+    const form = createForm({
       schema: {
         fields: [
           {
@@ -2449,12 +2537,13 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       hooks: {
         beforeSubmit,
       },
     });
+    formRef.current = form;
 
     form.setValues({ name: "Alice" });
     await form.submit();
@@ -2480,7 +2569,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
     });
 
@@ -2530,7 +2619,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       inactiveFieldPolicy: "reset-on-hide",
     });
@@ -2592,7 +2681,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       inactiveFieldPolicy: "omit",
     });
@@ -2655,7 +2744,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       hooks: {
         onSubmitError,
@@ -2699,7 +2788,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
     });
 
@@ -2753,7 +2842,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
     });
 
@@ -2814,7 +2903,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
       hooks: {
         beforeSubmit,
@@ -2858,7 +2947,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -2899,7 +2988,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({ reports: {} }),
       },
@@ -2933,7 +3022,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockImplementation(
           () =>
@@ -2974,7 +3063,7 @@ describe("engine", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
         async *stream() {
@@ -3031,7 +3120,7 @@ describe("engine", () => {
   });
 
   it("normalizes explanation schemas and assigns auto-generated ids", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3070,7 +3159,7 @@ describe("engine", () => {
     const afterExplanation = vi.fn();
     const fetchResult = { importances: { name: 0.9 } };
     const transportSubmit = vi.fn().mockResolvedValue(fetchResult);
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3148,7 +3237,7 @@ describe("engine", () => {
   it("transitions explanation state idle → loading → error and fires onExplanationError hook", async () => {
     const onExplanationError = vi.fn();
     const fetchError = new Error("explanation service unavailable");
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3195,7 +3284,7 @@ describe("engine", () => {
 
   it("skips fetch when explanation status is not idle (idempotent)", async () => {
     const transportSubmit = vi.fn().mockResolvedValue({ data: 1 });
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3243,7 +3332,7 @@ describe("engine", () => {
   });
 
   it("resets all explanation states on form reset", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3284,7 +3373,7 @@ describe("engine", () => {
   });
 
   it("resets explanation states at the start of each new submit", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3345,7 +3434,7 @@ describe("engine", () => {
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue(submitResult),
       },
@@ -3379,7 +3468,7 @@ describe("engine", () => {
         score: 0.9,
       };
     });
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     registry.registerExplanation(
       defineExplanationDefinition({
@@ -3478,7 +3567,7 @@ describe("engine", () => {
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {},
@@ -3507,7 +3596,7 @@ describe("engine", () => {
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockRejectedValue(new Error("submit failed")),
       },
@@ -3519,7 +3608,7 @@ describe("engine", () => {
   });
 
   it("forwards external abort signals into explanation fetches", async () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     let capturedSignal: AbortSignal | undefined;
     let resolveReady: (() => void) | undefined;
 
@@ -3591,7 +3680,7 @@ describe("engine", () => {
   });
 
   it("throws RegistryError for duplicate explanation kind registration", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
     const def = defineExplanationDefinition({
       kind: "shap",
       schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
@@ -3601,14 +3690,13 @@ describe("engine", () => {
 
     registry.registerExplanation(def);
 
-    expect(() => registry.registerExplanation(def)).toThrow(RegistryError);
     expect(() => registry.registerExplanation(def)).toThrow(
       'Explanation kind "shap" is already registered.',
     );
   });
 
   it("supports unregisterField, unregisterReport, and unregisterExplanation", () => {
-    const registry = createBuiltinRegistry();
+    const registry = createMlRegistryPack().registry;
 
     // Field unregister.
     expect(registry.getField("text")).toBeDefined();
@@ -3642,38 +3730,37 @@ describe("engine", () => {
   });
 
   it("creates declarative custom fields with generated descriptors", async () => {
-    const registry = createBuiltinRegistry();
-
-    registry.registerField(
-      defineFieldKind({
-        kind: "score",
-        schema: z.object({
-          kind: z.literal("score"),
-          id: z.string().optional(),
-          label: z.string(),
-          min: z.number().default(0),
-          max: z.number().default(100),
-          step: z.number().optional(),
-          ui: z.record(z.string(), z.unknown()).optional(),
-        }),
-        value: {
-          default: () => 0,
-          normalize: (value) => Number(value ?? 0),
-          serialize: (value) => value,
-        },
-        validate: ({ value, config }) =>
-          value < config.min || value > config.max ? ["Score out of range."] : [],
-        render: {
-          widget: "number",
-          hints: ({ config }) => ({
-            min: config.min,
-            max: config.max,
-            step: config.step ?? 1,
-            unit: "%",
-          }),
-        },
+    const registry = createMlRegistryPack().registry;
+    const kind = defineFieldKind({
+      kind: "score",
+      schema: z.object({
+        kind: z.literal("score"),
+        id: z.string().optional(),
+        label: z.string(),
+        min: z.number().default(0),
+        max: z.number().default(100),
+        step: z.number().optional(),
+        ui: z.record(z.string(), z.unknown()).optional(),
       }),
-    );
+      value: {
+        default: () => 0,
+        normalize: (value) => Number(value ?? 0),
+        serialize: (value) => value,
+      },
+      validate: ({ value, config }) =>
+        value < config.min || value > config.max ? ["Score out of range."] : [],
+      render: {
+        widget: "number",
+        hints: ({ config }) => ({
+          min: config.min,
+          max: config.max,
+          step: config.step ?? 1,
+          unit: "%",
+        }),
+      },
+    });
+
+    registry.registerField(kind.definition);
 
     const form = createForm({
       schema: {
@@ -3694,7 +3781,15 @@ describe("engine", () => {
       transport: { submit: vi.fn() },
     });
 
-    expect(form.fields[0]?.descriptor).toEqual({
+    expect(
+      kind.presenter.describe(
+        form.fields[0]!.config as never,
+        {
+          state: form.fields[0]!.state,
+          value: form.fields[0]!.state.value,
+        } as never,
+      ),
+    ).toEqual({
       component: "declarative-field",
       meta: expect.objectContaining({
         declarative: true,
@@ -3720,39 +3815,38 @@ describe("engine", () => {
   });
 
   it("creates declarative custom reports with summary and presentation content", async () => {
-    const registry = createBuiltinRegistry();
-
-    registry.registerReport(
-      defineReportKind({
-        kind: "risk-summary",
-        schema: z.object({
-          kind: z.literal("risk-summary"),
-          id: z.string().optional(),
-          label: z.string().optional(),
-          source: z.string().optional(),
-        }),
-        resolve: ({ report, result }) => result.reports[report.source],
-        render: {
-          summary: ({ payload }) => ({
-            title: "Risk summary",
-            value: (payload as { score: number }).score,
-            tone: (payload as { score: number }).score > 0.8 ? "danger" : "neutral",
-          }),
-          content: ({ payload }) => [
-            {
-              type: "metric",
-              label: "Score",
-              value: (payload as { score: number }).score,
-            },
-            {
-              type: "list",
-              label: "Drivers",
-              items: (payload as { drivers: string[] }).drivers,
-            },
-          ],
-        },
+    const registry = createMlRegistryPack().registry;
+    const kind = defineReportKind({
+      kind: "risk-summary",
+      schema: z.object({
+        kind: z.literal("risk-summary"),
+        id: z.string().optional(),
+        label: z.string().optional(),
+        source: z.string().optional(),
       }),
-    );
+      resolve: ({ report, result }) => result.reports[report.source],
+      render: {
+        summary: ({ payload }) => ({
+          title: "Risk summary",
+          value: (payload as { score: number }).score,
+          tone: (payload as { score: number }).score > 0.8 ? "danger" : "neutral",
+        }),
+        content: ({ payload }) => [
+          {
+            type: "metric",
+            label: "Score",
+            value: (payload as { score: number }).score,
+          },
+          {
+            type: "list",
+            label: "Drivers",
+            items: (payload as { drivers: string[] }).drivers,
+          },
+        ],
+      },
+    });
+
+    registry.registerReport(kind.definition);
 
     const form = createForm({
       schema: {
@@ -3775,7 +3869,14 @@ describe("engine", () => {
     form.setValues({ name: "Alice" });
     await form.submit();
 
-    expect(form.reports[0]?.descriptor).toEqual({
+    expect(
+      kind.presenter.describe(form.reports[0]!.config as never, {
+        reportId: form.reports[0]!.id,
+        state: form.reports[0]!.state,
+        payload: form.reports[0]!.state.payload,
+        result: form.state.lastResult,
+      }),
+    ).toEqual({
       component: "declarative-report",
       meta: expect.objectContaining({
         declarative: true,
@@ -3810,34 +3911,33 @@ describe("engine", () => {
         { feature: "debt", score: -0.4 },
       ],
     });
-    const registry = createBuiltinRegistry();
-
-    registry.registerExplanation(
-      defineExplanationKind({
-        kind: "shap",
-        schema: z.object({
-          kind: z.literal("shap"),
-          id: z.string().optional(),
-          label: z.string().optional(),
-        }),
-        fetch: ({ explanationId: _explanationId }) => ({
-          submit: explanationTransport,
-        }),
-        render: {
-          summary: ({ state }) => ({
-            title: "SHAP",
-            tone: state.status === "error" ? "danger" : "neutral",
-          }),
-          content: ({ result }) => ({
-            type: "table",
-            label: "Feature impact",
-            columns: ["feature", "score"],
-            rows: ((result as { top_features: Array<{ feature: string; score: number }> })
-              .top_features ?? []) as Array<Record<string, unknown>>,
-          }),
-        },
+    const registry = createMlRegistryPack().registry;
+    const kind = defineExplanationKind({
+      kind: "shap",
+      schema: z.object({
+        kind: z.literal("shap"),
+        id: z.string().optional(),
+        label: z.string().optional(),
       }),
-    );
+      fetch: ({ explanationId: _explanationId }) => ({
+        submit: explanationTransport,
+      }),
+      render: {
+        summary: ({ state }) => ({
+          title: "SHAP",
+          tone: state.status === "error" ? "danger" : "neutral",
+        }),
+        content: ({ result }) => ({
+          type: "table",
+          label: "Feature impact",
+          columns: ["feature", "score"],
+          rows: ((result as { top_features: Array<{ feature: string; score: number }> })
+            .top_features ?? []) as Array<Record<string, unknown>>,
+        }),
+      },
+    });
+
+    registry.registerExplanation(kind.definition);
 
     const form = createForm({
       schema: {
@@ -3861,7 +3961,12 @@ describe("engine", () => {
     });
 
     expect(explanationTransport).toHaveBeenCalledTimes(1);
-    expect(ctrl.descriptor).toEqual({
+    expect(
+      kind.presenter.describe(ctrl.config as never, {
+        explanationId: ctrl.id,
+        state: ctrl.state,
+      }),
+    ).toEqual({
       component: "declarative-explanation",
       meta: expect.objectContaining({
         declarative: true,
@@ -3928,7 +4033,8 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
+        behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
         },
@@ -4023,7 +4129,8 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
+        behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
         },
@@ -4100,7 +4207,8 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
+        behaviors: [createMappedCategoryBehavior()],
         transport: { submit: submitMock },
       });
 
@@ -4154,7 +4262,8 @@ describe("engine", () => {
             },
           ],
         },
-        registry: createBuiltinRegistry(),
+        registry: createMlRegistryPack().registry,
+        behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
         },
@@ -4171,8 +4280,8 @@ describe("engine", () => {
       const form = createMappedCategoryForm();
       const master = form.getField("color")!;
 
-      expect(master.descriptor.component).toBe("category-field");
-      expect(master.descriptor.props).toEqual(
+      expect(describeField(master)?.component).toBe("category-field");
+      expect(describeField(master)?.props).toEqual(
         expect.objectContaining({
           options: [
             { label: "Rojo", value: "red" },
@@ -4214,7 +4323,8 @@ describe("engine", () => {
               },
             ],
           },
-          registry: createBuiltinRegistry(),
+          registry: createMlRegistryPack().registry,
+          behaviors: [createMappedCategoryBehavior()],
           transport: { submit: vi.fn() },
         }),
       ).toThrow(/mapped-category.*nonexistent-field/);

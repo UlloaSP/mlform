@@ -18,10 +18,10 @@ mountForm(document.querySelector("#prediction-form") as HTMLElement, {
 ```
 
 <div class="card-grid">
-  <div class="doc-card"><strong>Kit</strong>Monta formularios con transporte, primitives, etiquetas y sistema de diseño por defecto.</div>
+  <div class="doc-card"><strong>Kit</strong>Monta formularios one-page, wizard, tabs o accordion, o controla layouts propios mediante la API headless.</div>
   <div class="doc-card"><strong>Engine</strong>Valida campos, gestiona estado, ejecuta hooks y envia datos mediante cualquier transporte.</div>
   <div class="doc-card"><strong>Primitives</strong>Renderiza Web Components integrados para campos, envio e informes.</div>
   <div class="doc-card"><strong>Design system</strong>Aplica themes, recipes, densidad, movimiento y overrides de tokens del host.</div>
 </div>
 
-Empieza con [Quick Start](./getting-started/quick-start/), despues revisa [Schema](./concepts/schema/) y [Kit Reference](./reference/kit/).
+Empieza con [Quick Start](./getting-started/quick-start/), despues revisa [Kit](./kit/headless-kit/), [Schema](./concepts/schema/) y [Kit Reference](./reference/kit/).

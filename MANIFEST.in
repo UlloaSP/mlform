@@ -8,7 +8,6 @@ include THIRD_PARTY_LICENSES.md
 include package.json
 include tsconfig.json
 include vite.config.ts
-include biome.json
 include stats/bundle_size_treemap.html
 
 recursive-include src *.ts *.tsx *.js *.json

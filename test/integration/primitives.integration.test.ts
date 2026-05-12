@@ -3,13 +3,16 @@
 
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { createMlRegistryPack } from "@/builtins-ml";
+import type { FieldPresenter, ReportPresenter } from "@/presentation";
 import {
   ValidationError,
-  createBuiltinRegistry,
   createForm,
   type FieldController,
   type FieldDefinition,
-} from "@/engine";
+  type ReportDefinition,
+} from "@/runtime";
+import type { FieldConfig, ReportConfig } from "@/schema";
 import { PrimitiveFormElement } from "@/primitives/components/form-root";
 import {
   PrimitiveAsyncReportElement,
@@ -41,13 +44,29 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   return getShadow(renderer).querySelector("[aria-label]") as HTMLElement;
 };
 
+const withFieldPresenter = <TConfig extends FieldConfig, TValue>(
+  definition: FieldDefinition<TConfig, TValue> & {
+    describe: FieldPresenter<TConfig, TValue>["describe"];
+  },
+): FieldDefinition<TConfig, TValue> & {
+  describe: FieldPresenter<TConfig, TValue>["describe"];
+} => definition;
+
+const withReportPresenter = <TConfig extends ReportConfig>(
+  definition: ReportDefinition<TConfig> & {
+    describe: ReportPresenter<TConfig>["describe"];
+  },
+): ReportDefinition<TConfig> & {
+  describe: ReportPresenter<TConfig>["describe"];
+} => definition;
+
 describe("primitives", () => {
   it("rejects mounting into a non-empty container unless replacement is explicit", () => {
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -66,7 +85,7 @@ describe("primitives", () => {
       schema: {
         fields: [{ kind: "text", label: "Name" }],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -100,7 +119,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -158,7 +177,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -227,7 +246,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       initialValues: {
         name: "Alice",
         age: 24,
@@ -299,7 +318,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -352,7 +371,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -404,7 +423,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -481,7 +500,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -568,7 +587,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -599,7 +618,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -635,7 +654,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -670,7 +689,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -705,7 +724,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -746,7 +765,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -785,7 +804,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -817,7 +836,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -857,7 +876,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -926,7 +945,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -998,7 +1017,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: { submit },
     });
 
@@ -1087,7 +1106,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1132,7 +1151,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -1191,7 +1210,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -1258,7 +1277,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({ reports: { score: 0.9 } }),
       },
@@ -1305,7 +1324,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1357,7 +1376,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1404,9 +1423,10 @@ describe("primitives", () => {
       customElements.define("test-context-probe-field", TestContextProbeFieldElement);
     }
 
-    const registry = createBuiltinRegistry();
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerField({
+    const contextProbeDefinition = withFieldPresenter({
       kind: "context-probe",
       schema: {
         parse(input: unknown) {
@@ -1433,6 +1453,11 @@ describe("primitives", () => {
         };
       },
     } satisfies FieldDefinition);
+    registry.registerField(contextProbeDefinition);
+    pack.presentationRegistry.registerField({
+      kind: contextProbeDefinition.kind,
+      describe: contextProbeDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1459,6 +1484,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
+      presentationRegistry: pack.presentationRegistry,
       reportPane: "hidden",
     });
 
@@ -1497,9 +1523,10 @@ describe("primitives", () => {
       customElements.define("test-probe-field", TestProbeFieldElement);
     }
 
-    const registry = createBuiltinRegistry();
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerField({
+    const probeDefinition = withFieldPresenter({
       kind: "probe",
       schema: {
         parse(input: unknown) {
@@ -1524,6 +1551,11 @@ describe("primitives", () => {
         };
       },
     } satisfies FieldDefinition);
+    registry.registerField(probeDefinition);
+    pack.presentationRegistry.registerField({
+      kind: probeDefinition.kind,
+      describe: probeDefinition.describe,
+    });
 
     const form = createForm({
       schema: {
@@ -1549,6 +1581,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
+      presentationRegistry: pack.presentationRegistry,
       reportPane: "hidden",
     });
 
@@ -1590,9 +1623,10 @@ describe("primitives", () => {
       customElements.define("test-probe-report", TestProbeReportElement);
     }
 
-    const registry = createBuiltinRegistry();
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerReport({
+    const probeReportDefinition = withReportPresenter({
       kind: "probe-report",
       schema: {
         parse(input: unknown) {
@@ -1616,6 +1650,11 @@ describe("primitives", () => {
           },
         };
       },
+    });
+    registry.registerReport(probeReportDefinition);
+    pack.presentationRegistry.registerReport({
+      kind: probeReportDefinition.kind,
+      describe: probeReportDefinition.describe,
     });
 
     const reportTransport = {
@@ -1653,6 +1692,7 @@ describe("primitives", () => {
         "probe-report",
         "test-probe-report",
       ),
+      presentationRegistry: pack.presentationRegistry,
       reportTransport,
     });
 
@@ -1779,9 +1819,10 @@ describe("primitives", () => {
       customElements.define("test-request-only-report", TestRequestOnlyReportElement);
     }
 
-    const registry = createBuiltinRegistry();
+    const pack = createMlRegistryPack();
+    const registry = pack.registry;
 
-    registry.registerReport({
+    const requestReportDefinition = withReportPresenter({
       kind: "probe-request-report",
       schema: {
         parse(input: unknown) {
@@ -1807,6 +1848,11 @@ describe("primitives", () => {
           },
         };
       },
+    });
+    registry.registerReport(requestReportDefinition);
+    pack.presentationRegistry.registerReport({
+      kind: requestReportDefinition.kind,
+      describe: requestReportDefinition.describe,
     });
 
     const form = createForm({
@@ -1840,6 +1886,7 @@ describe("primitives", () => {
         "probe-request-report",
         "test-request-only-report",
       ),
+      presentationRegistry: pack.presentationRegistry,
     });
 
     await flush();
@@ -1893,7 +1940,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1945,7 +1992,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createBuiltinRegistry(),
+      registry: createMlRegistryPack().registry,
       initialValues: {
         mode: "lock",
         kind: "alpha",

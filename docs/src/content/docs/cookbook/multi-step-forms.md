@@ -3,7 +3,12 @@ title: Multi-step Forms
 description: Build staged workflows with conditions and external state.
 ---
 
-MLForm does not force a wizard component. Use host state for the current step and field conditions for step visibility.
+MLForm no longer requires host-owned step state for the common wizard case. Prefer:
+
+- `mountWizardForm()` for built-in wizard UI
+- `createFormView()` for custom step-based UI
+
+Use host state plus field conditions only when the flow is more specialized than the standard wizard contract.
 
 ```ts
 let step = "profile";

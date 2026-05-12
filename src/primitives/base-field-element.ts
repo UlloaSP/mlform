@@ -3,7 +3,8 @@
 
 import { css, html, LitElement, nothing, type CSSResultGroup, type TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
-import type { FieldController, FieldDescriptor } from "@/engine";
+import type { FieldDescriptor } from "@/presentation";
+import type { FieldController } from "@/runtime";
 import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type { PrimitiveFieldRenderContext } from "./types";
 

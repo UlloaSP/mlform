@@ -4,6 +4,7 @@
 export * from "./routing";
 export * from "./load-balancing";
 export * from "./fanout";
+export * from "./quorum-fanout";
 export * from "./fallback";
 export * from "./pipeline";
 export * from "./racing";

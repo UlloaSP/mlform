@@ -7,7 +7,8 @@ Usa `defineExplanationKind` cuando quieras un plugin de explicación con adaptad
 
 ```ts
 import { z } from "zod";
-import { createBuiltinRegistry, defineExplanationKind } from "mlform/engine";
+import { createMlRegistryPack } from "mlform/builtins-ml";
+import { defineExplanationKind } from "mlform/runtime";
 
 const shapExplanation = defineExplanationKind({
   kind: "shap",
@@ -48,7 +49,7 @@ const shapExplanation = defineExplanationKind({
   },
 });
 
-const registry = createBuiltinRegistry().registerExplanation(shapExplanation);
+const registry = createMlRegistryPack().registry.registerExplanation(shapExplanation);
 ```
 
 `fetch` recibe la configuración normalizada y devuelve el transporte que usa el controlador de explicación. `render.content` retorna un árbol de presentación pequeño, por lo que no necesitas un renderer personalizado para tablas, avisos, listas, métricas o payloads JSON.

@@ -5,8 +5,15 @@ description: Application-facing MLForm APIs.
 
 Exports:
 
+- `createFormView(options)`
+- `mountWizardForm(container, options)`
+- `mountTabsForm(container, options)`
+- `mountAccordionForm(container, options)`
 - `mountForm(container, options)`
 - `unmountForm(mounted)`
+- `walkLayoutNodes(layout, visitor)`
+- `flattenLayoutNodes(layout)`
+- `collectLayoutReferences(layout)`
 - `createJsonTransport(options)`
 - `createGraphqlTransport(options)`
 - `createSseTransport(options)`
@@ -43,8 +50,29 @@ Exports:
 
 Types:
 
+- `CreateFormViewOptions`
+- `FormLayoutConfig`
+- `FormLayoutNode`
+- `FormViewState`
+- `FormViewController`
+- `FormViewSnapshot`
+- `WizardLayoutConfig`
+- `WizardStepConfig`
+- `WizardState`
+- `TabsLayoutConfig`
+- `TabLayoutConfig`
+- `TabsState`
+- `AccordionLayoutConfig`
+- `AccordionSectionConfig`
+- `AccordionState`
 - `MountFormOptions`
+- `MountWizardFormOptions`
+- `MountTabsFormOptions`
+- `MountAccordionFormOptions`
 - `MountedForm`
+- `MountedWizardForm`
+- `MountedTabsForm`
+- `MountedAccordionForm`
 - `JsonTransportOptions`
 - `JsonTransportMethod`
 - `RoutingTransportOptions`
@@ -75,6 +103,14 @@ Types:
 - `KitDesignSystemSnapshot`
 
 `MountFormOptions` requires `schema` and one `transport`.
+
+`createFormView()` uses the same schema and transport inputs, but returns a headless snapshot API instead of mounting DOM.
+
+`mountWizardForm()` consumes the same layout contract when `layout.kind === "wizard"` and renders the official built-in wizard shell.
+
+`mountTabsForm()` consumes the same layout contract when `layout.kind === "tabs"` and renders the official built-in tabs shell.
+
+`mountAccordionForm()` consumes the same layout contract when `layout.kind === "accordion"` and renders the official built-in accordion shell.
 
 Compose routing, fan-out, fallback, auth, retries, streaming, and transforms inside `transport`.
 

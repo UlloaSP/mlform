@@ -9,10 +9,10 @@ Install the runtime package in an application:
 npm install mlform
 ```
 
-If you want the exact release documented here, install `0.1.5` explicitly:
+If you want the exact release documented here, install `0.1.8` explicitly:
 
 ```bash
-npm install mlform@0.1.5
+npm install mlform@0.1.8
 ```
 
 Import from the root package for normal application use:
@@ -24,7 +24,7 @@ import { mountForm } from "mlform";
 Use subpath imports only when you need a specific layer:
 
 ```ts
-import { createForm } from "mlform/engine";
+import { createForm } from "mlform/runtime";
 import { createPrimitiveRegistry } from "mlform/primitives";
 import { defineTheme } from "mlform/design-system";
 ```

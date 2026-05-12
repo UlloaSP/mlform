@@ -128,7 +128,7 @@ Our development process includes:
 
 - **Code Review**: All changes reviewed before merging
 - **Automated Testing**: Vitest suite and coverage reporting
-- **Static Analysis**: TypeScript type checks and Biome linting
+- **Static Analysis**: TypeScript type checks and Oxlint linting
 - **Pre-release Builds**: Vite build verification for every release
 - **Continuous Integration**: Automated checks on all pull requests
 

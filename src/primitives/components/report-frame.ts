@@ -4,12 +4,8 @@
 import { css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
-import type {
-  ReportController,
-  ReportDescriptor,
-  ReportStateSnapshot,
-  SubmitResult,
-} from "@/engine";
+import type { ReportController, ReportStateSnapshot, SubmitResult } from "@/runtime";
+import type { ReportDescriptor } from "@/presentation";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -105,7 +101,8 @@ export class PrimitiveReportFrameElement extends LitElement {
   @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
   @property({ attribute: false }) accessor lastResult: SubmitResult | null = null;
 
-  @state() private accessor descriptor: ReportDescriptor | null = null;
+  @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
+  @state() private accessor resolvedDescriptor: ReportDescriptor | null = null;
   @state() private accessor reportState: ReportStateSnapshot | null = null;
 
   readonly #instanceId = ++reportFrameSequence;
@@ -116,7 +113,7 @@ export class PrimitiveReportFrameElement extends LitElement {
   #memoizedRequest: PrimitiveReportRequest | null = null;
 
   readonly #binding = new ControllerBinding<ReportController>(this, (ctrl) => {
-    this.descriptor = ctrl?.descriptor ?? null;
+    this.resolvedDescriptor = this.descriptor;
     this.reportState = ctrl?.state ?? null;
   });
 
@@ -124,10 +121,14 @@ export class PrimitiveReportFrameElement extends LitElement {
     if (changedProperties.has("controller")) {
       this.#binding.bind(this.controller);
     }
+
+    if (changedProperties.has("descriptor")) {
+      this.resolvedDescriptor = this.descriptor;
+    }
   }
 
   render() {
-    const descriptor = this.descriptor;
+    const descriptor = this.resolvedDescriptor;
     const state = this.reportState;
 
     if (!descriptor || !state) {
@@ -167,11 +168,12 @@ export class PrimitiveReportFrameElement extends LitElement {
     const context = this.#getContext();
     const reportTransport = this.transport;
     const reportRequest = this.reportState?.status === "ready" ? this.#getReportRequest() : null;
+    const descriptor = this.resolvedDescriptor;
 
     return html`
       <${tag}
         .controller=${this.controller}
-        .descriptor=${this.descriptor}
+        .descriptor=${descriptor}
         .context=${context}
         .text=${this.text}
         .transport=${reportTransport}
@@ -183,14 +185,14 @@ export class PrimitiveReportFrameElement extends LitElement {
   #getContext(): PrimitiveReportRenderContext | undefined {
     if (
       this.controller === this.#memoizedController &&
-      this.descriptor === this.#memoizedDescriptor
+      this.resolvedDescriptor === this.#memoizedDescriptor
     ) {
       return this.#memoizedContext;
     }
 
-    const context = this.#createContext(this.descriptor?.props ?? {});
+    const context = this.#createContext(this.resolvedDescriptor?.props ?? {});
     this.#memoizedController = this.controller;
-    this.#memoizedDescriptor = this.descriptor;
+    this.#memoizedDescriptor = this.resolvedDescriptor;
     this.#memoizedContext = context;
     return context;
   }

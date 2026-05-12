@@ -3,19 +3,22 @@
 
 import type {
   ExplanationController,
-  ExplanationDescriptor,
   ExplanationFetchRequest,
   ExplanationFetchTransport,
   FieldController,
-  FieldDescriptor,
   FormController,
   FormState,
   FormStatus,
   ReportController,
-  ReportDescriptor,
   SubmitResult,
-} from "@/engine";
+} from "@/runtime";
 import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
+import type {
+  ExplanationDescriptor,
+  FieldDescriptor,
+  PresentationRegistry,
+  ReportDescriptor,
+} from "@/presentation";
 
 export type PrimitiveLayout = "stacked" | "split";
 export type PrimitiveContainerStrategy = "error" | "replace";
@@ -76,6 +79,7 @@ export type ExplanationTransport = ExplanationFetchTransport;
 
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
+  presentationRegistry?: PresentationRegistry;
   layout?: PrimitiveLayout;
   containerStrategy?: PrimitiveContainerStrategy;
   formLabel?: string;
@@ -93,6 +97,7 @@ export interface MountedForm {
   readonly form: FormController;
   readonly host: HTMLElement;
   readonly registry: PrimitiveRegistry;
+  readonly presentationRegistry: PresentationRegistry;
   readonly text: PrimitiveText;
   unmount(): void;
 }
