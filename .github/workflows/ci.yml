@@ -92,7 +92,7 @@ jobs:
 
       - name: Check documentation formatting and lint
         working-directory: ./docs
-        run: vp check
+        run: vp run check
 
       - name: Typecheck documentation
         working-directory: ./docs
