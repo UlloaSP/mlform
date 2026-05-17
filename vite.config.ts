@@ -31,6 +31,9 @@ export default defineConfig({
   staged: {
     "*": "vp check --fix",
   },
+
+  typeAware: true,
+  typeCheck: true,
   lint: {
     ignorePatterns: toolIgnorePatterns,
     plugins: ["import", "typescript", "unicorn"],
@@ -38,10 +41,7 @@ export default defineConfig({
       browser: true,
       node: true,
     },
-    options: {
-      typeAware: true,
-      typeCheck: true,
-    },
+    options: {},
     rules: {
       "constructor-super": "error",
       "for-direction": "error",
