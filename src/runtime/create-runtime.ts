@@ -2,51 +2,24 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { Registry } from "@/schema";
-import { EngineError } from "./errors";
 import { createExplanationController, type InternalExplanationController } from "./explanations";
 import { createFieldController, type InternalFieldController } from "./fields";
 import { createReportController, type InternalReportController } from "./reports";
 import { normalizeSchema } from "./schema";
-import {
-  createInitialEngineState,
-  createStore,
-  toFormState,
-  transitionEngineState,
-  type InternalFieldState,
-} from "./state";
+import { createInitialEngineState, createStore, toFormState, transitionEngineState } from "./state";
 import { createFormSubmitter } from "./submission";
 import { createFormValidator } from "./validation";
+import {
+  assertTransport,
+  hasInteractiveFieldState,
+  missingDefinitionError,
+  resolveInactiveFieldPolicy,
+} from "./create-runtime-helpers";
 import { createRuntimeBehaviors } from "./runtime-behaviors";
 import { createRuntimeController } from "./runtime-controller";
 import { createRuntimeRefresh } from "./runtime-refresh";
 import { createRuntimeValues } from "./runtime-values";
-import type { CreateFormConfig, FormController, FormState, InactiveFieldPolicy } from "./types";
-
-const assertTransport = (transport: CreateFormConfig["transport"]): void => {
-  if (!transport || typeof transport.submit !== "function") {
-    throw new EngineError("createForm requires a transport with a submit(request) function.");
-  }
-};
-
-const hasInteractiveFieldState = (fieldStates: Record<string, InternalFieldState>): boolean => {
-  for (const fieldId in fieldStates) {
-    const fieldState = fieldStates[fieldId];
-    if (fieldState?.dirty || fieldState?.touched) {
-      return true;
-    }
-  }
-
-  return false;
-};
-
-const resolveInactiveFieldPolicy = (
-  field: {
-    readonly config: { readonly inactiveFieldPolicy?: InactiveFieldPolicy };
-  },
-  fallbackPolicy: InactiveFieldPolicy | undefined,
-): InactiveFieldPolicy => {
-  return field.config.inactiveFieldPolicy ?? fallbackPolicy ?? "omit";
-};
+import type { CreateFormConfig, FormController, FormState } from "./types";
 
 export const createForm = (config: CreateFormConfig): FormController => {
   assertTransport(config.transport);
@@ -86,9 +59,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
       | import("./types").FieldDefinition
       | undefined;
     if (!definition) {
-      throw new EngineError(
-        `Field definition "${fieldConfig.kind}" disappeared during form creation.`,
-      );
+      throw missingDefinitionError("Field", fieldConfig.kind);
     }
 
     return createFieldController({
@@ -137,9 +108,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
       | import("./types").ReportDefinition
       | undefined;
     if (!definition) {
-      throw new EngineError(
-        `Report definition "${reportConfig.kind}" disappeared during form creation.`,
-      );
+      throw missingDefinitionError("Report", reportConfig.kind);
     }
 
     return createReportController({
@@ -155,9 +124,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
         | import("./types").ExplanationDefinition
         | undefined;
       if (!definition) {
-        throw new EngineError(
-          `Explanation definition "${explanationConfig.kind}" disappeared during form creation.`,
-        );
+        throw missingDefinitionError("Explanation", explanationConfig.kind);
       }
 
       return createExplanationController({

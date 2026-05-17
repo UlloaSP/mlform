@@ -6,7 +6,7 @@ description: La forma FormSchema usada por la API actual de MLForm.
 Un esquema de formulario tiene `fields` e informes opcionales en `reports`.
 
 ```ts
-import type { FormSchema } from "mlform/runtime";
+import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [

@@ -21,7 +21,7 @@ Baja a engine o primitives solo para renderers, registries o capas de integracio
 
 ```ts
 import { createJsonTransport, mountForm } from "mlform";
-import type { FormSchema } from "mlform/runtime";
+import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [{ kind: "text", label: "Prompt" }],

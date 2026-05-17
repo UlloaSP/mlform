@@ -1,9 +1,9 @@
 ---
 title: Primitives Overview
-description: Renderer primitives that connect engine descriptors to Web Components.
+description: Renderer primitives that connect presentation descriptors to Web Components.
 ---
 
-Primitives are the DOM layer below the kit. They read engine descriptors and mount Web Components for fields, reports, form layout, errors, and submit controls.
+Primitives are the DOM layer below the kit. They read presentation descriptors and mount Web Components for fields, reports, form layout, errors, and submit controls.
 
 Use primitives directly when:
 

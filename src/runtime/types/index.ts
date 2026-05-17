@@ -10,27 +10,3 @@ export * from "./form";
 export * from "./pipeline";
 export * from "./report";
 export * from "./transport";
-export type {
-  DeclarativeExplanationKind,
-  DeclarativeFieldKind,
-  DeclarativeReportKind,
-  ExplanationDescriptor,
-  ExplanationDescriptorContext,
-  ExplanationPresenter,
-  ExplanationRenderSpec,
-  ExplanationRenderSpecContext,
-  FieldDescriptor,
-  FieldPresenter,
-  FieldRenderHints,
-  FieldRenderSpec,
-  FieldRenderSpecContext,
-  FieldWidget,
-  PresentationContent,
-  PresentationNode,
-  PresentationSummary,
-  PresentationTone,
-  ReportDescriptor,
-  ReportPresenter,
-  ReportRenderSpec,
-  ReportRenderSpecContext,
-} from "@/presentation";

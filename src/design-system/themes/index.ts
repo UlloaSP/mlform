@@ -21,3 +21,4 @@ export const builtinThemes: ThemeManifest[] = [
 ];
 
 export { cobaltTheme } from "./cobalt";
+export { neutralTheme } from "./neutral";

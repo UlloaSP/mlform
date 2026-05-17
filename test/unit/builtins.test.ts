@@ -2,7 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { booleanFieldDefinition, numberFieldDefinition, seriesFieldDefinition } from "@/runtime";
+import {
+  booleanFieldDefinition,
+  numberFieldDefinition,
+  seriesFieldDefinition,
+} from "@/builtins-ml/definitions";
 
 describe("builtin definitions", () => {
   it("keeps number field normalization behavior", () => {

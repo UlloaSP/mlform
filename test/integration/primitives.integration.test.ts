@@ -1452,7 +1452,7 @@ describe("primitives", () => {
           },
         };
       },
-    } satisfies FieldDefinition);
+    });
     registry.registerField(contextProbeDefinition);
     pack.presentationRegistry.registerField({
       kind: contextProbeDefinition.kind,
@@ -1550,7 +1550,7 @@ describe("primitives", () => {
           },
         };
       },
-    } satisfies FieldDefinition);
+    });
     registry.registerField(probeDefinition);
     pack.presentationRegistry.registerField({
       kind: probeDefinition.kind,

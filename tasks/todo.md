@@ -1,18 +1,52 @@
 # Todo
 
+## Full Debt Closure Todo
+
+- [x] Read caveman skill, `AGENTS.md`, graph report, dirty status, and `DEBT.md`.
+- [x] Split remaining oversized source files below 300 lines.
+- [x] Remove runtime definition aliases that permit presentation `describe`.
+- [x] Move/rename docs/tests away from old engine naming.
+- [x] Clear `DEBT.md`; run `vp check`, tests, typecheck, graph update.
+
+## Full Debt Closure Review
+
+- Closed all active `DEBT.md` entries.
+- Split remaining oversized source files and kept every `src/**/*.ts` file at or below 300 lines.
+- Moved runtime-owned builtins under `builtins-ml/definitions`, removed `describe` from runtime definition aliases, renamed docs/tests from engine paths to runtime paths, and simplified `cloneSchemaRegistry`.
+- Fixed design-system fallback drift so full tests pass with neutral defaults.
+- Verification: `vp check`, `vp run typecheck`, focused debt tests, and full `vp test` passed.
+
+## Debt Continuation Todo
+
+- [x] Read `AGENTS.md`, graph report, dirty status, and `DEBT.md`.
+- [x] Split `src/primitives/components/form-root-styles.ts` below 300 lines.
+- [x] Split built-in series field definition below 300 lines.
+- [x] Update `DEBT.md` and run focused verification plus graph update.
+
+## Debt Continuation Review
+
+- Split stacked/split form root CSS into `form-root-styles.ts` + `form-root-split-styles.ts`.
+- Split series builtin helpers into `series-helpers.ts`; public `seriesFieldDefinition` unchanged.
+- Verification: `vp check --fix`, `vp run typecheck`, focused primitives/builtins tests, and `graphify update .` passed.
+- Remaining oversized source files: `design-system-controller.ts`, primitive `series-field.ts`, `create-submitter.ts`, `create-runtime.ts`, `fanout.ts`.
+
 ## Old Compatibility Debt Todo
 
 - [x] Read `AGENTS.md`, graph report, architecture skill, and `DEBT.md`.
 - [x] Map runtime compatibility exports, runtime-owned builtins/declarative modules, descriptor fallback paths, docs/tests references.
 - [ ] Move runtime-owned builtin imports behind schema/presentation pack seams.
-- [ ] Remove runtime re-exports of presentation/declarative helpers and presentation descriptor types.
-- [ ] Remove presenter fallback paths that preserve schema-only custom UI compatibility.
-- [ ] Update docs/tests/imports to current schema + presentation + packs story.
-- [ ] Update `DEBT.md`; run typecheck/tests/check/graph update.
+- [x] Remove runtime re-exports of presentation/declarative helpers and presentation descriptor types.
+- [x] Remove presenter fallback paths that preserve schema-only custom UI compatibility.
+- [x] Update docs/tests/imports to current schema + presentation + packs story.
+- [x] Update `DEBT.md`; run typecheck/tests/check/graph update.
 
 ## Old Compatibility Debt Review
 
-- Pending.
+- Removed public runtime compatibility exports for presentation helpers/types, schema registry helpers, and builtin definitions.
+- Deleted `src/runtime/declarative/*`; declarative helpers now live under `presentation`.
+- Removed kit auto-promotion from schema registry `describe` functions into presentation registry.
+- Updated custom-kind tests/docs to use explicit schema + presentation registration.
+- Verification: `vp check`, `vp run typecheck`, focused kit/builtins tests, and `graphify update .` passed. Full `vp test` still fails 3 existing design-system default-theme tests expecting `neutral` while dirty state resolves `cobalt`.
 
 ## Error Navigation Todo
 

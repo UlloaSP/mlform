@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { classifierReportDefinition, regressorReportDefinition } from "@/runtime/builtins";
+import { classifierReportDefinition, regressorReportDefinition } from "@/builtins-ml/definitions";
 import { registerReportPresenterFromDefinition, type RegistryPack } from "./shared";
 import { createDefaultRegistryPack } from "./default";
 

@@ -195,12 +195,14 @@ When built-in kinds are not enough, define your own field and report kinds witho
 
 ```ts
 import { createMlRegistryPack } from "mlform/builtins-ml";
-import { defineFieldKind } from "mlform/runtime";
+import { defineFieldKind, registerDefinedFieldKind } from "mlform/presentation";
 import { z } from "zod";
 
-const registry = createMlRegistryPack().registry;
+const pack = createMlRegistryPack();
 
-registry.registerField(
+registerDefinedFieldKind(
+  pack.registry,
+  pack.presentationRegistry,
   defineFieldKind({
     kind: "score",
     schema: z.object({

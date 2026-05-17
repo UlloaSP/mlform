@@ -19,8 +19,10 @@ import {
 import { cloneSubmissionResult, createSubmissionResult } from "./result";
 import { commitReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";
+import { storePendingReportPatch } from "./pending-patches";
 import { createReportUpdates } from "./report-updates";
 import { createFieldUpdates } from "./field-updates";
+import { applySubmissionStreamEvent } from "./stream-events";
 import { toSubmissionProgress, updateStreamProgress } from "./stream-progress";
 import type { CreateFormSubmitterOptions, FormSubmitter } from "./types";
 
@@ -81,25 +83,7 @@ export const createFormSubmitter = ({
     getReportState: (reportId) => store.getState().reportStates[reportId],
     getReportStates: () => store.getState().reportStates,
     getSubmissionMeta: () => store.getState().submissionProgress?.meta ?? {},
-    storePendingPatch: (reportId, patch) => {
-      store.update((current) => ({
-        ...current,
-        submissionProgress: current.submissionProgress
-          ? {
-              ...current.submissionProgress,
-              meta: {
-                ...current.submissionProgress.meta,
-                pendingReportPatches: {
-                  ...(current.submissionProgress.meta.pendingReportPatches as
-                    | Record<string, unknown>
-                    | undefined),
-                  [reportId]: patch,
-                },
-              },
-            }
-          : current.submissionProgress,
-      }));
-    },
+    storePendingPatch: (reportId, patch) => storePendingReportPatch(store, reportId, patch),
   });
 
   const { applyFieldUpdate } = createFieldUpdates({
@@ -107,32 +91,19 @@ export const createFormSubmitter = ({
     fieldMap,
     onRemoteFieldUpdate,
   });
-
-  const applyStreamEvent = async (
+  const applyStreamEvent = (
     event: import("../types").TransportStreamEvent,
     records: import("./request").SubmissionValueRecords,
     backend: string | undefined,
-  ): Promise<void> => {
-    switch (event.type) {
-      case "report-replace":
-        await applyValidatedReportReplace(event.reportId, event.payload, records, backend);
-        break;
-      case "report-patch":
-        await applyValidatedReportPatch(
-          event.reportId,
-          event.patch,
-          event.strategy,
-          records,
-          backend,
-        );
-        break;
-      case "field-update":
-        applyFieldUpdate(event);
-        break;
-      default:
-        break;
-    }
-  };
+  ) =>
+    applySubmissionStreamEvent({
+      event,
+      records,
+      backend,
+      applyValidatedReportReplace,
+      applyValidatedReportPatch,
+      applyFieldUpdate,
+    });
 
   return {
     async submit(options) {
