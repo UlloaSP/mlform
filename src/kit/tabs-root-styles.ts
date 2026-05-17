@@ -31,11 +31,11 @@ export const tabsRootStyles = css`
     overflow: hidden;
     border-radius: var(--mlf-panel-radius, 12px);
     border: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
-    background: var(--mlf-panel-bg, var(--mlf-color-surface, #ffffff));
+      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
+    background: var(--mlf-shell-panel-bg, var(--mlf-color-surface, #ffffff));
     box-shadow:
-      0 2px 4px var(--mlf-panel-shadow-soft, rgba(0, 0, 0, 0.04)),
-      0 8px 16px var(--mlf-panel-shadow, rgba(0, 0, 0, 0.04));
+      0 2px 4px var(--mlf-shell-panel-shadow-soft, rgba(0, 0, 0, 0.04)),
+      0 8px 16px var(--mlf-shell-panel-shadow, rgba(0, 0, 0, 0.04));
   }
   .tablist {
     display: flex;
@@ -43,8 +43,11 @@ export const tabsRootStyles = css`
     overflow-x: auto;
     padding: 0.85rem 1rem 0;
     border-bottom: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
-    background: var(--mlf-panel-header-bg, rgba(255, 255, 255, 0.6));
+      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
+    background: var(
+      --mlf-shell-header-bg,
+      color-mix(in srgb, var(--mlf-color-surface, #ffffff) 76%, transparent)
+    );
     scrollbar-width: thin;
   }
   .tab {
@@ -146,8 +149,8 @@ export const tabsRootStyles = css`
     gap: 0.75rem;
     padding: 0.85rem 1rem 1rem;
     border-top: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
-    background: var(--mlf-panel-footer-bg, var(--mlf-color-bg-light, #f5f7fa));
+      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
+    background: var(--mlf-shell-action-bg, var(--mlf-color-surface-muted, #f5f7fa));
   }
   .nav {
     display: inline-flex;
@@ -161,7 +164,7 @@ export const tabsRootStyles = css`
     padding: 0.5rem 1rem;
     border-radius: var(--mlf-input-radius, 12px);
     border: var(--mlf-border-width, 1px) solid var(--mlf-input-border, #e2e8f0);
-    background: #fff;
+    background: var(--mlf-input-bg, var(--mlf-color-surface-elevated, #ffffff));
     color: var(--mlf-color-text, #0f172a);
     font: inherit;
     font-size: 0.92rem;

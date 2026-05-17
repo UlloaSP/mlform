@@ -22,6 +22,7 @@ const renderFieldFrames = (
       (field) => field.controller.id,
       (field) => html`
         <mlf-field-frame
+          data-field-id=${field.controller.id}
           .controller=${field.controller}
           .descriptor=${field.descriptor}
           .registry=${registry}

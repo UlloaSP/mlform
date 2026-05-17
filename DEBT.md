@@ -25,7 +25,6 @@ This file is the required ledger for active technical debt, known bugs, architec
 1. Source files still exceed the 300-line cap
    - Scope:
      - `src/design-system/runtime/design-system-controller.ts`
-     - `src/primitives/components/form-root-styles.ts`
      - `src/primitives/fields/series-field.ts`
      - `src/runtime/builtins/fields/series.ts`
      - `src/runtime/submission/create-submitter.ts`

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { neutralTheme } from "../themes";
+import { cobaltTheme } from "../themes";
 import type { DesignSystemConfig, DesignSystemRegistry, ThemeManifest } from "../types";
 
 export const resolveTheme = (
@@ -9,7 +9,7 @@ export const resolveTheme = (
   registry: DesignSystemRegistry,
 ): ThemeManifest => {
   const requested = config.theme;
-  const fallback = registry.getTheme("neutral") ?? neutralTheme;
+  const fallback = registry.getTheme("cobalt") ?? cobaltTheme;
 
   if (requested && typeof requested !== "string") {
     return requested;

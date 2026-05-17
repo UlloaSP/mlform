@@ -1,5 +1,51 @@
 # Todo
 
+## Old Compatibility Debt Todo
+
+- [x] Read `AGENTS.md`, graph report, architecture skill, and `DEBT.md`.
+- [x] Map runtime compatibility exports, runtime-owned builtins/declarative modules, descriptor fallback paths, docs/tests references.
+- [ ] Move runtime-owned builtin imports behind schema/presentation pack seams.
+- [ ] Remove runtime re-exports of presentation/declarative helpers and presentation descriptor types.
+- [ ] Remove presenter fallback paths that preserve schema-only custom UI compatibility.
+- [ ] Update docs/tests/imports to current schema + presentation + packs story.
+- [ ] Update `DEBT.md`; run typecheck/tests/check/graph update.
+
+## Old Compatibility Debt Review
+
+- Pending.
+
+## Error Navigation Todo
+
+- [x] Read `AGENTS.md`, diagnose skill, and graph report.
+- [x] Locate submit/validation paths for primitive, wizard, tabs, accordion.
+- [x] Add first-invalid-field reveal + scroll/focus behavior.
+- [x] Add focused regression tests.
+- [x] Run focused verification plus graph update.
+
+## Error Navigation Review
+
+- Added `data-field-id` on rendered field frames so shells can target invalid controls.
+- Added primitive error focus helper to scroll/focus first visible invalid field after submit validation failure.
+- Added kit error navigation for wizard/tabs/accordion: reveal invalid step/tab/section, then scroll/focus field.
+- Added single-file regression suite covering stacked primitive, wizard, tabs, and accordion error navigation.
+- Verification: focused error-navigation test passed; existing kit/primitives integration tests passed; `vp run typecheck` passed; graph updated.
+- Blockers: `vp check` still fails formatting in existing dirty design-system files `src/design-system/registry/builtins.ts` and `src/design-system/themes/clickhouse.ts`; full `vp test` still fails 3 design-system default-theme tests expecting `neutral` while current dirty state resolves `cobalt`.
+
+## Dark Layout Color Todo
+
+- [x] Read `AGENTS.md`, caveman skill, frontend-design skill, and graph report.
+- [x] Locate built-in wizard/tabs/accordion dark-mode shell styles.
+- [x] Replace light-only header/footer/tab/button fallbacks with semantic tokens.
+- [x] Run focused verification plus graph update.
+
+## Dark Layout Color Review
+
+- Replaced light-only panel/header/footer fallbacks in built-in wizard, tabs, accordion, and stacked form styles with semantic shell tokens.
+- Replaced tabs/accordion plain button `#fff` backgrounds with input surface tokens.
+- Updated `DEBT.md` to remove stale `form-root-styles.ts` oversized entry; file is 271 lines after this change.
+- Verification: `git diff --check` passed; graph updated.
+- Blockers: `vp check` fails existing formatting in `src/design-system/themes/clickhouse.ts`; `vp run typecheck` fails existing missing exports from design-system index files; `vp test` fails existing design-system resolver errors from that same dirty design-system state.
+
 - [x] Read `AGENTS.md` and graph report.
 - [x] Find classifier report `details` root usage.
 - [x] Rename classifier report config prop to `showClassProbabilities`.

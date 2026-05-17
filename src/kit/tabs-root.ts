@@ -9,6 +9,7 @@ import { repeat } from "lit/directives/repeat.js";
 import { primitiveStaticText, type PrimitiveText } from "@/primitives/constants";
 import type { PrimitiveRegistry } from "@/primitives/types";
 import { kitTagNames } from "./constants";
+import { revealFirstInvalidField } from "./error-navigation";
 import { renderLayoutNode } from "./layout-node-render";
 import { tabsRootStyles } from "./tabs-root-styles";
 import type { FormViewController, FormViewSnapshot } from "./types";
@@ -164,7 +165,18 @@ export class KitTabsElement extends LitElement {
   }
 
   #handleSubmit = async (): Promise<void> => {
-    await this.view?.submit();
+    if (!this.view) {
+      return;
+    }
+
+    try {
+      await this.view.submit();
+    } catch (error) {
+      const handled = await revealFirstInvalidField(this, this.view);
+      if (!handled) {
+        throw error;
+      }
+    }
   };
 }
 
