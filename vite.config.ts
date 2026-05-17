@@ -150,7 +150,7 @@ export default defineConfig({
     dts({
       entryRoot: "src",
       include: ["src/**/*.ts"],
-      outDir: "dist/types",
+      outDirs: "dist/types",
       tsconfigPath: "./tsconfig.build.json",
     }),
   ],

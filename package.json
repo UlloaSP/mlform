@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -104,15 +104,15 @@
     "prepare": "vp config"
   },
   "dependencies": {
-    "lit": "3.3.2",
-    "zod": "4.3.6"
+    "lit": "3.3.3",
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
-    "jsdom": "^29.0.2",
-    "typescript": "~6.0.2",
+    "@types/node": "^25.8.0",
+    "jsdom": "^29.1.1",
+    "typescript": "~6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vite-plugin-dts": "^4.5.4",
+    "vite-plugin-dts": "^5.0.0",
     "vite-plus": "latest",
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
@@ -123,5 +123,5 @@
   "engines": {
     "node": ">=24.9.0"
   },
-  "packageManager": "pnpm@10.33.1"
+  "packageManager": "pnpm@11.1.2"
 }
