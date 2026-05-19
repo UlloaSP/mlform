@@ -3,7 +3,7 @@ title: Layout Wizard
 description: Usa el wizard oficial integrado o el mismo config mediante createFormView.
 ---
 
-`mountWizardForm()` monta la UI oficial tipo wizard.
+`mountForm()` monta la UI oficial tipo wizard.
 
 Caracteristicas:
 

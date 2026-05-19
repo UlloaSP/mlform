@@ -14,7 +14,7 @@ MLForm se divide en cuatro superficies publicas.
 
 Usa el kit en codigo de aplicacion. Ahora expone:
 
-- `mountForm()`, `mountWizardForm()`, `mountTabsForm()` y `mountAccordionForm()` para layouts integrados
+- `mountForm()` para layouts integrados
 - `createFormView()` para layouts headless personalizados
 
 Baja a engine o primitives solo para renderers, registries o capas de integracion personalizadas.

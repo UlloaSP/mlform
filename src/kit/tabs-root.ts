@@ -121,6 +121,7 @@ export class KitTabsElement extends LitElement {
                 (node) =>
                   renderLayoutNode({
                     node,
+                    view: this.view,
                     snapshot,
                     registry: this.registry,
                     primitiveText: this.primitiveText,

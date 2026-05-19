@@ -3,13 +3,13 @@ title: Wizard Layout
 description: Mount the official wizard layout or consume wizard state through createFormView.
 ---
 
-`mountWizardForm()` is the official built-in wizard layout built on top of the headless kit API.
+`mountForm()` is the official built-in wizard layout built on top of the headless kit API.
 
 ```ts
-import { mountWizardForm } from "mlform/kit";
+import { mountForm } from "mlform/kit";
 import { createJsonTransport } from "mlform/transport";
 
-mountWizardForm(container, {
+mountForm(container, {
   transport: createJsonTransport({ endpoint: "/predict" }),
   schema: {
     fields: [
@@ -48,5 +48,5 @@ When you need a different presentation, keep the same wizard layout config and r
 
 Recommended path:
 
-- use `mountWizardForm()` for new built-in wizard screens
+- use `mountForm()` for new built-in wizard screens
 - use `createFormView()` when the host shell must be custom

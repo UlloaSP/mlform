@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 export interface PanelState {
-  kind: "wizard-step" | "tab" | "accordion-section";
+  kind: "wizard-step" | "tab" | "disclosure-section";
   index: number;
   count: number;
   currentId: string;

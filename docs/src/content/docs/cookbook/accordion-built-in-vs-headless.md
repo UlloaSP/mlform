@@ -1,9 +1,9 @@
 ---
-title: Accordion Built-in vs Headless
-description: Decide when to use mountAccordionForm directly and when to render your own accordion host on top of createFormView.
+title: Disclosure Built-in vs Headless
+description: Decide when to use mountForm directly and when to render your own disclosure host on top of createFormView.
 ---
 
-Choose `mountAccordionForm()` when you want:
+Choose `mountForm()` when you want:
 
 - built-in disclosure UI
 - a persistent submit footer
@@ -11,6 +11,6 @@ Choose `mountAccordionForm()` when you want:
 
 Choose `createFormView()` when you want:
 
-- app-owned accordion visuals
+- app-owned disclosure visuals
 - custom summary badges or analytics panels
 - different disclosure behavior on desktop and mobile

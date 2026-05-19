@@ -17,11 +17,11 @@ import type {
 import { createFormViewSnapshotCache } from "./view-snapshot-cache";
 import { createViewState } from "./view-snapshot";
 import {
-  assertAccordionLayout,
-  assertAccordionSection,
+  assertDisclosureSection,
   getActiveLayoutNodes,
   validateCurrentWizardStep,
 } from "./view-navigation";
+import { collectDisclosureSections } from "./view-layout-state";
 
 export const createFormView = (options: CreateFormViewOptions): FormViewController => {
   const defaultPack =
@@ -50,20 +50,20 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
 
   let stepIndex = 0;
   let activeTabIndex = 0;
+  const disclosureSections =
+    resolvedLayout.layout.kind === "wizard"
+      ? resolvedLayout.layout.steps.flatMap((step) => collectDisclosureSections(step.children))
+      : resolvedLayout.layout.kind === "tabs"
+        ? resolvedLayout.layout.tabs.flatMap((tab) => collectDisclosureSections(tab.children))
+        : collectDisclosureSections(resolvedLayout.layout.children);
   let openSectionIds = new Set<string>(
-    resolvedLayout.layout.kind === "accordion"
-      ? resolvedLayout.layout.sections
-          .filter((section) => section.defaultOpen)
-          .map((section) => section.id)
-      : [],
+    disclosureSections.filter((section) => section.defaultOpen).map((section) => section.id),
   );
   const listeners = new Set<(snapshot: FormViewSnapshot) => void>();
 
   const wizardSteps =
     resolvedLayout.layout.kind === "wizard" ? resolvedLayout.layout.steps : ([] as const);
   const tabs = resolvedLayout.layout.kind === "tabs" ? resolvedLayout.layout.tabs : ([] as const);
-  const accordionSections =
-    resolvedLayout.layout.kind === "accordion" ? resolvedLayout.layout.sections : ([] as const);
   const layoutReferences = collectLayoutReferences(resolvedLayout.layout);
   const nodeIndex = new Map<string, ResolvedFormLayoutNode>();
   for (const node of flattenLayoutNodes(resolvedLayout.layout)) {
@@ -232,7 +232,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       return true;
     },
     toggleSection(sectionId: string) {
-      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
+      assertDisclosureSection(disclosureSections, sectionId);
       if (openSectionIds.has(sectionId)) {
         openSectionIds.delete(sectionId);
       } else {
@@ -241,25 +241,23 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       notify();
     },
     openSection(sectionId: string) {
-      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
+      assertDisclosureSection(disclosureSections, sectionId);
       if (!openSectionIds.has(sectionId)) {
         openSectionIds.add(sectionId);
         notify();
       }
     },
     closeSection(sectionId: string) {
-      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
+      assertDisclosureSection(disclosureSections, sectionId);
       if (openSectionIds.delete(sectionId)) {
         notify();
       }
     },
     openAllSections() {
-      assertAccordionLayout(resolvedLayout);
-      openSectionIds = new Set(accordionSections.map((section) => section.id));
+      openSectionIds = new Set(disclosureSections.map((section) => section.id));
       notify();
     },
     closeAllSections() {
-      assertAccordionLayout(resolvedLayout);
       openSectionIds = new Set();
       notify();
     },

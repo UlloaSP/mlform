@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { mountWizardForm } from "@/kit";
+import { mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -41,7 +41,7 @@ describe("kit wizard integration", () => {
     const container = document.createElement("div");
     document.body.append(container);
 
-    const mounted = mountWizardForm(container, {
+    const mounted = mountForm(container, {
       transport: { submit },
       schema: {
         fields: [
@@ -126,7 +126,7 @@ describe("kit wizard integration", () => {
     const container = document.createElement("div");
     document.body.append(container);
 
-    const first = mountWizardForm(container, {
+    const first = mountForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [{ id: "first", kind: "text", label: "First" }],
@@ -137,7 +137,7 @@ describe("kit wizard integration", () => {
       },
     });
 
-    const second = mountWizardForm(container, {
+    const second = mountForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [{ id: "second", kind: "text", label: "Second" }],

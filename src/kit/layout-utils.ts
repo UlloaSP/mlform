@@ -25,7 +25,8 @@ export const walkLayoutNodes = (
   visitor: (node: ResolvedFormLayoutNode) => void,
 ): void => {
   switch (layout.kind) {
-    case "single-page":
+    case "stacked":
+    case "split":
       for (const node of layout.children) {
         walkNode(node, visitor);
       }
@@ -44,12 +45,6 @@ export const walkLayoutNodes = (
         }
       }
       return;
-    case "accordion":
-      for (const section of layout.sections) {
-        for (const node of section.children) {
-          walkNode(node, visitor);
-        }
-      }
   }
 };
 

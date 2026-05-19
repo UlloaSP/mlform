@@ -60,12 +60,12 @@ Errors:
 - `Tabs layout must define at least one tab.`
 - `Tab "profile" must contain at least one layout node.`
 
-## Empty accordion
+## Empty disclosure
 
 Errors:
 
-- `Accordion layout must define at least one section.`
-- `Accordion section "profile" must contain at least one layout node.`
+- `Disclosure layout must define at least one section.`
+- `Disclosure section "profile" must contain at least one layout node.`
 
 ## Wrong API on non-wizard layouts
 
@@ -85,10 +85,10 @@ Tabs example:
 setActiveTab() is only available for tabs layouts.
 ```
 
-Accordion example:
+Disclosure example:
 
 ```txt
-Accordion section controls are only available for accordion layouts.
+Disclosure section controls are only available for disclosure layouts.
 ```
 
 ## Debugging checklist

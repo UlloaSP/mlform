@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { mountAccordionForm, mountTabsForm, mountWizardForm } from "@/kit";
+import { mountForm as mountKitForm } from "@/kit";
 import { createMlRegistryPack } from "@/builtins-ml";
 import { createForm } from "@/runtime";
 import { mountForm } from "@/primitives";
@@ -64,7 +64,7 @@ describe("error navigation", () => {
     const container = document.createElement("div");
     document.body.append(container);
 
-    const mounted = mountWizardForm(container, {
+    const mounted = mountKitForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [
@@ -111,7 +111,7 @@ describe("error navigation", () => {
     const container = document.createElement("div");
     document.body.append(container);
 
-    const mounted = mountTabsForm(container, {
+    const mounted = mountKitForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [
@@ -147,12 +147,12 @@ describe("error navigation", () => {
     container.remove();
   });
 
-  it("opens the first invalid accordion section and scrolls its field", async () => {
+  it("opens the first invalid disclosure section and scrolls its field", async () => {
     const scrollSpy = installScrollSpy();
     const container = document.createElement("div");
     document.body.append(container);
 
-    const mounted = mountAccordionForm(container, {
+    const mounted = mountKitForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [
@@ -161,10 +161,10 @@ describe("error navigation", () => {
         ],
       },
       layout: {
-        kind: "accordion",
-        sections: [
-          { title: "Profile", children: [{ kind: "field", field: "name" }] },
-          { title: "Details", children: [{ kind: "field", field: "age" }] },
+        kind: "stacked",
+        children: [
+          { kind: "section", title: "Profile", children: [{ kind: "field", field: "name" }] },
+          { kind: "section", title: "Details", children: [{ kind: "field", field: "age" }] },
         ],
       },
     });

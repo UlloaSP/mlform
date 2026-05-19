@@ -11,6 +11,8 @@ export type LayoutReferenceMaps = {
   reportStepIds: Map<string, string>;
   fieldTabIds: Map<string, string>;
   reportTabIds: Map<string, string>;
+  fieldSectionIds: Map<string, string>;
+  reportSectionIds: Map<string, string>;
   fieldIdsInLayout: Set<string>;
   reportIdsInLayout: Set<string>;
 };
@@ -33,6 +35,8 @@ export const createReferenceMaps = (): LayoutReferenceMaps => ({
   reportStepIds: new Map(),
   fieldTabIds: new Map(),
   reportTabIds: new Map(),
+  fieldSectionIds: new Map(),
+  reportSectionIds: new Map(),
   fieldIdsInLayout: new Set(),
   reportIdsInLayout: new Set(),
 });
@@ -65,6 +69,7 @@ export const markField = (
   maps: LayoutReferenceMaps,
   stepId: string | null,
   tabId: string | null,
+  sectionId: string | null,
 ): void => {
   if (maps.fieldIdsInLayout.has(fieldId)) {
     throw new TypeError(kitErrorMessages.fieldDuplicateInLayout(fieldId));
@@ -72,6 +77,7 @@ export const markField = (
   maps.fieldIdsInLayout.add(fieldId);
   if (stepId) maps.fieldStepIds.set(fieldId, stepId);
   if (tabId) maps.fieldTabIds.set(fieldId, tabId);
+  if (sectionId) maps.fieldSectionIds.set(fieldId, sectionId);
 };
 
 export const markReport = (
@@ -79,6 +85,7 @@ export const markReport = (
   maps: LayoutReferenceMaps,
   stepId: string | null,
   tabId: string | null,
+  sectionId: string | null,
 ): void => {
   if (maps.reportIdsInLayout.has(reportId)) {
     throw new TypeError(kitErrorMessages.reportDuplicateInLayout(reportId));
@@ -86,6 +93,7 @@ export const markReport = (
   maps.reportIdsInLayout.add(reportId);
   if (stepId) maps.reportStepIds.set(reportId, stepId);
   if (tabId) maps.reportTabIds.set(reportId, tabId);
+  if (sectionId) maps.reportSectionIds.set(reportId, sectionId);
 };
 
 export const createDefaultSinglePageNodes = (

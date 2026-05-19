@@ -1,6 +1,6 @@
 ---
 title: Layouts Personalizados
-description: Construye wizard, tabs, accordion o shells propios sobre createFormView.
+description: Construye wizard, tabs, disclosure o shells propios sobre createFormView.
 ---
 
 Patron base:
@@ -16,4 +16,4 @@ Recuerda:
 - `state.visible` viene del engine
 - `visibleInLayout` viene del layout activo
 
-Si solo necesitas UI integrada, usa `mountForm()`, `mountWizardForm()` o `mountTabsForm()`.
+Si solo necesitas UI integrada, usa `mountForm()`, `mountForm()` o `mountForm()`.

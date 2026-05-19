@@ -1,6 +1,6 @@
 ---
 title: Custom Layouts
-description: Build your own wizard, tabs, accordion, or review UI on top of createFormView.
+description: Build your own wizard, tabs, disclosure, or review UI on top of createFormView.
 ---
 
 `createFormView()` is designed so you do not have to walk raw engine internals in app code.
@@ -62,20 +62,20 @@ Best when you need:
 
 - custom navigation
 - app-owned page chrome
-- tabs or accordions
+- tabs or disclosures
 - layout integrated into an existing dashboard
 
 ## Common custom shells
 
 - sidebar wizard
 - top tabs
-- mobile accordion
+- mobile disclosure
 - review/summary page
 - split analyst workspace
 
 ## When not to use createFormView
 
-Use `mountForm()` or `mountWizardForm()` if:
+Use `mountForm()` or `mountForm()` if:
 
 - the built-in UI already matches your needs
 - you do not want to own host rendering

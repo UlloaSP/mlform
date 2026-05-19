@@ -3,7 +3,7 @@
 
 import { css } from "lit";
 
-export const accordionRootStyles = css`
+export const disclosureRootStyles = css`
   :host {
     display: block;
     inline-size: 100%;

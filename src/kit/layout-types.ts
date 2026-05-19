@@ -6,6 +6,7 @@ export interface FormLayoutSectionNode {
   id?: string;
   title?: string;
   description?: string;
+  defaultOpen?: boolean;
   children: FormLayoutNode[];
 }
 
@@ -33,7 +34,7 @@ export type FormLayoutNode =
   | FormLayoutReportNode;
 
 export interface SinglePageLayoutConfig {
-  kind?: "single-page";
+  kind?: "stacked" | "split";
   children?: FormLayoutNode[];
 }
 
@@ -61,30 +62,14 @@ export interface TabsLayoutConfig {
   tabs: TabLayoutConfig[];
 }
 
-export interface AccordionSectionConfig {
-  id?: string;
-  title: string;
-  description?: string;
-  children: FormLayoutNode[];
-  defaultOpen?: boolean;
-}
-
-export interface AccordionLayoutConfig {
-  kind: "accordion";
-  sections: AccordionSectionConfig[];
-}
-
-export type FormLayoutConfig =
-  | SinglePageLayoutConfig
-  | WizardLayoutConfig
-  | TabsLayoutConfig
-  | AccordionLayoutConfig;
+export type FormLayoutConfig = SinglePageLayoutConfig | WizardLayoutConfig | TabsLayoutConfig;
 
 export interface ResolvedFormLayoutSectionNode {
   kind: "section";
   id: string;
   title?: string;
   description?: string;
+  defaultOpen: boolean;
   children: ResolvedFormLayoutNode[];
 }
 
@@ -112,7 +97,7 @@ export type ResolvedFormLayoutNode =
   | ResolvedFormLayoutReportNode;
 
 export interface ResolvedSinglePageLayout {
-  kind: "single-page";
+  kind: "stacked" | "split";
   children: ResolvedFormLayoutNode[];
 }
 
@@ -140,21 +125,7 @@ export interface ResolvedTabsLayout {
   tabs: ResolvedTabLayout[];
 }
 
-export interface ResolvedAccordionSection {
-  id: string;
-  title: string;
-  description?: string;
-  defaultOpen: boolean;
-  children: ResolvedFormLayoutNode[];
-}
-
-export interface ResolvedAccordionLayout {
-  kind: "accordion";
-  sections: ResolvedAccordionSection[];
-}
-
 export type ResolvedFormLayout =
   | ResolvedSinglePageLayout
   | ResolvedWizardLayout
-  | ResolvedTabsLayout
-  | ResolvedAccordionLayout;
+  | ResolvedTabsLayout;

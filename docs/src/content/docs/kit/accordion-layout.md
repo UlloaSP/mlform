@@ -1,19 +1,19 @@
 ---
-title: Accordion Layout
-description: Use the official built-in accordion layout or the same accordion config through the headless kit API.
+title: Disclosure Layout
+description: Use the official built-in disclosure layout or the same disclosure config through the headless kit API.
 ---
 
-`mountAccordionForm()` is the official built-in accordion layout built on top of the headless kit API.
+`mountForm()` is the official built-in disclosure layout built on top of the headless kit API.
 
 ```ts
-import { mountAccordionForm } from "mlform/kit";
+import { mountForm } from "mlform/kit";
 import { createJsonTransport } from "mlform/transport";
 
-mountAccordionForm(container, {
+mountForm(container, {
   transport: createJsonTransport({ endpoint: "/predict" }),
   schema,
   layout: {
-    kind: "accordion",
+    kind: "stacked",
     sections: [
       {
         title: "Inputs",

@@ -15,25 +15,18 @@ export const kitErrorMessages = {
     `Wizard step "${stepId}" must contain at least one layout node.`,
   tabsRequiresTabs: "Tabs layout must define at least one tab.",
   tabEmpty: (tabId: string) => `Tab "${tabId}" must contain at least one layout node.`,
-  accordionRequiresSections: "Accordion layout must define at least one section.",
-  accordionSectionEmpty: (sectionId: string) =>
-    `Accordion section "${sectionId}" must contain at least one layout node.`,
-  wizardMissingLayout: "mountWizardForm requires a wizard layout.",
-  tabsMissingLayout: "mountTabsForm requires a tabs layout.",
-  accordionMissingLayout: "mountAccordionForm requires an accordion layout.",
   nonWizardNextStep: "nextStep() is only available for wizard layouts.",
   nonWizardGoToStep: "goToStep() is only available for wizard layouts.",
   nonTabsSetActiveTab: "setActiveTab() is only available for tabs layouts.",
-  nonAccordionToggleSection: "Accordion section controls are only available for accordion layouts.",
   unknownTab: (tabId: string) => `Unknown tab "${tabId}".`,
   unknownWizardStep: (stepId: string) => `Unknown wizard step "${stepId}".`,
-  unknownAccordionSection: (sectionId: string) => `Unknown accordion section "${sectionId}".`,
+  unknownDisclosureSection: (sectionId: string) => `Unknown disclosure section "${sectionId}".`,
 } as const;
 
 export const kitTagNames = {
   wizard: "mlf-kit-wizard",
   tabs: "mlf-kit-tabs",
-  accordion: "mlf-kit-accordion",
+  disclosure: "mlf-kit-disclosure",
   stepIndicator: "mlf-kit-step-indicator",
 } as const;
 

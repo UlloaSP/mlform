@@ -145,7 +145,7 @@ Return reports keyed by report id:
 - Schema-driven fields, reports, conditions, defaults, and serialization
 - Accessible Web Components for form inputs, submit actions, and result rendering
 - Headless `createFormView()` API for custom layouts and app-owned rendering
-- Official `mountWizardForm()` helper for step-based flows
+- Official `mountForm()` helper for step-based flows
 - Built-in JSON transport plus composable transport middleware
 - Headless engine APIs for custom orchestration and registries
 - Runtime design system with themes, recipes, density, motion, and token overrides
@@ -184,7 +184,7 @@ Built-in recipes:
 
 | Surface                | Use it for                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `mountWizardForm`, `createFormView`, transport, labels, and lifecycle utilities. |
+| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, transport, labels, and lifecycle utilities. |
 | `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
 | `mlform/design-system` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
@@ -263,7 +263,7 @@ const view = createFormView({
 });
 ```
 
-If you want a built-in step UI, use `mountWizardForm()` with the same layout config.
+If you want a built-in step UI, use `mountForm()` with the same layout config.
 
 ## Documentation
 

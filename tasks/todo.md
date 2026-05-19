@@ -1,5 +1,20 @@
 # Todo
 
+## Unified Layout Mount Todo
+
+- [x] Replace public `mountWizardForm`, `mountTabsForm`, and `mountAccordionForm` with `mountForm` routing by `layout.kind`.
+- [x] Remove public `accordion` layout kind; model progressive disclosure on sections.
+- [x] Update kit view/layout state, rendering, error navigation, exports, tests, docs, and README.
+- [x] Update `DEBT.md`; verify typecheck/tests/docs/build/graph.
+
+## Unified Layout Mount Review
+
+- Public kit mount API is now `mountForm` only.
+- `layout.kind` now selects `stacked`, `split`, `wizard`, or `tabs`; omitted layout resolves to `stacked`.
+- Sections are disclosure-capable layout nodes with `defaultOpen`; former accordion layout state/API renamed to disclosure state.
+- Focus/error navigation opens the owning disclosure section through field `sectionId`.
+- Verification: wrapper/domain scan, source line cap, `vp run typecheck`, focused kit tests, `vp check`, `vp test`, docs `vp run build`, and src-only graph update/recluster passed.
+
 ## Root Module Removal Todo
 
 - [x] Remove root package module export (`.`), root build entry, and `src/index.ts`.

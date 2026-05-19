@@ -13,7 +13,7 @@ That split matters because the same form can be rendered as:
 - one page
 - wizard
 - tabs
-- accordion
+- disclosure
 - review screen
 - custom React, Vue, Lit, or vanilla UI
 
@@ -22,9 +22,9 @@ Use these surfaces:
 | Surface                | Use it for                                                          |
 | ---------------------- | ------------------------------------------------------------------- |
 | `mountForm()`          | built-in one-page UI with `stacked` or `split` primitive layout     |
-| `mountWizardForm()`    | built-in wizard UI                                                  |
-| `mountTabsForm()`      | built-in tabs UI                                                    |
-| `mountAccordionForm()` | built-in accordion UI                                               |
+| `mountForm()`    | built-in wizard UI                                                  |
+| `mountForm()`      | built-in tabs UI                                                    |
+| `mountForm()` | built-in disclosure UI                                               |
 | `createFormView()`     | headless app-facing API for custom layouts                          |
 | `mlform/runtime`       | low-level state orchestration when the kit is still too opinionated |
 
@@ -50,7 +50,7 @@ Putting layout outside `schema` keeps responsibilities clean:
 
 ## Default behavior
 
-If you omit `layout`, MLForm creates a single-page layout automatically:
+If you omit `layout`, MLForm creates a stacked layout automatically:
 
 1. all fields in schema order
 2. all reports

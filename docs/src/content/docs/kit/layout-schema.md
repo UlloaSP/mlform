@@ -11,14 +11,14 @@ type FormLayoutConfig =
   | SinglePageLayoutConfig
   | WizardLayoutConfig
   | TabsLayoutConfig
-  | AccordionLayoutConfig;
+  | FormLayoutConfig;
 ```
 
 ### `SinglePageLayoutConfig`
 
 ```ts
 interface SinglePageLayoutConfig {
-  kind?: "single-page";
+  kind?: "stacked";
   children?: FormLayoutNode[];
 }
 ```
@@ -97,12 +97,12 @@ Rules:
 - `id` is optional and auto-generated from `title`
 - switching tabs does not validate
 
-### `AccordionLayoutConfig`
+### `FormLayoutConfig`
 
 ```ts
-interface AccordionLayoutConfig {
-  kind: "accordion";
-  sections: AccordionSectionConfig[];
+interface FormLayoutConfig {
+  kind: "stacked";
+  sections: FormLayoutSectionNode[];
 }
 ```
 
@@ -113,7 +113,7 @@ Use for:
 - review flows where multiple regions can remain open
 
 ```ts
-interface AccordionSectionConfig {
+interface FormLayoutSectionNode {
   id?: string;
   title: string;
   description?: string;
@@ -217,7 +217,7 @@ Generated ids are slug-based and stable relative to config order.
 
 ```ts
 {
-  kind: "single-page",
+  kind: "stacked",
   children: [
     {
       kind: "section",
@@ -282,11 +282,11 @@ Generated ids are slug-based and stable relative to config order.
 }
 ```
 
-### Accordion with progressive disclosure
+### Disclosure with progressive disclosure
 
 ```ts
 {
-  kind: "accordion",
+  kind: "stacked",
   sections: [
     {
       title: "Profile",

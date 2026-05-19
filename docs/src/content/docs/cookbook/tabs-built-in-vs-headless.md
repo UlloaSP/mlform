@@ -1,9 +1,9 @@
 ---
 title: Tabs Built-in vs Headless
-description: Decide when to use mountTabsForm directly and when to render your own tabs UI on top of createFormView.
+description: Decide when to use mountForm directly and when to render your own tabs UI on top of createFormView.
 ---
 
-Choose `mountTabsForm()` when you want:
+Choose `mountForm()` when you want:
 
 - built-in tab chrome
 - built-in submit footer
@@ -32,7 +32,7 @@ const layout = {
 Built-in:
 
 ```ts
-mountTabsForm(container, { schema, transport, layout });
+mountForm(container, { schema, transport, layout });
 ```
 
 Headless:

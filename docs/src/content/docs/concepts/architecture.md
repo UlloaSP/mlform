@@ -14,7 +14,7 @@ MLForm is split into four public surfaces.
 
 Use the kit for application code. It now exposes four app-facing paths:
 
-- `mountForm()`, `mountWizardForm()`, `mountTabsForm()`, and `mountAccordionForm()` for built-in DOM layouts
+- `mountForm()`, `mountForm()`, `mountForm()`, and `mountForm()` for built-in DOM layouts
 - `createFormView()` for headless layout control without dropping to `mlform/runtime`
 
 Drop to engine or primitives only when building custom renderers, registries, or integration layers.
@@ -40,5 +40,5 @@ For custom layouts, the flow is:
 createFormView({ schema, transport, layout })
   -> validated layout tree
   -> render-ready collections
-  -> wizard, tabs, or accordion layout helpers when applicable
+  -> wizard, tabs, or disclosure layout helpers when applicable
 ```

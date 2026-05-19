@@ -2,12 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
-export { mountAccordionForm } from "./accordion";
 export { collectLayoutReferences, flattenLayoutNodes, walkLayoutNodes } from "./layout-utils";
 export { mountForm, unmountForm } from "./mount-form";
-export { mountTabsForm } from "./tabs";
 export { createFormView } from "./view";
-export { mountWizardForm } from "./wizard";
 export {
   assertPayloadWithinLimits,
   assertTransportCapabilities,
@@ -70,11 +67,8 @@ export type {
   HedgedTransportOptions,
   JsonTransportMethod,
   JsonTransportOptions,
-  AccordionLayoutConfig,
-  AccordionMountUiOptions,
-  AccordionSectionConfig,
-  AccordionState,
   CreateFormViewOptions,
+  DisclosureState,
   FormLayoutConfig,
   FormLayoutFieldNode,
   FormLayoutGroupNode,
@@ -90,13 +84,7 @@ export type {
   KitLabels,
   LoadBalancingTransportOptions,
   MountFormOptions,
-  MountedAccordionForm,
-  MountedWizardForm,
-  MountedTabsForm,
   MountedForm,
-  MountAccordionFormOptions,
-  MountTabsFormOptions,
-  MountWizardFormOptions,
   PanelState,
   PipelineStage,
   PipelineTransportOptions,
@@ -120,8 +108,6 @@ export type {
   TransportLogOptions,
   TransportMiddleware,
   TransportTraceOptions,
-  ResolvedAccordionLayout,
-  ResolvedAccordionSection,
   ResolvedFormLayout,
   ResolvedFormLayoutFieldNode,
   ResolvedFormLayoutGroupNode,

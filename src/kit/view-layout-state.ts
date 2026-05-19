@@ -3,8 +3,9 @@
 
 import { createIndexedPanelState } from "./panel-nav";
 import type {
-  AccordionState,
+  DisclosureState,
   FormViewState,
+  ResolvedFormLayoutNode,
   TabsState,
   WizardState,
   ResolvedFormLayout,
@@ -63,20 +64,40 @@ export const getTabsState = ({ layout, activeTabIndex }: LayoutStateOptions): Ta
   };
 };
 
-export const getAccordionState = ({
+export const collectDisclosureSections = (
+  nodes: readonly ResolvedFormLayoutNode[],
+  sections: { id: string; defaultOpen: boolean }[] = [],
+): { id: string; defaultOpen: boolean }[] => {
+  for (const node of nodes) {
+    if (node.kind === "section") {
+      sections.push({ id: node.id, defaultOpen: node.defaultOpen });
+      collectDisclosureSections(node.children, sections);
+    } else if (node.kind === "group") {
+      collectDisclosureSections(node.children, sections);
+    }
+  }
+  return sections;
+};
+
+export const getDisclosureState = ({
   layout,
   openSectionIds,
-}: LayoutStateOptions): AccordionState | null => {
-  const accordionSections = layout.kind === "accordion" ? layout.sections : ([] as const);
-  if (accordionSections.length === 0) {
+}: LayoutStateOptions): DisclosureState | null => {
+  const disclosureSections =
+    layout.kind === "wizard"
+      ? layout.steps.flatMap((step) => collectDisclosureSections(step.children))
+      : layout.kind === "tabs"
+        ? layout.tabs.flatMap((tab) => collectDisclosureSections(tab.children))
+        : collectDisclosureSections(layout.children);
+  if (disclosureSections.length === 0) {
     return null;
   }
 
   return {
-    openSectionIds: accordionSections
+    openSectionIds: disclosureSections
       .map((section) => section.id)
       .filter((sectionId) => openSectionIds.has(sectionId)),
-    sectionCount: accordionSections.length,
+    sectionCount: disclosureSections.length,
   };
 };
 
@@ -84,7 +105,7 @@ export const createFormViewState = (options: LayoutStateOptions): FormViewState 
   form: options.formState,
   wizard: getWizardState(options),
   tabs: getTabsState(options),
-  accordion: getAccordionState(options),
+  disclosure: getDisclosureState(options),
 });
 
 export const isVisibleInLayout = (
@@ -94,20 +115,17 @@ export const isVisibleInLayout = (
   openSectionIds: Set<string>,
   stepId: string | null,
   tabId: string | null,
+  sectionId: string | null,
 ): boolean => {
   if (layout.kind !== "wizard") {
     if (layout.kind === "tabs") {
       const currentTabId = layout.tabs[activeTabIndex]?.id ?? null;
-      return tabId === currentTabId;
+      return tabId === currentTabId && (!sectionId || openSectionIds.has(sectionId));
     }
 
-    if (layout.kind === "accordion") {
-      return tabId !== null && openSectionIds.has(tabId);
-    }
-
-    return true;
+    return !sectionId || openSectionIds.has(sectionId);
   }
 
   const currentStepId = layout.steps[stepIndex]?.id ?? null;
-  return stepId === currentStepId;
+  return stepId === currentStepId && (!sectionId || openSectionIds.has(sectionId));
 };

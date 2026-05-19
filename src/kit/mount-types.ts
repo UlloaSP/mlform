@@ -14,16 +14,17 @@ import type {
   FormValidator,
   InactiveFieldPolicy,
   Registry,
+  RuntimeBehavior,
   Transport,
 } from "@/runtime";
 import type {
   PrimitiveContainerStrategy,
-  PrimitiveLayout,
   PrimitiveRegistry,
   PrimitiveReportTransport,
   PrimitiveTextOverrides,
 } from "@/primitives";
 import type { PresentationRegistry } from "@/presentation";
+import type { FormLayoutConfig } from "./layout-types";
 
 export interface KitDesignSystemSnapshot extends Omit<
   DesignSystemConfig,
@@ -47,6 +48,7 @@ export interface MountFormOptions {
   transport: Transport;
   registry?: Registry;
   presentationRegistry?: PresentationRegistry;
+  behaviors?: RuntimeBehavior[];
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
   designSystem?: DesignSystemConfig;
@@ -59,7 +61,7 @@ export interface MountFormOptions {
   inactiveFieldPolicy?: InactiveFieldPolicy;
   listenerErrorPolicy?: "ignore" | "throw-aggregate";
   onListenerError?: (error: unknown) => void;
-  layout?: PrimitiveLayout;
+  layout?: FormLayoutConfig;
   containerStrategy?: PrimitiveContainerStrategy;
   reportPane?: "auto" | "always" | "hidden";
   reportTransport?: PrimitiveReportTransport;

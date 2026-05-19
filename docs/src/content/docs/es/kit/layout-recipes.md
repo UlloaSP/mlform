@@ -7,7 +7,7 @@ description: Patrones reutilizables para secciones, groups, wizard, tabs y revie
 
 ```ts
 {
-  kind: "single-page",
+  kind: "stacked",
   children: [{ kind: "field", field: "name" }],
 }
 ```
@@ -36,11 +36,11 @@ description: Patrones reutilizables para secciones, groups, wizard, tabs y revie
 }
 ```
 
-## Accordion
+## Disclosure
 
 ```ts
 {
-  kind: "accordion",
+  kind: "stacked",
   sections: [
     { title: "Perfil", children: [{ kind: "field", field: "name" }] },
     { title: "Resultados", children: [{ kind: "report", report: "risk" }] },

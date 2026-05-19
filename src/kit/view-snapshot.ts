@@ -7,7 +7,7 @@ import type { FieldController, FormController, ReportController } from "@/runtim
 import type { FormViewFieldItem, FormViewReportItem, FormViewSnapshot } from "./types";
 import {
   createFormViewState,
-  getAccordionState,
+  getDisclosureState,
   getTabsState,
   getWizardState,
   isVisibleInLayout,
@@ -38,6 +38,7 @@ const buildFieldItem = (
 ): FormViewFieldItem => {
   const stepId = resolvedLayout.maps.fieldStepIds.get(field.id) ?? null;
   const tabId = resolvedLayout.maps.fieldTabIds.get(field.id) ?? null;
+  const sectionId = resolvedLayout.maps.fieldSectionIds.get(field.id) ?? null;
   const presenter = presentationRegistry.getField(field.kind);
 
   return {
@@ -54,6 +55,7 @@ const buildFieldItem = (
       }) ?? fallbackFieldDescriptor(field),
     stepId,
     tabId,
+    sectionId,
     visibleInLayout: isVisibleInLayout(
       resolvedLayout.layout,
       stepIndex,
@@ -61,6 +63,7 @@ const buildFieldItem = (
       openSectionIds,
       stepId,
       tabId,
+      sectionId,
     ),
   };
 };
@@ -76,6 +79,7 @@ const buildReportItem = (
 ): FormViewReportItem => {
   const stepId = resolvedLayout.maps.reportStepIds.get(report.id) ?? null;
   const tabId = resolvedLayout.maps.reportTabIds.get(report.id) ?? null;
+  const sectionId = resolvedLayout.maps.reportSectionIds.get(report.id) ?? null;
   const presenter = presentationRegistry.getReport(report.kind);
 
   return {
@@ -94,6 +98,7 @@ const buildReportItem = (
       : null,
     stepId,
     tabId,
+    sectionId,
     visibleInLayout: isVisibleInLayout(
       resolvedLayout.layout,
       stepIndex,
@@ -101,6 +106,7 @@ const buildReportItem = (
       openSectionIds,
       stepId,
       tabId,
+      sectionId,
     ),
   };
 };
@@ -150,7 +156,7 @@ export const buildFormViewSnapshot = ({
     openSectionIds,
     formState: form.state,
   }),
-  accordion: getAccordionState({
+  disclosure: getDisclosureState({
     layout: resolvedLayout.layout,
     stepIndex,
     activeTabIndex,

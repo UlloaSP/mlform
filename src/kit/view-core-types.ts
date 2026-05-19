@@ -41,7 +41,7 @@ export interface TabsState {
   canGoPrev: boolean;
 }
 
-export interface AccordionState {
+export interface DisclosureState {
   openSectionIds: string[];
   sectionCount: number;
 }
@@ -55,6 +55,7 @@ export interface FormViewFieldItem {
   descriptor: FieldDescriptor;
   stepId: string | null;
   tabId: string | null;
+  sectionId: string | null;
   visibleInLayout: boolean;
 }
 
@@ -67,6 +68,7 @@ export interface FormViewReportItem {
   descriptor: ReportDescriptor | null;
   stepId: string | null;
   tabId: string | null;
+  sectionId: string | null;
   visibleInLayout: boolean;
 }
 
@@ -74,7 +76,7 @@ export interface FormViewState {
   form: FormState;
   wizard: WizardState | null;
   tabs: TabsState | null;
-  accordion: AccordionState | null;
+  disclosure: DisclosureState | null;
 }
 
 export interface FormViewSnapshot {
@@ -84,7 +86,7 @@ export interface FormViewSnapshot {
   reports: FormViewReportItem[];
   wizard: WizardState | null;
   tabs: TabsState | null;
-  accordion: AccordionState | null;
+  disclosure: DisclosureState | null;
 }
 
 export interface CreateFormViewOptions {

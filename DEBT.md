@@ -79,6 +79,10 @@ This file is the required ledger for active technical debt, known bugs, architec
   - cross-module source imports use only `@/module` root index APIs
   - module subpath aliases removed from source, tests, and docs
 - root `mlform` module removed; package public API is now explicit subpath exports only
+- layout mount API unified:
+  - `mountForm` is the only public kit mount helper
+  - wizard/tabs render from `layout.kind`
+  - disclosure sections replace the former accordion layout kind
   - architecture test guards against future `@/module/subpath` and cross-module internal imports
 
 ## Notes

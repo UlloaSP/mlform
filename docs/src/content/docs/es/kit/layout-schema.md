@@ -8,15 +8,15 @@ type FormLayoutConfig =
   | SinglePageLayoutConfig
   | WizardLayoutConfig
   | TabsLayoutConfig
-  | AccordionLayoutConfig;
+  | FormLayoutConfig;
 ```
 
 ## Variantes
 
-- `single-page`: una sola pagina con `children`
+- `stacked`: una sola pagina con `children`
 - `wizard`: flujo por `steps`
 - `tabs`: flujo libre por `tabs`
-- `accordion`: disclosure progresivo por `sections`
+- `disclosure`: disclosure progresivo por `sections`
 
 ## Nodos
 
@@ -41,5 +41,5 @@ type FormLayoutNode =
 - referencias desconocidas fallan al crear el view
 - `wizard.steps` no puede estar vacio
 - `tabs.tabs` no puede estar vacio
-- `accordion.sections` no puede estar vacio
+- `disclosure.sections` no puede estar vacio
 - `step` y `tab` deben tener al menos un nodo

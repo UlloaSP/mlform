@@ -4,10 +4,11 @@
 import { html, nothing, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import { primitiveStaticText, type PrimitiveRegistry, type PrimitiveText } from "@/primitives";
-import type { FormViewSnapshot, ResolvedFormLayoutNode } from "./types";
+import type { FormViewController, FormViewSnapshot, ResolvedFormLayoutNode } from "./types";
 
 type RenderLayoutNodeOptions = {
   node: ResolvedFormLayoutNode;
+  view?: FormViewController;
   snapshot: FormViewSnapshot;
   registry: PrimitiveRegistry | undefined;
   primitiveText?: PrimitiveText;
@@ -21,6 +22,7 @@ type RenderLayoutNodeOptions = {
 
 export const renderLayoutNode = ({
   node,
+  view,
   snapshot,
   registry,
   primitiveText = primitiveStaticText,
@@ -32,40 +34,57 @@ export const renderLayoutNode = ({
   groupBaseClass,
 }: RenderLayoutNodeOptions): TemplateResult | typeof nothing => {
   switch (node.kind) {
-    case "section":
+    case "section": {
+      const open = snapshot.disclosure?.openSectionIds.includes(node.id) ?? true;
       return html`
         <section class=${sectionClass} data-section-id=${node.id}>
           ${node.title || node.description
             ? html`
-                <div class=${sectionCopyClass}>
-                  ${node.title ? html`<h2 class=${sectionTitleClass}>${node.title}</h2>` : nothing}
-                  ${node.description
-                    ? html`<p class=${sectionDescriptionClass}>${node.description}</p>`
-                    : nothing}
+                <button
+                  type="button"
+                  class=${sectionCopyClass}
+                  aria-expanded=${String(open)}
+                  @click=${() => view?.toggleSection(node.id)}
+                >
+                  <span>
+                    ${node.title
+                      ? html`<span class=${sectionTitleClass}>${node.title}</span>`
+                      : nothing}
+                    ${node.description
+                      ? html`<span class=${sectionDescriptionClass}>${node.description}</span>`
+                      : nothing}
+                  </span>
+                  <span>${open ? "−" : "+"}</span>
+                </button>
+              `
+            : nothing}
+          ${open
+            ? html`
+                <div class=${childrenClass}>
+                  ${repeat(
+                    node.children,
+                    (_, index) => `${node.id}-${index}`,
+                    (child) =>
+                      renderLayoutNode({
+                        node: child,
+                        view,
+                        snapshot,
+                        registry,
+                        primitiveText,
+                        sectionClass,
+                        sectionCopyClass,
+                        sectionTitleClass,
+                        sectionDescriptionClass,
+                        childrenClass,
+                        groupBaseClass,
+                      }),
+                  )}
                 </div>
               `
             : nothing}
-          <div class=${childrenClass}>
-            ${repeat(
-              node.children,
-              (_, index) => `${node.id}-${index}`,
-              (child) =>
-                renderLayoutNode({
-                  node: child,
-                  snapshot,
-                  registry,
-                  primitiveText,
-                  sectionClass,
-                  sectionCopyClass,
-                  sectionTitleClass,
-                  sectionDescriptionClass,
-                  childrenClass,
-                  groupBaseClass,
-                }),
-            )}
-          </div>
         </section>
       `;
+    }
     case "group":
       return html`
         <div
@@ -78,6 +97,7 @@ export const renderLayoutNode = ({
             (child) =>
               renderLayoutNode({
                 node: child,
+                view,
                 snapshot,
                 registry,
                 primitiveText,

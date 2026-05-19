@@ -6,9 +6,9 @@ description: Application-facing MLForm APIs.
 Exports:
 
 - `createFormView(options)`
-- `mountWizardForm(container, options)`
-- `mountTabsForm(container, options)`
-- `mountAccordionForm(container, options)`
+- `mountForm(container, options)`
+- `mountForm(container, options)`
+- `mountForm(container, options)`
 - `mountForm(container, options)`
 - `unmountForm(mounted)`
 - `walkLayoutNodes(layout, visitor)`
@@ -62,17 +62,17 @@ Types:
 - `TabsLayoutConfig`
 - `TabLayoutConfig`
 - `TabsState`
-- `AccordionLayoutConfig`
-- `AccordionSectionConfig`
-- `AccordionState`
+- `FormLayoutConfig`
+- `FormLayoutSectionNode`
+- `DisclosureState`
 - `MountFormOptions`
 - `MountWizardFormOptions`
 - `MountTabsFormOptions`
-- `MountAccordionFormOptions`
+- `MountFormOptions`
 - `MountedForm`
 - `MountedWizardForm`
 - `MountedTabsForm`
-- `MountedAccordionForm`
+- `MountedForm`
 - `JsonTransportOptions`
 - `JsonTransportMethod`
 - `RoutingTransportOptions`
@@ -106,11 +106,11 @@ Types:
 
 `createFormView()` uses the same schema and transport inputs, but returns a headless snapshot API instead of mounting DOM.
 
-`mountWizardForm()` consumes the same layout contract when `layout.kind === "wizard"` and renders the official built-in wizard shell.
+`mountForm()` consumes the same layout contract when `layout.kind === "wizard"` and renders the official built-in wizard shell.
 
-`mountTabsForm()` consumes the same layout contract when `layout.kind === "tabs"` and renders the official built-in tabs shell.
+`mountForm()` consumes the same layout contract when `layout.kind === "tabs"` and renders the official built-in tabs shell.
 
-`mountAccordionForm()` consumes the same layout contract when `layout.kind === "accordion"` and renders the official built-in accordion shell.
+`mountForm()` consumes the same layout contract when `layout.kind === "disclosure"` and renders the official built-in disclosure shell.
 
 Compose routing, fan-out, fallback, auth, retries, streaming, and transforms inside `transport`.
 
