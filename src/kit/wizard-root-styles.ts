@@ -88,21 +88,54 @@ export const wizardRootStyles = css`
     gap: var(--mlf-section-gap, 1rem);
   }
   .section-copy {
+    inline-size: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--mlf-section-title-color, var(--mlf-color-text, currentColor));
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .section-label {
     display: grid;
-    gap: 0.35rem;
-    padding: 0 0.5rem;
+    gap: 0.25rem;
+    min-inline-size: 0;
   }
   .section-title {
     margin: 0;
     font-size: 0.95rem;
     font-weight: 700;
-    color: var(--mlf-color-text, #0f172a);
+    line-height: 1.35;
+    color: var(--mlf-section-title-color, var(--mlf-color-text, currentColor));
   }
   .section-description {
     margin: 0;
     font-size: var(--mlf-font-size-sm, 0.84rem);
     color: var(--mlf-color-text-muted, #475569);
     line-height: 1.5;
+  }
+  .section-toggle-icon {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-radius: var(--mlf-control-radius, var(--mlf-input-radius, 8px));
+    color: var(--mlf-section-toggle-color, var(--mlf-color-text-muted, currentColor));
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .section-copy:focus-visible .section-toggle-icon {
+    outline: var(--mlf-focus-ring-width, 2px) solid
+      var(--mlf-focus-ring-color, var(--mlf-color-accent, #1e40af));
+    outline-offset: 2px;
   }
   .group.columns-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));

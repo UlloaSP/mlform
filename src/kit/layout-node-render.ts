@@ -46,7 +46,7 @@ export const renderLayoutNode = ({
                   aria-expanded=${String(open)}
                   @click=${() => view?.toggleSection(node.id)}
                 >
-                  <span>
+                  <span class="section-label">
                     ${node.title
                       ? html`<span class=${sectionTitleClass}>${node.title}</span>`
                       : nothing}
@@ -54,7 +54,7 @@ export const renderLayoutNode = ({
                       ? html`<span class=${sectionDescriptionClass}>${node.description}</span>`
                       : nothing}
                   </span>
-                  <span>${open ? "−" : "+"}</span>
+                  <span class="section-toggle-icon" aria-hidden="true">${open ? "−" : "+"}</span>
                 </button>
               `
             : nothing}

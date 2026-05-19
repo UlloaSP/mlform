@@ -1,5 +1,19 @@
 # Todo
 
+## Disclosure Section Styling Todo
+
+- [x] Make disclosure section wrappers visually neutral.
+- [x] Make section title, description, and +/- control inherit design-system tokens.
+- [x] Verify focused kit tests, typecheck/check, line cap, and graph update.
+
+## Disclosure Section Styling Review
+
+- Disclosure sections now render as neutral layout wrappers.
+- Section title, description, and +/- affordance use semantic design-system tokens.
+- Focus ring lives on the small +/- affordance, keeping the wrapper visually light.
+- `DEBT.md` reviewed; no active debt change.
+- Verification: focused kit tests, `vp run typecheck`, source line cap, `vp check`, and src-only graph update/recluster passed.
+
 ## Unified Layout Mount Todo
 
 - [x] Replace public `mountWizardForm`, `mountTabsForm`, and `mountAccordionForm` with `mountForm` routing by `layout.kind`.

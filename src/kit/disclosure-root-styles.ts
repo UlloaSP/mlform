@@ -67,8 +67,7 @@ export const disclosureRootStyles = css`
     overflow-x: hidden;
   }
   .section + .section {
-    border-top: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
+    margin-block-start: var(--mlf-section-gap, 1rem);
   }
   .section-toggle {
     inline-size: 100%;
@@ -76,10 +75,11 @@ export const disclosureRootStyles = css`
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 1rem;
+    min-height: 2rem;
+    padding: 0;
     border: none;
     background: transparent;
-    color: inherit;
+    color: var(--mlf-section-title-color, var(--mlf-color-text, currentColor));
     font: inherit;
     text-align: left;
     cursor: pointer;
@@ -89,10 +89,17 @@ export const disclosureRootStyles = css`
     display: grid;
     gap: 0.35rem;
   }
+  .section-label {
+    display: grid;
+    gap: 0.25rem;
+    min-inline-size: 0;
+  }
   .section-title {
     margin: 0;
     font-size: 0.96rem;
     font-weight: 700;
+    line-height: 1.35;
+    color: var(--mlf-section-title-color, var(--mlf-color-text, currentColor));
   }
   .section-description,
   .nested-description {
@@ -101,14 +108,27 @@ export const disclosureRootStyles = css`
     color: var(--mlf-color-text-muted, #475569);
     line-height: 1.5;
   }
-  .chevron {
-    font-size: 1.1rem;
-    color: var(--mlf-color-text-muted, #475569);
+  .section-toggle-icon {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border-radius: var(--mlf-control-radius, var(--mlf-input-radius, 8px));
+    color: var(--mlf-section-toggle-color, var(--mlf-color-text-muted, currentColor));
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .section-toggle:focus-visible .section-toggle-icon {
+    outline: var(--mlf-focus-ring-width, 2px) solid
+      var(--mlf-focus-ring-color, var(--mlf-color-accent, #1e40af));
+    outline-offset: 2px;
   }
   .section-panel {
     display: grid;
     gap: 1rem;
-    padding: 0 1rem 1rem;
+    padding-block-start: 0.75rem;
   }
   .collection,
   .section-children,
