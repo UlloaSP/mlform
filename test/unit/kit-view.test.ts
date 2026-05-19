@@ -4,25 +4,26 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
-import { defineExplanationKind, registerDefinedExplanationKind } from "@/presentation";
+import { defineReportKind, registerDefinedReportKind } from "@/presentation";
 import { collectLayoutReferences, createFormView, flattenLayoutNodes } from "@/kit";
 
 describe("kit view", () => {
   it("builds an automatic single-page layout when layout is omitted", () => {
     const pack = createMlRegistryPack();
-    registerDefinedExplanationKind(
+    registerDefinedReportKind(
       pack.registry,
       pack.presentationRegistry,
-      defineExplanationKind({
-        kind: "mock-explanation",
+      defineReportKind({
+        kind: "mock-report",
         schema: z.object({
           id: z.string().optional(),
-          kind: z.literal("mock-explanation"),
+          kind: z.literal("mock-report"),
           label: z.string().optional(),
         }),
         fetch: () => ({
           submit: async () => ({ items: [] }),
         }),
+        resolve: ({ result }) => result.reports["mock-report"],
         render: {
           content: () => [],
         },
@@ -38,8 +39,10 @@ describe("kit view", () => {
           { id: "name", kind: "text", label: "Name" },
           { id: "age", kind: "number", label: "Age" },
         ],
-        explanations: [{ id: "why", kind: "mock-explanation", label: "Why" }],
-        reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
+        reports: [
+          { id: "why", kind: "mock-report", label: "Why" },
+          { id: "risk", kind: "classifier", label: "Risk" },
+        ],
       },
       registry: pack.registry,
       presentationRegistry: pack.presentationRegistry,
@@ -51,7 +54,7 @@ describe("kit view", () => {
     expect(snapshot.layout.kind === "single-page" ? snapshot.layout.children : []).toEqual([
       { kind: "field", field: "name" },
       { kind: "field", field: "age" },
-      { kind: "explanation", explanation: "why" },
+      { kind: "report", report: "why" },
       { kind: "report", report: "risk" },
     ]);
     expect(snapshot.wizard).toBeNull();
@@ -111,19 +114,20 @@ describe("kit view", () => {
 
   it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", () => {
     const pack = createMlRegistryPack();
-    registerDefinedExplanationKind(
+    registerDefinedReportKind(
       pack.registry,
       pack.presentationRegistry,
-      defineExplanationKind({
-        kind: "mock-explanation",
+      defineReportKind({
+        kind: "mock-report",
         schema: z.object({
           id: z.string().optional(),
-          kind: z.literal("mock-explanation"),
+          kind: z.literal("mock-report"),
           label: z.string().optional(),
         }),
         fetch: () => ({
           submit: async () => ({ items: [] }),
         }),
+        resolve: ({ result }) => result.reports["mock-report"],
         render: {
           content: () => [],
         },
@@ -137,8 +141,10 @@ describe("kit view", () => {
           { id: "name", kind: "text", label: "Name" },
           { id: "email", kind: "text", label: "Email" },
         ],
-        reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
-        explanations: [{ id: "why", kind: "mock-explanation", label: "Why" }],
+        reports: [
+          { id: "why", kind: "mock-report", label: "Why" },
+          { id: "risk", kind: "classifier", label: "Risk" },
+        ],
       },
       registry: pack.registry,
       presentationRegistry: pack.presentationRegistry,
@@ -149,7 +155,7 @@ describe("kit view", () => {
             title: "Profile",
             children: [
               { kind: "field", field: "name" },
-              { kind: "explanation", explanation: "why" },
+              { kind: "report", report: "why" },
             ],
           },
           {
@@ -173,7 +179,7 @@ describe("kit view", () => {
     });
     expect(view.getField("name")?.visibleInLayout).toBe(true);
     expect(view.getField("email")?.visibleInLayout).toBe(false);
-    expect(view.getExplanation("why")?.visibleInLayout).toBe(true);
+    expect(view.getReport("why")?.visibleInLayout).toBe(true);
     expect(view.getReport("risk")?.visibleInLayout).toBe(false);
 
     expect(view.nextTab()).toBe(true);
@@ -185,7 +191,7 @@ describe("kit view", () => {
     });
     expect(view.getField("name")?.visibleInLayout).toBe(false);
     expect(view.getField("email")?.visibleInLayout).toBe(true);
-    expect(view.getExplanation("why")?.visibleInLayout).toBe(false);
+    expect(view.getReport("why")?.visibleInLayout).toBe(false);
     expect(view.getReport("risk")?.visibleInLayout).toBe(true);
 
     view.setActiveTab("profile");
@@ -300,7 +306,6 @@ describe("kit view", () => {
     const snapshot = view.getSnapshot();
     expect(view.getVisibleFields().map((field) => field.id)).toEqual(["name"]);
     expect(view.getVisibleReports()).toEqual([]);
-    expect(view.getVisibleExplanations()).toEqual([]);
     expect(view.getActiveLayoutNodes()).toHaveLength(1);
     expect(view.getNodeById("profile")?.kind).toBe("section");
     expect(flattenLayoutNodes(snapshot.layout).map((node) => node.kind)).toEqual([
@@ -310,12 +315,10 @@ describe("kit view", () => {
     expect(collectLayoutReferences(snapshot.layout)).toEqual({
       fields: ["name"],
       reports: [],
-      explanations: [],
     });
     expect(view.getLayoutReferences()).toEqual({
       fields: ["name"],
       reports: [],
-      explanations: [],
     });
   });
 

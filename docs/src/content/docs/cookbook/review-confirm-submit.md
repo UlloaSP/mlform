@@ -6,7 +6,7 @@ description: Add a final review-oriented step before the user submits a wizard.
 Pattern:
 
 1. early steps collect inputs
-2. final step shows reports or explanations
+2. final step shows reports
 3. host renders a summary of current field values
 
 Typical final step nodes:
@@ -16,7 +16,7 @@ Typical final step nodes:
   title: "Review",
   children: [
     { kind: "report", report: "risk" },
-    { kind: "explanation", explanation: "why" },
+    { kind: "report", report: "why" },
   ],
 }
 ```

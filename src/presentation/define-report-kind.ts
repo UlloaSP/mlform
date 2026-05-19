@@ -17,6 +17,7 @@ export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
   payloadValidationPolicy?: ReportDefinition<TConfig>["payloadValidationPolicy"];
   partialUpdatePolicy?: ReportDefinition<TConfig>["partialUpdatePolicy"];
   clonePayload?: ReportDefinition<TConfig>["clonePayload"];
+  fetch?: ReportDefinition<TConfig>["fetch"];
   resolvePayload?: ReportDefinition<TConfig>["resolvePayload"];
   describe?: (
     config: NormalizedReportConfig<TConfig>,
@@ -36,6 +37,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     payloadValidationPolicy: kind.payloadValidationPolicy,
     partialUpdatePolicy: kind.partialUpdatePolicy,
     clonePayload: kind.clonePayload as ((payload: unknown, config: TConfig) => unknown) | undefined,
+    fetch: kind.fetch,
     resolvePayload: (_config, context) =>
       kind.resolve({
         config: context.report,
@@ -47,7 +49,11 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
   const presenter: ReportPresenter<TConfig> = {
     kind: kind.kind,
     describe(config, context) {
-      if (context.payload === undefined && context.state.error === null) {
+      if (
+        context.payload === undefined &&
+        context.state.error === null &&
+        context.result === null
+      ) {
         return null;
       }
 
@@ -71,7 +77,10 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
           error: context.state.error,
           state: context.state.status,
           summary: kind.render.summary?.(renderContext) ?? null,
-          content: toPresentationNodes(kind.render.content(renderContext)),
+          content:
+            context.payload === undefined
+              ? []
+              : toPresentationNodes(kind.render.content(renderContext)),
           ...config.ui,
         },
         meta: {
@@ -94,6 +103,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     payloadValidationPolicy: kind.payloadValidationPolicy,
     partialUpdatePolicy: kind.partialUpdatePolicy,
     clonePayload: definition.clonePayload,
+    fetch: definition.fetch,
     resolvePayload: definition.resolvePayload,
     describe,
     definition,

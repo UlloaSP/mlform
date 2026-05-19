@@ -1187,7 +1187,7 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("renders transport content inside classifier reports when explanations are enabled", async () => {
+  it("renders transport content inside classifier reports when details are enabled", async () => {
     const explainTransport = {
       submit: vi.fn().mockResolvedValue("root\n|- income <= 1000\n  |- approve"),
     };
@@ -1206,7 +1206,7 @@ describe("primitives", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
-            explanations: true,
+            details: true,
           },
         ],
       },
@@ -1242,7 +1242,7 @@ describe("primitives", () => {
 
     await flush();
     await flush();
-    // Allow the async explanation fetch to resolve.
+    // Allow the async report fetch to resolve.
     await flush();
     await flush();
 
@@ -1273,7 +1273,7 @@ describe("primitives", () => {
             kind: "regressor",
             id: "score",
             label: "Score",
-            explanations: true,
+            details: true,
           },
         ],
       },
@@ -1811,7 +1811,7 @@ describe("primitives", () => {
           const reportId = this.request?.reportId ?? "";
           const name =
             typeof this.request?.values?.name === "string" ? this.request.values.name : "";
-          const enabled = this.descriptor?.props?.explanations === true ? "yes" : "no";
+          const enabled = this.descriptor?.props?.details === true ? "yes" : "no";
           this.textContent = `${reportId}|${name}|${enabled}`;
         }
       }
@@ -1830,7 +1830,7 @@ describe("primitives", () => {
             kind: "probe-request-report";
             id?: string;
             label?: string;
-            explanations?: boolean;
+            details?: boolean;
           };
         },
       } as never,
@@ -1844,7 +1844,7 @@ describe("primitives", () => {
             id: config.id,
             label: config.label ?? "Probe",
             payload: context.payload,
-            explanations: config.explanations ?? false,
+            details: config.details ?? false,
           },
         };
       },
@@ -1863,7 +1863,7 @@ describe("primitives", () => {
             kind: "probe-request-report",
             id: "probe",
             label: "Probe",
-            explanations: true,
+            details: true,
           } as never,
         ],
       },

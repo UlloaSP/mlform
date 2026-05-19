@@ -58,12 +58,7 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     listenerErrorPolicy: options.listenerErrorPolicy,
     onListenerError: options.onListenerError,
   });
-  const resolvedLayout = resolveFormLayout(
-    options.layout,
-    form.fields,
-    form.reports,
-    form.explanations,
-  );
+  const resolvedLayout = resolveFormLayout(options.layout, form.fields, form.reports);
 
   let stepIndex = 0;
   let activeTabIndex = 0;
@@ -130,17 +125,11 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     getReport(id: string) {
       return getSnapshot().reports.find((report) => report.id === id);
     },
-    getExplanation(id: string) {
-      return getSnapshot().explanations.find((explanation) => explanation.id === id);
-    },
     getVisibleFields() {
       return getSnapshot().fields.filter((field) => field.visibleInLayout && field.state.visible);
     },
     getVisibleReports() {
       return getSnapshot().reports.filter((report) => report.visibleInLayout);
-    },
-    getVisibleExplanations() {
-      return getSnapshot().explanations.filter((explanation) => explanation.visibleInLayout);
     },
     getActiveLayoutNodes() {
       return getActiveLayoutNodes(resolvedLayout, stepIndex, activeTabIndex, openSectionIds);

@@ -2,23 +2,16 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
-  ExplanationController,
-  ExplanationFetchRequest,
-  ExplanationFetchTransport,
   FieldController,
   FormController,
   FormState,
   FormStatus,
+  ReportFetchRequest,
   ReportController,
   SubmitResult,
 } from "@/runtime";
 import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
-import type {
-  ExplanationDescriptor,
-  FieldDescriptor,
-  PresentationRegistry,
-  ReportDescriptor,
-} from "@/presentation";
+import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
 
 export type PrimitiveLayout = "stacked" | "split";
 export type PrimitiveContainerStrategy = "error" | "replace";
@@ -34,31 +27,10 @@ export interface PrimitiveRegistry {
   unregisterReport(component: string): PrimitiveRegistry;
   resolveReport(component: string): string | undefined;
 
-  // --- Explanations ---
-  registerExplanation(component: string, tagName: string): PrimitiveRegistry;
-  unregisterExplanation(component: string): PrimitiveRegistry;
-  resolveExplanation(component: string): string | undefined;
-
   clone(): PrimitiveRegistry;
 }
 
-/**
- * Request passed to a PrimitiveReportTransport when a report becomes ready.
- * Contains the full submit result so a report renderer can fetch any
- * post-submit data it needs, plus the `reportId` identifying that report.
- */
-export interface PrimitiveReportRequest {
-  reportId: string;
-  backend?: string;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
-  meta: Record<string, unknown>;
-  raw: unknown;
-  signal?: AbortSignal;
-}
+export type PrimitiveReportRequest = ReportFetchRequest;
 
 /**
  * Transport for fetching post-submit report content.
@@ -68,14 +40,6 @@ export interface PrimitiveReportRequest {
 export interface PrimitiveReportTransport {
   submit: (request: PrimitiveReportRequest) => Promise<unknown>;
 }
-
-/**
- * Re-exports of engine explanation types for convenience in the primitives
- * layer. Explanation transport is now per-plugin (defined in ExplanationDefinition)
- * rather than a global mount-time option.
- */
-export type ExplanationRequest = ExplanationFetchRequest;
-export type ExplanationTransport = ExplanationFetchTransport;
 
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
@@ -122,12 +86,6 @@ export interface PrimitiveReportRenderContext {
   description?: string;
 }
 
-export interface PrimitiveExplanationRenderContext {
-  regionId: string;
-  label?: string;
-  description?: string;
-}
-
 export interface PrimitiveFieldRendererElement extends HTMLElement {
   controller?: FieldController;
   descriptor?: FieldDescriptor | null;
@@ -142,13 +100,6 @@ export interface PrimitiveReportRendererElement extends HTMLElement {
   text?: PrimitiveText;
   transport?: PrimitiveReportTransport;
   request?: PrimitiveReportRequest | null;
-}
-
-export interface PrimitiveExplanationRendererElement extends HTMLElement {
-  controller?: ExplanationController;
-  descriptor?: ExplanationDescriptor | null;
-  context?: PrimitiveExplanationRenderContext;
-  text?: PrimitiveText;
 }
 
 export interface PrimitiveSubmitStartDetail {

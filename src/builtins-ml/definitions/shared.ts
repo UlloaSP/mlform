@@ -6,15 +6,13 @@ import type {
   BaseFieldConfig,
   BaseReportConfig,
   DeclarativeFieldCondition,
-  ExplanationConfig,
-  ExplanationDefinition,
   FieldConfig,
   FieldDefinition,
   NormalizedFieldConfig,
   ReportConfig,
   ReportDefinition,
 } from "@/schema";
-import type { ExplanationDescriptor, FieldDescriptor, ReportDescriptor } from "@/presentation";
+import type { FieldDescriptor, ReportDescriptor } from "@/presentation";
 import type { SubmitResult } from "@/runtime";
 
 export const uiSchema = z.record(z.string(), z.unknown()).optional();
@@ -181,12 +179,4 @@ export type BuiltinReportDefinition<TConfig extends ReportConfig = ReportConfig>
         result: SubmitResult | null;
       },
     ) => ReportDescriptor | null;
-  };
-
-export type BuiltinExplanationDefinition<TConfig extends ExplanationConfig = ExplanationConfig> =
-  ExplanationDefinition<TConfig> & {
-    describe: (
-      config: import("@/schema").NormalizedExplanationConfig<TConfig>,
-      context: { explanationId: string; state: import("@/schema").ExplanationStateSnapshot },
-    ) => ExplanationDescriptor | null;
   };

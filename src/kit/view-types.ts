@@ -7,15 +7,8 @@ import type {
   ResolvedDesignSystem,
   AttachedDesignSystem,
 } from "@/design-system";
+import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
 import type {
-  ExplanationDescriptor,
-  FieldDescriptor,
-  PresentationRegistry,
-  ReportDescriptor,
-} from "@/presentation";
-import type {
-  ExplanationController,
-  ExplanationStateSnapshot,
   FieldController,
   FieldStateSnapshot,
   FormController,
@@ -80,18 +73,6 @@ export interface FormViewReportItem {
   visibleInLayout: boolean;
 }
 
-export interface FormViewExplanationItem {
-  id: string;
-  kind: string;
-  config: ExplanationController["config"];
-  controller: ExplanationController;
-  state: ExplanationStateSnapshot;
-  descriptor: ExplanationDescriptor | null;
-  stepId: string | null;
-  tabId: string | null;
-  visibleInLayout: boolean;
-}
-
 export interface FormViewState {
   form: FormState;
   wizard: WizardState | null;
@@ -104,7 +85,6 @@ export interface FormViewSnapshot {
   layout: ResolvedFormLayout;
   fields: FormViewFieldItem[];
   reports: FormViewReportItem[];
-  explanations: FormViewExplanationItem[];
   wizard: WizardState | null;
   tabs: TabsState | null;
   accordion: AccordionState | null;
@@ -125,10 +105,8 @@ export interface FormViewController {
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;
   getField(id: string): FormViewFieldItem | undefined;
   getReport(id: string): FormViewReportItem | undefined;
-  getExplanation(id: string): FormViewExplanationItem | undefined;
   getVisibleFields(): FormViewFieldItem[];
   getVisibleReports(): FormViewReportItem[];
-  getVisibleExplanations(): FormViewExplanationItem[];
   getActiveLayoutNodes(): ResolvedFormLayoutNode[];
   getLayoutReferences(): LayoutReferences;
   validate(): Promise<FormValidationResult>;

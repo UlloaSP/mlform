@@ -33,7 +33,6 @@ const assertTagName = (tagName: string): void => {
 class EnginePrimitiveRegistry implements PrimitiveRegistry {
   readonly #fields = new Map<string, string>();
   readonly #reports = new Map<string, string>();
-  readonly #explanations = new Map<string, string>();
 
   registerField(component: string, tagName: string): PrimitiveRegistry {
     assertTagName(tagName);
@@ -57,27 +56,12 @@ class EnginePrimitiveRegistry implements PrimitiveRegistry {
     return this;
   }
 
-  registerExplanation(component: string, tagName: string): PrimitiveRegistry {
-    assertTagName(tagName);
-    this.#explanations.set(component, tagName);
-    return this;
-  }
-
-  unregisterExplanation(component: string): PrimitiveRegistry {
-    this.#explanations.delete(component);
-    return this;
-  }
-
   resolveField(component: string): string | undefined {
     return this.#fields.get(component);
   }
 
   resolveReport(component: string): string | undefined {
     return this.#reports.get(component);
-  }
-
-  resolveExplanation(component: string): string | undefined {
-    return this.#explanations.get(component);
   }
 
   clone(): PrimitiveRegistry {
@@ -89,10 +73,6 @@ class EnginePrimitiveRegistry implements PrimitiveRegistry {
 
     for (const [component, tagName] of this.#reports) {
       next.registerReport(component, tagName);
-    }
-
-    for (const [component, tagName] of this.#explanations) {
-      next.registerExplanation(component, tagName);
     }
 
     return next;
@@ -118,6 +98,5 @@ export const createBuiltinPrimitiveRegistry = (): PrimitiveRegistry => {
     .registerField("rating-field", primitiveTagNames.ratingField)
     .registerReport("declarative-report", primitiveTagNames.declarativeReport)
     .registerReport("classifier-report", primitiveTagNames.classifierReport)
-    .registerReport("regressor-report", primitiveTagNames.regressorReport)
-    .registerExplanation("declarative-explanation", primitiveTagNames.declarativeExplanation);
+    .registerReport("regressor-report", primitiveTagNames.regressorReport);
 };

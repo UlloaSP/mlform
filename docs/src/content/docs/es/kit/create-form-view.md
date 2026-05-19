@@ -30,7 +30,7 @@ Devuelve:
 
 `accordion` en el snapshot solo existe cuando `layout.kind === "accordion"`.
 
-Cada item de `fields`, `reports` y `explanations` expone:
+Cada item de `fields` y `reports` expone:
 
 - `controller`
 - `state`

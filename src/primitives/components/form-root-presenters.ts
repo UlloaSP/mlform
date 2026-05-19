@@ -2,12 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
-import type { ExplanationController, FormController, ReportController } from "@/runtime";
-import {
-  resolveExplanationDescriptor,
-  resolveFieldDescriptor,
-  resolveReportDescriptor,
-} from "../presentation";
+import type { FormController, ReportController } from "@/runtime";
+import { resolveFieldDescriptor, resolveReportDescriptor } from "../presentation";
 
 export type PresentedField = {
   controller: NonNullable<ReturnType<FormController["getField"]>>;
@@ -17,11 +13,6 @@ export type PresentedField = {
 export type PresentedReport = {
   controller: ReportController;
   descriptor: ReportDescriptor | null;
-};
-
-export type PresentedExplanation = {
-  controller: ExplanationController;
-  descriptor: import("@/presentation").ExplanationDescriptor | null;
 };
 
 export const presentVisibleFields = (
@@ -57,16 +48,3 @@ export const presentVisibleReports = (
     }))
     .filter((report) => report.descriptor !== null);
 };
-
-export const presentExplanations = (
-  form: FormController,
-  explanationIds: readonly string[],
-  presentationRegistry: PresentationRegistry | undefined,
-): PresentedExplanation[] =>
-  explanationIds
-    .map((id) => form.getExplanation(id))
-    .filter((e): e is ExplanationController => e !== undefined)
-    .map((controller) => ({
-      controller,
-      descriptor: resolveExplanationDescriptor(controller, presentationRegistry),
-    }));

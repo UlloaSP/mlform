@@ -5,10 +5,8 @@ import { RegistryError } from "./registry";
 import { slugify } from "@/shared";
 import { MLFormError } from "@/shared";
 import type {
-  ExplanationConfig,
   FieldConfig,
   FormSchema,
-  NormalizedExplanationConfig,
   NormalizedFieldConfig,
   NormalizedFormSchema,
   NormalizedReportConfig,
@@ -132,28 +130,9 @@ const normalizeReport = (
   };
 };
 
-const normalizeExplanation = (
-  explanation: ExplanationConfig,
-  index: number,
-  registry: Registry,
-  usedIds: Set<string>,
-): NormalizedExplanationConfig => {
-  const definition = registry.getExplanation(explanation.kind);
-  if (!definition) {
-    throw new RegistryError(`Unknown explanation kind "${explanation.kind}".`);
-  }
-
-  const parsed = definition.schema.parse(explanation) as ExplanationConfig;
-  return {
-    ...parsed,
-    id: resolveId(parsed.id, parsed.label ?? parsed.kind, usedIds, `explanation-${index + 1}`),
-  };
-};
-
 export const normalizeSchema = (schema: FormSchema, registry: Registry): NormalizedFormSchema => {
   const usedFieldIds = new Set<string>();
   const usedReportIds = new Set<string>();
-  const usedExplanationIds = new Set<string>();
 
   return {
     fields: schema.fields.map((field, index) =>
@@ -161,9 +140,6 @@ export const normalizeSchema = (schema: FormSchema, registry: Registry): Normali
     ),
     reports: (schema.reports ?? []).map((report, index) =>
       normalizeReport(report, index, registry, usedReportIds),
-    ),
-    explanations: (schema.explanations ?? []).map((explanation, index) =>
-      normalizeExplanation(explanation, index, registry, usedExplanationIds),
     ),
   };
 };

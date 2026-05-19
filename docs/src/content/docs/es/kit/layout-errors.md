@@ -20,4 +20,4 @@ Checklist:
 
 1. confirma ids finales del schema
 2. confirma cobertura completa de fields
-3. confirma que reports y explanations usan ids existentes
+3. confirma que reports usan ids existentes

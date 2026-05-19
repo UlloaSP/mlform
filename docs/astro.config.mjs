@@ -96,7 +96,6 @@ const sidebar = [
       { label: "Registries", slug: "runtime/registries" },
       { label: "Custom Fields", slug: "runtime/custom-fields" },
       { label: "Custom Reports", slug: "runtime/custom-reports" },
-      { label: "Custom Explanations", slug: "runtime/custom-explanations" },
     ],
   },
   {

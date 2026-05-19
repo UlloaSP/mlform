@@ -39,7 +39,7 @@ mountWizardForm(container, {
 Rules:
 
 - every field must appear exactly once in the wizard layout
-- reports and explanations are optional
+- reports are optional
 - references must point to existing ids
 - step navigation validates the current step before moving forward
 

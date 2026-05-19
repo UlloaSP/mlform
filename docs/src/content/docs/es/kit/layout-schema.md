@@ -31,14 +31,13 @@ type FormLayoutNode =
     }
   | { kind: "group"; id?: string; columns?: 1 | 2 | 3; children: FormLayoutNode[] }
   | { kind: "field"; field: string }
-  | { kind: "report"; report: string }
-  | { kind: "explanation"; explanation: string };
+  | { kind: "report"; report: string };
 ```
 
 ## Reglas
 
 - cada `field` debe aparecer exactamente una vez en layouts explicitos
-- `report` y `explanation` pueden aparecer cero o una vez
+- `report` puede aparecer cero o una vez
 - referencias desconocidas fallan al crear el view
 - `wizard.steps` no puede estar vacio
 - `tabs.tabs` no puede estar vacio

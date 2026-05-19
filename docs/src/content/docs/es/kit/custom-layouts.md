@@ -8,7 +8,7 @@ Patron base:
 1. crear `view`
 2. leer `snapshot.layout`
 3. renderizar nodos recursivamente
-4. usar `field.controller`, `report.controller` y `explanation.controller`
+4. usar `field.controller` y `report.controller`
 5. volver a renderizar con `subscribe()`
 
 Recuerda:

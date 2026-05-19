@@ -3,10 +3,8 @@
 
 import type { FormLayoutNode, ResolvedFormLayoutNode } from "./types";
 import {
-  assertKnownExplanation,
   assertKnownField,
   assertKnownReport,
-  markExplanation,
   markField,
   markReport,
   nextNodeId,
@@ -47,10 +45,6 @@ export const resolveNodes = (
         assertKnownReport(node.report, entities);
         markReport(node.report, maps, stepId, tabId);
         return { kind: "report", report: node.report };
-      case "explanation":
-        assertKnownExplanation(node.explanation, entities);
-        markExplanation(node.explanation, maps, stepId, tabId);
-        return { kind: "explanation", explanation: node.explanation };
     }
   });
 };

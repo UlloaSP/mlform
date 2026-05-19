@@ -26,17 +26,11 @@ export interface FormLayoutReportNode {
   report: string;
 }
 
-export interface FormLayoutExplanationNode {
-  kind: "explanation";
-  explanation: string;
-}
-
 export type FormLayoutNode =
   | FormLayoutSectionNode
   | FormLayoutGroupNode
   | FormLayoutFieldNode
-  | FormLayoutReportNode
-  | FormLayoutExplanationNode;
+  | FormLayoutReportNode;
 
 export interface SinglePageLayoutConfig {
   kind?: "single-page";
@@ -111,17 +105,11 @@ export interface ResolvedFormLayoutReportNode {
   report: string;
 }
 
-export interface ResolvedFormLayoutExplanationNode {
-  kind: "explanation";
-  explanation: string;
-}
-
 export type ResolvedFormLayoutNode =
   | ResolvedFormLayoutSectionNode
   | ResolvedFormLayoutGroupNode
   | ResolvedFormLayoutFieldNode
-  | ResolvedFormLayoutReportNode
-  | ResolvedFormLayoutExplanationNode;
+  | ResolvedFormLayoutReportNode;
 
 export interface ResolvedSinglePageLayout {
   kind: "single-page";

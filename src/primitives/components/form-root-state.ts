@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  ExplanationController,
-  FormController,
-  FormStatus,
-  ReportController,
-} from "@/runtime";
+import type { FormController, FormStatus, ReportController } from "@/runtime";
 
 export type FormRenderState = {
   status: FormStatus;
@@ -19,9 +14,7 @@ export type FormRenderState = {
   submissionSessionMessageCount?: number;
   visibleFieldIds: string[];
   visibleReportIds: string[];
-  explanationIds: string[];
   reportStateKeys: string[];
-  explanationStateKeys: string[];
 };
 
 const sameIds = (left: readonly string[], right: readonly string[]): boolean => {
@@ -40,9 +33,7 @@ export const sameFormRenderState = (left: FormRenderState, right: FormRenderStat
     left.submissionSessionMessageCount === right.submissionSessionMessageCount &&
     sameIds(left.visibleFieldIds, right.visibleFieldIds) &&
     sameIds(left.visibleReportIds, right.visibleReportIds) &&
-    sameIds(left.explanationIds, right.explanationIds) &&
-    sameIds(left.reportStateKeys, right.reportStateKeys) &&
-    sameIds(left.explanationStateKeys, right.explanationStateKeys)
+    sameIds(left.reportStateKeys, right.reportStateKeys)
   );
 };
 
@@ -60,17 +51,9 @@ export const selectFormRenderState = (form: FormController): FormRenderState => 
     submissionSessionMessageCount: state.submissionProgress?.sessionMessageCount,
     visibleFieldIds: form.fields.filter((field) => field.state.visible).map((field) => field.id),
     visibleReportIds: form.reports.map((report) => report.id),
-    explanationIds:
-      state.lastResult !== null
-        ? form.explanations.map((explanation: ExplanationController) => explanation.id)
-        : [],
     reportStateKeys: form.reports.map(
       (report) =>
         `${report.id}:${report.state.status}:${report.state.payload === undefined}:${report.state.error === null}`,
-    ),
-    explanationStateKeys: form.explanations.map(
-      (explanation) =>
-        `${explanation.id}:${explanation.state.status}:${explanation.state.result === undefined}:${explanation.state.error === null}`,
     ),
   };
 };

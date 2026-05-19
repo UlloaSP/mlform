@@ -2,19 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { PresentationRegistry } from "@/presentation";
-import type {
-  ExplanationController,
-  FieldController,
-  FormController,
-  ReportController,
-} from "@/runtime";
+import type { FieldController, FormController, ReportController } from "@/runtime";
 import { fallbackFieldDescriptor } from "../primitives/presentation";
-import type {
-  FormViewExplanationItem,
-  FormViewFieldItem,
-  FormViewReportItem,
-  FormViewSnapshot,
-} from "./types";
+import type { FormViewFieldItem, FormViewReportItem, FormViewSnapshot } from "./types";
 import {
   createFormViewState,
   getAccordionState,
@@ -110,43 +100,6 @@ const buildReportItem = (
   };
 };
 
-const buildExplanationItem = (
-  explanation: ExplanationController,
-  presentationRegistry: PresentationRegistry,
-  resolvedLayout: ResolvedLayoutResult,
-  stepIndex: number,
-  activeTabIndex: number,
-  openSectionIds: Set<string>,
-): FormViewExplanationItem => {
-  const stepId = resolvedLayout.maps.explanationStepIds.get(explanation.id) ?? null;
-  const tabId = resolvedLayout.maps.explanationTabIds.get(explanation.id) ?? null;
-  const presenter = presentationRegistry.getExplanation(explanation.kind);
-
-  return {
-    id: explanation.id,
-    kind: explanation.kind,
-    config: explanation.config,
-    controller: explanation,
-    state: explanation.state,
-    descriptor: presenter
-      ? presenter.describe(explanation.config, {
-          explanationId: explanation.id,
-          state: explanation.state,
-        })
-      : null,
-    stepId,
-    tabId,
-    visibleInLayout: isVisibleInLayout(
-      resolvedLayout.layout,
-      stepIndex,
-      activeTabIndex,
-      openSectionIds,
-      stepId,
-      tabId,
-    ),
-  };
-};
-
 export const buildFormViewSnapshot = ({
   form,
   presentationRegistry,
@@ -171,16 +124,6 @@ export const buildFormViewSnapshot = ({
     buildReportItem(
       report,
       form,
-      presentationRegistry,
-      resolvedLayout,
-      stepIndex,
-      activeTabIndex,
-      openSectionIds,
-    ),
-  ),
-  explanations: form.explanations.map((explanation) =>
-    buildExplanationItem(
-      explanation,
       presentationRegistry,
       resolvedLayout,
       stepIndex,

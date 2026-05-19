@@ -38,7 +38,6 @@ export const createFormSubmitter = ({
   getSubmitCount,
   markReportsLoading,
   resetReports,
-  resetExplanations,
   syncDerivedFieldState,
   shouldResetInactiveFields,
   resolveInactiveFieldPolicy,
@@ -60,7 +59,6 @@ export const createFormSubmitter = ({
   const lifecycle = createSubmissionLifecycle({
     store,
     resetReports,
-    resetExplanations,
     syncAfterSubmissionTransition,
   });
   const fieldMap = new Map(

@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  ExplanationPresenter,
-  FieldPresenter,
-  PresentationRegistry,
-  ReportPresenter,
-} from "@/presentation";
+import type { FieldPresenter, PresentationRegistry, ReportPresenter } from "@/presentation";
 import type { RuntimeBehavior } from "@/runtime";
-import type { ExplanationConfig, FieldConfig, Registry, ReportConfig } from "@/schema";
+import type { FieldConfig, Registry, ReportConfig } from "@/schema";
 
 type DescriptorCapableFieldDefinition = {
   kind: string;
@@ -18,11 +13,6 @@ type DescriptorCapableFieldDefinition = {
 type DescriptorCapableReportDefinition = {
   kind: string;
   describe?: ReportPresenter<ReportConfig>["describe"];
-};
-
-type DescriptorCapableExplanationDefinition = {
-  kind: string;
-  describe?: ExplanationPresenter<ExplanationConfig>["describe"];
 };
 
 export type RegistryPack = {
@@ -54,20 +44,6 @@ export const registerReportPresenterFromDefinition = (
   }
 
   presentationRegistry.registerReport({
-    kind: definition.kind,
-    describe: definition.describe,
-  });
-};
-
-export const registerExplanationPresenterFromDefinition = (
-  presentationRegistry: PresentationRegistry,
-  definition: DescriptorCapableExplanationDefinition,
-): void => {
-  if (!definition.describe || presentationRegistry.getExplanation(definition.kind)) {
-    return;
-  }
-
-  presentationRegistry.registerExplanation({
     kind: definition.kind,
     describe: definition.describe,
   });

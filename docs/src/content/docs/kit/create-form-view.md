@@ -44,10 +44,8 @@ interface FormViewController {
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;
   getField(id: string): FormViewFieldItem | undefined;
   getReport(id: string): FormViewReportItem | undefined;
-  getExplanation(id: string): FormViewExplanationItem | undefined;
   getVisibleFields(): FormViewFieldItem[];
   getVisibleReports(): FormViewReportItem[];
-  getVisibleExplanations(): FormViewExplanationItem[];
   getActiveLayoutNodes(): ResolvedFormLayoutNode[];
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
@@ -75,7 +73,6 @@ interface FormViewController {
 - `layout`
 - `fields`
 - `reports`
-- `explanations`
 - `wizard`
 - `tabs`
 - `accordion`
@@ -98,7 +95,7 @@ Each field item contains:
 - `tabId`
 - `visibleInLayout`
 
-The report and explanation collections follow the same pattern.
+The report collection follows the same pattern.
 
 ## Navigation semantics
 

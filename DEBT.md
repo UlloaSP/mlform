@@ -15,7 +15,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-05-17`
+- Last reviewed: `2026-05-19`
 - Current focus: no active debt recorded
 
 ## Active Debt
@@ -59,6 +59,8 @@ This file is the required ledger for active technical debt, known bugs, architec
 - Runtime-owned builtins moved under `src/builtins-ml/definitions`; packs and tests import them from the builtins package boundary.
 - Docs/tests old `engine` section paths moved to `runtime`.
 - `cloneSchemaRegistry` now only clones explicit registries; default kit pack composition stays in `createFormView`.
+- explanations collapsed into reports; explanation top-level API removed.
+- report fetch request construction and async transport lifecycle deduplicated.
 
 ## Notes
 

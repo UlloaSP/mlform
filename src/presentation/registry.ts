@@ -2,16 +2,12 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { RegistryError } from "@/schema";
-import type { BaseExplanationConfig, BaseFieldConfig, BaseReportConfig } from "@/schema";
-import type { ExplanationPresenter, FieldPresenter, ReportPresenter } from "./index";
+import type { BaseFieldConfig, BaseReportConfig } from "@/schema";
+import type { FieldPresenter, ReportPresenter } from "./index";
 
 export class PresentationRegistry {
   private readonly fieldPresenters = new Map<string, FieldPresenter<BaseFieldConfig, unknown>>();
   private readonly reportPresenters = new Map<string, ReportPresenter<BaseReportConfig>>();
-  private readonly explanationPresenters = new Map<
-    string,
-    ExplanationPresenter<BaseExplanationConfig>
-  >();
 
   registerField<TConfig extends BaseFieldConfig, TValue>(
     presenter: FieldPresenter<TConfig, TValue>,
@@ -33,20 +29,6 @@ export class PresentationRegistry {
     return this;
   }
 
-  registerExplanation<TConfig extends BaseExplanationConfig>(
-    presenter: ExplanationPresenter<TConfig>,
-  ): this {
-    if (this.explanationPresenters.has(presenter.kind)) {
-      throw new RegistryError(`Explanation presenter "${presenter.kind}" is already registered.`);
-    }
-
-    this.explanationPresenters.set(
-      presenter.kind,
-      presenter as ExplanationPresenter<BaseExplanationConfig>,
-    );
-    return this;
-  }
-
   getField(kind: string): FieldPresenter<BaseFieldConfig, unknown> | undefined {
     return this.fieldPresenters.get(kind);
   }
@@ -55,16 +37,10 @@ export class PresentationRegistry {
     return this.reportPresenters.get(kind);
   }
 
-  getExplanation(kind: string): ExplanationPresenter<BaseExplanationConfig> | undefined {
-    return this.explanationPresenters.get(kind);
-  }
-
   clone(): PresentationRegistry {
     const next = new PresentationRegistry();
     for (const presenter of this.fieldPresenters.values()) next.registerField(presenter);
     for (const presenter of this.reportPresenters.values()) next.registerReport(presenter);
-    for (const presenter of this.explanationPresenters.values())
-      next.registerExplanation(presenter);
     return next;
   }
 }

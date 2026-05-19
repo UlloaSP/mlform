@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ExplanationController, FieldController, ReportController } from "@/runtime";
+import type { FieldController, ReportController } from "@/runtime";
 import { kitErrorMessages } from "./constants";
 import {
   assertAllFieldsCovered,
@@ -23,15 +23,14 @@ export const resolveFormLayout = (
   layout: FormLayoutConfig | undefined,
   fields: readonly FieldController[],
   reports: readonly ReportController[],
-  explanations: readonly ExplanationController[],
 ): ResolvedLayoutResult => {
-  const entities = createEntityMaps(fields, reports, explanations);
+  const entities = createEntityMaps(fields, reports);
   const maps = createReferenceMaps();
   const nodeIds = new Map<string, number>();
 
   if (!layout || layout.kind === undefined || layout.kind === "single-page") {
     const children = resolveNodes(
-      layout?.children ?? createDefaultSinglePageNodes(fields, explanations, reports),
+      layout?.children ?? createDefaultSinglePageNodes(fields, reports),
       entities,
       maps,
       nodeIds,
