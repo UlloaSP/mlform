@@ -4,6 +4,7 @@
 import type {
   NormalizedReportConfig,
   ReportConfig,
+  ReportFetchFactory,
   ReportResolveContext,
   ReportStateSnapshot,
 } from "@/schema";
@@ -53,6 +54,7 @@ export interface DeclarativeReportKind<
   payloadValidationPolicy?: "report-error" | "fail-submit";
   partialUpdatePolicy?: "trust" | "validate" | "defer";
   clonePayload?: (payload: TPayload, config: TConfig) => TPayload;
+  fetch?: ReportFetchFactory<TConfig>;
   resolve: (context: ReportResolveContext<TConfig>) => unknown;
   render: ReportRenderSpec<TConfig, TPayload>;
 }

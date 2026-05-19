@@ -5,13 +5,12 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
 import {
-  defineExplanationKind,
   defineFieldKind,
   defineReportKind,
   type FieldPresenter,
   type ReportPresenter,
 } from "@/presentation";
-import { defineExplanationDefinition, type FieldConfig, type ReportConfig } from "@/schema";
+import type { FieldConfig, ReportConfig } from "@/schema";
 import {
   EngineError,
   type FieldController,
@@ -1964,7 +1963,7 @@ describe("runtime", () => {
 
     expect(describeReport(form, form.reports[0]!)?.props.id).toBe("risk");
     expect(describeReport(form, form.reports[0]!)?.props.showClassProbabilities).toBe(true);
-    expect(describeReport(form, form.reports[0]!)?.props).not.toHaveProperty("explanations");
+    expect(describeReport(form, form.reports[0]!)?.props).not.toHaveProperty("details");
   });
 
   it("throws ValidationError when submit is attempted with invalid data", async () => {
@@ -3121,85 +3120,71 @@ describe("runtime", () => {
     });
   });
 
-  it("normalizes explanation schemas and assigns auto-generated ids", () => {
+  it("normalizes fetch-backed reports and assigns auto-generated ids", () => {
     const registry = createMlRegistryPack().registry;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z
-          .object({
-            kind: z.literal("shap"),
-            id: z.string().optional(),
-            label: z.string().optional(),
-          })
-          .passthrough(),
-        transport: () => ({ submit: vi.fn() }),
-        describe: () => null,
-      }),
-    );
+    registry.registerReport({
+      kind: "shap",
+      schema: z
+        .object({
+          kind: z.literal("shap"),
+          id: z.string().optional(),
+          label: z.string().optional(),
+          source: z.string().optional(),
+        })
+        .passthrough(),
+      fetch: () => ({ submit: vi.fn() }),
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
-        explanations: [{ kind: "shap", label: "SHAP Values" }, { kind: "shap" }],
+        reports: [{ kind: "shap", label: "SHAP Values" }, { kind: "shap" }],
       },
       registry,
       transport: { submit: vi.fn() },
     });
 
-    expect(form.explanations).toHaveLength(2);
-    expect(Object.isFrozen(form.explanations)).toBe(true);
-    expect(form.explanations[0]?.id).toBe("shap-values");
-    expect(form.explanations[1]?.id).toBe("shap");
-    expect(form.getExplanation("shap-values")).toBe(form.explanations[0]);
-    expect(form.getExplanation("shap")).toBe(form.explanations[1]);
-    expect(form.getExplanation("missing")).toBeUndefined();
+    expect(form.reports).toHaveLength(2);
+    expect(Object.isFrozen(form.reports)).toBe(true);
+    expect(form.reports[0]?.id).toBe("shap-values");
+    expect(form.reports[1]?.id).toBe("shap");
+    expect(form.getReport("shap-values")).toBe(form.reports[0]);
+    expect(form.getReport("shap")).toBe(form.reports[1]);
+    expect(form.getReport("missing")).toBeUndefined();
   });
 
-  it("transitions explanation state idle → loading → done and fires afterExplanation hook", async () => {
-    const afterExplanation = vi.fn();
-    const fetchResult = { importances: { name: 0.9 } };
-    const transportSubmit = vi.fn().mockResolvedValue(fetchResult);
+  it("fetches report payloads and fires afterReportFetch hook", async () => {
+    const afterReportFetch = vi.fn();
+    const fetchPayload = { importances: { name: 0.9 } };
+    const transportSubmit = vi.fn().mockResolvedValue(fetchPayload);
     const registry = createMlRegistryPack().registry;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z
-          .object({
-            kind: z.literal("shap"),
-            id: z.string().optional(),
-            label: z.string().optional(),
-          })
-          .passthrough(),
-        transport: () => ({ submit: transportSubmit }),
-        describe: (_config: unknown, ctx: { state: { status: string } }) => ({
-          component: "shap-renderer",
-          props: { status: ctx.state.status },
-        }),
-      }),
-    );
+    registry.registerReport({
+      kind: "shap",
+      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+      fetch: () => ({ submit: transportSubmit }),
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
-        explanations: [{ kind: "shap", label: "SHAP" }],
+        reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
       transport: { submit: vi.fn() },
-      hooks: { afterExplanation },
+      hooks: { afterReportFetch },
     });
 
-    const ctrl = form.explanations[0]!;
+    const ctrl = form.reports[0]!;
     const stateListener = vi.fn();
     ctrl.subscribe(stateListener);
 
+    expect(ctrl.canFetch).toBe(true);
     expect(ctrl.state.status).toBe("idle");
-    expect(form.state.explanationStates[ctrl.id]?.status).toBe("idle");
 
-    const fetchRequest = {
-      explanationId: ctrl.id,
+    const fetchPromise = ctrl.fetch({
+      reportId: ctrl.id,
       values: { name: "Alice" },
       fieldValues: { name: "Alice" },
       serializedValues: { name: "Alice" },
@@ -3207,63 +3192,56 @@ describe("runtime", () => {
       reports: {},
       meta: {},
       raw: {},
-    };
-
-    const fetchPromise = ctrl.fetch(fetchRequest);
+    });
     expect(ctrl.state.status).toBe("loading");
 
     await fetchPromise;
 
-    expect(ctrl.state.status).toBe("done");
-    expect(ctrl.state.result).toEqual(fetchResult);
-    expect(ctrl.state.error).toBeNull();
-    expect(form.state.explanationStates[ctrl.id]?.status).toBe("done");
-
+    expect(ctrl.state).toEqual({
+      status: "ready",
+      payload: fetchPayload,
+      error: null,
+    });
+    expect(form.state.reportStates[ctrl.id]?.status).toBe("ready");
     expect(transportSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        explanationId: ctrl.id,
+        reportId: ctrl.id,
         values: { name: "Alice" },
         signal: expect.any(AbortSignal),
       }),
     );
-
-    expect(afterExplanation).toHaveBeenCalledWith({
-      explanationId: ctrl.id,
+    expect(afterReportFetch).toHaveBeenCalledWith({
+      reportId: ctrl.id,
       kind: "shap",
-      result: fetchResult,
+      payload: fetchPayload,
     });
-
     expect(stateListener).toHaveBeenCalledTimes(2);
   });
 
-  it("transitions explanation state idle → loading → error and fires onExplanationError hook", async () => {
-    const onExplanationError = vi.fn();
-    const fetchError = new Error("explanation service unavailable");
+  it("surfaces report fetch errors and fires onReportFetchError hook", async () => {
+    const onReportFetchError = vi.fn();
+    const fetchError = new Error("report fetch unavailable");
     const registry = createMlRegistryPack().registry;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-        transport: () => ({ submit: vi.fn().mockRejectedValue(fetchError) }),
-        describe: () => null,
-      }),
-    );
+    registry.registerReport({
+      kind: "shap",
+      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+      fetch: () => ({ submit: vi.fn().mockRejectedValue(fetchError) }),
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
-        explanations: [{ kind: "shap" }],
+        reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
       transport: { submit: vi.fn() },
-      hooks: { onExplanationError },
+      hooks: { onReportFetchError },
     });
 
-    const ctrl = form.explanations[0]!;
-
+    const ctrl = form.reports[0]!;
     await ctrl.fetch({
-      explanationId: ctrl.id,
+      reportId: ctrl.id,
       values: {},
       fieldValues: {},
       serializedValues: {},
@@ -3274,41 +3252,37 @@ describe("runtime", () => {
     });
 
     expect(ctrl.state.status).toBe("error");
-    expect(ctrl.state.error).toBe("explanation service unavailable");
-    expect(ctrl.state.result).toBeUndefined();
-
-    expect(onExplanationError).toHaveBeenCalledWith({
-      explanationId: ctrl.id,
+    expect(ctrl.state.error).toBe("report fetch unavailable");
+    expect(ctrl.state.payload).toBeUndefined();
+    expect(onReportFetchError).toHaveBeenCalledWith({
+      reportId: ctrl.id,
       kind: "shap",
       error: fetchError,
     });
   });
 
-  it("skips fetch when explanation status is not idle (idempotent)", async () => {
+  it("skips report fetch when state is not idle", async () => {
     const transportSubmit = vi.fn().mockResolvedValue({ data: 1 });
     const registry = createMlRegistryPack().registry;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-        transport: () => ({ submit: transportSubmit }),
-        describe: () => null,
-      }),
-    );
+    registry.registerReport({
+      kind: "shap",
+      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+      fetch: () => ({ submit: transportSubmit }),
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
-        explanations: [{ kind: "shap" }],
+        reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
       transport: { submit: vi.fn() },
     });
 
-    const ctrl = form.explanations[0]!;
+    const ctrl = form.reports[0]!;
     const fetchRequest = {
-      explanationId: ctrl.id,
+      reportId: ctrl.id,
       values: {},
       fieldValues: {},
       serializedValues: {},
@@ -3320,43 +3294,37 @@ describe("runtime", () => {
 
     const first = ctrl.fetch(fetchRequest);
     expect(ctrl.state.status).toBe("loading");
-
-    // Second call while first is in-flight — should be no-op.
     await ctrl.fetch(fetchRequest);
     expect(transportSubmit).toHaveBeenCalledTimes(1);
 
     await first;
-    expect(ctrl.state.status).toBe("done");
+    expect(ctrl.state.status).toBe("ready");
 
-    // Third call after done — should also be no-op.
     await ctrl.fetch(fetchRequest);
     expect(transportSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it("resets all explanation states on form reset", async () => {
+  it("resets fetched reports on form reset and next submit", async () => {
     const registry = createMlRegistryPack().registry;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-        transport: () => ({ submit: vi.fn().mockResolvedValue({ data: 1 }) }),
-        describe: () => null,
-      }),
-    );
+    registry.registerReport({
+      kind: "shap",
+      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+      fetch: () => ({ submit: vi.fn().mockResolvedValue({ data: 1 }) }),
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name", defaultValue: "Initial" }],
-        explanations: [{ kind: "shap" }],
+        reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
     });
 
-    const ctrl = form.explanations[0]!;
+    const ctrl = form.reports[0]!;
     await ctrl.fetch({
-      explanationId: ctrl.id,
+      reportId: ctrl.id,
       values: {},
       fieldValues: {},
       serializedValues: {},
@@ -3365,43 +3333,13 @@ describe("runtime", () => {
       meta: {},
       raw: {},
     });
-
-    expect(ctrl.state.status).toBe("done");
+    expect(ctrl.state.status).toBe("ready");
 
     form.reset();
-
     expect(ctrl.state.status).toBe("idle");
-    expect(form.state.explanationStates[ctrl.id]?.status).toBe("idle");
-  });
 
-  it("resets explanation states at the start of each new submit", async () => {
-    const registry = createMlRegistryPack().registry;
-
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-        transport: () => ({ submit: vi.fn().mockResolvedValue({ data: 1 }) }),
-        describe: () => null,
-      }),
-    );
-
-    const form = createForm({
-      schema: {
-        fields: [{ kind: "text", label: "Name", required: true }],
-        explanations: [{ kind: "shap" }],
-      },
-      registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
-    });
-
-    const ctrl = form.explanations[0]!;
-
-    form.setValues({ name: "Alice" });
-
-    // Fetch after first submit.
     await ctrl.fetch({
-      explanationId: ctrl.id,
+      reportId: ctrl.id,
       values: {},
       fieldValues: {},
       serializedValues: {},
@@ -3410,15 +3348,11 @@ describe("runtime", () => {
       meta: {},
       raw: {},
     });
-    expect(ctrl.state.status).toBe("done");
-
-    // Second submit resets explanations to idle.
     await form.submit();
-
     expect(ctrl.state.status).toBe("idle");
   });
 
-  it("executes pipeline without explanations when explanationMode is none", async () => {
+  it("executes pipeline without report fetches when reportFetchMode is none", async () => {
     const submitResult = {
       reports: {
         risk: {
@@ -3446,51 +3380,49 @@ describe("runtime", () => {
 
     const result = await executeFormPipeline({
       form,
-      explanationMode: "none",
+      reportFetchMode: "none",
     });
 
     expect(result.submitResult.reports).toEqual(submitResult.reports);
     expect(result.submitResult.meta).toEqual(submitResult.meta);
     expect(result.submitResult.raw).toEqual(submitResult.raw);
-    expect(result.explanationResults).toEqual({});
-    expect(result.explanationErrors).toEqual({});
+    expect(result.reportFetchResults).toEqual({});
+    expect(result.reportFetchErrors).toEqual({});
     expect(result.artifacts).toEqual({});
   });
 
-  it("executes explanations, preserves partial failures, and derives artifacts", async () => {
-    const afterExplanation = vi.fn();
-    const onExplanationError = vi.fn();
-    const explanationTransport = vi.fn(async ({ explanationId }: { explanationId: string }) => {
-      if (explanationId === "shap-error") {
-        throw new Error("explanation failed");
+  it("executes report fetches, preserves partial failures, and derives artifacts", async () => {
+    const afterReportFetch = vi.fn();
+    const onReportFetchError = vi.fn();
+    const reportFetchTransport = vi.fn(async ({ reportId }: { reportId: string }) => {
+      if (reportId === "shap-error") {
+        throw new Error("report fetch failed");
       }
 
       return {
-        id: explanationId,
+        id: reportId,
         score: 0.9,
       };
     });
     const registry = createMlRegistryPack().registry;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z
-          .object({
-            kind: z.literal("shap"),
-            id: z.string().optional(),
-            label: z.string().optional(),
-          })
-          .passthrough(),
-        transport: () => ({ submit: explanationTransport }),
-        describe: () => null,
-      }),
-    );
+    registry.registerReport({
+      kind: "shap",
+      schema: z
+        .object({
+          kind: z.literal("shap"),
+          id: z.string().optional(),
+          label: z.string().optional(),
+          source: z.string().optional(),
+        })
+        .passthrough(),
+      fetch: () => ({ submit: reportFetchTransport }),
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
-        explanations: [
+        reports: [
           { kind: "shap", id: "shap-ok" },
           { kind: "shap", id: "shap-error" },
         ],
@@ -3512,8 +3444,8 @@ describe("runtime", () => {
         }),
       },
       hooks: {
-        afterExplanation,
-        onExplanationError,
+        afterReportFetch,
+        onReportFetchError,
       },
     });
 
@@ -3522,43 +3454,43 @@ describe("runtime", () => {
     const result = await executeFormPipeline({
       form,
       artifactAdapter: {
-        derive({ submitResult, explanationResults, explanationErrors }) {
+        derive({ submitResult, reportFetchResults, reportFetchErrors }) {
           return {
             outputs: (submitResult.raw as { outputs: unknown[] }).outputs,
-            explainErrors: explanationErrors,
-            explanationIds: Object.keys(explanationResults),
+            fetchErrors: reportFetchErrors,
+            fetchedReportIds: Object.keys(reportFetchResults),
           };
         },
       },
     });
 
-    expect(explanationTransport).toHaveBeenCalledTimes(2);
-    expect(result.explanationResults).toEqual({
+    expect(reportFetchTransport).toHaveBeenCalledTimes(2);
+    expect(result.reportFetchResults).toEqual({
       "shap-ok": {
         id: "shap-ok",
         score: 0.9,
       },
     });
-    expect(result.explanationErrors).toEqual({
-      "shap-error": "explanation failed",
+    expect(result.reportFetchErrors).toEqual({
+      "shap-error": "report fetch failed",
     });
     expect(result.artifacts).toEqual({
       outputs: [{ prediction: "high" }],
-      explainErrors: {
-        "shap-error": "explanation failed",
+      fetchErrors: {
+        "shap-error": "report fetch failed",
       },
-      explanationIds: ["shap-ok"],
+      fetchedReportIds: ["shap-ok"],
     });
-    expect(afterExplanation).toHaveBeenCalledWith({
-      explanationId: "shap-ok",
+    expect(afterReportFetch).toHaveBeenCalledWith({
+      reportId: "shap-ok",
       kind: "shap",
-      result: {
+      payload: {
         id: "shap-ok",
         score: 0.9,
       },
     });
-    expect(onExplanationError).toHaveBeenCalledWith({
-      explanationId: "shap-error",
+    expect(onReportFetchError).toHaveBeenCalledWith({
+      reportId: "shap-error",
       kind: "shap",
       error: expect.any(Error),
     });
@@ -3609,39 +3541,36 @@ describe("runtime", () => {
     await expect(executeFormPipeline({ form })).rejects.toBeInstanceOf(SubmitError);
   });
 
-  it("forwards external abort signals into explanation fetches", async () => {
+  it("forwards external abort signals into report fetches", async () => {
     const registry = createMlRegistryPack().registry;
     let capturedSignal: AbortSignal | undefined;
     let resolveReady: (() => void) | undefined;
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
-        kind: "shap",
-        schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-        transport: () => ({
-          submit: vi.fn(
-            ({ signal }: { signal?: AbortSignal }) =>
-              new Promise((_resolve, reject) => {
-                capturedSignal = signal;
-                resolveReady?.();
-                signal?.addEventListener(
-                  "abort",
-                  () => {
-                    reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
-                  },
-                  { once: true },
-                );
-              }),
-          ),
-        }),
-        describe: () => null,
+    registry.registerReport({
+      kind: "shap",
+      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
+      fetch: () => ({
+        submit: vi.fn(
+          ({ signal }: { signal?: AbortSignal }) =>
+            new Promise((_resolve, reject) => {
+              capturedSignal = signal;
+              resolveReady?.();
+              signal?.addEventListener(
+                "abort",
+                () => {
+                  reject(signal.reason ?? new DOMException("Aborted", "AbortError"));
+                },
+                { once: true },
+              );
+            }),
+        ),
       }),
-    );
+    });
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
-        explanations: [{ kind: "shap", id: "shap" }],
+        reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
       transport: {
@@ -3652,14 +3581,14 @@ describe("runtime", () => {
         }),
       },
     });
-    const ctrl = form.explanations[0]!;
+    const ctrl = form.reports[0]!;
     const abortController = new AbortController();
     const ready = new Promise<void>((resolve) => {
       resolveReady = resolve;
     });
 
     const pending = ctrl.fetch({
-      explanationId: ctrl.id,
+      reportId: ctrl.id,
       values: {},
       fieldValues: {},
       serializedValues: {},
@@ -3671,33 +3600,17 @@ describe("runtime", () => {
     });
 
     await ready;
-    abortController.abort("stop-explanations");
+    abortController.abort("stop-report-fetch");
     await pending;
 
     expect(capturedSignal).toBeDefined();
     expect(capturedSignal?.aborted).toBe(true);
     expect(ctrl.state.status).toBe("idle");
-    expect(ctrl.state.result).toBeUndefined();
+    expect(ctrl.state.payload).toBeUndefined();
     expect(ctrl.state.error).toBeNull();
   });
 
-  it("throws RegistryError for duplicate explanation kind registration", () => {
-    const registry = createMlRegistryPack().registry;
-    const def = defineExplanationDefinition({
-      kind: "shap",
-      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-      transport: () => ({ submit: vi.fn() }),
-      describe: () => null,
-    });
-
-    registry.registerExplanation(def);
-
-    expect(() => registry.registerExplanation(def)).toThrow(
-      'Explanation kind "shap" is already registered.',
-    );
-  });
-
-  it("supports unregisterField, unregisterReport, and unregisterExplanation", () => {
+  it("supports unregisterField and unregisterReport", () => {
     const registry = createMlRegistryPack().registry;
 
     // Field unregister.
@@ -3711,24 +3624,6 @@ describe("runtime", () => {
     expect(registry.getReport("classifier")).toBeDefined();
     registry.unregisterReport("classifier");
     expect(registry.getReport("classifier")).toBeUndefined();
-
-    // Explanation: register → unregister → re-register.
-    const def = defineExplanationDefinition({
-      kind: "shap",
-      schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-      transport: () => ({ submit: vi.fn() }),
-      describe: () => null,
-    });
-
-    registry.registerExplanation(def);
-    expect(registry.getExplanation("shap")).toBeDefined();
-    registry.unregisterExplanation("shap");
-    expect(registry.getExplanation("shap")).toBeUndefined();
-
-    // Re-registration after unregister does not throw.
-    expect(() => registry.registerExplanation(def)).not.toThrow();
-    expect(registry.getExplanation("shap")).toBeDefined();
-    expect(registry.listExplanations()).toHaveLength(1);
   });
 
   it("creates declarative custom fields with generated descriptors", async () => {
@@ -3906,53 +3801,55 @@ describe("runtime", () => {
     });
   });
 
-  it("creates declarative custom explanations with generated descriptors and fetch adapters", async () => {
-    const explanationTransport = vi.fn().mockResolvedValue({
+  it("creates declarative custom reports with generated descriptors and fetch adapters", async () => {
+    const reportFetchTransport = vi.fn().mockResolvedValue({
       top_features: [
         { feature: "income", score: 0.9 },
         { feature: "debt", score: -0.4 },
       ],
     });
     const registry = createMlRegistryPack().registry;
-    const kind = defineExplanationKind({
+    const kind = defineReportKind({
       kind: "shap",
       schema: z.object({
         kind: z.literal("shap"),
         id: z.string().optional(),
         label: z.string().optional(),
+        source: z.string().optional(),
       }),
-      fetch: ({ explanationId: _explanationId }) => ({
-        submit: explanationTransport,
+      resolve: ({ report, result }) => result.reports[report.source],
+      fetch: ({ reportId: _reportId }) => ({
+        submit: reportFetchTransport,
       }),
       render: {
         summary: ({ state }) => ({
           title: "SHAP",
           tone: state.status === "error" ? "danger" : "neutral",
         }),
-        content: ({ result }) => ({
+        content: ({ payload }) => ({
           type: "table",
           label: "Feature impact",
           columns: ["feature", "score"],
-          rows: ((result as { top_features: Array<{ feature: string; score: number }> })
+          rows: ((payload as { top_features: Array<{ feature: string; score: number }> })
             .top_features ?? []) as Array<Record<string, unknown>>,
         }),
       },
     });
 
-    registry.registerExplanation(kind.definition);
+    registry.registerReport(kind.definition);
 
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
-        explanations: [{ kind: "shap", label: "Explain" }],
+        reports: [{ kind: "shap", label: "Explain" }],
       },
       registry,
       transport: { submit: vi.fn() },
     });
 
-    const ctrl = form.explanations[0]!;
+    const ctrl = form.reports[0]!;
     await ctrl.fetch({
-      explanationId: ctrl.id,
+      reportId: ctrl.id,
       values: { name: "Alice" },
       fieldValues: { name: "Alice" },
       serializedValues: { name: "Alice" },
@@ -3962,20 +3859,25 @@ describe("runtime", () => {
       raw: {},
     });
 
-    expect(explanationTransport).toHaveBeenCalledTimes(1);
+    expect(reportFetchTransport).toHaveBeenCalledTimes(1);
     expect(
       kind.presenter.describe(ctrl.config as never, {
-        explanationId: ctrl.id,
+        reportId: ctrl.id,
         state: ctrl.state,
+        payload: ctrl.state.payload,
+        result: form.state.lastResult,
       }),
     ).toEqual({
-      component: "declarative-explanation",
+      component: "declarative-report",
       meta: expect.objectContaining({
         declarative: true,
       }),
       props: expect.objectContaining({
         label: "Explain",
-        state: "done",
+        state: "ready",
+        payload: expect.objectContaining({
+          top_features: expect.any(Array),
+        }),
         summary: expect.objectContaining({
           title: "SHAP",
         }),

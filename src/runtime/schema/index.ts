@@ -3,10 +3,8 @@
 
 import { EngineError, RegistryError } from "../errors";
 import type {
-  ExplanationConfig,
   FieldConfig,
   FormSchema,
-  NormalizedExplanationConfig,
   NormalizedFieldConfig,
   NormalizedReportConfig,
   Registry,
@@ -17,7 +15,6 @@ import { slugify } from "../utils";
 export interface NormalizedFormSchema {
   fields: NormalizedFieldConfig[];
   reports: NormalizedReportConfig[];
-  explanations: NormalizedExplanationConfig[];
 }
 
 const validateSeriesSubField = (
@@ -139,30 +136,9 @@ const normalizeReport = (
   };
 };
 
-const normalizeExplanation = (
-  explanation: ExplanationConfig,
-  index: number,
-  registry: Registry,
-  usedIds: Set<string>,
-): NormalizedExplanationConfig => {
-  const definition = registry.getExplanation(explanation.kind);
-  if (!definition) {
-    throw new RegistryError(`Unknown explanation kind "${explanation.kind}".`);
-  }
-
-  const parsed = definition.schema.parse(explanation) as ExplanationConfig;
-  const id = resolveId(parsed.id, parsed.label ?? parsed.kind, usedIds, `explanation-${index + 1}`);
-
-  return {
-    ...parsed,
-    id,
-  };
-};
-
 export const normalizeSchema = (schema: FormSchema, registry: Registry): NormalizedFormSchema => {
   const usedFieldIds = new Set<string>();
   const usedReportIds = new Set<string>();
-  const usedExplanationIds = new Set<string>();
 
   return {
     fields: schema.fields.map((field, index) =>
@@ -170,9 +146,6 @@ export const normalizeSchema = (schema: FormSchema, registry: Registry): Normali
     ),
     reports: (schema.reports ?? []).map((report, index) =>
       normalizeReport(report, index, registry, usedReportIds),
-    ),
-    explanations: (schema.explanations ?? []).map((explanation, index) =>
-      normalizeExplanation(explanation, index, registry, usedExplanationIds),
     ),
   };
 };

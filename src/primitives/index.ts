@@ -3,7 +3,6 @@
 
 import "./register";
 
-export { PrimitiveExplanationElement } from "./base-explanation-element";
 export { PrimitiveFieldElement } from "./base-field-element";
 export { PrimitiveAsyncReportElement } from "./base-async-report-element";
 export { PrimitiveReportElement } from "./base-report-element";
@@ -12,12 +11,8 @@ export { createBuiltinPrimitiveRegistry, createPrimitiveRegistry } from "./regis
 export { primitiveDefaultLabels, primitiveStaticText, resolvePrimitiveText } from "./constants";
 export type {
   PrimitiveContainerStrategy,
-  ExplanationRequest,
-  ExplanationTransport,
   MountedForm,
   MountFormOptions,
-  PrimitiveExplanationRenderContext,
-  PrimitiveExplanationRendererElement,
   PrimitiveLayout,
   PrimitiveRegistry,
   PrimitiveText,

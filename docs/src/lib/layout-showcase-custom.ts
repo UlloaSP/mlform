@@ -106,8 +106,6 @@ const renderCustomNode = (
         return null;
       }
       return createFrame("mlf-report-frame", snapshot, view, node.report);
-    case "explanation":
-      return null;
   }
 };
 

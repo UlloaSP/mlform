@@ -6,7 +6,6 @@ import type { ResolvedFormLayout, ResolvedFormLayoutNode } from "./types";
 export interface LayoutReferences {
   fields: string[];
   reports: string[];
-  explanations: string[];
 }
 
 const walkNode = (
@@ -66,7 +65,6 @@ export const collectLayoutReferences = (layout: ResolvedFormLayout): LayoutRefer
   const references: LayoutReferences = {
     fields: [],
     reports: [],
-    explanations: [],
   };
 
   for (const node of flattenLayoutNodes(layout)) {
@@ -76,9 +74,6 @@ export const collectLayoutReferences = (layout: ResolvedFormLayout): LayoutRefer
         break;
       case "report":
         references.reports.push(node.report);
-        break;
-      case "explanation":
-        references.explanations.push(node.explanation);
         break;
       default:
         break;

@@ -3,17 +3,12 @@
 
 import { css, html, nothing } from "lit";
 import { state } from "lit/decorators.js";
+import { createAsyncRequestRunner } from "@/shared";
 import { PrimitiveReportElement } from "./base-report-element";
 import type { PrimitiveText } from "./constants";
 import type { PrimitiveReportRequest } from "./types";
 
 export type PrimitiveAsyncReportStatus = "idle" | "loading" | "done" | "error";
-
-const extractErrorMessage = (error: unknown): string => {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string" && error.trim().length > 0) return error;
-  return String(error);
-};
 
 export const serializeReportTransportResult = (result: unknown): string => {
   if (typeof result === "string") return result;
@@ -121,7 +116,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   @state() private accessor transportResultValue: unknown = undefined;
   @state() private accessor transportErrorValue: string | null = null;
 
-  #abortController: AbortController | null = null;
+  #transportRunner = createAsyncRequestRunner();
   #lastFetchedRequest: PrimitiveReportRequest | null = null;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
@@ -137,8 +132,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   }
 
   disconnectedCallback(): void {
-    this.#abortController?.abort();
-    this.#abortController = null;
+    this.#transportRunner.abort();
     super.disconnectedCallback();
   }
 
@@ -166,7 +160,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
     return html`
       <hr class="transport-divider" />
       <div class="transport-panel">
-        <p class="transport-heading">${text.explanationLabel}</p>
+        <p class="transport-heading">${text.detailsLabel}</p>
         ${this.#renderTransportContent(text)}
       </div>
     `;
@@ -175,17 +169,14 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   #renderTransportContent(text: PrimitiveText) {
     switch (this.transportResultStatus) {
       case "loading":
-        return html`<div
-          class="transport-skeleton"
-          aria-label=${text.explanationLoadingLabel}
-        ></div>`;
+        return html`<div class="transport-skeleton" aria-label=${text.detailsLoadingLabel}></div>`;
       case "error":
         return html`<div class="transport-error">Error: ${this.transportError}</div>`;
       case "done":
         return html`<pre
           class="transport-content"
           role="region"
-          aria-label=${text.explanationAriaLabel}
+          aria-label=${text.detailsAriaLabel}
         >
 ${serializeReportTransportResult(this.transportResult)}</pre
         >`;
@@ -199,8 +190,7 @@ ${serializeReportTransportResult(this.transportResult)}</pre
     const request = this.request;
 
     if (!this.shouldFetchTransportResult() || !transport || !request) {
-      this.#abortController?.abort();
-      this.#abortController = null;
+      this.#transportRunner.abort();
       this.#lastFetchedRequest = null;
       this.transportStatus = "idle";
       this.transportResultValue = undefined;
@@ -212,31 +202,27 @@ ${serializeReportTransportResult(this.transportResult)}</pre
       return;
     }
 
-    this.#abortController?.abort();
-    const abortController = new AbortController();
-    this.#abortController = abortController;
     this.#lastFetchedRequest = request;
 
     this.transportStatus = "loading";
     this.transportResultValue = undefined;
     this.transportErrorValue = null;
 
-    try {
-      const result = await transport.submit({ ...request, signal: abortController.signal });
+    const outcome = await this.#transportRunner.run((signal) =>
+      transport.submit({ ...request, signal }),
+    );
 
-      if (abortController.signal.aborted) {
-        return;
-      }
-
-      this.transportResultValue = result;
-      this.transportStatus = "done";
-    } catch (error: unknown) {
-      if (abortController.signal.aborted) {
-        return;
-      }
-
-      this.transportErrorValue = extractErrorMessage(error);
-      this.transportStatus = "error";
+    if (outcome.status === "aborted") {
+      return;
     }
+
+    if (outcome.status === "completed") {
+      this.transportResultValue = outcome.value;
+      this.transportStatus = "done";
+      return;
+    }
+
+    this.transportErrorValue = outcome.message;
+    this.transportStatus = "error";
   }
 }

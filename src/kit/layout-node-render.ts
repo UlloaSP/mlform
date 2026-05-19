@@ -122,20 +122,5 @@ export const renderLayoutNode = ({
         ></mlf-report-frame>
       `;
     }
-    case "explanation": {
-      const explanation = snapshot.explanations.find((entry) => entry.id === node.explanation);
-      if (!explanation) {
-        return nothing;
-      }
-      return html`
-        <mlf-explanation-panel
-          .controller=${explanation.controller}
-          .descriptor=${explanation.descriptor}
-          .registry=${registry}
-          .text=${primitiveText}
-          .lastResult=${snapshot.form.lastResult}
-        ></mlf-explanation-panel>
-      `;
-    }
   }
 };

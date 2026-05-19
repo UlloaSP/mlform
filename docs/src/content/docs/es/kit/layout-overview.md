@@ -18,4 +18,4 @@ Superficies principales:
 | `mountAccordionForm()` | UI integrada tipo accordion             |
 | `createFormView()`     | API headless para shells personalizados |
 
-Si omites `layout`, MLForm crea un `single-page` automatico con fields, explanations y reports en orden.
+Si omites `layout`, MLForm crea un `single-page` automatico con fields y reports en orden.

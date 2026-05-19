@@ -5,6 +5,7 @@ import { css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { ReportController, ReportStateSnapshot, SubmitResult } from "@/runtime";
+import { createReportFetchRequest } from "@/runtime/submission";
 import type { ReportDescriptor } from "@/presentation";
 import { ControllerBinding } from "../controller-binding";
 import {
@@ -125,6 +126,10 @@ export class PrimitiveReportFrameElement extends LitElement {
     if (changedProperties.has("descriptor")) {
       this.resolvedDescriptor = this.descriptor;
     }
+
+    if (changedProperties.has("lastResult") || changedProperties.has("controller")) {
+      this.#maybeFetch();
+    }
   }
 
   render() {
@@ -167,7 +172,7 @@ export class PrimitiveReportFrameElement extends LitElement {
     const tag = unsafeStatic(tagName);
     const context = this.#getContext();
     const reportTransport = this.transport;
-    const reportRequest = this.reportState?.status === "ready" ? this.#getReportRequest() : null;
+    const reportRequest = this.#getReportRequest();
     const descriptor = this.resolvedDescriptor;
 
     return html`
@@ -230,21 +235,24 @@ export class PrimitiveReportFrameElement extends LitElement {
       return this.#memoizedRequest;
     }
 
-    const request: PrimitiveReportRequest = {
+    const request: PrimitiveReportRequest = createReportFetchRequest(result, {
       reportId: this.controller.id,
-      backend: result.backend,
-      values: result.values,
-      fieldValues: result.fieldValues,
-      serializedValues: result.serializedValues,
-      serializedFieldValues: result.serializedFieldValues,
-      reports: result.reports,
-      meta: result.meta,
-      raw: result.raw,
-    };
+    });
 
     this.#memoizedLastResult = result;
     this.#memoizedRequest = request;
     return request;
+  }
+
+  #maybeFetch(): void {
+    const ctrl = this.controller;
+    const request = this.#getReportRequest();
+
+    if (!ctrl?.canFetch || !request || ctrl.state.status !== "idle") {
+      return;
+    }
+
+    void ctrl.fetch(request);
   }
 }
 

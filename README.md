@@ -147,7 +147,7 @@ Return reports keyed by report id:
 - Built-in JSON transport plus composable transport middleware
 - Headless engine APIs for custom orchestration and registries
 - Runtime design system with themes, recipes, density, motion, and token overrides
-- Extension points for custom field, report, and explanation kinds
+- Extension points for custom field and report kinds
 
 Built-in fields:
 

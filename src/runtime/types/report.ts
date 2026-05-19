@@ -5,6 +5,11 @@ export type {
   BaseReportConfig,
   PartialReportUpdatePolicy,
   ReportConfig,
+  ReportFetchContext,
+  ReportFetchFactory,
+  ReportFetchRequest,
+  ReportFetchStatus,
+  ReportFetchTransport,
   ReportPayloadContext,
   ReportPayloadValidationPolicy,
   ReportResolveContext,
@@ -23,6 +28,9 @@ export interface ReportHandle {
   readonly kind: string;
   readonly config: SchemaNormalizedReportConfig;
   readonly state: ReportStateSnapshot;
+  readonly canFetch: boolean;
+  fetch(request: import("@/schema").ReportFetchRequest): Promise<void>;
+  abort(): void;
   subscribe(listener: (state: ReportStateSnapshot) => void): () => void;
 }
 

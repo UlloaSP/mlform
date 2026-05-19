@@ -5,3 +5,4 @@
 - Renderer state selectors must include descriptor-driving report/explanation state, not only entity ids.
 - When validating docs, run the exact CI docs sequence; `astro check` passing does not prove `vp check`/CI passes.
 - Docs examples must not import from generated `dist`; CI may typecheck docs before package build.
+- After large domain collapse, explicitly scan for duplicated lifecycle/request-building logic; passing tests can still leave duplicated rules worth recording as debt.

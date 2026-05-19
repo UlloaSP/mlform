@@ -1,18 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  ExplanationDescriptor,
-  FieldDescriptor,
-  PresentationRegistry,
-  ReportDescriptor,
-} from "@/presentation";
-import type {
-  ExplanationController,
-  FieldController,
-  FormController,
-  ReportController,
-} from "@/runtime";
+import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
+import type { FieldController, FormController, ReportController } from "@/runtime";
 
 export const fallbackFieldDescriptor = (field: FieldController): FieldDescriptor => ({
   component: "unsupported-field",
@@ -22,13 +12,6 @@ export const fallbackFieldDescriptor = (field: FieldController): FieldDescriptor
 export const fallbackReportDescriptor = (report: ReportController): ReportDescriptor => ({
   component: "unsupported-report",
   props: { label: report.config.label ?? report.id },
-});
-
-export const fallbackExplanationDescriptor = (
-  explanation: ExplanationController,
-): ExplanationDescriptor => ({
-  component: "unsupported-explanation",
-  props: { label: explanation.config.label ?? explanation.id },
 });
 
 export const resolveFieldDescriptor = (
@@ -56,20 +39,5 @@ export const resolveReportDescriptor = (
     state: report.state,
     payload: report.state.payload,
     result: form.state.lastResult,
-  });
-};
-
-export const resolveExplanationDescriptor = (
-  explanation: ExplanationController,
-  presentationRegistry: PresentationRegistry | undefined,
-): ExplanationDescriptor | null => {
-  const presenter = presentationRegistry?.getExplanation(explanation.kind);
-  if (!presenter) {
-    return null;
-  }
-
-  return presenter.describe(explanation.config, {
-    explanationId: explanation.id,
-    state: explanation.state,
   });
 };

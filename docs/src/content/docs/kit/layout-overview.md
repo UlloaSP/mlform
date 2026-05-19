@@ -44,7 +44,7 @@ Putting layout outside `schema` keeps responsibilities clean:
 - a `FormController`
 - cloned registries
 - validated and normalized layout tree
-- render-ready field, report, and explanation collections
+- render-ready field and report collections
 - wizard navigation helpers when the layout is a wizard
 - tabs navigation helpers when the layout is tabs
 
@@ -53,7 +53,6 @@ Putting layout outside `schema` keeps responsibilities clean:
 If you omit `layout`, MLForm creates a single-page layout automatically:
 
 1. all fields in schema order
-2. all explanations
-3. all reports
+2. all reports
 
 Use explicit layout config when you need sections, grouping, or step navigation.

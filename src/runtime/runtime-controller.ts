@@ -10,7 +10,6 @@ import type {
   SelectorSubscriptionOptions,
   RuntimeBehaviorValueChangeEvent,
 } from "./types";
-import type { InternalExplanationController } from "./explanations";
 import type { InternalFieldController } from "./fields";
 import type { InternalReportController } from "./reports";
 import type { EngineStore } from "./state";
@@ -18,10 +17,8 @@ import type { EngineStore } from "./state";
 type CreateRuntimeControllerOptions = {
   fields: InternalFieldController[];
   reports: InternalReportController[];
-  explanations: InternalExplanationController[];
   fieldMap: Map<string, InternalFieldController>;
   reportMap: Map<string, InternalReportController>;
-  explanationMap: Map<string, InternalExplanationController>;
   store: EngineStore;
   getPublicState: () => FormState;
   getValues: () => Record<string, unknown>;
@@ -37,17 +34,14 @@ type CreateRuntimeControllerOptions = {
   inactiveFieldPolicy: import("./types").InactiveFieldPolicy | undefined;
   bumpLifecycleVersion: () => number;
   resetReports: () => void;
-  resetExplanations: () => void;
   runBehaviorValueChange: (event: RuntimeBehaviorValueChangeEvent) => void;
 };
 
 export const createRuntimeController = ({
   fields,
   reports,
-  explanations,
   fieldMap,
   reportMap,
-  explanationMap,
   store,
   getPublicState,
   getValues,
@@ -59,14 +53,10 @@ export const createRuntimeController = ({
   inactiveFieldPolicy,
   bumpLifecycleVersion,
   resetReports,
-  resetExplanations,
   runBehaviorValueChange,
 }: CreateRuntimeControllerOptions): FormController => {
   const readonlyFields = Object.freeze([...fields]) as readonly InternalFieldController[];
   const readonlyReports = Object.freeze([...reports]) as readonly InternalReportController[];
-  const readonlyExplanations = Object.freeze([
-    ...explanations,
-  ]) as readonly InternalExplanationController[];
 
   return {
     get fields() {
@@ -74,9 +64,6 @@ export const createRuntimeController = ({
     },
     get reports() {
       return readonlyReports;
-    },
-    get explanations() {
-      return readonlyExplanations;
     },
     get state() {
       return getPublicState();
@@ -86,9 +73,6 @@ export const createRuntimeController = ({
     },
     getReport(id) {
       return reportMap.get(id);
-    },
-    getExplanation(id) {
-      return explanationMap.get(id);
     },
     getValues() {
       return getValues();
@@ -172,7 +156,6 @@ export const createRuntimeController = ({
           field.reset();
         }
         resetReports();
-        resetExplanations();
         formSubmitter.reset();
 
         store.update((current) => transitionEngineState(current, { type: "reset" }));

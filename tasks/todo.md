@@ -1,5 +1,36 @@
 # Todo
 
+## Report Fetch Debt Closure Todo
+
+- [x] Read `AGENTS.md`, graph report, and `DEBT.md`.
+- [x] Extract shared report fetch request builder.
+- [x] Extract shared async request runner.
+- [x] Remove active debt entries and update review notes.
+- [x] Run focused tests, `vp check`, `vp test`, and `graphify update .`.
+
+## Report Fetch Debt Closure Review
+
+- Added shared `createReportFetchRequest()` for pipeline + primitive report frame.
+- Added shared async request runner for runtime report fetch + renderer details fetch.
+- Cleared active `DEBT.md` entries.
+- Verification: `vp run typecheck`, focused runtime/kit/primitives tests, source line cap check, `vp check`, full `vp test`, and `graphify update .` passed.
+
+## Explanations As Reports Todo
+
+- [x] Read `AGENTS.md`, graph report, existing debt, package scripts, and relevant exports.
+- [x] Remove explanation schema/runtime/presentation APIs.
+- [x] Fold explanation rendering/fetch lifecycle into reports.
+- [x] Update kit layout/view APIs to reports-only outputs.
+- [x] Update tests, docs, README, and `DEBT.md`.
+- [x] Run focused verification, broad verification, and graph update.
+
+## Explanations As Reports Review
+
+- Removed top-level explanation schema/runtime/presentation/primitive/kit APIs.
+- Added report fetch lifecycle and pipeline `reportFetch*` outputs.
+- Migrated docs/tests/examples to reports-only contracts.
+- Verification: focused runtime/kit/primitives tests passed, `vp check` passed, full `vp test` passed, docs `vp run build` passed, `rg` found zero explanation API/domain references, and `graphify update .` passed.
+
 ## Full Debt Closure Todo
 
 - [x] Read caveman skill, `AGENTS.md`, graph report, dirty status, and `DEBT.md`.

@@ -3,8 +3,6 @@
 
 import { MLFormError } from "@/shared";
 import type {
-  ExplanationConfig,
-  ExplanationDefinition,
   FieldConfig,
   FieldDefinition,
   Registry,
@@ -21,12 +19,10 @@ export class RegistryError extends MLFormError {
 
 type StoredFieldDefinition = FieldDefinition<FieldConfig, unknown>;
 type StoredReportDefinition = ReportDefinition<ReportConfig>;
-type StoredExplanationDefinition = ExplanationDefinition<ExplanationConfig>;
 
 class RegistryStore implements Registry {
   private readonly fieldDefinitions = new Map<string, StoredFieldDefinition>();
   private readonly reportDefinitions = new Map<string, StoredReportDefinition>();
-  private readonly explanationDefinitions = new Map<string, StoredExplanationDefinition>();
 
   registerField<TConfig extends FieldConfig, TValue>(
     definition: FieldDefinition<TConfig, TValue>,
@@ -58,25 +54,6 @@ class RegistryStore implements Registry {
     return this;
   }
 
-  registerExplanation<TConfig extends ExplanationConfig>(
-    definition: ExplanationDefinition<TConfig>,
-  ): Registry {
-    if (this.explanationDefinitions.has(definition.kind)) {
-      throw new RegistryError(`Explanation kind "${definition.kind}" is already registered.`);
-    }
-
-    this.explanationDefinitions.set(
-      definition.kind,
-      definition as unknown as StoredExplanationDefinition,
-    );
-    return this;
-  }
-
-  unregisterExplanation(kind: string): Registry {
-    this.explanationDefinitions.delete(kind);
-    return this;
-  }
-
   getField<TConfig extends FieldConfig = FieldConfig, TValue = unknown>(
     kind: string,
   ): FieldDefinition<TConfig, TValue> | undefined {
@@ -89,24 +66,12 @@ class RegistryStore implements Registry {
     return this.reportDefinitions.get(kind) as ReportDefinition<TConfig> | undefined;
   }
 
-  getExplanation<TConfig extends ExplanationConfig = ExplanationConfig>(
-    kind: string,
-  ): ExplanationDefinition<TConfig> | undefined {
-    return this.explanationDefinitions.get(kind) as ExplanationDefinition<TConfig> | undefined;
-  }
-
   listFields(): FieldDefinition<FieldConfig, unknown>[] {
     return Array.from(this.fieldDefinitions.values()) as FieldDefinition<FieldConfig, unknown>[];
   }
 
   listReports(): ReportDefinition<ReportConfig>[] {
     return Array.from(this.reportDefinitions.values()) as ReportDefinition<ReportConfig>[];
-  }
-
-  listExplanations(): ExplanationDefinition<ExplanationConfig>[] {
-    return Array.from(
-      this.explanationDefinitions.values(),
-    ) as ExplanationDefinition<ExplanationConfig>[];
   }
 }
 
@@ -117,11 +82,5 @@ export const defineFieldDefinition = <TDefinition extends FieldDefinition<FieldC
 ): TDefinition => definition;
 
 export const defineReportDefinition = <TDefinition extends ReportDefinition<ReportConfig>>(
-  definition: TDefinition,
-): TDefinition => definition;
-
-export const defineExplanationDefinition = <
-  TDefinition extends ExplanationDefinition<ExplanationConfig>,
->(
   definition: TDefinition,
 ): TDefinition => definition;

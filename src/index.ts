@@ -124,14 +124,12 @@ export type {
   AccordionState,
   CreateFormViewOptions,
   FormLayoutConfig,
-  FormLayoutExplanationNode,
   FormLayoutFieldNode,
   FormLayoutGroupNode,
   FormLayoutNode,
   FormLayoutReportNode,
   FormLayoutSectionNode,
   FormViewController,
-  FormViewExplanationItem,
   FormViewFieldItem,
   FormViewReportItem,
   FormViewSnapshot,
@@ -150,7 +148,6 @@ export type {
   ResolvedAccordionLayout,
   ResolvedAccordionSection,
   ResolvedFormLayout,
-  ResolvedFormLayoutExplanationNode,
   ResolvedFormLayoutFieldNode,
   ResolvedFormLayoutGroupNode,
   ResolvedFormLayoutNode,
@@ -166,62 +163,38 @@ export type {
   WizardStepConfig,
 } from "@/kit";
 export type {
-  ExplanationRequest,
-  ExplanationTransport,
   PrimitiveFieldRenderContext,
-  PrimitiveExplanationRenderContext,
-  PrimitiveExplanationRendererElement,
   PrimitiveFieldRendererElement,
   PrimitiveReportRenderContext,
   PrimitiveReportRendererElement,
 } from "@/primitives";
-export { createExplanationController, executeExplanations, executeFormPipeline } from "@/runtime";
-export {
-  createRegistry,
-  defineExplanationDefinition,
-  defineFieldDefinition,
-  defineReportDefinition,
-} from "@/schema";
-export {
-  defineExplanationKind,
-  defineFieldKind,
-  defineReportKind,
-  toPresentationNodes,
-} from "@/presentation";
+export { executeFormPipeline, executeReportFetches } from "@/runtime";
+export { createRegistry, defineFieldDefinition, defineReportDefinition } from "@/schema";
+export { defineFieldKind, defineReportKind, toPresentationNodes } from "@/presentation";
 export { createBuiltinMlRegistry, createMlRegistryPack } from "@/builtins-ml";
 export { createMappedCategoryBehavior } from "@/behaviors";
 export { createDefaultRegistryPack } from "@/packs";
 export type {
-  AfterExplanationContext,
-  ExplanationConfig,
-  ExplanationController,
-  ExplanationDefinition,
-  ExplanationErrorContext,
-  ExplanationExecutionContext,
-  ExplanationExecutionResult,
-  ExplanationFetchContext,
-  ExplanationFetchFactory,
-  ExplanationFetchRequest,
-  ExplanationFetchTransport,
-  ExplanationStateSnapshot,
-  ExplanationStatus,
+  AfterReportFetchContext,
   FieldValidationFnContext,
   FieldValueAdapter,
-  NormalizedExplanationConfig,
   PipelineArtifactAdapter,
   PipelineArtifactContext,
   PipelineResult,
   ExecuteFormPipelineOptions,
+  ReportFetchContext,
+  ReportFetchErrorContext,
+  ReportFetchExecutionContext,
+  ReportFetchExecutionResult,
+  ReportFetchFactory,
+  ReportFetchRequest,
+  ReportFetchStatus,
+  ReportFetchTransport,
   ReportResolveContext,
 } from "@/runtime";
 export type {
-  DeclarativeExplanationKind,
   DeclarativeFieldKind,
   DeclarativeReportKind,
-  ExplanationDescriptor,
-  ExplanationDescriptorContext,
-  ExplanationRenderSpec,
-  ExplanationRenderSpecContext,
   FieldDescriptor,
   FieldRenderHints,
   FieldRenderSpec,

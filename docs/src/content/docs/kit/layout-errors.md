@@ -41,7 +41,6 @@ Examples:
 
 - `Layout references unknown field "foo".`
 - `Layout references unknown report "risk-v2".`
-- `Layout references unknown explanation "why".`
 
 Fix:
 
@@ -96,5 +95,5 @@ Accordion section controls are only available for accordion layouts.
 
 1. confirm field ids in the final normalized schema
 2. confirm every field appears once
-3. confirm report and explanation ids match schema ids
+3. confirm report ids match schema ids
 4. confirm step titles or explicit ids are what your host expects

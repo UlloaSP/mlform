@@ -67,7 +67,7 @@ description: Reusable layout patterns for sections, groups, wizards, review step
       title: "Review",
       children: [
         { kind: "report", report: "risk" },
-        { kind: "explanation", explanation: "why" },
+        { kind: "report", report: "why" },
       ],
     },
   ],
@@ -133,9 +133,9 @@ description: Reusable layout patterns for sections, groups, wizards, review step
 }
 ```
 
-## Explanations after submit
+## Reports after submit
 
-Put explanations in the final step or in a post-submit section on single-page layouts.
+Put fetched reports in the final step or in a post-submit section on single-page layouts.
 
 ## Picking a recipe
 

@@ -3,13 +3,11 @@
 
 import { html, nothing, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import type { PresentationRegistry } from "@/presentation";
 import type { FormController } from "@/runtime";
 import type { PrimitiveText } from "../constants";
 import type { PrimitiveRegistry, PrimitiveReportTransport } from "../types";
 import type { FormRenderState } from "./form-root-state";
 import type { PresentedField, PresentedReport } from "./form-root-presenters";
-import { presentExplanations } from "./form-root-presenters";
 
 const renderFieldFrames = (
   fields: readonly PresentedField[],
@@ -58,38 +56,6 @@ const renderReports = (
   </div>
 `;
 
-export const renderExplanations = (
-  form: FormController,
-  state: FormRenderState,
-  registry: PrimitiveRegistry | undefined,
-  presentationRegistry: PresentationRegistry | undefined,
-  text: PrimitiveText,
-): TemplateResult | typeof nothing => {
-  const explanations = presentExplanations(form, state.explanationIds, presentationRegistry);
-
-  if (explanations.length === 0) {
-    return nothing;
-  }
-
-  return html`
-    <div class="collection" part="explanation-list">
-      ${repeat(
-        explanations,
-        (explanation) => explanation.controller.id,
-        (explanation) => html`
-          <mlf-explanation-panel
-            .controller=${explanation.controller}
-            .descriptor=${explanation.descriptor}
-            .registry=${registry}
-            .text=${text}
-            .lastResult=${form.state.lastResult ?? null}
-          ></mlf-explanation-panel>
-        `,
-      )}
-    </div>
-  `;
-};
-
 export const renderStackedLayout = (options: {
   form: FormController;
   state: FormRenderState;
@@ -97,7 +63,6 @@ export const renderStackedLayout = (options: {
   reportsToRender: readonly PresentedReport[];
   showReports: boolean;
   registry: PrimitiveRegistry | undefined;
-  presentationRegistry: PresentationRegistry | undefined;
   text: PrimitiveText;
   formLabel: string;
   reportsLabel: string;
@@ -162,13 +127,6 @@ export const renderStackedLayout = (options: {
                 options.reportTransport,
                 options.form.state.lastResult ?? null,
               )}
-              ${renderExplanations(
-                options.form,
-                options.state,
-                options.registry,
-                options.presentationRegistry,
-                options.text,
-              )}
             </div>
           </aside>
         `
@@ -183,7 +141,6 @@ export const renderSplitLayout = (options: {
   reportsToRender: readonly PresentedReport[];
   showReports: boolean;
   registry: PrimitiveRegistry | undefined;
-  presentationRegistry: PresentationRegistry | undefined;
   text: PrimitiveText;
   formLabel: string;
   reportsLabel: string;
@@ -253,13 +210,6 @@ export const renderSplitLayout = (options: {
                           <p class="empty-report-copy">${options.text.reportsEmptyBody}</p>
                         </div>
                       `}
-                  ${renderExplanations(
-                    options.form,
-                    options.state,
-                    options.registry,
-                    options.presentationRegistry,
-                    options.text,
-                  )}
                 </div>
               </div>
             </section>

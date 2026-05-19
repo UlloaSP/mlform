@@ -10,7 +10,7 @@ description: Build your own wizard, tabs, accordion, or review UI on top of crea
 1. call `createFormView()`
 2. read `snapshot.layout`
 3. render nodes recursively
-4. use `field.controller`, `report.controller`, and `explanation.controller`
+4. use `field.controller` and `report.controller`
 5. re-render on `subscribe()`
 
 ## Recursive render model
@@ -34,10 +34,6 @@ function renderNode(node, snapshot) {
       return renderField(snapshot.fields.find((field) => field.id === node.field));
     case "report":
       return renderReport(snapshot.reports.find((report) => report.id === node.report));
-    case "explanation":
-      return renderExplanation(
-        snapshot.explanations.find((explanation) => explanation.id === node.explanation),
-      );
   }
 }
 ```
@@ -57,7 +53,6 @@ Fastest path:
 
 - `mlf-field-frame`
 - `mlf-report-frame`
-- `mlf-explanation-panel`
 
 This keeps MLForm’s built-in field and report rendering.
 

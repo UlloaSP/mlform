@@ -8,12 +8,8 @@ export const kitErrorMessages = {
   fieldMissingInLayout: (fieldId: string) => `Field "${fieldId}" is missing from layout.`,
   reportDuplicateInLayout: (reportId: string) =>
     `Report "${reportId}" appears multiple times in layout.`,
-  explanationDuplicateInLayout: (explanationId: string) =>
-    `Explanation "${explanationId}" appears multiple times in layout.`,
   unknownFieldReference: (fieldId: string) => `Layout references unknown field "${fieldId}".`,
   unknownReportReference: (reportId: string) => `Layout references unknown report "${reportId}".`,
-  unknownExplanationReference: (explanationId: string) =>
-    `Layout references unknown explanation "${explanationId}".`,
   wizardRequiresSteps: "Wizard layout must define at least one step.",
   wizardStepEmpty: (stepId: string) =>
     `Wizard step "${stepId}" must contain at least one layout node.`,

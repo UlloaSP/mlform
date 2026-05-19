@@ -33,10 +33,6 @@ export const cloneSchemaRegistry = (registry: Registry): Registry => {
     next.registerReport(definition);
   }
 
-  for (const definition of registry.listExplanations()) {
-    next.registerExplanation(definition);
-  }
-
   return next;
 };
 

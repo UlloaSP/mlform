@@ -47,7 +47,6 @@ export type CreateFormSubmitterOptions = {
   getSubmitCount: () => number;
   markReportsLoading: () => void;
   resetReports: () => void;
-  resetExplanations: () => void;
   syncDerivedFieldState: (options?: SyncDerivedFieldStateOptions) => void;
   shouldResetInactiveFields: () => boolean;
   resolveInactiveFieldPolicy: (field: SubmissionField) => InactiveFieldPolicy;
