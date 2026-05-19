@@ -3,8 +3,7 @@
 
 import { html, nothing, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import { primitiveStaticText, type PrimitiveText } from "@/primitives/constants";
-import type { PrimitiveRegistry } from "@/primitives/types";
+import { primitiveStaticText, type PrimitiveRegistry, type PrimitiveText } from "@/primitives";
 import type { FormViewSnapshot, ResolvedFormLayoutNode } from "./types";
 
 type RenderLayoutNodeOptions = {

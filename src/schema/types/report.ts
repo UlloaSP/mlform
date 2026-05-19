@@ -3,7 +3,7 @@
 
 import type { ZodType } from "zod";
 import type { MaybePromise } from "./field";
-import type { SubmitResult } from "@/runtime/types/transport";
+import type { SubmitResult } from "./submit";
 
 export type ReportStatus = "idle" | "loading" | "ready" | "error";
 export type ReportFetchStatus = ReportStatus;
@@ -35,13 +35,13 @@ export interface ReportStateSnapshot {
 
 export interface ReportPayloadContext<TConfig extends ReportConfig = ReportConfig> {
   report: NormalizedReportConfig<TConfig>;
-  result: SubmitResult;
+  result: SubmitResult<ReportStateSnapshot>;
 }
 
 export interface ReportResolveContext<TConfig extends ReportConfig = ReportConfig> {
   config: NormalizedReportConfig<TConfig>;
   report: NormalizedReportConfig<TConfig>;
-  result: SubmitResult;
+  result: SubmitResult<ReportStateSnapshot>;
 }
 
 export interface ReportFetchRequest {

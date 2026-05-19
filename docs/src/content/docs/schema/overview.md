@@ -6,7 +6,7 @@ description: The structure MLForm uses to describe fields, reports, conditions, 
 A `FormSchema` describes what the form needs from the user and what the backend will return.
 
 ```ts
-import type { FormSchema } from "mlform";
+import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [

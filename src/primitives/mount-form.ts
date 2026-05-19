@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { FormController } from "@/runtime";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/packs";
 import "./register";
 import {
   primitiveDefaultLabels,

@@ -17,7 +17,7 @@ MLForm has one job: keep form UI, validation state, submitted payloads, and mode
 Most applications should start at the kit layer:
 
 ```ts
-import { mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
 ```
 
 Use the engine directly when you want headless state without the built-in UI. Use primitives directly when you want MLForm's Web Components but your own application shell.

@@ -4,9 +4,13 @@
 import "./wizard-root";
 
 import { attachDesignSystem } from "@/design-system";
-import { resolvePrimitiveText } from "@/primitives/constants";
+import { resolvePrimitiveText, type PrimitiveRegistry } from "@/primitives";
 import { kitErrorMessages, kitTagNames } from "./constants";
-import { resolveKitDesignSystem } from "./defaults";
+import {
+  resolveDesignSystemRegistry,
+  resolveKitDesignSystem,
+  resolvePrimitiveRegistry,
+} from "./defaults";
 import type { FormViewController, MountWizardFormOptions, MountedWizardForm } from "./types";
 import { defaultWizardLabels, resolveWizardText } from "./wizard-constants";
 import { createFormView } from "./view";
@@ -36,9 +40,8 @@ export const mountWizardForm = (
         schema: options.schema,
         transport: options.transport,
         registry: options.registry,
-        primitiveRegistry: options.primitiveRegistry,
-        designSystemRegistry: options.designSystemRegistry,
-        designSystem: options.designSystem,
+        presentationRegistry: options.presentationRegistry,
+        behaviors: options.behaviors,
         initialValues: options.initialValues,
         validators: options.validators,
         hooks: options.hooks,
@@ -56,7 +59,7 @@ export const mountWizardForm = (
 
   const host = document.createElement(kitTagNames.wizard) as HTMLElement & {
     view: FormViewController;
-    registry: FormViewController["primitiveRegistry"];
+    registry: PrimitiveRegistry;
     primitiveText: ReturnType<typeof resolvePrimitiveText>;
     labels: typeof defaultWizardLabels;
     text: ReturnType<typeof resolveWizardText>;
@@ -76,9 +79,11 @@ export const mountWizardForm = (
   });
   const primitiveText = resolvePrimitiveText(options.primitiveText);
   const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
+  const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
+  const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
 
   host.view = view;
-  host.registry = view.primitiveRegistry;
+  host.registry = primitiveRegistry;
   host.primitiveText = primitiveText;
   host.labels = labels;
   host.text = text;
@@ -87,7 +92,7 @@ export const mountWizardForm = (
 
   const designSystem = attachDesignSystem(host, {
     config: initialDesignSystem,
-    registry: view.designSystemRegistry,
+    registry: designSystemRegistry,
     onChange: options.onDesignSystemChange,
   });
 

@@ -2,9 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "@/runtime/constants";
+import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { toDate } from "@/runtime/utils";
+import { toDate } from "@/shared";
 import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
 
 type DateFieldConfig = BaseFieldConfig & {

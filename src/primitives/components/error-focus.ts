@@ -46,5 +46,8 @@ export const scrollFieldFrameIntoView = async (frame: HTMLElement | null): Promi
   return true;
 };
 
+export const focusPrimitiveField = async (host: HTMLElement, fieldId: string): Promise<boolean> =>
+  scrollFieldFrameIntoView(findFieldFrame(host.shadowRoot ?? host, fieldId));
+
 export const findFirstInvalidField = (fields: readonly FieldController[]): FieldController | null =>
   fields.find((field) => field.state.visible && field.state.errors.length > 0) ?? null;

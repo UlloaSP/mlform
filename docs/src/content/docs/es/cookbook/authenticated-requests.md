@@ -4,7 +4,8 @@ description: Cookies, bearer tokens y headers personalizados.
 ---
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,

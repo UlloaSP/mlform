@@ -9,7 +9,8 @@ MLForm needs browser APIs, so mount it from a client script.
 <div id="prediction-form"></div>
 
 <script>
-  import { createJsonTransport, mountForm } from "mlform";
+  import { mountForm } from "mlform/kit";
+  import { createJsonTransport } from "mlform/transport";
 
   const host = document.querySelector("#prediction-form");
 

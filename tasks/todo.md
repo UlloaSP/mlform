@@ -1,5 +1,117 @@
 # Todo
 
+## Root Module Removal Todo
+
+- [x] Remove root package module export (`.`), root build entry, and `src/index.ts`.
+- [x] Rewrite internal/docs/examples imports from `mlform` or `@/index` to subpath modules.
+- [x] Keep package subpath modules as only public API.
+- [x] Update `DEBT.md`; verify typecheck/tests/docs/build/graph.
+
+## Root Module Removal Review
+
+- Deleted `src/index.ts` and removed package export `"."`, root `types`, root build entry, and root Vite alias.
+- Rewrote README/docs/examples/internal docs imports to explicit subpaths: `mlform/kit`, `mlform/transport`, and `mlform/schema`.
+- Updated package export docs to state there is no root module export.
+- Verification: root import scan, source line cap, `vp run typecheck`, boundary test, `vp build`, focused runtime/kit/primitives tests, `vp check`, `vp test`, docs `vp run build`, src-only graph update/recluster, graph source path scan, and dist root artifact scan passed.
+
+## Public Module API Enforcement Todo
+
+- [x] Find every cross-module import/export not written as `@/module`.
+- [x] Promote needed symbols to module root `index.ts`.
+- [x] Rewrite cross-module imports to root APIs only.
+- [x] Remove module subpath aliases in source, tests, and docs.
+- [x] Verify no cross-module internal specs remain, no feature regressions, update graph.
+
+## Public Module API Enforcement Review
+
+- Exported needed primitive/builtins/design-system symbols from module root APIs.
+- Rewrote test/docs imports to module roots.
+- Rewrote builtins internal absolute subpath imports to relative internal imports.
+- Added `test/unit/module-boundaries.test.ts` to reject module subpath aliases and cross-module internal imports.
+- Verification: boundary test, `rg "@/module/subpath"` scan, `vp run typecheck`, focused runtime/kit/primitives tests, `vp check`, `vp test`, source line cap, docs `vp run build`, src-only graph update/recluster, graph path scan, and graph explanation scan passed.
+
+## Module Interface Debt Closure Todo
+
+- [x] Move report fetch request builder out of `shared` to schema-owned contract seam.
+- [x] Remove upward `runtime -> builtins-ml` constants dependency.
+- [x] Break `builtins-ml <-> packs` composition cycle.
+- [x] Route kit primitive usage through public primitive API, not internal files.
+- [x] Route UI default ML composition through public pack seam.
+- [x] Replace `behaviors -> runtime/types` with runtime public API.
+- [x] Clear `DEBT.md`, verify imports/tests/check/graph.
+
+## Module Interface Debt Closure Review
+
+- Moved `createReportFetchRequest()` to `schema` and removed `shared -> schema`.
+- Deleted runtime built-in constants facade.
+- Moved ML pack construction into `builtins-ml`; `packs/ml` now points one way to built-ins.
+- Routed kit primitive constants/types/registration through public `@/primitives`; moved fallback descriptor policy into kit snapshot code.
+- Kept default ML behavior through public `@/packs` seam for kit/primitives, preserving existing tests while avoiding direct UI -> builtins coupling.
+- Verification: `vp run typecheck`, focused runtime/kit/primitives tests, source line cap, import seam scanner, `vp check`, `vp test`, src-only graph update/recluster, graph source path scan, and graph explanation scan passed.
+
+## Module Interface Graph Audit Todo
+
+- [x] Build module-to-module edge matrix from `graphify-out/graph.json`.
+- [x] Confirm suspicious cross-module calls/imports against source.
+- [x] Classify true seam leaks vs acceptable adapter use.
+- [x] Report findings and add debt only if real.
+
+## Module Interface Graph Audit Review
+
+- Graph top cross-module edges: `kit -> primitives` 26, `builtins-ml -> schema` 16, `primitives -> runtime` 16, `primitives -> presentation` 11, `kit -> runtime` 8.
+- Confirmed real seam debt: `shared <-> schema`, `runtime -> builtins-ml`, `builtins-ml <-> packs`, kit importing primitive internals, generic UI entrypoints creating ML packs, and `behaviors` importing `runtime/types`.
+- Added active debt entries to `DEBT.md` with scope, reason, impact, and exit condition.
+- Verification: graph matrix script plus source import scan.
+
+## Src-Only Graph Rebuild Todo
+
+- [x] Read `AGENTS.md`, graph report, graphify skill, caveman skill.
+- [x] Delete existing root `graphify-out` after path verification.
+- [x] Generate fresh graph from `src/` only.
+- [x] Verify graph contains only `src/` sources and no stale explanation nodes.
+
+## Src-Only Graph Rebuild Review
+
+- Deleted stale root `graphify-out` after verifying resolved path.
+- Full semantic extract from `src/` was blocked by missing LLM API key.
+- Generated AST-only graph from `src/`, moved it to root `graphify-out`, normalized `source_file` paths to `src/*`, then reclustered.
+- Result: 1409 nodes, 3103 edges, 95 communities.
+- Verification: all graph source paths are `src/*`; graph/report scan has zero `Explanation|explanation|explanations` matches.
+
+## Module Debt Closure Todo
+
+- [x] Read `AGENTS.md`, graph report, dirty status, and `DEBT.md`.
+- [x] Move neutral submit result/report fetch request contracts below runtime.
+- [x] Split headless kit view contract from mounted UI registries.
+- [x] Add kit focus adapter seam and remove primitive DOM import from kit logic.
+- [x] Move built-in ML constants/guards out of runtime.
+- [x] Clear `DEBT.md`, verify no seam regressions, run tests/check, update graph.
+
+## Module Debt Closure Review
+
+- Added schema-owned neutral `SubmitResult` and shared report fetch request builder.
+- Removed primitive/design-system registries from `createFormView`; mounted adapters own UI registries.
+- Replaced kit error-navigation primitive DOM import with a focus adapter.
+- Moved built-in ML constants to `builtins-ml` and date/report helpers to shared/schema-facing modules.
+- Pruned stale explanation nodes from graphify output after `graphify update --force` still preserved deleted nodes, then reclustered graph.
+- Verification: `vp run typecheck`, focused runtime/kit/primitives tests, full `vp check`, full `vp test`, docs `vp run build`, source line cap, source/grafo explanation scans.
+
+## Module Seam Debt Analysis Todo
+
+- [x] Read `AGENTS.md`, caveman skill, graph report, architecture skill, and `DEBT.md`.
+- [x] Compare graph communities against real source imports.
+- [x] Identify non-agnostic module seams and stale graph artifacts.
+- [x] Add concrete active debt entries with scope, impact, and exit condition.
+- [x] Run lightweight verification for docs-only debt update.
+
+## Module Seam Debt Analysis Review
+
+- Found real module seam debt in schema/presentation report contracts, kit headless/UI coupling, kit primitive DOM focus coupling, primitive report request construction, and built-in ML runtime helper imports.
+- Also found graphify stale nodes for deleted explanation files after incremental update; source search still has zero explanation domain/API matches.
+- Updated `DEBT.md` and `tasks/lessons.md`.
+- Verification: `git diff --check` passed; `rg "Explanation|explanation|explanations" src test README.md docs/src/content/docs docs/astro.config.mjs` returned no matches.
+- Blocker: `vp check` still reports formatting issues across 65 existing dirty `src/test` files; not auto-fixed here because request was debt analysis only.
+
 ## Report Fetch Debt Closure Todo
 
 - [x] Read `AGENTS.md`, graph report, and `DEBT.md`.

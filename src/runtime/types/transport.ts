@@ -3,10 +3,10 @@
 
 import type {
   SubmitRequest as BaseSubmitRequest,
-  SubmitResult as BaseSubmitResult,
   Transport as BaseTransport,
   TransportStreamEvent as BaseTransportStreamEvent,
 } from "@/transport";
+import type { SubmitResult as SchemaSubmitResult } from "@/schema";
 import type { NormalizedFieldConfig } from "./field";
 import type { NormalizedReportConfig, ReportStateSnapshot } from "./report";
 
@@ -50,9 +50,7 @@ export type {
 
 export type SubmitRequest = BaseSubmitRequest<NormalizedFieldConfig, NormalizedReportConfig>;
 
-export type SubmitResult = Omit<BaseSubmitResult, "reportStates"> & {
-  reportStates: Record<string, ReportStateSnapshot>;
-};
+export type SubmitResult = SchemaSubmitResult<ReportStateSnapshot>;
 
 export type Transport = BaseTransport<NormalizedFieldConfig, NormalizedReportConfig>;
 

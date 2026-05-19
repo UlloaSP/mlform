@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { NormalizedFieldConfig } from "@/schema";
-import { isRecord } from "@/runtime/utils";
+import { isRecord } from "@/shared";
 import { makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
 import {
   normalizeSeriesPoint,

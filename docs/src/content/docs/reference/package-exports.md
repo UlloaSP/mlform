@@ -5,10 +5,9 @@ description: Public import paths exposed by MLForm.
 
 | Export                 | Use                                                                                                                                    |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `mlform`               | Application-facing kit exports, including `mountForm`, `mountWizardForm`, `mountTabsForm`, `mountAccordionForm`, and `createFormView`. |
-| `mlform/kit`           | Same kit surface with explicit import path.                                                                                            |
+| `mlform/kit`           | Application-facing kit exports, including `mountForm`, `mountWizardForm`, `mountTabsForm`, `mountAccordionForm`, and `createFormView`. |
 | `mlform/runtime`       | Core form controller, registry, schema, transport, and types.                                                                          |
 | `mlform/primitives`    | Primitive Web Components and renderer registry.                                                                                        |
 | `mlform/design-system` | Theme, recipe, token, and runtime design system APIs.                                                                                  |
 
-Prefer `mlform` for application mounts. Use subpaths for advanced integrations.
+Import from explicit subpaths. The package has no root module export.

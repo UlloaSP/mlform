@@ -1,4 +1,4 @@
-import { mountAccordionForm, mountForm, mountTabsForm, mountWizardForm } from "@/index";
+import { mountAccordionForm, mountForm, mountTabsForm, mountWizardForm } from "@/kit";
 
 import {
   accordionLayout,

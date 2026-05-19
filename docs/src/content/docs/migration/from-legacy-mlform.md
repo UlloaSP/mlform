@@ -13,7 +13,8 @@ await mlForm.toHTMLElement(schema, container);
 Use `mountForm` instead:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const mounted = mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),

@@ -7,7 +7,7 @@ import type {
   RuntimeBehavior,
   RuntimeBehaviorContext,
   RuntimeBehaviorValueChangeEvent,
-} from "@/runtime/types";
+} from "@/runtime";
 
 type MappedCategoryOption = {
   label: string;
@@ -95,4 +95,4 @@ export type {
   RuntimeBehaviorContext,
   RuntimeBehaviorSubmissionRecords,
   RuntimeBehaviorValueChangeEvent,
-} from "@/runtime/types";
+} from "@/runtime";

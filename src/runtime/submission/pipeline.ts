@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { executeReportFetches } from "./report-fetches";
-import { createReportFetchRequest } from "./report-fetch-request";
+import { createReportFetchRequest } from "@/schema";
 import type { ExecuteFormPipelineOptions, PipelineArtifactContext, PipelineResult } from "../types";
 
 const defaultArtifacts = Object.freeze({}) as Record<string, unknown>;

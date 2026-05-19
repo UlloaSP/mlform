@@ -6,7 +6,8 @@ description: Mount the official wizard layout or consume wizard state through cr
 `mountWizardForm()` is the official built-in wizard layout built on top of the headless kit API.
 
 ```ts
-import { createJsonTransport, mountWizardForm } from "mlform";
+import { mountWizardForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountWizardForm(container, {
   transport: createJsonTransport({ endpoint: "/predict" }),

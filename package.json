@@ -50,12 +50,7 @@
     "dist/**"
   ],
   "type": "module",
-  "types": "dist/types/src/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/types/src/index.d.ts",
-      "import": "./dist/mlform.mjs"
-    },
     "./kit": {
       "types": "./dist/types/src/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"

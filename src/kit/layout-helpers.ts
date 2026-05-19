@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { FieldController, ReportController } from "@/runtime";
-import { slugify } from "@/runtime/utils";
+import { slugify } from "@/shared";
 import { kitErrorMessages } from "./constants";
 import type { FormLayoutNode } from "./types";
 

@@ -6,7 +6,7 @@ import {
   booleanFieldDefinition,
   numberFieldDefinition,
   seriesFieldDefinition,
-} from "@/builtins-ml/definitions";
+} from "@/builtins-ml";
 
 describe("builtin definitions", () => {
   it("keeps number field normalization behavior", () => {

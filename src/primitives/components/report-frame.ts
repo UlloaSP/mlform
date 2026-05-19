@@ -5,7 +5,7 @@ import { css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { ReportController, ReportStateSnapshot, SubmitResult } from "@/runtime";
-import { createReportFetchRequest } from "@/runtime/submission";
+import { createReportFetchRequest } from "@/schema";
 import type { ReportDescriptor } from "@/presentation";
 import { ControllerBinding } from "../controller-binding";
 import {

@@ -6,7 +6,8 @@ description: Use the official built-in accordion layout or the same accordion co
 `mountAccordionForm()` is the official built-in accordion layout built on top of the headless kit API.
 
 ```ts
-import { createJsonTransport, mountAccordionForm } from "mlform";
+import { mountAccordionForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountAccordionForm(container, {
   transport: createJsonTransport({ endpoint: "/predict" }),

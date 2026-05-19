@@ -2,9 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "@/runtime/constants";
+import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig, FieldDefinition } from "@/schema";
-import { isRecord } from "@/runtime/utils";
+import { isRecord } from "@/shared";
 import { baseFieldShape } from "../shared";
 import { booleanFieldDefinition } from "./boolean";
 import { categoryFieldDefinition } from "./category";

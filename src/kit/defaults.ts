@@ -8,8 +8,11 @@ import {
   mergeDesignSystemConfig,
 } from "@/design-system";
 import { createRegistry, type Registry } from "@/schema";
-import { createBuiltinPrimitiveRegistry, type PrimitiveRegistry } from "@/primitives";
-import { primitiveDefaultLabels } from "@/primitives/constants";
+import {
+  createBuiltinPrimitiveRegistry,
+  primitiveDefaultLabels,
+  type PrimitiveRegistry,
+} from "@/primitives";
 import type { KitLabels } from "./types";
 
 export const defaultKitLabels: Required<KitLabels> = {

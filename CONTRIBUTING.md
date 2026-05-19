@@ -170,7 +170,7 @@ We rely on Vite+, TypeScript, and Vitest for quality gates.
 - Prefer pure functions and immutable data where feasible.
 - Keep modules small and focused; reuse existing strategies or services when possible.
 - Document complex logic with concise comments when clarity is needed.
-- Export public APIs from `src/index.ts` or the relevant package entry points.
+- Export public APIs from each module entry point (`src/<module>/index.ts`).
 - Maintain strict typing: avoid `any` and prefer `unknown` with proper refinement.
 
 ## Submitting Changes

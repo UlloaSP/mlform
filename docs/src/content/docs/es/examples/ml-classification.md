@@ -4,7 +4,8 @@ description: Flujo de clasificacion con campos, un informe classifier y un backe
 ---
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(document.querySelector("#credit-risk") as HTMLElement, {
   transport: createJsonTransport({ endpoint: "/api/credit-risk" }),

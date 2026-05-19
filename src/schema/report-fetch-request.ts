@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ReportFetchRequest, SubmitResult } from "../types";
+import type { ReportFetchRequest } from "./types/report";
+import type { SubmitResult } from "./types/submit";
 
 export const createReportFetchRequest = (
   submitResult: SubmitResult,
-  options: {
-    reportId?: string;
-    signal?: AbortSignal;
-  } = {},
+  options: { reportId?: string; signal?: AbortSignal } = {},
 ): ReportFetchRequest => ({
   reportId: options.reportId ?? "",
   backend: submitResult.backend,

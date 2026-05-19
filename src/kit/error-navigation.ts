@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { findFieldFrame, scrollFieldFrameIntoView } from "@/primitives/components/error-focus";
 import type { FormViewController, FormViewFieldItem, ResolvedFormLayoutNode } from "./types";
+
+export type FieldFocusAdapter = (host: HTMLElement, fieldId: string) => Promise<boolean>;
 
 const waitForRender = async (host: HTMLElement): Promise<void> => {
   await Promise.resolve();
@@ -44,6 +45,7 @@ const firstInvalidField = (view: FormViewController): FormViewFieldItem | null =
 export const revealFirstInvalidField = async (
   host: HTMLElement,
   view: FormViewController,
+  focusField: FieldFocusAdapter,
 ): Promise<boolean> => {
   const field = firstInvalidField(view);
   if (!field) {
@@ -66,5 +68,5 @@ export const revealFirstInvalidField = async (
   }
 
   await waitForRender(host);
-  return scrollFieldFrameIntoView(findFieldFrame(host.shadowRoot ?? host, field.id));
+  return focusField(host, field.id);
 };

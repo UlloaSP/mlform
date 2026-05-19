@@ -2,8 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { PresentationRegistry } from "@/presentation";
+import type { FieldDescriptor } from "@/presentation";
 import type { FieldController, FormController, ReportController } from "@/runtime";
-import { fallbackFieldDescriptor } from "../primitives/presentation";
 import type { FormViewFieldItem, FormViewReportItem, FormViewSnapshot } from "./types";
 import {
   createFormViewState,
@@ -22,6 +22,11 @@ type BuildSnapshotOptions = {
   activeTabIndex: number;
   openSectionIds: Set<string>;
 };
+
+const fallbackFieldDescriptor = (field: FieldController): FieldDescriptor => ({
+  component: "unsupported-field",
+  props: { label: field.config.label ?? field.id },
+});
 
 const buildFieldItem = (
   field: FieldController,

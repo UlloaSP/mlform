@@ -3,4 +3,8 @@
 
 export { createDefaultRegistryPack } from "./default";
 export { createMlRegistryPack } from "./ml";
+export {
+  registerFieldPresenterFromDefinition,
+  registerReportPresenterFromDefinition,
+} from "./shared";
 export type { RegistryPack } from "./shared";

@@ -2,7 +2,7 @@ import type {
   AccordionLayoutConfig,
   TabsLayoutConfig,
   WizardLayoutConfig,
-} from "@/index";
+} from "@/kit";
 import type { FormSchema } from "@/schema";
 
 export type ShowcaseLocale = "en" | "es";

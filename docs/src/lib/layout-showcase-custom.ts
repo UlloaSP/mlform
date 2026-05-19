@@ -1,6 +1,7 @@
-import { attachDesignSystem } from "@/design-system";
-import { createFormView } from "@/index";
-import type { FormViewController, FormViewSnapshot, ResolvedFormLayoutNode } from "@/index";
+import { attachDesignSystem, builtinDesignSystemRegistry } from "@/design-system";
+import { createFormView } from "@/kit";
+import type { FormViewSnapshot, ResolvedFormLayoutNode } from "@/kit";
+import { createBuiltinPrimitiveRegistry } from "@/primitives";
 
 import {
   copyByLocale,
@@ -14,8 +15,8 @@ import {
 const createFrame = (
   tagName: "mlf-field-frame" | "mlf-report-frame",
   snapshot: FormViewSnapshot,
-  view: FormViewController,
   id: string,
+  primitiveRegistry: ReturnType<typeof createBuiltinPrimitiveRegistry>,
 ): HTMLElement | null => {
   if (tagName === "mlf-field-frame") {
     const field = snapshot.fields.find((entry: { id: string }) => entry.id === id);
@@ -28,7 +29,7 @@ const createFrame = (
       registry?: unknown;
     };
     element.controller = field.controller;
-    element.registry = view.primitiveRegistry;
+    element.registry = primitiveRegistry;
     return element;
   }
 
@@ -43,7 +44,7 @@ const createFrame = (
     lastResult?: unknown;
   };
   element.controller = report.controller;
-  element.registry = view.primitiveRegistry;
+  element.registry = primitiveRegistry;
   element.lastResult = snapshot.form.lastResult;
   return element;
 };
@@ -51,7 +52,7 @@ const createFrame = (
 const renderCustomNode = (
   node: ResolvedFormLayoutNode,
   snapshot: FormViewSnapshot,
-  view: FormViewController,
+  primitiveRegistry: ReturnType<typeof createBuiltinPrimitiveRegistry>,
 ): HTMLElement | null => {
   switch (node.kind) {
     case "section": {
@@ -77,7 +78,7 @@ const renderCustomNode = (
       const children = document.createElement("div");
       children.className = "layout-showcase-custom-children";
       for (const child of node.children ?? []) {
-        const childElement = renderCustomNode(child, snapshot, view);
+        const childElement = renderCustomNode(child, snapshot, primitiveRegistry);
         if (childElement) {
           children.append(childElement);
         }
@@ -89,7 +90,7 @@ const renderCustomNode = (
       const group = document.createElement("div");
       group.className = "layout-showcase-custom-children";
       for (const child of node.children ?? []) {
-        const childElement = renderCustomNode(child, snapshot, view);
+        const childElement = renderCustomNode(child, snapshot, primitiveRegistry);
         if (childElement) {
           group.append(childElement);
         }
@@ -100,12 +101,12 @@ const renderCustomNode = (
       if (!node.field) {
         return null;
       }
-      return createFrame("mlf-field-frame", snapshot, view, node.field);
+      return createFrame("mlf-field-frame", snapshot, node.field, primitiveRegistry);
     case "report":
       if (!node.report) {
         return null;
       }
-      return createFrame("mlf-report-frame", snapshot, view, node.report);
+      return createFrame("mlf-report-frame", snapshot, node.report, primitiveRegistry);
   }
 };
 
@@ -116,8 +117,9 @@ export const mountCustomHeadless = (host: HTMLElement, locale: ShowcaseLocale): 
     transport: createDemoTransport(),
     layout: tabsLayout,
   });
+  const primitiveRegistry = createBuiltinPrimitiveRegistry();
   const designSystem = attachDesignSystem(host, {
-    registry: view.designSystemRegistry,
+    registry: builtinDesignSystemRegistry,
   });
 
   const render = (): void => {
@@ -166,7 +168,7 @@ export const mountCustomHeadless = (host: HTMLElement, locale: ShowcaseLocale): 
     const panelBody = document.createElement("div");
     panelBody.className = "layout-showcase-custom-panel";
     for (const node of view.getActiveLayoutNodes()) {
-      const nodeElement = renderCustomNode(node, snapshot, view);
+      const nodeElement = renderCustomNode(node, snapshot, primitiveRegistry);
       if (nodeElement) {
         panelBody.append(nodeElement);
       }

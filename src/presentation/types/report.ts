@@ -7,8 +7,8 @@ import type {
   ReportFetchFactory,
   ReportResolveContext,
   ReportStateSnapshot,
+  SubmitResult,
 } from "@/schema";
-import type { SubmitResult } from "@/runtime/types/transport";
 import type { ZodType } from "zod";
 import type { PresentationContent, PresentationSummary } from "./presentation";
 

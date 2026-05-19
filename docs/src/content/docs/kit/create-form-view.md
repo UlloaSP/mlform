@@ -9,7 +9,7 @@ description: Full API guide for the app-facing headless kit controller.
 const view = createFormView(options);
 ```
 
-`CreateFormViewOptions` is the same family of app-facing inputs used by `mountForm()`, plus headless `layout`.
+`CreateFormViewOptions` is the headless state/layout input surface. Mounted UI concerns such as primitive and design-system registries stay on `mountForm()` and the built-in shell mounts.
 
 ## Input options
 
@@ -22,8 +22,6 @@ Common optional inputs:
 
 - `layout`
 - `registry`
-- `primitiveRegistry`
-- `designSystemRegistry`
 - `initialValues`
 - `validators`
 - `hooks`
@@ -37,8 +35,7 @@ Common optional inputs:
 interface FormViewController {
   form: FormController;
   engineRegistry: Registry;
-  primitiveRegistry: PrimitiveRegistry;
-  designSystemRegistry: DesignSystemRegistry;
+  presentationRegistry: PresentationRegistry;
   state: FormViewState;
   getSnapshot(): FormViewSnapshot;
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;
@@ -157,7 +154,7 @@ Typical host pattern:
 
 ## Design system note
 
-`createFormView()` does not attach stylesheets or mutate DOM. Use:
+`createFormView()` does not resolve primitive renderers, attach stylesheets, or mutate DOM. Use:
 
 - `mountForm()` for built-in one-page DOM
 - `mountWizardForm()` for built-in wizard DOM

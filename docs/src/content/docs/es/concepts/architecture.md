@@ -20,7 +20,8 @@ Usa el kit en codigo de aplicacion. Ahora expone:
 Baja a engine o primitives solo para renderers, registries o capas de integracion personalizadas.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {

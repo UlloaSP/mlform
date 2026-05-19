@@ -4,7 +4,8 @@ description: Monta MLForm sin framework.
 ---
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const container = document.querySelector("#prediction-form");
 if (!container) throw new Error("Missing #prediction-form container.");

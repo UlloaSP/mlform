@@ -127,7 +127,6 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        mlform: resolve(rootDir, "src/index.ts"),
         "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
         "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
         "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
@@ -157,7 +156,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      mlform: resolve(rootDir, "src/index.ts"),
       "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
       "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
       "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),

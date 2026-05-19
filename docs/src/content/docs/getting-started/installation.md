@@ -18,7 +18,7 @@ npm install mlform@0.1.9
 Import from the root package for normal application use:
 
 ```ts
-import { mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
 ```
 
 Use subpath imports only when you need a specific layer:

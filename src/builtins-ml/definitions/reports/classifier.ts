@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinLegacyOutputTypes, builtinReportLabels } from "@/runtime/constants";
+import { builtinLegacyOutputTypes, builtinReportLabels } from "../../constants";
 import type { BaseReportConfig } from "@/schema";
 import { baseReportShape, resolveLegacyOutput, type BuiltinReportDefinition } from "../shared";
 

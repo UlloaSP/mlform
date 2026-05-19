@@ -38,10 +38,11 @@ For application usage:
 npm install mlform
 ```
 
-Import from the root package unless you specifically need a lower-level surface:
+Import from the explicit package subpath you need:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 ```
 
 ## Quick Start
@@ -55,7 +56,8 @@ Create a host element:
 Mount a form:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const container = document.querySelector("#prediction-form");
 
@@ -182,7 +184,6 @@ Built-in recipes:
 
 | Surface                | Use it for                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `mlform`               | Application-first API for mounting forms or building headless layouts with sensible defaults.                              |
 | `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `mountWizardForm`, `createFormView`, transport, labels, and lifecycle utilities. |
 | `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
@@ -246,7 +247,8 @@ Stay at the declarative `define*Kind` layer unless you truly need fully custom r
 Use `createFormView()` when you want MLForm to own state and validation, but your app to own layout:
 
 ```ts
-import { createFormView, createJsonTransport } from "mlform";
+import { createFormView } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const view = createFormView({
   transport: createJsonTransport({ endpoint: "/api/predict" }),

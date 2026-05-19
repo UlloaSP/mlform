@@ -4,7 +4,7 @@ description: Propagate trace context through MLForm transports.
 ---
 
 ```ts
-import { pipe, withTracing } from "mlform";
+import { pipe, withTracing } from "mlform/transport";
 
 const transport = pipe(
   myTransport,

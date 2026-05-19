@@ -2,14 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createForm } from "@/runtime";
-import type { PresentationRegistry } from "@/presentation";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/packs";
 import { kitErrorMessages } from "./constants";
-import {
-  cloneSchemaRegistry,
-  resolveDesignSystemRegistry,
-  resolvePrimitiveRegistry,
-} from "./defaults";
+import { cloneSchemaRegistry } from "./defaults";
 import { resolveFormLayout } from "./layout";
 import { collectLayoutReferences, flattenLayoutNodes } from "./layout-utils";
 import type {
@@ -18,7 +13,7 @@ import type {
   FormViewSnapshot,
   FormViewState,
   ResolvedFormLayoutNode,
-} from "./types";
+} from "./view-core-types";
 import { createFormViewSnapshotCache } from "./view-snapshot-cache";
 import { createViewState } from "./view-snapshot";
 import {
@@ -28,12 +23,7 @@ import {
   validateCurrentWizardStep,
 } from "./view-navigation";
 
-type InternalCreateFormViewOptions = CreateFormViewOptions & {
-  presentationRegistry?: PresentationRegistry;
-  behaviors?: import("@/runtime").RuntimeBehavior[];
-};
-
-export const createFormView = (options: InternalCreateFormViewOptions): FormViewController => {
+export const createFormView = (options: CreateFormViewOptions): FormViewController => {
   const defaultPack =
     !options.registry || !options.presentationRegistry || !options.behaviors
       ? createMlRegistryPack()
@@ -43,8 +33,6 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     : defaultPack!.registry;
   const presentationRegistry =
     options.presentationRegistry?.clone() ?? defaultPack!.presentationRegistry;
-  const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
-  const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
@@ -110,8 +98,6 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     form,
     engineRegistry,
     presentationRegistry,
-    primitiveRegistry,
-    designSystemRegistry,
     get state(): FormViewState {
       return getState();
     },

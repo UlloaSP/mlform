@@ -61,6 +61,25 @@ This file is the required ledger for active technical debt, known bugs, architec
 - `cloneSchemaRegistry` now only clones explicit registries; default kit pack composition stays in `createFormView`.
 - explanations collapsed into reports; explanation top-level API removed.
 - report fetch request construction and async transport lifecycle deduplicated.
+- module seam debt closed:
+  - report context submit result moved to schema-owned neutral DTO
+  - report fetch request builder moved to shared
+  - `createFormView` split from primitive/design-system registry ownership
+  - kit error navigation now uses a focus adapter seam
+  - built-in ML constants/guards moved out of runtime internals
+  - graphify output pruned of stale deleted explanation nodes and reclustered
+- module interface seam debt closed:
+  - report fetch request builder moved from `shared` to schema-owned contract API
+  - runtime built-in ML constants facade removed
+  - ML pack factory moved out of `packs` cycle and exposed through built-ins/packs one-way
+  - kit primitive imports routed through public `@/primitives`
+  - default ML composition accessed through public `@/packs` seam from UI layers
+  - behavior contracts imported through public `@/runtime`
+- module root API enforcement added:
+  - cross-module source imports use only `@/module` root index APIs
+  - module subpath aliases removed from source, tests, and docs
+- root `mlform` module removed; package public API is now explicit subpath exports only
+  - architecture test guards against future `@/module/subpath` and cross-module internal imports
 
 ## Notes
 

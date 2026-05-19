@@ -20,7 +20,8 @@ Use the kit for application code. It now exposes four app-facing paths:
 Drop to engine or primitives only when building custom renderers, registries, or integration layers.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {

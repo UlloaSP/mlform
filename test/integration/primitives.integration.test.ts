@@ -13,9 +13,9 @@ import {
   type ReportDefinition,
 } from "@/runtime";
 import type { FieldConfig, ReportConfig } from "@/schema";
-import { PrimitiveFormElement } from "@/primitives/components/form-root";
 import {
   PrimitiveAsyncReportElement,
+  PrimitiveFormElement,
   createBuiltinPrimitiveRegistry,
   createPrimitiveRegistry,
   mountForm,

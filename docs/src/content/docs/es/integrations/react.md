@@ -5,7 +5,8 @@ description: Usa useRef y useEffect con cleanup.
 
 ```tsx
 import { useEffect, useMemo, useRef } from "react";
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 export function PredictionForm() {
   const ref = useRef<HTMLDivElement>(null);

@@ -4,7 +4,8 @@ description: Classification flow with fields, a classifier report, and a JSON ba
 ---
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(document.querySelector("#credit-risk") as HTMLElement, {
   transport: createJsonTransport({ endpoint: "/api/credit-risk" }),

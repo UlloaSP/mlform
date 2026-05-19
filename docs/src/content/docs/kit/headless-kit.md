@@ -12,7 +12,8 @@ Use it when you want:
 - access to resolved fields, reports, registries, and wizard navigation from one app-facing API
 
 ```ts
-import { createFormView, createJsonTransport } from "mlform";
+import { createFormView } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const view = createFormView({
   transport: createJsonTransport({ endpoint: "/predict" }),

@@ -15,7 +15,7 @@ import {
   seriesFieldDefinition,
   singleChoiceFieldDefinition,
   textFieldDefinition,
-} from "@/builtins-ml/definitions";
+} from "@/builtins-ml";
 import { createRegistry } from "@/schema";
 import { type RegistryPack, registerFieldPresenterFromDefinition } from "./shared";
 

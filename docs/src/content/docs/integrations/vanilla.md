@@ -9,7 +9,8 @@ description: Mount MLForm without a frontend framework.
 ```
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const host = document.querySelector("#prediction-form");
 

@@ -11,8 +11,7 @@ Devuelve:
 
 - `form`
 - `engineRegistry`
-- `primitiveRegistry`
-- `designSystemRegistry`
+- `presentationRegistry`
 - `state`
 - `getSnapshot()`
 - `validate()`

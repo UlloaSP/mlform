@@ -6,7 +6,8 @@ description: Use the official built-in tabs layout or the same tabs config throu
 `mountTabsForm()` is the official built-in tabs layout built on top of the headless kit API.
 
 ```ts
-import { createJsonTransport, mountTabsForm } from "mlform";
+import { mountTabsForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountTabsForm(container, {
   transport: createJsonTransport({ endpoint: "/predict" }),

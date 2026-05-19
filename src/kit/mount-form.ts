@@ -4,7 +4,12 @@
 import { attachDesignSystem, type DesignSystemConfig } from "@/design-system";
 import { mountForm as mountPrimitiveForm } from "@/primitives";
 import { kitErrorMessages } from "./constants";
-import { resolveKitDesignSystem, resolveKitLabels } from "./defaults";
+import {
+  resolveDesignSystemRegistry,
+  resolveKitDesignSystem,
+  resolveKitLabels,
+  resolvePrimitiveRegistry,
+} from "./defaults";
 import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./types";
 import { createFormView } from "./view";
 
@@ -31,9 +36,6 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     transport: options.transport,
     registry: options.registry,
     presentationRegistry: options.presentationRegistry,
-    primitiveRegistry: options.primitiveRegistry,
-    designSystemRegistry: options.designSystemRegistry,
-    designSystem: options.designSystem,
     initialValues: options.initialValues,
     validators: options.validators,
     hooks: options.hooks,
@@ -41,17 +43,13 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     inactiveFieldPolicy: options.inactiveFieldPolicy,
     listenerErrorPolicy: options.listenerErrorPolicy,
     onListenerError: options.onListenerError,
-    reportPane: options.reportPane,
-    reportTransport: options.reportTransport,
-    labels: options.labels,
-    primitiveText: options.primitiveText,
-    containerStrategy: options.containerStrategy,
-    onDesignSystemChange: options.onDesignSystemChange,
   });
+  const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
+  const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const labels = resolveKitLabels(options.labels);
   const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
   const mountedPrimitive = mountPrimitiveForm(container, view.form, {
-    registry: view.primitiveRegistry,
+    registry: primitiveRegistry,
     presentationRegistry: view.presentationRegistry,
     layout: options.layout,
     containerStrategy: options.containerStrategy,
@@ -66,7 +64,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   });
   const designSystem = attachDesignSystem(mountedPrimitive.host, {
     config: initialDesignSystem,
-    registry: view.designSystemRegistry,
+    registry: designSystemRegistry,
     onChange: options.onDesignSystemChange,
   });
 
@@ -77,8 +75,8 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     host: mountedPrimitive.host,
     engineRegistry: view.engineRegistry,
     presentationRegistry: view.presentationRegistry,
-    primitiveRegistry: view.primitiveRegistry,
-    designSystemRegistry: view.designSystemRegistry,
+    primitiveRegistry,
+    designSystemRegistry,
     designSystem,
     updateDesignSystem(config: DesignSystemConfig) {
       designSystem.update(config);

@@ -11,9 +11,9 @@ import type {
   NormalizedFieldConfig,
   ReportConfig,
   ReportDefinition,
+  SubmitResult,
 } from "@/schema";
 import type { FieldDescriptor, ReportDescriptor } from "@/presentation";
-import type { SubmitResult } from "@/runtime";
 
 export const uiSchema = z.record(z.string(), z.unknown()).optional();
 
