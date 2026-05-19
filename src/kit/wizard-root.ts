@@ -11,6 +11,7 @@ import { primitiveStaticText, type PrimitiveText } from "@/primitives/constants"
 import type { PrimitiveRegistry } from "@/primitives/types";
 import { kitTagNames } from "./constants";
 import { renderLayoutNode } from "./layout-node-render";
+import { revealFirstInvalidField } from "./error-navigation";
 import type { FormViewController, FormViewSnapshot } from "./types";
 import { defaultWizardLabels, resolveWizardText } from "./wizard-constants";
 import { wizardRootStyles } from "./wizard-root-styles";
@@ -139,7 +140,10 @@ export class KitWizardElement extends LitElement {
   };
 
   #handleNext = async (): Promise<void> => {
-    await this.view?.nextStep();
+    const advanced = await this.view?.nextStep();
+    if (advanced === false && this.view) {
+      await revealFirstInvalidField(this, this.view);
+    }
   };
 
   #handleSubmit = async (): Promise<void> => {
@@ -149,10 +153,18 @@ export class KitWizardElement extends LitElement {
 
     const valid = await this.view.nextStep();
     if (!valid) {
+      await revealFirstInvalidField(this, this.view);
       return;
     }
 
-    await this.view.submit();
+    try {
+      await this.view.submit();
+    } catch (error) {
+      const handled = await revealFirstInvalidField(this, this.view);
+      if (!handled) {
+        throw error;
+      }
+    }
   };
 }
 

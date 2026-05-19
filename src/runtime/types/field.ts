@@ -31,7 +31,6 @@ import type {
   FieldValidationResult,
   NormalizedFieldConfig,
 } from "@/schema";
-import type { FieldDescriptor } from "@/presentation";
 
 export interface FieldHandle {
   readonly id: string;
@@ -50,12 +49,6 @@ export type FieldController = FieldHandle;
 export type FieldDefinition<
   TConfig extends import("@/schema").FieldConfig = import("@/schema").FieldConfig,
   TValue = unknown,
-> = SchemaFieldDefinition<TConfig, TValue> & {
-  describe?: (
-    config: NormalizedFieldConfig<TConfig>,
-    context: { fieldId: string; state: FieldStateSnapshot },
-  ) => FieldDescriptor;
-  [key: string]: unknown;
-};
+> = SchemaFieldDefinition<TConfig, TValue>;
 
 export type RuntimeFieldDefinition = FieldDefinition;

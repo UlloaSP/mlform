@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
-
 import { builtinDesignSystemRegistry } from "../registry";
-import { designSystemEventNames } from "../constants";
-import { resolveDesignSystem } from "../resolve";
 import type {
   DesignSystemConfig,
   DesignSystemControllerOptions,
@@ -12,6 +9,13 @@ import type {
   DesignSystemTransition,
   ResolvedDesignSystem,
 } from "../types";
+import {
+  addControllerMediaListeners,
+  dispatchDesignSystemChange,
+  getControllerMediaSnapshot,
+  removeControllerMediaListeners,
+  resolveControllerDesignSystem,
+} from "./controller-helpers";
 import { createResolvedDesignSystemSignature } from "./host-state";
 import {
   applyResolvedDesignSystem,
@@ -24,14 +28,7 @@ import {
   restoreRemovedTokenValues,
   seedHydratedResolvedState,
 } from "./hydration-state";
-import { resolveInheritedScheme } from "./inherited-scheme";
-import {
-  addMediaListener,
-  createMediaQueries,
-  getMediaSnapshot,
-  type MediaQueryListWithLegacy,
-  removeMediaListener,
-} from "./media";
+import { createMediaQueries, type MediaQueryListWithLegacy } from "./media";
 import { observeHostChain } from "./host-observer";
 
 export class DesignSystemController {
@@ -60,10 +57,8 @@ export class DesignSystemController {
   #signature = "";
   #transitionAbortController: AbortController | null = null;
   #transitionCleanup: (() => void) | null = null;
-  /** Snapshot of config + media states — used to skip full resolution on no-ops. */
   #envSnapshot = "";
   #resolved: ResolvedDesignSystem | null = null;
-
   constructor({
     host,
     registry,
@@ -108,6 +103,14 @@ export class DesignSystemController {
   get resolved(): ResolvedDesignSystem | null {
     return this.#resolved;
   }
+  get #mediaListeners() {
+    return [
+      { query: this.#schemeMediaQuery, listener: this.#schemeMediaListener },
+      { query: this.#motionMediaQuery, listener: this.#motionMediaListener },
+      { query: this.#contrastMediaQuery, listener: this.#contrastMediaListener },
+      { query: this.#forcedColorsMediaQuery, listener: this.#forcedColorsMediaListener },
+    ];
+  }
 
   connect(): void {
     if (this.#connected) {
@@ -116,18 +119,7 @@ export class DesignSystemController {
 
     this.#connected = true;
 
-    if (this.#schemeMediaQuery) {
-      addMediaListener(this.#schemeMediaQuery, this.#schemeMediaListener);
-    }
-    if (this.#motionMediaQuery) {
-      addMediaListener(this.#motionMediaQuery, this.#motionMediaListener);
-    }
-    if (this.#contrastMediaQuery) {
-      addMediaListener(this.#contrastMediaQuery, this.#contrastMediaListener);
-    }
-    if (this.#forcedColorsMediaQuery) {
-      addMediaListener(this.#forcedColorsMediaQuery, this.#forcedColorsMediaListener);
-    }
+    addControllerMediaListeners(this.#mediaListeners);
 
     observeHostChain(this.#host, this.#mutationObserver, this.#observedNodes);
     if (this.#hydrateOnConnect && this.#seedHydratedState()) {
@@ -135,7 +127,6 @@ export class DesignSystemController {
     }
     this.refresh();
   }
-
   disconnect(): void {
     if (!this.#connected) {
       return;
@@ -143,18 +134,7 @@ export class DesignSystemController {
 
     this.#connected = false;
 
-    if (this.#schemeMediaQuery) {
-      removeMediaListener(this.#schemeMediaQuery, this.#schemeMediaListener);
-    }
-    if (this.#motionMediaQuery) {
-      removeMediaListener(this.#motionMediaQuery, this.#motionMediaListener);
-    }
-    if (this.#contrastMediaQuery) {
-      removeMediaListener(this.#contrastMediaQuery, this.#contrastMediaListener);
-    }
-    if (this.#forcedColorsMediaQuery) {
-      removeMediaListener(this.#forcedColorsMediaQuery, this.#forcedColorsMediaListener);
-    }
+    removeControllerMediaListeners(this.#mediaListeners);
 
     this.#cancelPendingTransition();
     this.#mutationObserver?.disconnect();
@@ -188,15 +168,7 @@ export class DesignSystemController {
       return;
     }
 
-    const inherited = resolveInheritedScheme(this.#host, config);
-    const resolved = resolveDesignSystem(config, this.#registry, {
-      inheritedScheme: inherited.scheme,
-      inheritedSource: inherited.source ?? undefined,
-      systemScheme: media.prefersDarkScheme ? "dark" : "light",
-      prefersReducedMotion: media.prefersReducedMotion,
-      prefersMoreContrast: media.prefersMoreContrast,
-      forcedColors: media.forcedColors,
-    });
+    const resolved = resolveControllerDesignSystem(this.#host, config, this.#registry, media);
 
     const signature = createResolvedDesignSystemSignature(resolved);
 
@@ -220,13 +192,7 @@ export class DesignSystemController {
       );
       this.#appliedTokens = applyResolvedDesignSystem(this.#host, resolved, this.#transition);
       this.#onChange?.(resolved);
-      this.#host.dispatchEvent(
-        new CustomEvent(designSystemEventNames.change, {
-          detail: { designSystem: resolved },
-          bubbles: true,
-          composed: true,
-        }),
-      );
+      dispatchDesignSystemChange(this.#host, resolved);
     };
 
     this.#applyWithTransition(applyDomUpdate, resolved, previousResolved);
@@ -296,15 +262,7 @@ export class DesignSystemController {
   #seedHydratedState(): boolean {
     const config = this.#getConfig();
     const media = this.#getMediaSnapshot();
-    const inherited = resolveInheritedScheme(this.#host, config);
-    const resolved = resolveDesignSystem(config, this.#registry, {
-      inheritedScheme: inherited.scheme,
-      inheritedSource: inherited.source ?? undefined,
-      systemScheme: media.prefersDarkScheme ? "dark" : "light",
-      prefersReducedMotion: media.prefersReducedMotion,
-      prefersMoreContrast: media.prefersMoreContrast,
-      forcedColors: media.forcedColors,
-    });
+    const resolved = resolveControllerDesignSystem(this.#host, config, this.#registry, media);
 
     const seeded = seedHydratedResolvedState(this.#host, this.#originalTokenValues, {
       resolved,
@@ -329,11 +287,11 @@ export class DesignSystemController {
   }
 
   #getMediaSnapshot(): DesignSystemMediaSnapshot {
-    return getMediaSnapshot({
-      scheme: this.#schemeMediaQuery,
-      motion: this.#motionMediaQuery,
-      contrast: this.#contrastMediaQuery,
-      forcedColors: this.#forcedColorsMediaQuery,
-    });
+    return getControllerMediaSnapshot(
+      this.#schemeMediaQuery,
+      this.#motionMediaQuery,
+      this.#contrastMediaQuery,
+      this.#forcedColorsMediaQuery,
+    );
   }
 }

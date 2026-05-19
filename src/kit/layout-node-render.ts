@@ -99,6 +99,7 @@ export const renderLayoutNode = ({
       }
       return html`
         <mlf-field-frame
+          data-field-id=${field.id}
           .controller=${field.controller}
           .descriptor=${field.descriptor}
           .registry=${registry}

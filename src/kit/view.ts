@@ -4,7 +4,6 @@
 import { createForm } from "@/runtime";
 import type { PresentationRegistry } from "@/presentation";
 import { createMlRegistryPack } from "@/builtins-ml";
-import { registerPresentersFromRegistry } from "@/packs/shared";
 import { kitErrorMessages } from "./constants";
 import {
   cloneSchemaRegistry,
@@ -44,9 +43,6 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     : defaultPack!.registry;
   const presentationRegistry =
     options.presentationRegistry?.clone() ?? defaultPack!.presentationRegistry;
-  if (options.registry && !options.presentationRegistry) {
-    registerPresentersFromRegistry(presentationRegistry, engineRegistry);
-  }
   const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const form = createForm({

@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { html, nothing, type TemplateResult } from "lit";
-import type { PresentationNode, PresentationSummary } from "@/runtime";
+import type { PresentationNode, PresentationSummary } from "@/presentation";
 import { toText } from "../utils";
 
 const toneClass = (tone: unknown): string => {

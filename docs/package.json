@@ -6,20 +6,21 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro check && astro build",
+    "check": "vp lint .",
     "preview": "astro preview",
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "0.38.3",
-    "astro": "6.1.5",
+    "@astrojs/starlight": "0.39.2",
+    "astro": "6.3.3",
     "sharp": "0.34.5"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.8",
-    "typescript": "5.9.3"
+    "@astrojs/check": "0.9.9",
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": ">=20.0"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@11.1.2"
 }

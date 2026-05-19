@@ -2,11 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import {
-  assertTransportCapabilities,
-  inferTransportCapabilities,
-  mergeTransportCapabilities,
-} from "../capabilities";
-import {
   combineSignals,
   createAsyncQueue,
   createTransport,
@@ -23,10 +18,15 @@ import type {
   FanoutTransportResult,
   SubmitRequest,
   Transport,
-  TransportCapabilities,
   TransportStreamEvent,
 } from "../types";
 import { createFanoutFailure } from "./fanout-helpers";
+import {
+  collectFanoutCapabilities,
+  createFanoutAbortOthers,
+  resolveActiveFanoutEntries,
+  type FanoutTransportEntry,
+} from "./fanout-options";
 
 export const createFanoutTransport = <TTransportId extends string = string>(
   options: FanoutTransportOptions<TTransportId>,
@@ -37,39 +37,12 @@ export const createFanoutTransport = <TTransportId extends string = string>(
   ) as readonly ({ id: TTransportId | undefined } & ReturnType<
     typeof resolveTransportEntries
   >[number])[];
-
-  const resolveActiveEntries = async (request: SubmitRequest) => {
-    let activeEntries = transportEntries;
-
-    if (options.filter) {
-      const filterResults = await Promise.all(
-        transportEntries.map(async (entry) => ({
-          entry,
-          include: await options.filter!(entry.id ?? String(entry.index), request),
-        })),
-      );
-      activeEntries = filterResults
-        .filter((result) => result.include)
-        .map((result) => result.entry) as typeof transportEntries;
-    }
-
-    if (options.requiredCapabilities) {
-      activeEntries = activeEntries.filter((entry) => {
-        try {
-          assertTransportCapabilities(
-            entry.transport,
-            options.requiredCapabilities!,
-            "createFanoutTransport",
-          );
-          return true;
-        } catch {
-          return false;
-        }
-      }) as typeof transportEntries;
-    }
-
-    return activeEntries;
-  };
+  const resolveActiveEntries = (request: SubmitRequest) =>
+    resolveActiveFanoutEntries(
+      transportEntries as readonly FanoutTransportEntry<TTransportId>[],
+      options,
+      request,
+    );
 
   return createTransport(
     async (request: SubmitRequest) => {
@@ -81,19 +54,7 @@ export const createFanoutTransport = <TTransportId extends string = string>(
 
       const abortPolicy = options.abortPolicy ?? "wait-all";
       const entryControllers = activeEntries.map(() => new AbortController());
-      let abortTriggered = false;
-      const abortOthers = (reason: string, skipIndex: number) => {
-        if (abortTriggered) {
-          return;
-        }
-        abortTriggered = true;
-        for (const [index, controller] of entryControllers.entries()) {
-          if (index === skipIndex) {
-            continue;
-          }
-          controller.abort(reason);
-        }
-      };
+      const abortOthers = createFanoutAbortOthers(entryControllers);
 
       const settledResults = await Promise.allSettled(
         activeEntries.map(async (entry, activeIndex) => {
@@ -196,18 +157,7 @@ export const createFanoutTransport = <TTransportId extends string = string>(
       const results: FanoutTransportResult<TTransportId>[] = [];
       const failures: FanoutTransportFailure<TTransportId>[] = [];
       let remaining = activeEntries.length;
-      let abortTriggered = false;
-
-      const abortOthers = (reason: string, skipIndex: number) => {
-        if (abortTriggered) {
-          return;
-        }
-        abortTriggered = true;
-        for (const [index, controller] of entryControllers.entries()) {
-          if (index === skipIndex) continue;
-          controller.abort(reason);
-        }
-      };
+      const abortOthers = createFanoutAbortOthers(entryControllers);
 
       const finishIfDone = () => {
         remaining -= 1;
@@ -326,9 +276,7 @@ export const createFanoutTransport = <TTransportId extends string = string>(
       };
     },
     {
-      capabilities: transportEntries.reduce<TransportCapabilities | undefined>((caps, entry) => {
-        return mergeTransportCapabilities(caps, inferTransportCapabilities(entry.transport));
-      }, undefined),
+      capabilities: collectFanoutCapabilities(transportEntries),
     },
   );
 };

@@ -7,20 +7,22 @@ import type {
   ResolvedDesignSystem,
   AttachedDesignSystem,
 } from "@/design-system";
-import type { PresentationRegistry } from "@/presentation";
+import type {
+  ExplanationDescriptor,
+  FieldDescriptor,
+  PresentationRegistry,
+  ReportDescriptor,
+} from "@/presentation";
 import type {
   ExplanationController,
-  ExplanationDescriptor,
   ExplanationStateSnapshot,
   FieldController,
-  FieldDescriptor,
   FieldStateSnapshot,
   FormController,
   FormState,
   FormValidationResult,
   Registry,
   ReportController,
-  ReportDescriptor,
   ReportStateSnapshot,
   SubmitOptions,
   SubmitResult,

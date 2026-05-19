@@ -1,6 +1,6 @@
 ---
 title: Renderers personalizados
-description: Mapea descriptors del engine a custom elements.
+description: Mapea descriptors de presentación a custom elements.
 ---
 
 ```ts

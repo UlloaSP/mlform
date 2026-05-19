@@ -18,7 +18,6 @@ import type {
   ExplanationStateSnapshot,
   NormalizedExplanationConfig as SchemaNormalizedExplanationConfig,
 } from "@/schema";
-import type { ExplanationDescriptor } from "@/presentation";
 
 export interface ExplanationHandle {
   readonly id: string;
@@ -34,13 +33,7 @@ export interface ExplanationHandle {
 export type ExplanationController = ExplanationHandle;
 export type ExplanationDefinition<
   TConfig extends import("@/schema").ExplanationConfig = import("@/schema").ExplanationConfig,
-> = SchemaExplanationDefinition<TConfig> & {
-  describe?: (
-    config: SchemaNormalizedExplanationConfig<TConfig>,
-    context: { explanationId: string; state: ExplanationStateSnapshot },
-  ) => ExplanationDescriptor | null;
-  [key: string]: unknown;
-};
+> = SchemaExplanationDefinition<TConfig>;
 
 export type NormalizedExplanationConfig<
   TConfig extends import("@/schema").ExplanationConfig = import("@/schema").ExplanationConfig,

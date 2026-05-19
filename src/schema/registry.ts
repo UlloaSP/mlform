@@ -112,14 +112,16 @@ class RegistryStore implements Registry {
 
 export const createRegistry = (): Registry => new RegistryStore();
 
-export const defineFieldDefinition = <TConfig extends FieldConfig, TValue>(
-  definition: FieldDefinition<TConfig, TValue>,
-): FieldDefinition<TConfig, TValue> => definition;
+export const defineFieldDefinition = <TDefinition extends FieldDefinition<FieldConfig, unknown>>(
+  definition: TDefinition,
+): TDefinition => definition;
 
-export const defineReportDefinition = <TConfig extends ReportConfig>(
-  definition: ReportDefinition<TConfig>,
-): ReportDefinition<TConfig> => definition;
+export const defineReportDefinition = <TDefinition extends ReportDefinition<ReportConfig>>(
+  definition: TDefinition,
+): TDefinition => definition;
 
-export const defineExplanationDefinition = <TConfig extends ExplanationConfig>(
-  definition: ExplanationDefinition<TConfig>,
-): ExplanationDefinition<TConfig> => definition;
+export const defineExplanationDefinition = <
+  TDefinition extends ExplanationDefinition<ExplanationConfig>,
+>(
+  definition: TDefinition,
+): TDefinition => definition;

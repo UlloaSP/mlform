@@ -72,20 +72,3 @@ export const registerExplanationPresenterFromDefinition = (
     describe: definition.describe,
   });
 };
-
-export const registerPresentersFromRegistry = (
-  presentationRegistry: PresentationRegistry,
-  registry: Registry,
-): void => {
-  for (const definition of registry.listFields()) {
-    registerFieldPresenterFromDefinition(presentationRegistry, definition);
-  }
-
-  for (const definition of registry.listReports()) {
-    registerReportPresenterFromDefinition(presentationRegistry, definition);
-  }
-
-  for (const definition of registry.listExplanations()) {
-    registerExplanationPresenterFromDefinition(presentationRegistry, definition);
-  }
-};

@@ -3,7 +3,6 @@
 
 import { html } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
 import { primitiveTagNames } from "../constants";
 import { toText } from "../utils";
@@ -15,6 +14,7 @@ import {
   type DraftRow,
   type SeriesSubFieldConfig,
 } from "./series-field-helpers";
+import { renderSeriesCell } from "./series-field-renderers";
 import { seriesFieldStyles } from "./series-field-styles";
 
 @customElement(primitiveTagNames.seriesField)
@@ -175,140 +175,20 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
   ) {
     const context = this.fieldContext;
     const label = `${context?.label ?? toText(this.props.label)} ${toText(config.label, `field${field}`)} ${index + 1}`;
-    const required = Boolean(config.required);
-
-    switch (config.kind) {
-      case "date":
-        return html`
-          <input
-            class="control"
-            id=${id}
-            type="date"
-            .value=${typeof value === "string" ? value : ""}
-            aria-label=${label}
-            aria-describedby=${ifDefined(context?.describedBy)}
-            aria-invalid=${String(context?.invalid ?? false)}
-            ?required=${required}
-            ?disabled=${disabled}
-            ?readonly=${readOnly}
-            min=${ifDefined(typeof config.min === "string" ? config.min : undefined)}
-            max=${ifDefined(typeof config.max === "string" ? config.max : undefined)}
-            @input=${(event: Event) =>
-              this.#handleCellInput(index, field, (event.target as HTMLInputElement).value)}
-            @blur=${this.#handleBlur}
-          />
-        `;
-      case "category": {
-        const options = Array.isArray(config.options) ? config.options : [];
-        const selected = typeof value === "string" ? value : "";
-        return html`
-          <select
-            class="control"
-            id=${id}
-            aria-label=${label}
-            aria-describedby=${ifDefined(context?.describedBy)}
-            aria-invalid=${String(context?.invalid ?? false)}
-            ?required=${required}
-            ?disabled=${Boolean(disabled || readOnly)}
-            @change=${(event: Event) =>
-              this.#handleCellInput(index, field, (event.target as HTMLSelectElement).value)}
-            @blur=${this.#handleBlur}
-          >
-            <option value="" ?selected=${selected === ""}>
-              &#8212; ${this.text.categoryPlaceholder} &#8212;
-            </option>
-            ${options.map((option) => {
-              const normalized =
-                typeof option === "string" ? { label: option, value: option } : option;
-              return html`
-                <option
-                  value=${String(normalized.value)}
-                  ?selected=${String(normalized.value) === selected}
-                >
-                  ${String(normalized.label)}
-                </option>
-              `;
-            })}
-          </select>
-        `;
-      }
-      case "boolean": {
-        const trueLabel = toText(config.trueLabel, this.text.booleanTrue);
-        const falseLabel = toText(config.falseLabel, this.text.booleanFalse);
-        const selected = value === true ? "true" : value === false ? "false" : "";
-        return html`
-          <select
-            class="control"
-            id=${id}
-            aria-label=${label}
-            aria-describedby=${ifDefined(context?.describedBy)}
-            aria-invalid=${String(context?.invalid ?? false)}
-            ?required=${required}
-            ?disabled=${Boolean(disabled || readOnly)}
-            @change=${(event: Event) => {
-              const next = (event.target as HTMLSelectElement).value;
-              this.#handleCellInput(index, field, next === "" ? "" : next === "true");
-            }}
-            @blur=${this.#handleBlur}
-          >
-            <option value="" ?selected=${selected === ""}>&#8212; Select &#8212;</option>
-            <option value="true" ?selected=${selected === "true"}>${trueLabel}</option>
-            <option value="false" ?selected=${selected === "false"}>${falseLabel}</option>
-          </select>
-        `;
-      }
-      case "number": {
-        const unit = seriesNumberUnit(config);
-        return html`
-          <div class="value-wrap">
-            <input
-              class="control"
-              id=${id}
-              type="text"
-              inputmode="decimal"
-              spellcheck="false"
-              autocomplete="off"
-              .value=${typeof value === "string" ? value : ""}
-              placeholder=${toText(config.placeholder)}
-              aria-label=${label}
-              aria-describedby=${ifDefined(context?.describedBy)}
-              aria-invalid=${String(context?.invalid ?? false)}
-              aria-valuemin=${ifDefined(typeof config.min === "number" ? config.min : undefined)}
-              aria-valuemax=${ifDefined(typeof config.max === "number" ? config.max : undefined)}
-              ?required=${required}
-              ?disabled=${disabled}
-              ?readonly=${readOnly}
-              @input=${(event: Event) =>
-                this.#handleCellInput(index, field, (event.target as HTMLInputElement).value)}
-              @blur=${this.#handleBlur}
-            />
-            <span class="unit" aria-hidden="true">${unit}</span>
-          </div>
-        `;
-      }
-      default:
-        return html`
-          <input
-            class="control"
-            id=${id}
-            type="text"
-            .value=${typeof value === "string"
-              ? value
-              : typeof value === "number" || typeof value === "boolean" || typeof value === "bigint"
-                ? `${value}`
-                : ""}
-            placeholder=${toText(config.placeholder)}
-            aria-label=${label}
-            aria-describedby=${ifDefined(context?.describedBy)}
-            aria-invalid=${String(context?.invalid ?? false)}
-            ?required=${required}
-            ?disabled=${disabled}
-            ?readonly=${readOnly}
-            @input=${(event: Event) =>
-              this.#handleCellInput(index, field, (event.target as HTMLInputElement).value)}
-            @blur=${this.#handleBlur}
-          />
-        `;
-    }
+    return renderSeriesCell({
+      config,
+      value,
+      index,
+      id,
+      disabled,
+      readOnly,
+      field,
+      context,
+      text: this.text,
+      onInput: (rowIndex, targetField, nextValue) =>
+        this.#handleCellInput(rowIndex, targetField, nextValue),
+      onBlur: this.#handleBlur,
+      label,
+    });
   }
 }

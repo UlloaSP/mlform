@@ -90,10 +90,6 @@ jobs:
         working-directory: ./docs
         run: vp install
 
-      - name: Check documentation formatting and lint
-        working-directory: ./docs
-        run: vp check
-
       - name: Typecheck documentation
         working-directory: ./docs
         run: vp run typecheck

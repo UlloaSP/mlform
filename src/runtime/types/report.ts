@@ -17,8 +17,6 @@ import type {
   ReportDefinition as SchemaReportDefinition,
   ReportStateSnapshot,
 } from "@/schema";
-import type { ReportDescriptor } from "@/presentation";
-import type { SubmitResult } from "./transport";
 
 export interface ReportHandle {
   readonly id: string;
@@ -31,18 +29,7 @@ export interface ReportHandle {
 export type ReportController = ReportHandle;
 export type ReportDefinition<
   TConfig extends import("@/schema").ReportConfig = import("@/schema").ReportConfig,
-> = SchemaReportDefinition<TConfig> & {
-  describe?: (
-    config: SchemaNormalizedReportConfig<TConfig>,
-    context: {
-      reportId: string;
-      state: ReportStateSnapshot;
-      payload: unknown;
-      result: SubmitResult | null;
-    },
-  ) => ReportDescriptor | null;
-  [key: string]: unknown;
-};
+> = SchemaReportDefinition<TConfig>;
 
 export type NormalizedReportConfig<
   TConfig extends import("@/schema").ReportConfig = import("@/schema").ReportConfig,

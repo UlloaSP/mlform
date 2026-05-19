@@ -38,11 +38,11 @@ export const wizardRootStyles = css`
     overflow: hidden;
     border-radius: var(--mlf-panel-radius, 12px);
     border: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
-    background: var(--mlf-panel-bg, var(--mlf-color-surface, #ffffff));
+      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
+    background: var(--mlf-shell-panel-bg, var(--mlf-color-surface, #ffffff));
     box-shadow:
-      0 2px 4px var(--mlf-panel-shadow-soft, rgba(0, 0, 0, 0.04)),
-      0 8px 16px var(--mlf-panel-shadow, rgba(0, 0, 0, 0.04));
+      0 2px 4px var(--mlf-shell-panel-shadow-soft, rgba(0, 0, 0, 0.04)),
+      0 8px 16px var(--mlf-shell-panel-shadow, rgba(0, 0, 0, 0.04));
   }
   .pane-header {
     flex: 0 0 auto;
@@ -50,10 +50,13 @@ export const wizardRootStyles = css`
     gap: 0.85rem;
     padding: 1rem 1.5rem;
     border-bottom: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
-    background: var(--mlf-panel-header-bg, rgba(255, 255, 255, 0.6));
-    backdrop-filter: blur(var(--mlf-header-blur, 3px));
-    -webkit-backdrop-filter: blur(var(--mlf-header-blur, 3px));
+      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
+    background: var(
+      --mlf-shell-header-bg,
+      color-mix(in srgb, var(--mlf-color-surface, #ffffff) 76%, transparent)
+    );
+    backdrop-filter: blur(var(--mlf-shell-header-blur, 3px));
+    -webkit-backdrop-filter: blur(var(--mlf-shell-header-blur, 3px));
   }
   .step-title {
     margin: 0;
@@ -115,8 +118,8 @@ export const wizardRootStyles = css`
     gap: 1rem;
     padding: 0.75rem 1.5rem;
     border-top: var(--mlf-border-width, 1px) solid
-      var(--mlf-panel-border, var(--mlf-color-border, #e2e8f0));
-    background: var(--mlf-panel-footer-bg, var(--mlf-color-bg-light, #f5f7fa));
+      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
+    background: var(--mlf-shell-action-bg, var(--mlf-color-surface-muted, #f5f7fa));
   }
   .btn {
     display: inline-flex;

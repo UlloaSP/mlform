@@ -13,6 +13,7 @@ import {
   type PrimitiveText,
 } from "../constants";
 import type { PrimitiveLayout, PrimitiveRegistry, PrimitiveReportTransport } from "../types";
+import { findFieldFrame, findFirstInvalidField, scrollFieldFrameIntoView } from "./error-focus";
 import { formRootStyles } from "./form-root-styles";
 import { presentVisibleFields, presentVisibleReports } from "./form-root-presenters";
 import { renderSplitLayout, renderStackedLayout } from "./form-root-templates";
@@ -170,6 +171,11 @@ export class PrimitiveFormElement extends LitElement {
         }),
       );
     } catch (error) {
+      const invalidField = this.form ? findFirstInvalidField(this.form.fields) : null;
+      if (invalidField) {
+        await scrollFieldFrameIntoView(findFieldFrame(this.shadowRoot ?? this, invalidField.id));
+      }
+
       this.dispatchEvent(
         new CustomEvent(
           error instanceof SubmissionAbortedError

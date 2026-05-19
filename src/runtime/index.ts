@@ -1,21 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export {
-  booleanFieldDefinition,
-  categoryFieldDefinition,
-  classifierReportDefinition,
-  dateFieldDefinition,
-  mappedCategoryFieldDefinition,
-  longTextFieldDefinition,
-  multiChoiceFieldDefinition,
-  numberFieldDefinition,
-  ratingFieldDefinition,
-  regressorReportDefinition,
-  seriesFieldDefinition,
-  singleChoiceFieldDefinition,
-  textFieldDefinition,
-} from "./builtins";
 export { createExplanationController } from "./explanations";
 export { executeExplanations, executeFormPipeline } from "./submission";
 export {
@@ -30,13 +15,6 @@ export {
 } from "./errors";
 export type { TransportErrorCode } from "./errors";
 export { createForm, createForm as createFormRuntime } from "./form";
-export {
-  createRegistry,
-  defineExplanationDefinition,
-  defineFieldDefinition,
-  defineReportDefinition,
-} from "./registry";
-export { defineExplanationKind, defineFieldKind, defineReportKind } from "@/presentation";
 export {
   defaultEquality,
   shallowArrayEquality,
@@ -133,27 +111,6 @@ export type {
   RuntimeBehaviorSubmissionRecords,
   RuntimeBehaviorValueChangeEvent,
 } from "./types";
-export type {
-  DeclarativeExplanationKind,
-  DeclarativeFieldKind,
-  DeclarativeReportKind,
-  ExplanationDescriptor,
-  ExplanationDescriptorContext,
-  ExplanationRenderSpec,
-  ExplanationRenderSpecContext,
-  FieldDescriptor,
-  FieldRenderHints,
-  FieldRenderSpec,
-  FieldRenderSpecContext,
-  FieldWidget,
-  PresentationContent,
-  PresentationNode,
-  PresentationSummary,
-  PresentationTone,
-  ReportDescriptor,
-  ReportRenderSpec,
-  ReportRenderSpecContext,
-} from "@/presentation";
 
 export type FieldHandle = import("./types").FieldController;
 export type ReportHandle = import("./types").ReportController;

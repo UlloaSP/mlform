@@ -6,7 +6,7 @@ description: The FormSchema shape used by the current MLForm API.
 A form schema has `fields` and optional `reports`.
 
 ```ts
-import type { FormSchema } from "mlform/runtime";
+import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [

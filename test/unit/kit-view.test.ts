@@ -4,13 +4,15 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
-import { defineExplanationKind } from "@/runtime";
+import { defineExplanationKind, registerDefinedExplanationKind } from "@/presentation";
 import { collectLayoutReferences, createFormView, flattenLayoutNodes } from "@/kit";
 
 describe("kit view", () => {
   it("builds an automatic single-page layout when layout is omitted", () => {
-    const registry = createMlRegistryPack().registry;
-    registry.registerExplanation(
+    const pack = createMlRegistryPack();
+    registerDefinedExplanationKind(
+      pack.registry,
+      pack.presentationRegistry,
       defineExplanationKind({
         kind: "mock-explanation",
         schema: z.object({
@@ -39,7 +41,8 @@ describe("kit view", () => {
         explanations: [{ id: "why", kind: "mock-explanation", label: "Why" }],
         reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
       },
-      registry,
+      registry: pack.registry,
+      presentationRegistry: pack.presentationRegistry,
     });
 
     const snapshot = view.getSnapshot();
@@ -107,8 +110,10 @@ describe("kit view", () => {
   });
 
   it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", () => {
-    const registry = createMlRegistryPack().registry;
-    registry.registerExplanation(
+    const pack = createMlRegistryPack();
+    registerDefinedExplanationKind(
+      pack.registry,
+      pack.presentationRegistry,
       defineExplanationKind({
         kind: "mock-explanation",
         schema: z.object({
@@ -135,7 +140,8 @@ describe("kit view", () => {
         reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
         explanations: [{ id: "why", kind: "mock-explanation", label: "Why" }],
       },
-      registry,
+      registry: pack.registry,
+      presentationRegistry: pack.presentationRegistry,
       layout: {
         kind: "tabs",
         tabs: [

@@ -4,13 +4,16 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
+import { SubmissionAbortedError } from "@/runtime";
+import { defineExplanationDefinition } from "@/schema";
 import {
-  SubmissionAbortedError,
-  defineExplanationDefinition,
   defineExplanationKind,
   defineFieldKind,
   defineReportKind,
-} from "@/runtime";
+  registerDefinedExplanationKind,
+  registerDefinedFieldKind,
+  registerDefinedReportKind,
+} from "@/presentation";
 import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
@@ -757,7 +760,7 @@ describe("kit integration", () => {
           })
           .passthrough(),
         transport: () => ({ submit: transportSubmit }),
-        describe: (_config, ctx) => ({
+        describe: (_config: unknown, ctx: { state: { status: string } }) => ({
           component: "shap-renderer",
           props: { status: ctx.state.status },
         }),
@@ -850,9 +853,11 @@ describe("kit integration", () => {
         { feature: "savings", score: 0.31 },
       ],
     });
-    const registry = createMlRegistryPack().registry;
+    const pack = createMlRegistryPack();
 
-    registry.registerField(
+    registerDefinedFieldKind(
+      pack.registry,
+      pack.presentationRegistry,
       defineFieldKind({
         kind: "score",
         schema: z.object({
@@ -884,7 +889,9 @@ describe("kit integration", () => {
       }),
     );
 
-    registry.registerReport(
+    registerDefinedReportKind(
+      pack.registry,
+      pack.presentationRegistry,
       defineReportKind({
         kind: "risk-summary",
         schema: z.object({
@@ -916,7 +923,9 @@ describe("kit integration", () => {
       }),
     );
 
-    registry.registerExplanation(
+    registerDefinedExplanationKind(
+      pack.registry,
+      pack.presentationRegistry,
       defineExplanationKind({
         kind: "shap",
         schema: z.object({
@@ -945,7 +954,8 @@ describe("kit integration", () => {
     document.body.append(container);
 
     const mounted = mountForm(container, {
-      registry,
+      registry: pack.registry,
+      presentationRegistry: pack.presentationRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {

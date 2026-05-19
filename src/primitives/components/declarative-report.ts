@@ -3,7 +3,7 @@
 
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import type { PresentationNode, PresentationSummary } from "@/runtime";
+import type { PresentationNode, PresentationSummary } from "@/presentation";
 import { PrimitiveReportElement } from "../base-report-element";
 import { primitiveTagNames } from "../constants";
 import { renderPresentationNodes, renderPresentationSummary } from "./presentation";
