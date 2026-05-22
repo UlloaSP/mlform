@@ -2,8 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { MaybePromise } from "./types";
-import { isRecord, slugify } from "@/shared";
-export { isRecord, slugify };
+
+export const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+};
 
 const isObjectLike = (value: unknown): value is Record<PropertyKey, unknown> | Function => {
   return (typeof value === "object" && value !== null) || typeof value === "function";
@@ -27,17 +29,6 @@ export const isEmptyValue = (value: unknown): boolean => {
     return Number.isNaN(value.getTime());
   }
   return false;
-};
-
-export const toDate = (value: unknown): Date | null => {
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-  if (typeof value === "string" || typeof value === "number") {
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-  return null;
 };
 
 export const identity = <T>(value: T): T => value;

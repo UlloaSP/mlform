@@ -4,7 +4,8 @@ description: Send cookies, bearer tokens, or custom headers with MLForm submissi
 ---
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,

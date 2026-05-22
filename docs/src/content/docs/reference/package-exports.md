@@ -5,10 +5,12 @@ description: Public import paths exposed by MLForm.
 
 | Export                 | Use                                                                                                                                    |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `mlform`               | Application-facing kit exports, including `mountForm`, `mountWizardForm`, `mountTabsForm`, `mountAccordionForm`, and `createFormView`. |
-| `mlform/kit`           | Same kit surface with explicit import path.                                                                                            |
-| `mlform/runtime`       | Core form controller, registry, schema, transport, and types.                                                                          |
+| `mlform/kit`           | Application-facing kit exports, including `mountForm`, layout helpers, labels, design defaults, and `createFormView`. |
+| `mlform/runtime`       | Core form controller, validation, hooks, conditions, and submission orchestration.                                      |
+| `mlform/schema`        | Schema types, normalization, registry helpers, and backend request contracts.                                            |
+| `mlform/builtins`   | Built-in ML fields, reports, presenters, and default ML registry pack.                                                   |
+| `mlform/transport`     | Transport adapters, middleware, resilience policies, and orchestration helpers.                                          |
 | `mlform/primitives`    | Primitive Web Components and renderer registry.                                                                                        |
-| `mlform/design-system` | Theme, recipe, token, and runtime design system APIs.                                                                                  |
+| `mlform/design` | Theme, recipe, token, and runtime design system APIs.                                                                                  |
 
-Prefer `mlform` for application mounts. Use subpaths for advanced integrations.
+Import from explicit subpaths. The package has no root module export.

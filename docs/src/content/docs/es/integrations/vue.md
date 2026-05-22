@@ -6,7 +6,8 @@ description: Monta MLForm con ref, onMounted y onBeforeUnmount.
 ```vue
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { createJsonTransport, mountForm, type MountedForm } from "mlform";
+import { mountForm, type MountedForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const host = ref<HTMLElement | null>(null);
 let mounted: MountedForm | undefined;

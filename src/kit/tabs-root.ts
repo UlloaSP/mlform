@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import "@/primitives/register";
+import "@/primitives";
 
 import { html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { primitiveStaticText, type PrimitiveText } from "@/primitives/constants";
-import type { PrimitiveRegistry } from "@/primitives/types";
+import {
+  focusPrimitiveField,
+  primitiveStaticText,
+  type PrimitiveRegistry,
+  type PrimitiveText,
+} from "@/primitives";
 import { kitTagNames } from "./constants";
 import { revealFirstInvalidField } from "./error-navigation";
 import { renderLayoutNode } from "./layout-node-render";
@@ -117,6 +121,7 @@ export class KitTabsElement extends LitElement {
                 (node) =>
                   renderLayoutNode({
                     node,
+                    view: this.view,
                     snapshot,
                     registry: this.registry,
                     primitiveText: this.primitiveText,
@@ -172,7 +177,7 @@ export class KitTabsElement extends LitElement {
     try {
       await this.view.submit();
     } catch (error) {
-      const handled = await revealFirstInvalidField(this, this.view);
+      const handled = await revealFirstInvalidField(this, this.view, focusPrimitiveField);
       if (!handled) {
         throw error;
       }

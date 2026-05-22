@@ -6,7 +6,8 @@ description: Formularios para machine learning basados en esquemas para aplicaci
 MLForm monta formularios validados desde un esquema, envia valores estructurados a un backend de machine learning y renderiza informes del modelo en el mismo elemento host.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(document.querySelector("#prediction-form") as HTMLElement, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),
@@ -18,7 +19,7 @@ mountForm(document.querySelector("#prediction-form") as HTMLElement, {
 ```
 
 <div class="card-grid">
-  <div class="doc-card"><strong>Kit</strong>Monta formularios one-page, wizard, tabs o accordion, o controla layouts propios mediante la API headless.</div>
+  <div class="doc-card"><strong>Kit</strong>Monta formularios one-page, wizard, tabs o disclosure, o controla layouts propios mediante la API headless.</div>
   <div class="doc-card"><strong>Runtime</strong>Valida campos, gestiona estado, ejecuta hooks y envia datos mediante cualquier transporte.</div>
   <div class="doc-card"><strong>Primitives</strong>Renderiza Web Components integrados para campos, envio e informes.</div>
   <div class="doc-card"><strong>Design system</strong>Aplica themes, recipes, densidad, movimiento y overrides de tokens del host.</div>

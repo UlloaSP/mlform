@@ -1,9 +1,9 @@
 ---
-title: Layout Accordion
-description: Usa el layout oficial accordion o el mismo config mediante la API headless.
+title: Layout Disclosure
+description: Usa el layout oficial disclosure o el mismo config mediante la API headless.
 ---
 
-`mountAccordionForm()` monta la UI oficial de accordion.
+`mountForm()` monta la UI oficial de disclosure.
 
 Caracteristicas:
 

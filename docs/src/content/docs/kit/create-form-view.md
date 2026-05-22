@@ -9,7 +9,7 @@ description: Full API guide for the app-facing headless kit controller.
 const view = createFormView(options);
 ```
 
-`CreateFormViewOptions` is the same family of app-facing inputs used by `mountForm()`, plus headless `layout`.
+`CreateFormViewOptions` is the headless state/layout input surface. Mounted UI concerns such as primitive and design registries stay on `mountForm()` and the built-in shell mounts.
 
 ## Input options
 
@@ -22,8 +22,6 @@ Common optional inputs:
 
 - `layout`
 - `registry`
-- `primitiveRegistry`
-- `designSystemRegistry`
 - `initialValues`
 - `validators`
 - `hooks`
@@ -37,17 +35,14 @@ Common optional inputs:
 interface FormViewController {
   form: FormController;
   engineRegistry: Registry;
-  primitiveRegistry: PrimitiveRegistry;
-  designSystemRegistry: DesignSystemRegistry;
+  descriptorRegistry: PrimitiveDescriptorRegistry;
   state: FormViewState;
   getSnapshot(): FormViewSnapshot;
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;
   getField(id: string): FormViewFieldItem | undefined;
   getReport(id: string): FormViewReportItem | undefined;
-  getExplanation(id: string): FormViewExplanationItem | undefined;
   getVisibleFields(): FormViewFieldItem[];
   getVisibleReports(): FormViewReportItem[];
-  getVisibleExplanations(): FormViewExplanationItem[];
   getActiveLayoutNodes(): ResolvedFormLayoutNode[];
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
@@ -75,14 +70,13 @@ interface FormViewController {
 - `layout`
 - `fields`
 - `reports`
-- `explanations`
 - `wizard`
 - `tabs`
-- `accordion`
+- `disclosure`
 
 `wizard` is `null` unless `layout.kind === "wizard"`.
 `tabs` is `null` unless `layout.kind === "tabs"`.
-`accordion` is `null` unless `layout.kind === "accordion"`.
+`disclosure` is `null` unless `layout.kind === "disclosure"`.
 
 ## Item collections
 
@@ -98,7 +92,7 @@ Each field item contains:
 - `tabId`
 - `visibleInLayout`
 
-The report and explanation collections follow the same pattern.
+The report collection follows the same pattern.
 
 ## Navigation semantics
 
@@ -134,12 +128,12 @@ The report and explanation collections follow the same pattern.
 - never validate
 - return `false` when movement is not possible
 
-### Accordion controls
+### Disclosure controls
 
-- `toggleSection(sectionId)` opens or closes one accordion section
+- `toggleSection(sectionId)` opens or closes one disclosure section
 - `openSection(sectionId)` and `closeSection(sectionId)` are explicit variants
-- `openAllSections()` and `closeAllSections()` manage the full accordion state
-- all accordion control methods throw outside `layout.kind === "accordion"`
+- `openAllSections()` and `closeAllSections()` manage the full disclosure state
+- all disclosure control methods throw outside `layout.kind === "disclosure"`
 
 ## Subscription model
 
@@ -160,10 +154,10 @@ Typical host pattern:
 
 ## Design system note
 
-`createFormView()` does not attach stylesheets or mutate DOM. Use:
+`createFormView()` does not resolve primitive renderers, attach stylesheets, or mutate DOM. Use:
 
 - `mountForm()` for built-in one-page DOM
-- `mountWizardForm()` for built-in wizard DOM
-- `mountTabsForm()` for built-in tabs DOM
-- `mountAccordionForm()` for built-in accordion DOM
+- `mountForm()` for built-in wizard DOM
+- `mountForm()` for built-in tabs DOM
+- `mountForm()` for built-in disclosure DOM
 - `attachDesignSystem()` yourself when your custom host needs it

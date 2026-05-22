@@ -3,18 +3,16 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/builtins";
 import { SubmissionAbortedError } from "@/runtime";
-import { defineExplanationDefinition } from "@/schema";
+import { mountForm } from "@/kit";
 import {
-  defineExplanationKind,
   defineFieldKind,
   defineReportKind,
-  registerDefinedExplanationKind,
   registerDefinedFieldKind,
   registerDefinedReportKind,
-} from "@/presentation";
-import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
+} from "@/kit";
+import { createJsonTransport, createRoutingTransport } from "@/transport";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -744,26 +742,32 @@ describe("kit integration", () => {
     container.remove();
   });
 
-  it("mounts explanation plugins, renders explanation panels only after submit, and triggers fetch after submit", async () => {
-    const explanationResult = { feature_importance: { name: 0.9 } };
-    const transportSubmit = vi.fn().mockResolvedValue(explanationResult);
-    const registry = createMlRegistryPack().registry;
+  it("mounts fetch-backed reports, renders report frames only after submit, and triggers fetch after submit", async () => {
+    const fetchResult = { feature_importance: { name: 0.9 } };
+    const transportSubmit = vi.fn().mockResolvedValue(fetchResult);
+    const pack = createMlRegistryPack();
 
-    registry.registerExplanation(
-      defineExplanationDefinition({
+    registerDefinedReportKind(
+      pack.registry,
+      pack.descriptorRegistry,
+      defineReportKind({
         kind: "shap",
-        schema: z
-          .object({
-            kind: z.literal("shap"),
-            id: z.string().optional(),
-            label: z.string().optional(),
-          })
-          .passthrough(),
-        transport: () => ({ submit: transportSubmit }),
-        describe: (_config: unknown, ctx: { state: { status: string } }) => ({
-          component: "shap-renderer",
-          props: { status: ctx.state.status },
+        schema: z.object({
+          kind: z.literal("shap"),
+          id: z.string().optional(),
+          label: z.string().optional(),
         }),
+        fetch: () => ({ submit: transportSubmit }),
+        resolve: ({ result }) => result.reports.shap,
+        render: {
+          content: ({ payload }) => [
+            {
+              type: "json",
+              label: "SHAP",
+              value: payload,
+            },
+          ],
+        },
       }),
     );
 
@@ -771,7 +775,8 @@ describe("kit integration", () => {
     document.body.append(container);
 
     const mounted = mountForm(container, {
-      registry,
+      registry: pack.registry,
+      descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -785,19 +790,20 @@ describe("kit integration", () => {
       },
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
-        reports: [{ kind: "classifier", id: "risk", label: "Risk" }],
-        explanations: [{ kind: "shap", label: "SHAP Values" }],
+        reports: [
+          { kind: "classifier", id: "risk", label: "Risk" },
+          { kind: "shap", label: "SHAP Values" },
+        ],
       },
       initialValues: { name: "Alice" },
     });
 
     await flush();
 
-    expect(mounted.form.explanations).toHaveLength(1);
-    expect(mounted.form.explanations[0]?.id).toBe("shap-values");
-    expect(mounted.form.explanations[0]?.state.status).toBe("idle");
-    expect(mounted.form.state.explanationStates["shap-values"]?.status).toBe("idle");
-    expect(getShadow(mounted.host).querySelector("mlf-explanation-panel")).toBeNull();
+    expect(mounted.form.reports).toHaveLength(2);
+    expect(mounted.form.getReport("shap-values")?.state.status).toBe("idle");
+    expect(mounted.form.state.reportStates["shap-values"]?.status).toBe("idle");
+    expect(getShadow(mounted.host).querySelector("mlf-report-frame")).toBeNull();
 
     await mounted.form.submit();
     await flush();
@@ -806,48 +812,49 @@ describe("kit integration", () => {
 
     expect(transportSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        explanationId: "shap-values",
+        reportId: "shap-values",
         values: { name: "Alice" },
         reports: expect.objectContaining({ risk: expect.any(Object) }),
       }),
     );
 
-    expect(mounted.form.explanations[0]?.state.status).toBe("done");
-    expect(mounted.form.explanations[0]?.state.result).toEqual(explanationResult);
-    expect(mounted.form.state.explanationStates["shap-values"]?.status).toBe("done");
+    expect(mounted.form.getReport("shap-values")?.state.status).toBe("ready");
+    expect(mounted.form.getReport("shap-values")?.state.payload).toEqual(fetchResult);
+    expect(mounted.form.state.reportStates["shap-values"]?.status).toBe("ready");
 
     const shadow = getShadow(mounted.host);
-    expect(shadow.querySelector("mlf-explanation-panel")).not.toBeNull();
+    expect(shadow.querySelector("mlf-report-frame")).not.toBeNull();
 
     mounted.unmount();
     container.remove();
   });
 
-  it("supports unregisterExplanation on the engine registry", () => {
+  it("supports unregisterReport on the engine registry", () => {
     const registry = createMlRegistryPack().registry;
 
-    const def = defineExplanationDefinition({
+    const def = {
       kind: "shap",
       schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-      transport: () => ({ submit: vi.fn() }),
+      resolvePayload: (
+        _config: unknown,
+        context: { result: { reports: Record<string, unknown> } },
+      ) => context.result.reports.shap,
       describe: () => null,
-    });
+    };
 
-    registry.registerExplanation(def);
-    expect(registry.getExplanation("shap")).toBeDefined();
-    expect(registry.listExplanations()).toHaveLength(1);
+    registry.registerReport(def);
+    expect(registry.getReport("shap")).toBeDefined();
 
-    registry.unregisterExplanation("shap");
-    expect(registry.getExplanation("shap")).toBeUndefined();
-    expect(registry.listExplanations()).toHaveLength(0);
+    registry.unregisterReport("shap");
+    expect(registry.getReport("shap")).toBeUndefined();
 
     // Re-registration after unregister must not throw.
-    expect(() => registry.registerExplanation(def)).not.toThrow();
-    expect(registry.getExplanation("shap")).toBeDefined();
+    expect(() => registry.registerReport(def)).not.toThrow();
+    expect(registry.getReport("shap")).toBeDefined();
   });
 
-  it("mounts declarative custom fields, reports, and explanations without primitive registry wiring", async () => {
-    const explanationSubmit = vi.fn().mockResolvedValue({
+  it("mounts declarative custom fields and fetch-backed reports without primitive registry wiring", async () => {
+    const reportFetch = vi.fn().mockResolvedValue({
       top_features: [
         { feature: "income", score: 0.82 },
         { feature: "savings", score: 0.31 },
@@ -857,7 +864,7 @@ describe("kit integration", () => {
 
     registerDefinedFieldKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineFieldKind({
         kind: "score",
         schema: z.object({
@@ -891,7 +898,7 @@ describe("kit integration", () => {
 
     registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineReportKind({
         kind: "risk-summary",
         schema: z.object({
@@ -923,27 +930,28 @@ describe("kit integration", () => {
       }),
     );
 
-    registerDefinedExplanationKind(
+    registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
-      defineExplanationKind({
+      pack.descriptorRegistry,
+      defineReportKind({
         kind: "shap",
         schema: z.object({
           kind: z.literal("shap"),
           id: z.string().optional(),
           label: z.string().optional(),
         }),
-        fetch: () => ({ submit: explanationSubmit }),
+        fetch: () => ({ submit: reportFetch }),
+        resolve: ({ result }) => result.reports.shap,
         render: {
           summary: ({ state }) => ({
             title: "SHAP",
             tone: state.status === "error" ? "danger" : "neutral",
           }),
-          content: ({ result }) => ({
+          content: ({ payload }) => ({
             type: "table",
             label: "Feature impact",
             columns: ["feature", "score"],
-            rows: ((result as { top_features: Array<Record<string, unknown>> }).top_features ??
+            rows: ((payload as { top_features: Array<Record<string, unknown>> }).top_features ??
               []) as Array<Record<string, unknown>>,
           }),
         },
@@ -955,7 +963,7 @@ describe("kit integration", () => {
 
     const mounted = mountForm(container, {
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -968,8 +976,10 @@ describe("kit integration", () => {
       },
       schema: {
         fields: [{ kind: "score", label: "Score", min: 0, max: 100, step: 5 }],
-        reports: [{ kind: "risk-summary", id: "risk", label: "Risk" }],
-        explanations: [{ kind: "shap", label: "SHAP Values" }],
+        reports: [
+          { kind: "risk-summary", id: "risk", label: "Risk" },
+          { kind: "shap", label: "SHAP Values" },
+        ],
       },
       initialValues: { score: 85 },
     });
@@ -985,28 +995,25 @@ describe("kit integration", () => {
     await flush();
     await flush();
 
-    expect(explanationSubmit).toHaveBeenCalledWith(
+    expect(reportFetch).toHaveBeenCalledWith(
       expect.objectContaining({
-        explanationId: "shap-values",
+        reportId: "shap-values",
         values: { score: 85 },
       }),
     );
 
-    const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame") as HTMLElement;
-    const reportRenderer = getShadow(reportFrame).querySelector(
+    const reportFrames = getShadow(mounted.host).querySelectorAll("mlf-report-frame");
+    const riskRenderer = getShadow(reportFrames.item(0)).querySelector(
       "mlf-declarative-report",
     ) as HTMLElement;
-    expect(getShadow(reportRenderer).textContent).toContain("Risk summary");
-    expect(getShadow(reportRenderer).textContent).toContain("income");
+    expect(getShadow(riskRenderer).textContent).toContain("Risk summary");
+    expect(getShadow(riskRenderer).textContent).toContain("income");
 
-    const explanationPanel = getShadow(mounted.host).querySelector(
-      "mlf-explanation-panel",
+    const shapRenderer = getShadow(reportFrames.item(1)).querySelector(
+      "mlf-declarative-report",
     ) as HTMLElement;
-    const explanationRenderer = getShadow(explanationPanel).querySelector(
-      "mlf-declarative-explanation",
-    ) as HTMLElement;
-    expect(getShadow(explanationRenderer).textContent).toContain("Feature impact");
-    expect(getShadow(explanationRenderer).textContent).toContain("income");
+    expect(getShadow(shapRenderer).textContent).toContain("Feature impact");
+    expect(getShadow(shapRenderer).textContent).toContain("income");
 
     mounted.unmount();
     container.remove();

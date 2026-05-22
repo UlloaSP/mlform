@@ -3,9 +3,10 @@
 
 import type { ZodType } from "zod";
 import type { MaybePromise } from "./field";
-import type { SubmitResult } from "@/runtime/types/transport";
+import type { SubmitResult } from "./submit";
 
 export type ReportStatus = "idle" | "loading" | "ready" | "error";
+export type ReportFetchStatus = ReportStatus;
 export type ReportPayloadValidationPolicy = "report-error" | "fail-submit";
 export type PartialReportUpdatePolicy = "trust" | "validate" | "defer";
 
@@ -34,14 +35,40 @@ export interface ReportStateSnapshot {
 
 export interface ReportPayloadContext<TConfig extends ReportConfig = ReportConfig> {
   report: NormalizedReportConfig<TConfig>;
-  result: SubmitResult;
+  result: SubmitResult<ReportStateSnapshot>;
 }
 
 export interface ReportResolveContext<TConfig extends ReportConfig = ReportConfig> {
   config: NormalizedReportConfig<TConfig>;
   report: NormalizedReportConfig<TConfig>;
-  result: SubmitResult;
+  result: SubmitResult<ReportStateSnapshot>;
 }
+
+export interface ReportFetchRequest {
+  reportId: string;
+  backend?: string;
+  values: Record<string, unknown>;
+  fieldValues: Record<string, unknown>;
+  serializedValues: Record<string, unknown>;
+  serializedFieldValues: Record<string, unknown>;
+  reports: Record<string, unknown>;
+  meta: Record<string, unknown>;
+  raw: unknown;
+  signal?: AbortSignal;
+}
+
+export interface ReportFetchTransport {
+  submit: (request: ReportFetchRequest) => Promise<unknown>;
+}
+
+export interface ReportFetchContext<TConfig extends ReportConfig = ReportConfig> {
+  config: NormalizedReportConfig<TConfig>;
+  reportId: string;
+}
+
+export type ReportFetchFactory<TConfig extends ReportConfig = ReportConfig> = (
+  context: ReportFetchContext<TConfig>,
+) => ReportFetchTransport;
 
 export interface ReportDefinition<TConfig extends ReportConfig = ReportConfig> {
   kind: string;
@@ -50,6 +77,7 @@ export interface ReportDefinition<TConfig extends ReportConfig = ReportConfig> {
   payloadValidationPolicy?: ReportPayloadValidationPolicy;
   partialUpdatePolicy?: PartialReportUpdatePolicy;
   clonePayload?: (payload: unknown, config: TConfig) => unknown;
+  fetch?: ReportFetchFactory<TConfig>;
   resolvePayload?: (
     config: TConfig,
     context: ReportPayloadContext<TConfig>,

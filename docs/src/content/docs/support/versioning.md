@@ -3,7 +3,7 @@ title: Versioning
 description: How the documentation tracks MLForm versions.
 ---
 
-The current release line in this repository is `0.1.9`.
+The current release line in this repository is `0.1.10`.
 
 The published documentation tracks the latest maintained code on the `main` branch unless a release note says otherwise. In practice, that means the docs are expected to describe the current npm release after each tagged publication, and may briefly move ahead of npm between merges and the next release cut.
 

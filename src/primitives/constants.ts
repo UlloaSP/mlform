@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FormStatus, ReportStatus } from "@/runtime";
+import type { PrimitiveFormStatus, PrimitiveReportStatus } from "./controller-types";
 
 export const primitiveTagNames = {
   form: "mlf-form",
@@ -10,10 +10,8 @@ export const primitiveTagNames = {
   unsupportedComponent: "mlf-unsupported-component",
   fieldFrame: "mlf-field-frame",
   reportFrame: "mlf-report-frame",
-  explanationPanel: "mlf-explanation-panel",
   declarativeField: "mlf-declarative-field",
   declarativeReport: "mlf-declarative-report",
-  declarativeExplanation: "mlf-declarative-explanation",
   textField: "mlf-text-field",
   numberField: "mlf-number-field",
   booleanField: "mlf-boolean-field",
@@ -67,9 +65,9 @@ export interface PrimitiveText {
   regressorEmpty: string;
   regressorAriaLabel: string;
   regressorExecutionTime: (value: string) => string;
-  explanationLabel: string;
-  explanationAriaLabel: string;
-  explanationLoadingLabel: string;
+  detailsLabel: string;
+  detailsAriaLabel: string;
+  detailsLoadingLabel: string;
   booleanTrue: string;
   booleanFalse: string;
   fieldReady: string;
@@ -89,8 +87,8 @@ export interface PrimitiveText {
   formMetaFields: (count: number) => string;
   formMetaReports: (count: number) => string;
   formMetaSubmits: (count: number) => string;
-  formStatusLabel: (status: FormStatus) => string;
-  reportStatusLabel: (status: ReportStatus) => string;
+  formStatusLabel: (status: PrimitiveFormStatus) => string;
+  reportStatusLabel: (status: PrimitiveReportStatus) => string;
   reportsEmptyTitle: string;
   reportsEmptyBody: string;
 }
@@ -113,9 +111,9 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
   regressorEmpty: "No regression output yet.",
   regressorAriaLabel: "Regressor report",
   regressorExecutionTime: (value: string): string => `Execution time: ${value}`,
-  explanationLabel: "Explanation",
-  explanationAriaLabel: "Model explanation",
-  explanationLoadingLabel: "Loading explanation...",
+  detailsLabel: "Details",
+  detailsAriaLabel: "Report details",
+  detailsLoadingLabel: "Loading details...",
   booleanTrue: "True",
   booleanFalse: "False",
   fieldReady: "Value ready.",
@@ -137,7 +135,7 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
   formMetaFields: (count: number): string => `${count} fields`,
   formMetaReports: (count: number): string => `${count} reports`,
   formMetaSubmits: (count: number): string => `${count} submits`,
-  formStatusLabel: (status: FormStatus): string => {
+  formStatusLabel: (status: PrimitiveFormStatus): string => {
     switch (status) {
       case "idle":
         return "Idle";
@@ -153,7 +151,7 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
         return "Error";
     }
   },
-  reportStatusLabel: (status: ReportStatus): string => {
+  reportStatusLabel: (status: PrimitiveReportStatus): string => {
     switch (status) {
       case "idle":
         return "Idle";
@@ -179,5 +177,4 @@ export const primitiveIdPrefixes = {
   fieldErrors: "mlf-field-errors",
   fieldControl: "mlf-field-control",
   reportRegion: "mlf-report-region",
-  explanationRegion: "mlf-explanation-region",
 } as const;

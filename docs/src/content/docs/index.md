@@ -8,7 +8,8 @@ MLForm mounts validated, schema-driven forms that submit structured values to a 
 Use it when a product needs a predictable input layer for models: prediction forms, scoring dashboards, review tools, forecasting panels, internal ML consoles, or any workflow where UI state and backend payloads must stay aligned.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(document.querySelector("#prediction-form") as HTMLElement, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),
@@ -33,6 +34,6 @@ Choose your path:
 | I want a working form           | [Quick Start](./getting-started/quick-start/)       |
 | I need backend integration      | [First Backend](./getting-started/first-backend/)   |
 | I need custom fields or reports | [Custom Fields](./runtime/custom-fields/)           |
-| I need theming                  | [Design System Overview](./design-system/overview/) |
+| I need theming                  | [Design System Overview](./design/overview/) |
 
 If you are new to MLForm, read [Mental Model](./getting-started/mental-model/) before the reference pages.

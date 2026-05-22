@@ -10,12 +10,9 @@ MLForm separa:
 
 Superficies principales:
 
-| Superficie             | Uso                                     |
-| ---------------------- | --------------------------------------- |
-| `mountForm()`          | UI integrada de una sola pagina         |
-| `mountWizardForm()`    | UI integrada tipo wizard                |
-| `mountTabsForm()`      | UI integrada tipo tabs                  |
-| `mountAccordionForm()` | UI integrada tipo accordion             |
-| `createFormView()`     | API headless para shells personalizados |
+| Superficie         | Uso                                         |
+| ------------------ | ------------------------------------------- |
+| `mountForm()`      | UI integrada seleccionada por `layout.kind` |
+| `createFormView()` | API headless para shells personalizados     |
 
-Si omites `layout`, MLForm crea un `single-page` automatico con fields, explanations y reports en orden.
+Si omites `layout`, MLForm crea un `stacked` automatico con fields y reports en orden.

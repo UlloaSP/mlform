@@ -3,12 +3,12 @@ title: Campos personalizados
 description: Define nuevos tipos de campo con renderizado declarativo y poco boilerplate.
 ---
 
-Usa `defineFieldKind` para el camino normal. Registra el resultado en el schema registry y en el presentation registry del pack.
+Usa `defineFieldKind` para el camino normal. Registra el resultado en el schema registry y en el descriptor registry del pack.
 
 ```ts
 import { z } from "zod";
-import { createMlRegistryPack } from "mlform/builtins-ml";
-import { defineFieldKind, registerDefinedFieldKind } from "mlform/presentation";
+import { createMlRegistryPack } from "mlform/builtins";
+import { defineFieldKind, registerDefinedFieldKind } from "mlform/kit";
 
 const scoreField = defineFieldKind({
   kind: "score",
@@ -33,7 +33,7 @@ const scoreField = defineFieldKind({
 });
 
 const pack = createMlRegistryPack();
-registerDefinedFieldKind(pack.registry, pack.presentationRegistry, scoreField);
+registerDefinedFieldKind(pack.registry, pack.descriptorRegistry, scoreField);
 ```
 
 Usa `defineFieldDefinition` solo cuando necesites separar por completo schema, presenter o renderer primitivo.

@@ -31,4 +31,4 @@ Host actions:
 - next button -> `await view.nextStep()`
 - final submit -> `await view.submit()`
 
-Keep the layout config the same if you later switch to `mountWizardForm()`.
+Keep the layout config the same if you later switch to `mountForm()`.

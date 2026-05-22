@@ -2,26 +2,21 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
-  ExplanationController,
-  ExplanationFetchRequest,
-  ExplanationFetchTransport,
-  FieldController,
-  FormController,
-  FormState,
-  FormStatus,
-  ReportController,
-  SubmitResult,
-} from "@/runtime";
+  PrimitiveFieldController,
+  PrimitiveFormController,
+  PrimitiveFormStatus,
+  PrimitiveReportRequest,
+  PrimitiveReportController,
+  PrimitiveSubmitResult,
+  PrimitiveFormState,
+} from "./controller-types";
 import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
-import type {
-  ExplanationDescriptor,
-  FieldDescriptor,
-  PresentationRegistry,
-  ReportDescriptor,
-} from "@/presentation";
+import type { FieldDescriptor, PrimitiveDescriptorRegistry, ReportDescriptor } from "./descriptors";
 
 export type PrimitiveLayout = "stacked" | "split";
 export type PrimitiveContainerStrategy = "error" | "replace";
+
+export type { PrimitiveReportRequest };
 
 export interface PrimitiveRegistry {
   // --- Fields ---
@@ -34,30 +29,7 @@ export interface PrimitiveRegistry {
   unregisterReport(component: string): PrimitiveRegistry;
   resolveReport(component: string): string | undefined;
 
-  // --- Explanations ---
-  registerExplanation(component: string, tagName: string): PrimitiveRegistry;
-  unregisterExplanation(component: string): PrimitiveRegistry;
-  resolveExplanation(component: string): string | undefined;
-
   clone(): PrimitiveRegistry;
-}
-
-/**
- * Request passed to a PrimitiveReportTransport when a report becomes ready.
- * Contains the full submit result so a report renderer can fetch any
- * post-submit data it needs, plus the `reportId` identifying that report.
- */
-export interface PrimitiveReportRequest {
-  reportId: string;
-  backend?: string;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
-  meta: Record<string, unknown>;
-  raw: unknown;
-  signal?: AbortSignal;
 }
 
 /**
@@ -69,17 +41,9 @@ export interface PrimitiveReportTransport {
   submit: (request: PrimitiveReportRequest) => Promise<unknown>;
 }
 
-/**
- * Re-exports of engine explanation types for convenience in the primitives
- * layer. Explanation transport is now per-plugin (defined in ExplanationDefinition)
- * rather than a global mount-time option.
- */
-export type ExplanationRequest = ExplanationFetchRequest;
-export type ExplanationTransport = ExplanationFetchTransport;
-
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
-  presentationRegistry?: PresentationRegistry;
+  descriptorRegistry?: PrimitiveDescriptorRegistry;
   layout?: PrimitiveLayout;
   containerStrategy?: PrimitiveContainerStrategy;
   formLabel?: string;
@@ -94,10 +58,10 @@ export interface MountFormOptions {
 }
 
 export interface MountedForm {
-  readonly form: FormController;
+  readonly form: PrimitiveFormController;
   readonly host: HTMLElement;
   readonly registry: PrimitiveRegistry;
-  readonly presentationRegistry: PresentationRegistry;
+  readonly descriptorRegistry: PrimitiveDescriptorRegistry;
   readonly text: PrimitiveText;
   unmount(): void;
 }
@@ -122,21 +86,15 @@ export interface PrimitiveReportRenderContext {
   description?: string;
 }
 
-export interface PrimitiveExplanationRenderContext {
-  regionId: string;
-  label?: string;
-  description?: string;
-}
-
 export interface PrimitiveFieldRendererElement extends HTMLElement {
-  controller?: FieldController;
+  controller?: PrimitiveFieldController;
   descriptor?: FieldDescriptor | null;
   context?: PrimitiveFieldRenderContext;
   text?: PrimitiveText;
 }
 
 export interface PrimitiveReportRendererElement extends HTMLElement {
-  controller?: ReportController;
+  controller?: PrimitiveReportController;
   descriptor?: ReportDescriptor | null;
   context?: PrimitiveReportRenderContext;
   text?: PrimitiveText;
@@ -144,29 +102,22 @@ export interface PrimitiveReportRendererElement extends HTMLElement {
   request?: PrimitiveReportRequest | null;
 }
 
-export interface PrimitiveExplanationRendererElement extends HTMLElement {
-  controller?: ExplanationController;
-  descriptor?: ExplanationDescriptor | null;
-  context?: PrimitiveExplanationRenderContext;
-  text?: PrimitiveText;
-}
-
 export interface PrimitiveSubmitStartDetail {
-  form: FormController;
-  state: FormState;
+  form: PrimitiveFormController;
+  state: PrimitiveFormState;
 }
 
 export interface PrimitiveSubmitSuccessDetail {
-  form: FormController;
-  state: FormState;
-  result: SubmitResult;
+  form: PrimitiveFormController;
+  state: PrimitiveFormState;
+  result: PrimitiveSubmitResult;
 }
 
 export interface PrimitiveSubmitErrorDetail {
-  form: FormController;
-  state: FormState;
+  form: PrimitiveFormController;
+  state: PrimitiveFormState;
   error: unknown;
-  status: FormStatus;
+  status: PrimitiveFormStatus;
 }
 
 export type { PrimitiveText, PrimitiveTextOverrides } from "./constants";

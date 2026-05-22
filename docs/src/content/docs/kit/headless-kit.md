@@ -9,10 +9,11 @@ Use it when you want:
 
 - custom React, Vue, Lit, or vanilla DOM layouts
 - step-based flows with app-owned layout control
-- access to resolved fields, reports, explanations, registries, and wizard navigation from one app-facing API
+- access to resolved fields, reports, registries, and wizard navigation from one app-facing API
 
 ```ts
-import { createFormView, createJsonTransport } from "mlform";
+import { createFormView } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const view = createFormView({
   transport: createJsonTransport({ endpoint: "/predict" }),
@@ -41,7 +42,6 @@ const snapshot = view.getSnapshot();
 - `layout` — normalized, validated layout tree
 - `fields`
 - `reports`
-- `explanations`
 - `wizard` — current wizard metadata or `null`
 
 Unlike `mountForm()`, `createFormView()` does not create DOM or attach a design system stylesheet.

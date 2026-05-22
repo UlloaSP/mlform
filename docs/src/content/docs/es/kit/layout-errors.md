@@ -10,14 +10,14 @@ description: Errores comunes al validar layouts explicitos.
 - `Wizard step "profile" must contain at least one layout node.`
 - `Tabs layout must define at least one tab.`
 - `Tab "profile" must contain at least one layout node.`
-- `Accordion layout must define at least one section.`
-- `Accordion section "profile" must contain at least one layout node.`
+- `Disclosure layout must define at least one section.`
+- `Disclosure section "profile" must contain at least one layout node.`
 - `goToStep() is only available for wizard layouts.`
 - `setActiveTab() is only available for tabs layouts.`
-- `Accordion section controls are only available for accordion layouts.`
+- `Disclosure section controls are only available for disclosure layouts.`
 
 Checklist:
 
 1. confirma ids finales del schema
 2. confirma cobertura completa de fields
-3. confirma que reports y explanations usan ids existentes
+3. confirma que reports usan ids existentes

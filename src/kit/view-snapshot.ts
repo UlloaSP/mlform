@@ -1,23 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { PresentationRegistry } from "@/presentation";
-import type {
-  ExplanationController,
-  FieldController,
-  FormController,
-  ReportController,
-} from "@/runtime";
-import { fallbackFieldDescriptor } from "../primitives/presentation";
-import type {
-  FormViewExplanationItem,
-  FormViewFieldItem,
-  FormViewReportItem,
-  FormViewSnapshot,
-} from "./types";
+import type { PrimitiveDescriptorRegistry } from "@/primitives";
+import type { FieldDescriptor } from "@/primitives";
+import type { FieldController, FormController, ReportController } from "@/runtime";
+import type { FormViewFieldItem, FormViewReportItem, FormViewSnapshot } from "./types";
 import {
   createFormViewState,
-  getAccordionState,
+  getDisclosureState,
   getTabsState,
   getWizardState,
   isVisibleInLayout,
@@ -26,16 +16,21 @@ import type { ResolvedLayoutResult } from "./layout";
 
 type BuildSnapshotOptions = {
   form: FormController;
-  presentationRegistry: PresentationRegistry;
+  descriptorRegistry: PrimitiveDescriptorRegistry;
   resolvedLayout: ResolvedLayoutResult;
   stepIndex: number;
   activeTabIndex: number;
   openSectionIds: Set<string>;
 };
 
+const fallbackFieldDescriptor = (field: FieldController): FieldDescriptor => ({
+  component: "unsupported-field",
+  props: { label: field.config.label ?? field.id },
+});
+
 const buildFieldItem = (
   field: FieldController,
-  presentationRegistry: PresentationRegistry,
+  descriptorRegistry: PrimitiveDescriptorRegistry,
   resolvedLayout: ResolvedLayoutResult,
   stepIndex: number,
   activeTabIndex: number,
@@ -43,7 +38,8 @@ const buildFieldItem = (
 ): FormViewFieldItem => {
   const stepId = resolvedLayout.maps.fieldStepIds.get(field.id) ?? null;
   const tabId = resolvedLayout.maps.fieldTabIds.get(field.id) ?? null;
-  const presenter = presentationRegistry.getField(field.kind);
+  const sectionId = resolvedLayout.maps.fieldSectionIds.get(field.id) ?? null;
+  const presenter = descriptorRegistry.getField(field.kind);
 
   return {
     id: field.id,
@@ -59,6 +55,7 @@ const buildFieldItem = (
       }) ?? fallbackFieldDescriptor(field),
     stepId,
     tabId,
+    sectionId,
     visibleInLayout: isVisibleInLayout(
       resolvedLayout.layout,
       stepIndex,
@@ -66,6 +63,7 @@ const buildFieldItem = (
       openSectionIds,
       stepId,
       tabId,
+      sectionId,
     ),
   };
 };
@@ -73,7 +71,7 @@ const buildFieldItem = (
 const buildReportItem = (
   report: ReportController,
   form: FormController,
-  presentationRegistry: PresentationRegistry,
+  descriptorRegistry: PrimitiveDescriptorRegistry,
   resolvedLayout: ResolvedLayoutResult,
   stepIndex: number,
   activeTabIndex: number,
@@ -81,7 +79,8 @@ const buildReportItem = (
 ): FormViewReportItem => {
   const stepId = resolvedLayout.maps.reportStepIds.get(report.id) ?? null;
   const tabId = resolvedLayout.maps.reportTabIds.get(report.id) ?? null;
-  const presenter = presentationRegistry.getReport(report.kind);
+  const sectionId = resolvedLayout.maps.reportSectionIds.get(report.id) ?? null;
+  const presenter = descriptorRegistry.getReport(report.kind);
 
   return {
     id: report.id,
@@ -99,6 +98,7 @@ const buildReportItem = (
       : null,
     stepId,
     tabId,
+    sectionId,
     visibleInLayout: isVisibleInLayout(
       resolvedLayout.layout,
       stepIndex,
@@ -106,50 +106,14 @@ const buildReportItem = (
       openSectionIds,
       stepId,
       tabId,
-    ),
-  };
-};
-
-const buildExplanationItem = (
-  explanation: ExplanationController,
-  presentationRegistry: PresentationRegistry,
-  resolvedLayout: ResolvedLayoutResult,
-  stepIndex: number,
-  activeTabIndex: number,
-  openSectionIds: Set<string>,
-): FormViewExplanationItem => {
-  const stepId = resolvedLayout.maps.explanationStepIds.get(explanation.id) ?? null;
-  const tabId = resolvedLayout.maps.explanationTabIds.get(explanation.id) ?? null;
-  const presenter = presentationRegistry.getExplanation(explanation.kind);
-
-  return {
-    id: explanation.id,
-    kind: explanation.kind,
-    config: explanation.config,
-    controller: explanation,
-    state: explanation.state,
-    descriptor: presenter
-      ? presenter.describe(explanation.config, {
-          explanationId: explanation.id,
-          state: explanation.state,
-        })
-      : null,
-    stepId,
-    tabId,
-    visibleInLayout: isVisibleInLayout(
-      resolvedLayout.layout,
-      stepIndex,
-      activeTabIndex,
-      openSectionIds,
-      stepId,
-      tabId,
+      sectionId,
     ),
   };
 };
 
 export const buildFormViewSnapshot = ({
   form,
-  presentationRegistry,
+  descriptorRegistry,
   resolvedLayout,
   stepIndex,
   activeTabIndex,
@@ -160,7 +124,7 @@ export const buildFormViewSnapshot = ({
   fields: form.fields.map((field) =>
     buildFieldItem(
       field,
-      presentationRegistry,
+      descriptorRegistry,
       resolvedLayout,
       stepIndex,
       activeTabIndex,
@@ -171,17 +135,7 @@ export const buildFormViewSnapshot = ({
     buildReportItem(
       report,
       form,
-      presentationRegistry,
-      resolvedLayout,
-      stepIndex,
-      activeTabIndex,
-      openSectionIds,
-    ),
-  ),
-  explanations: form.explanations.map((explanation) =>
-    buildExplanationItem(
-      explanation,
-      presentationRegistry,
+      descriptorRegistry,
       resolvedLayout,
       stepIndex,
       activeTabIndex,
@@ -202,7 +156,7 @@ export const buildFormViewSnapshot = ({
     openSectionIds,
     formState: form.state,
   }),
-  accordion: getAccordionState({
+  disclosure: getDisclosureState({
     layout: resolvedLayout.layout,
     stepIndex,
     activeTabIndex,

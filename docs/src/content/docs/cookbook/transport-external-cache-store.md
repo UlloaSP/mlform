@@ -4,7 +4,7 @@ description: Plug a distributed cache backend into MLForm transport caching.
 ---
 
 ```ts
-import { pipe, withCache } from "mlform";
+import { pipe, withCache } from "mlform/transport";
 
 const cacheStore = {
   async get(scope, key) {

@@ -6,10 +6,13 @@ import {
   type DesignSystemConfig,
   type DesignSystemRegistry,
   mergeDesignSystemConfig,
-} from "@/design-system";
+} from "@/design";
 import { createRegistry, type Registry } from "@/schema";
-import { createBuiltinPrimitiveRegistry, type PrimitiveRegistry } from "@/primitives";
-import { primitiveDefaultLabels } from "@/primitives/constants";
+import {
+  createBuiltinPrimitiveRegistry,
+  primitiveDefaultLabels,
+  type PrimitiveRegistry,
+} from "@/primitives";
 import type { KitLabels } from "./types";
 
 export const defaultKitLabels: Required<KitLabels> = {
@@ -31,10 +34,6 @@ export const cloneSchemaRegistry = (registry: Registry): Registry => {
 
   for (const definition of registry.listReports()) {
     next.registerReport(definition);
-  }
-
-  for (const definition of registry.listExplanations()) {
-    next.registerExplanation(definition);
   }
 
   return next;

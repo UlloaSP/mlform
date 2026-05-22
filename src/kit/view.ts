@@ -2,14 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createForm } from "@/runtime";
-import type { PresentationRegistry } from "@/presentation";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/builtins";
 import { kitErrorMessages } from "./constants";
-import {
-  cloneSchemaRegistry,
-  resolveDesignSystemRegistry,
-  resolvePrimitiveRegistry,
-} from "./defaults";
+import { cloneSchemaRegistry } from "./defaults";
 import { resolveFormLayout } from "./layout";
 import { collectLayoutReferences, flattenLayoutNodes } from "./layout-utils";
 import type {
@@ -18,33 +13,25 @@ import type {
   FormViewSnapshot,
   FormViewState,
   ResolvedFormLayoutNode,
-} from "./types";
+} from "./view-core-types";
 import { createFormViewSnapshotCache } from "./view-snapshot-cache";
 import { createViewState } from "./view-snapshot";
 import {
-  assertAccordionLayout,
-  assertAccordionSection,
+  assertDisclosureSection,
   getActiveLayoutNodes,
   validateCurrentWizardStep,
 } from "./view-navigation";
+import { collectDisclosureSections } from "./view-layout-state";
 
-type InternalCreateFormViewOptions = CreateFormViewOptions & {
-  presentationRegistry?: PresentationRegistry;
-  behaviors?: import("@/runtime").RuntimeBehavior[];
-};
-
-export const createFormView = (options: InternalCreateFormViewOptions): FormViewController => {
+export const createFormView = (options: CreateFormViewOptions): FormViewController => {
   const defaultPack =
-    !options.registry || !options.presentationRegistry || !options.behaviors
+    !options.registry || !options.descriptorRegistry || !options.behaviors
       ? createMlRegistryPack()
       : null;
   const engineRegistry = options.registry
     ? cloneSchemaRegistry(options.registry)
     : defaultPack!.registry;
-  const presentationRegistry =
-    options.presentationRegistry?.clone() ?? defaultPack!.presentationRegistry;
-  const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
-  const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
+  const descriptorRegistry = options.descriptorRegistry?.clone() ?? defaultPack!.descriptorRegistry;
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
@@ -58,29 +45,24 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     listenerErrorPolicy: options.listenerErrorPolicy,
     onListenerError: options.onListenerError,
   });
-  const resolvedLayout = resolveFormLayout(
-    options.layout,
-    form.fields,
-    form.reports,
-    form.explanations,
-  );
+  const resolvedLayout = resolveFormLayout(options.layout, form.fields, form.reports);
 
   let stepIndex = 0;
   let activeTabIndex = 0;
+  const disclosureSections =
+    resolvedLayout.layout.kind === "wizard"
+      ? resolvedLayout.layout.steps.flatMap((step) => collectDisclosureSections(step.children))
+      : resolvedLayout.layout.kind === "tabs"
+        ? resolvedLayout.layout.tabs.flatMap((tab) => collectDisclosureSections(tab.children))
+        : collectDisclosureSections(resolvedLayout.layout.children);
   let openSectionIds = new Set<string>(
-    resolvedLayout.layout.kind === "accordion"
-      ? resolvedLayout.layout.sections
-          .filter((section) => section.defaultOpen)
-          .map((section) => section.id)
-      : [],
+    disclosureSections.filter((section) => section.defaultOpen).map((section) => section.id),
   );
   const listeners = new Set<(snapshot: FormViewSnapshot) => void>();
 
   const wizardSteps =
     resolvedLayout.layout.kind === "wizard" ? resolvedLayout.layout.steps : ([] as const);
   const tabs = resolvedLayout.layout.kind === "tabs" ? resolvedLayout.layout.tabs : ([] as const);
-  const accordionSections =
-    resolvedLayout.layout.kind === "accordion" ? resolvedLayout.layout.sections : ([] as const);
   const layoutReferences = collectLayoutReferences(resolvedLayout.layout);
   const nodeIndex = new Map<string, ResolvedFormLayoutNode>();
   for (const node of flattenLayoutNodes(resolvedLayout.layout)) {
@@ -93,7 +75,7 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
 
   const getSnapshot = createFormViewSnapshotCache({
     form,
-    presentationRegistry,
+    descriptorRegistry,
     resolvedLayout,
     getStepIndex: () => stepIndex,
     getActiveTabIndex: () => activeTabIndex,
@@ -114,9 +96,7 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
   return Object.freeze({
     form,
     engineRegistry,
-    presentationRegistry,
-    primitiveRegistry,
-    designSystemRegistry,
+    descriptorRegistry,
     get state(): FormViewState {
       return getState();
     },
@@ -130,17 +110,11 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
     getReport(id: string) {
       return getSnapshot().reports.find((report) => report.id === id);
     },
-    getExplanation(id: string) {
-      return getSnapshot().explanations.find((explanation) => explanation.id === id);
-    },
     getVisibleFields() {
       return getSnapshot().fields.filter((field) => field.visibleInLayout && field.state.visible);
     },
     getVisibleReports() {
       return getSnapshot().reports.filter((report) => report.visibleInLayout);
-    },
-    getVisibleExplanations() {
-      return getSnapshot().explanations.filter((explanation) => explanation.visibleInLayout);
     },
     getActiveLayoutNodes() {
       return getActiveLayoutNodes(resolvedLayout, stepIndex, activeTabIndex, openSectionIds);
@@ -257,7 +231,7 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
       return true;
     },
     toggleSection(sectionId: string) {
-      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
+      assertDisclosureSection(disclosureSections, sectionId);
       if (openSectionIds.has(sectionId)) {
         openSectionIds.delete(sectionId);
       } else {
@@ -266,25 +240,23 @@ export const createFormView = (options: InternalCreateFormViewOptions): FormView
       notify();
     },
     openSection(sectionId: string) {
-      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
+      assertDisclosureSection(disclosureSections, sectionId);
       if (!openSectionIds.has(sectionId)) {
         openSectionIds.add(sectionId);
         notify();
       }
     },
     closeSection(sectionId: string) {
-      assertAccordionSection(resolvedLayout, accordionSections, sectionId);
+      assertDisclosureSection(disclosureSections, sectionId);
       if (openSectionIds.delete(sectionId)) {
         notify();
       }
     },
     openAllSections() {
-      assertAccordionLayout(resolvedLayout);
-      openSectionIds = new Set(accordionSections.map((section) => section.id));
+      openSectionIds = new Set(disclosureSections.map((section) => section.id));
       notify();
     },
     closeAllSections() {
-      assertAccordionLayout(resolvedLayout);
       openSectionIds = new Set();
       notify();
     },

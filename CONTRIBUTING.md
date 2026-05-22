@@ -170,7 +170,7 @@ We rely on Vite+, TypeScript, and Vitest for quality gates.
 - Prefer pure functions and immutable data where feasible.
 - Keep modules small and focused; reuse existing strategies or services when possible.
 - Document complex logic with concise comments when clarity is needed.
-- Export public APIs from `src/index.ts` or the relevant package entry points.
+- Export public APIs from each module entry point (`src/<module>/index.ts`).
 - Maintain strict typing: avoid `any` and prefer `unknown` with proper refinement.
 
 ## Submitting Changes
@@ -259,7 +259,7 @@ What actually happens.
 - OS: (e.g., Windows 11, macOS 15, Ubuntu 24.04)
 - Node.js version: (e.g., 22.14.0)
 - vp version: (e.g., 1.x)
-- MLForm version: (e.g., 0.1.9)
+- MLForm version: (e.g., 0.1.10)
 
 ## Additional Context
 

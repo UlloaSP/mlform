@@ -41,7 +41,6 @@ Examples:
 
 - `Layout references unknown field "foo".`
 - `Layout references unknown report "risk-v2".`
-- `Layout references unknown explanation "why".`
 
 Fix:
 
@@ -61,12 +60,12 @@ Errors:
 - `Tabs layout must define at least one tab.`
 - `Tab "profile" must contain at least one layout node.`
 
-## Empty accordion
+## Empty disclosure
 
 Errors:
 
-- `Accordion layout must define at least one section.`
-- `Accordion section "profile" must contain at least one layout node.`
+- `Disclosure layout must define at least one section.`
+- `Disclosure section "profile" must contain at least one layout node.`
 
 ## Wrong API on non-wizard layouts
 
@@ -86,15 +85,15 @@ Tabs example:
 setActiveTab() is only available for tabs layouts.
 ```
 
-Accordion example:
+Disclosure example:
 
 ```txt
-Accordion section controls are only available for accordion layouts.
+Disclosure section controls are only available for disclosure layouts.
 ```
 
 ## Debugging checklist
 
 1. confirm field ids in the final normalized schema
 2. confirm every field appears once
-3. confirm report and explanation ids match schema ids
+3. confirm report ids match schema ids
 4. confirm step titles or explicit ids are what your host expects

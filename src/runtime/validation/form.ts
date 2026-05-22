@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { EngineError } from "../errors";
-import type { NormalizedFormSchema } from "../schema";
+import type { NormalizedFormSchema } from "@/schema";
 import type { EngineStore } from "../state";
 import { toFieldStateSnapshots, toFormState, transitionEngineState } from "../state";
 import type {

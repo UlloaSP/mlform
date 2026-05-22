@@ -16,5 +16,5 @@ This is useful for:
 
 - embedded widgets
 - CMS integrations
-- design-system experiments
+- design experiments
 - environments where frameworks are not available

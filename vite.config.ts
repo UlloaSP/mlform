@@ -7,6 +7,7 @@ import dts from "vite-plugin-dts";
 import { defineConfig } from "vite-plus";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+const isRuntimeDependency = (id: string) => id === "zod" || id === "lit" || id.startsWith("lit/");
 const toolIgnorePatterns = [
   "node_modules/**",
   "dist/**",
@@ -125,16 +126,16 @@ export default defineConfig({
     arrowParens: "always",
   },
   build: {
+    rollupOptions: {
+      external: isRuntimeDependency,
+    },
     lib: {
       entry: {
-        mlform: resolve(rootDir, "src/index.ts"),
         "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
         "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
-        "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
-        "mlform/builtins-ml": resolve(rootDir, "src/builtins-ml/index.ts"),
-        "mlform/behaviors": resolve(rootDir, "src/behaviors/index.ts"),
+        "mlform/builtins": resolve(rootDir, "src/builtins/index.ts"),
         "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
-        "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
+        "mlform/design": resolve(rootDir, "src/design/index.ts"),
         "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
         "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
       },
@@ -157,13 +158,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      mlform: resolve(rootDir, "src/index.ts"),
       "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
       "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
-      "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
-      "mlform/builtins-ml": resolve(rootDir, "src/builtins-ml/index.ts"),
-      "mlform/behaviors": resolve(rootDir, "src/behaviors/index.ts"),
-      "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
+      "mlform/builtins": resolve(rootDir, "src/builtins/index.ts"),
+      "mlform/design": resolve(rootDir, "src/design/index.ts"),
       "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
       "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
       "mlform/transport": resolve(rootDir, "src/transport/index.ts"),

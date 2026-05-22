@@ -11,14 +11,14 @@ type FormLayoutConfig =
   | SinglePageLayoutConfig
   | WizardLayoutConfig
   | TabsLayoutConfig
-  | AccordionLayoutConfig;
+  | FormLayoutConfig;
 ```
 
 ### `SinglePageLayoutConfig`
 
 ```ts
 interface SinglePageLayoutConfig {
-  kind?: "single-page";
+  kind?: "stacked";
   children?: FormLayoutNode[];
 }
 ```
@@ -97,12 +97,12 @@ Rules:
 - `id` is optional and auto-generated from `title`
 - switching tabs does not validate
 
-### `AccordionLayoutConfig`
+### `FormLayoutConfig`
 
 ```ts
-interface AccordionLayoutConfig {
-  kind: "accordion";
-  sections: AccordionSectionConfig[];
+interface FormLayoutConfig {
+  kind: "stacked";
+  sections: FormLayoutSectionNode[];
 }
 ```
 
@@ -113,7 +113,7 @@ Use for:
 - review flows where multiple regions can remain open
 
 ```ts
-interface AccordionSectionConfig {
+interface FormLayoutSectionNode {
   id?: string;
   title: string;
   description?: string;
@@ -142,8 +142,7 @@ type FormLayoutNode =
     }
   | { kind: "group"; id?: string; columns?: 1 | 2 | 3; children: FormLayoutNode[] }
   | { kind: "field"; field: string }
-  | { kind: "report"; report: string }
-  | { kind: "explanation"; explanation: string };
+  | { kind: "report"; report: string };
 ```
 
 ### `section`
@@ -193,21 +192,12 @@ References a report id.
 { kind: "report", report: "risk" }
 ```
 
-### `explanation`
-
-References an explanation id.
-
-```ts
-{ kind: "explanation", explanation: "why" }
-```
-
 ## Validation rules
 
 When layout is explicit:
 
 - every field must appear exactly once
 - reports may appear zero or one time
-- explanations may appear zero or one time
 - unknown references fail creation immediately
 - missing fields fail creation immediately
 
@@ -227,7 +217,7 @@ Generated ids are slug-based and stable relative to config order.
 
 ```ts
 {
-  kind: "single-page",
+  kind: "stacked",
   children: [
     {
       kind: "section",
@@ -264,7 +254,7 @@ Generated ids are slug-based and stable relative to config order.
       title: "Review",
       children: [
         { kind: "report", report: "risk" },
-        { kind: "explanation", explanation: "why" },
+        { kind: "report", report: "why" },
       ],
     },
   ],
@@ -292,11 +282,11 @@ Generated ids are slug-based and stable relative to config order.
 }
 ```
 
-### Accordion with progressive disclosure
+### Disclosure with progressive disclosure
 
 ```ts
 {
-  kind: "accordion",
+  kind: "stacked",
   sections: [
     {
       title: "Profile",

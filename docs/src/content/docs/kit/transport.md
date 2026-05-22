@@ -6,7 +6,8 @@ description: Submit MLForm values through a composed transport pipeline.
 Use `createJsonTransport` for the simple JSON case:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),
@@ -17,7 +18,8 @@ mountForm(container, {
 When you need HTTP customization, build the transport explicitly:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,
@@ -50,7 +52,8 @@ mountForm(container, {
 Use `createRoutingTransport` when MLForm should pick one transport internally. Route names are internal policy ids, not part of `form.submit()`:
 
 ```ts
-import { createJsonTransport, createRoutingTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport, createRoutingTransport } from "mlform/transport";
 
 const transport = createRoutingTransport({
   transports: {
@@ -77,7 +80,8 @@ mountForm(container, {
 Use `createFanoutTransport` when one submit should call every transport and merge the results:
 
 ```ts
-import { createFanoutTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createFanoutTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,
@@ -90,7 +94,8 @@ mountForm(container, {
 Use `createFallbackTransport` when later transports should run only after earlier failures:
 
 ```ts
-import { createFallbackTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createFallbackTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,
@@ -103,9 +108,9 @@ mountForm(container, {
 Use middleware to compose auth, retries, circuit breaking, rate limiting, caching, deduplication, tracing, metrics, and request or response transforms:
 
 ```ts
+import { mountForm } from "mlform/kit";
 import {
   createJsonTransport,
-  mountForm,
   pipe,
   withAuth,
   withMetrics,
@@ -113,7 +118,7 @@ import {
   withRateLimit,
   withRetry,
   withTracing,
-} from "mlform";
+} from "mlform/transport";
 
 const transport = pipe(
   createJsonTransport({ endpoint: "/api/predict" }),

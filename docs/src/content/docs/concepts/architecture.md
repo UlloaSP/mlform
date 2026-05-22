@@ -1,43 +1,35 @@
 ---
 title: Architecture
-description: How MLForm separates form state, rendering, transport, and styling.
+description: The pieces MLForm uses before any API detail.
 ---
 
-MLForm is split into four public surfaces.
+MLForm keeps five jobs separate:
 
-| Surface       | Import                   | Responsibility                                           |
-| ------------- | ------------------------ | -------------------------------------------------------- |
-| Kit           | `mlform` or `mlform/kit` | Default mount path for applications.                     |
-| Engine        | `mlform/runtime`         | State, validation, registry, hooks, and submit flow.     |
-| Primitives    | `mlform/primitives`      | Built-in Web Components and primitive renderer registry. |
-| Design system | `mlform/design-system`   | Themes, recipes, token resolution, and host integration. |
+| Piece | Import | Owns |
+| --- | --- | --- |
+| Kit | `mlform/kit` | Application mounting, default UI wiring, layout helpers. |
+| Runtime | `mlform/runtime` | State, validation, conditions, submit flow, report state. |
+| Schema | `mlform/schema` | Field and report contracts shared by UI and backends. |
+| Primitives | `mlform/primitives` | Web Components that render fields, reports, errors, and submit controls. |
+| Design system | `mlform/design` | Themes, recipes, tokens, host attachment. |
 
-Use the kit for application code. It now exposes four app-facing paths:
-
-- `mountForm()`, `mountWizardForm()`, `mountTabsForm()`, and `mountAccordionForm()` for built-in DOM layouts
-- `createFormView()` for headless layout control without dropping to `mlform/runtime`
-
-Drop to engine or primitives only when building custom renderers, registries, or integration layers.
+Most app code starts with `mountForm()` from the kit.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
 import type { FormSchema } from "mlform/schema";
+import { createJsonTransport } from "mlform/transport";
 
 const schema: FormSchema = {
-  fields: [{ kind: "text", label: "Prompt" }],
+  fields: [{ id: "prompt", kind: "text", label: "Prompt" }],
 };
 
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/predict" }),
   schema,
+  transport: createJsonTransport({ endpoint: "/predict" }),
 });
 ```
 
-For custom layouts, the flow is:
+Use `createFormView()` when MLForm should keep state and validation, but your app owns the visible layout. Use `createForm()` from runtime when there is no kit UI at all.
 
-```ts
-createFormView({ schema, transport, layout })
-  -> validated layout tree
-  -> render-ready collections
-  -> wizard, tabs, or accordion layout helpers when applicable
-```
+The important boundary: schema says what the form means, layout says how it is arranged, transport says where submitted values go, primitives say which UI pieces render the field and report descriptors.

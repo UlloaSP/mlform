@@ -6,7 +6,6 @@ import type { ResolvedFormLayout, ResolvedFormLayoutNode } from "./types";
 export interface LayoutReferences {
   fields: string[];
   reports: string[];
-  explanations: string[];
 }
 
 const walkNode = (
@@ -26,7 +25,8 @@ export const walkLayoutNodes = (
   visitor: (node: ResolvedFormLayoutNode) => void,
 ): void => {
   switch (layout.kind) {
-    case "single-page":
+    case "stacked":
+    case "split":
       for (const node of layout.children) {
         walkNode(node, visitor);
       }
@@ -45,12 +45,6 @@ export const walkLayoutNodes = (
         }
       }
       return;
-    case "accordion":
-      for (const section of layout.sections) {
-        for (const node of section.children) {
-          walkNode(node, visitor);
-        }
-      }
   }
 };
 
@@ -66,7 +60,6 @@ export const collectLayoutReferences = (layout: ResolvedFormLayout): LayoutRefer
   const references: LayoutReferences = {
     fields: [],
     reports: [],
-    explanations: [],
   };
 
   for (const node of flattenLayoutNodes(layout)) {
@@ -76,9 +69,6 @@ export const collectLayoutReferences = (layout: ResolvedFormLayout): LayoutRefer
         break;
       case "report":
         references.reports.push(node.report);
-        break;
-      case "explanation":
-        references.explanations.push(node.explanation);
         break;
       default:
         break;

@@ -12,7 +12,8 @@ Crea un elemento host:
 Monta MLForm:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const container = document.querySelector("#prediction-form");
 

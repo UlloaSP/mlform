@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { findFieldFrame, scrollFieldFrameIntoView } from "@/primitives/components/error-focus";
-import type { FormViewController, FormViewFieldItem, ResolvedFormLayoutNode } from "./types";
+import type { FormViewController, FormViewFieldItem } from "./types";
+
+export type FieldFocusAdapter = (host: HTMLElement, fieldId: string) => Promise<boolean>;
 
 const waitForRender = async (host: HTMLElement): Promise<void> => {
   await Promise.resolve();
@@ -10,24 +11,6 @@ const waitForRender = async (host: HTMLElement): Promise<void> => {
     await (host as HTMLElement & { updateComplete: Promise<unknown> }).updateComplete;
   }
   await Promise.resolve();
-};
-
-const containsField = (nodes: readonly ResolvedFormLayoutNode[], fieldId: string): boolean =>
-  nodes.some((node) => {
-    if (node.kind === "field") {
-      return node.field === fieldId;
-    }
-
-    return "children" in node && containsField(node.children, fieldId);
-  });
-
-const findAccordionSectionId = (view: FormViewController, fieldId: string): string | null => {
-  const layout = view.getSnapshot().layout;
-  if (layout.kind !== "accordion") {
-    return null;
-  }
-
-  return layout.sections.find((section) => containsField(section.children, fieldId))?.id ?? null;
 };
 
 const firstInvalidField = (view: FormViewController): FormViewFieldItem | null => {
@@ -44,6 +27,7 @@ const firstInvalidField = (view: FormViewController): FormViewFieldItem | null =
 export const revealFirstInvalidField = async (
   host: HTMLElement,
   view: FormViewController,
+  focusField: FieldFocusAdapter,
 ): Promise<boolean> => {
   const field = firstInvalidField(view);
   if (!field) {
@@ -60,11 +44,10 @@ export const revealFirstInvalidField = async (
     view.setActiveTab(field.tabId);
   }
 
-  const sectionId = findAccordionSectionId(view, field.id);
-  if (sectionId) {
-    view.openSection(sectionId);
+  if (field.sectionId) {
+    view.openSection(field.sectionId);
   }
 
   await waitForRender(host);
-  return scrollFieldFrameIntoView(findFieldFrame(host.shadowRoot ?? host, field.id));
+  return focusField(host, field.id);
 };

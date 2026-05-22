@@ -4,8 +4,13 @@
 import { css, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
-import type { ReportController, ReportStateSnapshot, SubmitResult } from "@/runtime";
-import type { ReportDescriptor } from "@/presentation";
+import type {
+  PrimitiveReportController,
+  PrimitiveReportStateSnapshot,
+  PrimitiveSubmitResult,
+} from "../controller-types";
+import { createPrimitiveReportRequest } from "../controller-types";
+import type { ReportDescriptor } from "../descriptors";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -95,24 +100,24 @@ export class PrimitiveReportFrameElement extends LitElement {
     }
   `;
 
-  @property({ attribute: false }) accessor controller: ReportController | undefined;
+  @property({ attribute: false }) accessor controller: PrimitiveReportController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
   @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
-  @property({ attribute: false }) accessor lastResult: SubmitResult | null = null;
+  @property({ attribute: false }) accessor lastResult: PrimitiveSubmitResult | null = null;
 
   @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
   @state() private accessor resolvedDescriptor: ReportDescriptor | null = null;
-  @state() private accessor reportState: ReportStateSnapshot | null = null;
+  @state() private accessor reportState: PrimitiveReportStateSnapshot | null = null;
 
   readonly #instanceId = ++reportFrameSequence;
   #memoizedContext: PrimitiveReportRenderContext | undefined;
-  #memoizedController: ReportController | undefined;
+  #memoizedController: PrimitiveReportController | undefined;
   #memoizedDescriptor: ReportDescriptor | null = null;
-  #memoizedLastResult: SubmitResult | null = null;
+  #memoizedLastResult: PrimitiveSubmitResult | null = null;
   #memoizedRequest: PrimitiveReportRequest | null = null;
 
-  readonly #binding = new ControllerBinding<ReportController>(this, (ctrl) => {
+  readonly #binding = new ControllerBinding<PrimitiveReportController>(this, (ctrl) => {
     this.resolvedDescriptor = this.descriptor;
     this.reportState = ctrl?.state ?? null;
   });
@@ -124,6 +129,10 @@ export class PrimitiveReportFrameElement extends LitElement {
 
     if (changedProperties.has("descriptor")) {
       this.resolvedDescriptor = this.descriptor;
+    }
+
+    if (changedProperties.has("lastResult") || changedProperties.has("controller")) {
+      this.#maybeFetch();
     }
   }
 
@@ -167,7 +176,7 @@ export class PrimitiveReportFrameElement extends LitElement {
     const tag = unsafeStatic(tagName);
     const context = this.#getContext();
     const reportTransport = this.transport;
-    const reportRequest = this.reportState?.status === "ready" ? this.#getReportRequest() : null;
+    const reportRequest = this.#getReportRequest();
     const descriptor = this.resolvedDescriptor;
 
     return html`
@@ -230,21 +239,24 @@ export class PrimitiveReportFrameElement extends LitElement {
       return this.#memoizedRequest;
     }
 
-    const request: PrimitiveReportRequest = {
+    const request: PrimitiveReportRequest = createPrimitiveReportRequest(result, {
       reportId: this.controller.id,
-      backend: result.backend,
-      values: result.values,
-      fieldValues: result.fieldValues,
-      serializedValues: result.serializedValues,
-      serializedFieldValues: result.serializedFieldValues,
-      reports: result.reports,
-      meta: result.meta,
-      raw: result.raw,
-    };
+    });
 
     this.#memoizedLastResult = result;
     this.#memoizedRequest = request;
     return request;
+  }
+
+  #maybeFetch(): void {
+    const ctrl = this.controller;
+    const request = this.#getReportRequest();
+
+    if (!ctrl?.canFetch || !request || ctrl.state.status !== "idle") {
+      return;
+    }
+
+    void ctrl.fetch(request);
   }
 }
 

@@ -11,8 +11,7 @@ Devuelve:
 
 - `form`
 - `engineRegistry`
-- `primitiveRegistry`
-- `designSystemRegistry`
+- `PrimitiveDescriptorRegistry`
 - `state`
 - `getSnapshot()`
 - `validate()`
@@ -28,9 +27,9 @@ Devuelve:
 
 `tabs` en el snapshot solo existe cuando `layout.kind === "tabs"`.
 
-`accordion` en el snapshot solo existe cuando `layout.kind === "accordion"`.
+`disclosure` en el snapshot solo existe cuando `layout.kind === "disclosure"`.
 
-Cada item de `fields`, `reports` y `explanations` expone:
+Cada item de `fields` y `reports` expone:
 
 - `controller`
 - `state`

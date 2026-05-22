@@ -9,7 +9,7 @@ Schema-driven forms for machine learning applications.
 
 MLForm gives you a predictable UI layer between users and model backends. You describe inputs and reports with a schema, MLForm renders accessible Web Components, validates values, submits structured payloads, and displays model results in the same host container.
 
-Version `0.1.9` is the current release in this repository.
+Version `0.1.10` is the current release in this repository.
 
 ## Why MLForm
 
@@ -38,10 +38,11 @@ For application usage:
 npm install mlform
 ```
 
-Import from the root package unless you specifically need a lower-level surface:
+Import from the explicit package subpath you need:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 ```
 
 ## Quick Start
@@ -55,7 +56,8 @@ Create a host element:
 Mount a form:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const container = document.querySelector("#prediction-form");
 
@@ -143,11 +145,11 @@ Return reports keyed by report id:
 - Schema-driven fields, reports, conditions, defaults, and serialization
 - Accessible Web Components for form inputs, submit actions, and result rendering
 - Headless `createFormView()` API for custom layouts and app-owned rendering
-- Official `mountWizardForm()` helper for step-based flows
+- Official `mountForm()` helper for step-based flows
 - Built-in JSON transport plus composable transport middleware
 - Headless engine APIs for custom orchestration and registries
 - Runtime design system with themes, recipes, density, motion, and token overrides
-- Extension points for custom field, report, and explanation kinds
+- Extension points for custom field and report kinds
 
 Built-in fields:
 
@@ -182,11 +184,10 @@ Built-in recipes:
 
 | Surface                | Use it for                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `mlform`               | Application-first API for mounting forms or building headless layouts with sensible defaults.                              |
-| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `mountWizardForm`, `createFormView`, transport, labels, and lifecycle utilities. |
+| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, labels, layout, and lifecycle utilities.    |
 | `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
-| `mlform/design-system` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
+| `mlform/design` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
 | `mlform/transport`     | Transport composition, middleware, resilience policies, and orchestration helpers.                                         |
 
 ## Custom Domain Kinds
@@ -194,7 +195,7 @@ Built-in recipes:
 When built-in kinds are not enough, define your own field and report kinds without rewriting the normal rendering path.
 
 ```ts
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { defineFieldKind, registerDefinedFieldKind } from "mlform/presentation";
 import { z } from "zod";
 
@@ -246,7 +247,8 @@ Stay at the declarative `define*Kind` layer unless you truly need fully custom r
 Use `createFormView()` when you want MLForm to own state and validation, but your app to own layout:
 
 ```ts
-import { createFormView, createJsonTransport } from "mlform";
+import { createFormView } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const view = createFormView({
   transport: createJsonTransport({ endpoint: "/api/predict" }),
@@ -261,7 +263,7 @@ const view = createFormView({
 });
 ```
 
-If you want a built-in step UI, use `mountWizardForm()` with the same layout config.
+If you want a built-in step UI, use `mountForm()` with the same layout config.
 
 ## Documentation
 
@@ -272,7 +274,7 @@ If you want a built-in step UI, use `mountWizardForm()` with the same layout con
 - Transport guide: https://ulloasp.github.io/mlform/kit/transport/
 - Headless kit: https://ulloasp.github.io/mlform/kit/headless-kit/
 - Wizard layout: https://ulloasp.github.io/mlform/kit/wizard-layout/
-- Design system: https://ulloasp.github.io/mlform/design-system/overview/
+- Design system: https://ulloasp.github.io/mlform/design/overview/
 - API reference: https://ulloasp.github.io/mlform/reference/kit/
 - Migration guide: https://ulloasp.github.io/mlform/migration/from-legacy-mlform/
 - Versioning notes: https://ulloasp.github.io/mlform/support/versioning/
@@ -304,7 +306,7 @@ The main package targets Node.js `>=24.9.0`.
 
 ## Release Notes
 
-For `0.1.9`, use the repository release entry and the published docs as the source of truth:
+For `0.1.10`, use the repository release entry and the published docs as the source of truth:
 
 - GitHub releases: https://github.com/UlloaSP/mlform/releases
 - npm package: https://www.npmjs.com/package/mlform

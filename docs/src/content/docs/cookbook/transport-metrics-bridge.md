@@ -4,7 +4,7 @@ description: Emit structured transport telemetry into your metrics pipeline.
 ---
 
 ```ts
-import { pipe, withMetrics } from "mlform";
+import { pipe, withMetrics } from "mlform/transport";
 
 const transport = pipe(
   myTransport,

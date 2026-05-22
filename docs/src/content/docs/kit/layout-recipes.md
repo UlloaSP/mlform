@@ -7,7 +7,7 @@ description: Reusable layout patterns for sections, groups, wizards, review step
 
 ```ts
 {
-  kind: "single-page",
+  kind: "stacked",
   children: [
     {
       kind: "section",
@@ -30,7 +30,7 @@ description: Reusable layout patterns for sections, groups, wizards, review step
 
 ```ts
 {
-  kind: "single-page",
+  kind: "stacked",
   children: [
     {
       kind: "group",
@@ -67,7 +67,7 @@ description: Reusable layout patterns for sections, groups, wizards, review step
       title: "Review",
       children: [
         { kind: "report", report: "risk" },
-        { kind: "explanation", explanation: "why" },
+        { kind: "report", report: "why" },
       ],
     },
   ],
@@ -92,11 +92,11 @@ description: Reusable layout patterns for sections, groups, wizards, review step
 }
 ```
 
-## Built-in accordion
+## Built-in disclosure
 
 ```ts
 {
-  kind: "accordion",
+  kind: "stacked",
   sections: [
     { title: "Applicant", children: [{ kind: "field", field: "name" }] },
     {
@@ -133,15 +133,15 @@ description: Reusable layout patterns for sections, groups, wizards, review step
 }
 ```
 
-## Explanations after submit
+## Reports after submit
 
-Put explanations in the final step or in a post-submit section on single-page layouts.
+Put fetched reports in the final step or in a post-submit section on stacked layouts.
 
 ## Picking a recipe
 
 - choose wizard when the user should focus on one decision chunk at a time
 - choose tabs when users need free section switching without validation gates
-- choose accordion when users need progressive disclosure and multi-open sections
-- choose single-page when cross-field comparison matters
+- choose disclosure when users need progressive disclosure and multi-open sections
+- choose stacked when cross-field comparison matters
 - choose grouped columns when the data is dense but still scan-friendly
 - choose review step when reports need narrative framing before final submission

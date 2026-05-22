@@ -6,7 +6,7 @@ description: Register built-in and custom field and report definitions.
 The engine registry maps field/report `kind` values to definitions.
 
 ```ts
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { createRegistry } from "mlform/schema";
 
 const empty = createRegistry();

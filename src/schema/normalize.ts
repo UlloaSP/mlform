@@ -2,13 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { RegistryError } from "./registry";
-import { slugify } from "@/shared";
-import { MLFormError } from "@/shared";
+import { normalizeSchemaId } from "./ids";
 import type {
-  ExplanationConfig,
   FieldConfig,
   FormSchema,
-  NormalizedExplanationConfig,
   NormalizedFieldConfig,
   NormalizedFormSchema,
   NormalizedReportConfig,
@@ -23,7 +20,7 @@ const validateSeriesSubField = (
   registry: Registry,
 ): void => {
   if (typeof field !== "object" || field === null) {
-    throw new MLFormError(`Series field "${parentLabel}" requires "${name}" configuration.`);
+    throw new Error(`Series field "${parentLabel}" requires "${name}" configuration.`);
   }
 
   const kind =
@@ -32,11 +29,11 @@ const validateSeriesSubField = (
       : "";
 
   if (kind.length === 0) {
-    throw new MLFormError(`Series field "${parentLabel}" requires "${name}.kind".`);
+    throw new Error(`Series field "${parentLabel}" requires "${name}.kind".`);
   }
 
   if (kind === "series") {
-    throw new MLFormError(`Series field "${parentLabel}" cannot nest series in "${name}".`);
+    throw new Error(`Series field "${parentLabel}" cannot nest series in "${name}".`);
   }
 
   if (!registry.getField(kind)) {
@@ -59,7 +56,7 @@ const validateSeriesFieldConfig = (field: FieldConfig, registry: Registry): void
     typeof field.maxPoints === "number" &&
     field.minPoints > field.maxPoints
   ) {
-    throw new MLFormError(
+    throw new Error(
       `Series field "${field.label}" requires minPoints to be less than or equal to maxPoints.`,
     );
   }
@@ -71,11 +68,11 @@ const resolveId = (
   usedIds: Set<string>,
   fallbackPrefix: string,
 ): string => {
-  const baseId = slugify((explicitId ?? fallbackLabel) || fallbackPrefix);
+  const baseId = normalizeSchemaId((explicitId ?? fallbackLabel) || fallbackPrefix);
 
   if (explicitId) {
     if (usedIds.has(baseId)) {
-      throw new MLFormError(`Duplicate explicit id "${baseId}" in schema.`);
+      throw new Error(`Duplicate explicit id "${baseId}" in schema.`);
     }
 
     usedIds.add(baseId);
@@ -132,28 +129,9 @@ const normalizeReport = (
   };
 };
 
-const normalizeExplanation = (
-  explanation: ExplanationConfig,
-  index: number,
-  registry: Registry,
-  usedIds: Set<string>,
-): NormalizedExplanationConfig => {
-  const definition = registry.getExplanation(explanation.kind);
-  if (!definition) {
-    throw new RegistryError(`Unknown explanation kind "${explanation.kind}".`);
-  }
-
-  const parsed = definition.schema.parse(explanation) as ExplanationConfig;
-  return {
-    ...parsed,
-    id: resolveId(parsed.id, parsed.label ?? parsed.kind, usedIds, `explanation-${index + 1}`),
-  };
-};
-
 export const normalizeSchema = (schema: FormSchema, registry: Registry): NormalizedFormSchema => {
   const usedFieldIds = new Set<string>();
   const usedReportIds = new Set<string>();
-  const usedExplanationIds = new Set<string>();
 
   return {
     fields: schema.fields.map((field, index) =>
@@ -161,9 +139,6 @@ export const normalizeSchema = (schema: FormSchema, registry: Registry): Normali
     ),
     reports: (schema.reports ?? []).map((report, index) =>
       normalizeReport(report, index, registry, usedReportIds),
-    ),
-    explanations: (schema.explanations ?? []).map((explanation, index) =>
-      normalizeExplanation(explanation, index, registry, usedExplanationIds),
     ),
   };
 };

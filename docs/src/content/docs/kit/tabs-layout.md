@@ -3,12 +3,13 @@ title: Tabs Layout
 description: Use the official built-in tabs layout or the same tabs config through the headless kit API.
 ---
 
-`mountTabsForm()` is the official built-in tabs layout built on top of the headless kit API.
+`mountForm()` is the official built-in tabs layout built on top of the headless kit API.
 
 ```ts
-import { createJsonTransport, mountTabsForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
-mountTabsForm(container, {
+mountForm(container, {
   transport: createJsonTransport({ endpoint: "/predict" }),
   schema,
   layout: {
@@ -37,7 +38,7 @@ mountTabsForm(container, {
 
 ## When to use it
 
-Use `mountTabsForm()` when:
+Use `mountForm()` when:
 
 - your app already uses tabbed navigation
 - users should move freely between sections

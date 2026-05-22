@@ -8,15 +8,15 @@ type FormLayoutConfig =
   | SinglePageLayoutConfig
   | WizardLayoutConfig
   | TabsLayoutConfig
-  | AccordionLayoutConfig;
+  | FormLayoutConfig;
 ```
 
 ## Variantes
 
-- `single-page`: una sola pagina con `children`
+- `stacked`: una sola pagina con `children`
 - `wizard`: flujo por `steps`
 - `tabs`: flujo libre por `tabs`
-- `accordion`: disclosure progresivo por `sections`
+- `disclosure`: disclosure progresivo por `sections`
 
 ## Nodos
 
@@ -31,16 +31,15 @@ type FormLayoutNode =
     }
   | { kind: "group"; id?: string; columns?: 1 | 2 | 3; children: FormLayoutNode[] }
   | { kind: "field"; field: string }
-  | { kind: "report"; report: string }
-  | { kind: "explanation"; explanation: string };
+  | { kind: "report"; report: string };
 ```
 
 ## Reglas
 
 - cada `field` debe aparecer exactamente una vez en layouts explicitos
-- `report` y `explanation` pueden aparecer cero o una vez
+- `report` puede aparecer cero o una vez
 - referencias desconocidas fallan al crear el view
 - `wizard.steps` no puede estar vacio
 - `tabs.tabs` no puede estar vacio
-- `accordion.sections` no puede estar vacio
+- `disclosure.sections` no puede estar vacio
 - `step` y `tab` deben tener al menos un nodo

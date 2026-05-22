@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { NormalizedFormSchema } from "../schema";
+import type { NormalizedFormSchema } from "@/schema";
 import type { InternalFieldState, EngineStore } from "../state";
 import type {
   FormHooks,
@@ -47,7 +47,6 @@ export type CreateFormSubmitterOptions = {
   getSubmitCount: () => number;
   markReportsLoading: () => void;
   resetReports: () => void;
-  resetExplanations: () => void;
   syncDerivedFieldState: (options?: SyncDerivedFieldStateOptions) => void;
   shouldResetInactiveFields: () => boolean;
   resolveInactiveFieldPolicy: (field: SubmissionField) => InactiveFieldPolicy;

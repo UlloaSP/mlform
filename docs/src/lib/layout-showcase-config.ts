@@ -1,8 +1,4 @@
-import type {
-  AccordionLayoutConfig,
-  TabsLayoutConfig,
-  WizardLayoutConfig,
-} from "@/index";
+import type { FormLayoutConfig, TabsLayoutConfig, WizardLayoutConfig } from "@/kit";
 import type { FormSchema } from "@/schema";
 
 export type ShowcaseLocale = "en" | "es";
@@ -134,10 +130,11 @@ export const tabsLayout: TabsLayoutConfig = {
   ],
 };
 
-export const accordionLayout: AccordionLayoutConfig = {
-  kind: "accordion",
-  sections: [
+export const disclosureLayout: FormLayoutConfig = {
+  kind: "stacked",
+  children: [
     {
+      kind: "section",
       id: "profile",
       title: "Profile",
       description: "Default-open dense disclosure section.",
@@ -147,8 +144,10 @@ export const accordionLayout: AccordionLayoutConfig = {
       ],
     },
     {
+      kind: "section",
       id: "assessment",
       title: "Assessment",
+      defaultOpen: false,
       description: "Open this section to score and submit.",
       children: [
         { kind: "field", field: "score" },

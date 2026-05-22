@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import "@/primitives/register";
+import "@/primitives";
 import "./step-indicator";
 
 import { html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import { primitiveStaticText, type PrimitiveText } from "@/primitives/constants";
-import type { PrimitiveRegistry } from "@/primitives/types";
+import {
+  focusPrimitiveField,
+  primitiveStaticText,
+  type PrimitiveRegistry,
+  type PrimitiveText,
+} from "@/primitives";
 import { kitTagNames } from "./constants";
 import { renderLayoutNode } from "./layout-node-render";
 import { revealFirstInvalidField } from "./error-navigation";
@@ -97,6 +101,7 @@ export class KitWizardElement extends LitElement {
                 (node) =>
                   renderLayoutNode({
                     node,
+                    view: this.view,
                     snapshot,
                     registry: this.registry,
                     primitiveText: this.primitiveText,
@@ -142,7 +147,7 @@ export class KitWizardElement extends LitElement {
   #handleNext = async (): Promise<void> => {
     const advanced = await this.view?.nextStep();
     if (advanced === false && this.view) {
-      await revealFirstInvalidField(this, this.view);
+      await revealFirstInvalidField(this, this.view, focusPrimitiveField);
     }
   };
 
@@ -153,14 +158,14 @@ export class KitWizardElement extends LitElement {
 
     const valid = await this.view.nextStep();
     if (!valid) {
-      await revealFirstInvalidField(this, this.view);
+      await revealFirstInvalidField(this, this.view, focusPrimitiveField);
       return;
     }
 
     try {
       await this.view.submit();
     } catch (error) {
-      const handled = await revealFirstInvalidField(this, this.view);
+      const handled = await revealFirstInvalidField(this, this.view, focusPrimitiveField);
       if (!handled) {
         throw error;
       }

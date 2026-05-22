@@ -4,7 +4,7 @@ description: Share circuit status across MLForm workers.
 ---
 
 ```ts
-import { pipe, withCircuitBreaker } from "mlform";
+import { pipe, withCircuitBreaker } from "mlform/transport";
 
 const sharedState = {
   async get(scope) {

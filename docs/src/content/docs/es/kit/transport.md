@@ -6,7 +6,8 @@ description: Envia valores mediante un pipeline de transportes compuesto.
 Usa `createJsonTransport` para el caso JSON simple:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),
@@ -17,7 +18,8 @@ mountForm(container, {
 Cuando necesites personalizar HTTP, crea el transporte de forma explícita:
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,
@@ -50,7 +52,8 @@ mountForm(container, {
 Usa `createRoutingTransport` cuando MLForm deba elegir internamente un solo transporte. Los nombres de ruta son ids internos de política, no parte de `form.submit()`:
 
 ```ts
-import { createJsonTransport, createRoutingTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport, createRoutingTransport } from "mlform/transport";
 
 const transport = createRoutingTransport({
   transports: {
@@ -77,7 +80,8 @@ mountForm(container, {
 Usa `createFanoutTransport` cuando un submit deba llamar a todos los transportes y combinar sus resultados:
 
 ```ts
-import { createFanoutTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createFanoutTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,
@@ -90,7 +94,8 @@ mountForm(container, {
 Usa `createFallbackTransport` cuando quieras probar transportes posteriores solo si fallan los anteriores:
 
 ```ts
-import { createFallbackTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createFallbackTransport } from "mlform/transport";
 
 mountForm(container, {
   schema,
@@ -103,15 +108,15 @@ mountForm(container, {
 Usa middleware para componer auth, retries, circuit breaker, rate limit, cache, dedup y transforms de request o response:
 
 ```ts
+import { mountForm } from "mlform/kit";
 import {
   createJsonTransport,
-  mountForm,
   pipe,
   withAuth,
   withCircuitBreaker,
   withRateLimit,
   withRetry,
-} from "mlform";
+} from "mlform/transport";
 
 const transport = pipe(
   createJsonTransport({ endpoint: "/api/predict" }),

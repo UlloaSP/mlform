@@ -4,8 +4,8 @@
 import { LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
-import type { FieldController, FieldStateSnapshot } from "@/runtime";
-import type { FieldDescriptor } from "@/presentation";
+import type { PrimitiveFieldController, PrimitiveFieldStateSnapshot } from "../controller-types";
+import type { FieldDescriptor } from "../descriptors";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -24,23 +24,23 @@ let fieldFrameSequence = 0;
 export class PrimitiveFieldFrameElement extends LitElement {
   static styles = fieldFrameStyles;
 
-  @property({ attribute: false }) accessor controller: FieldController | undefined;
+  @property({ attribute: false }) accessor controller: PrimitiveFieldController | undefined;
   @property({ attribute: false }) accessor descriptor: FieldDescriptor | null = null;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   @state() private accessor resolvedDescriptor: FieldDescriptor | null = null;
-  @state() private accessor fieldState: FieldStateSnapshot | null = null;
+  @state() private accessor fieldState: PrimitiveFieldStateSnapshot | null = null;
   @state() private accessor descriptionVisibilityOverride: boolean | null = null;
 
   readonly #instanceId = ++fieldFrameSequence;
   #memoizedContext: PrimitiveFieldRenderContext | undefined;
   #memoizedDescriptor: FieldDescriptor | null = null;
-  #memoizedFieldState: FieldStateSnapshot | null = null;
+  #memoizedFieldState: PrimitiveFieldStateSnapshot | null = null;
   #memoizedControlId = "";
   #memoizedErrorId = "";
 
-  readonly #binding = new ControllerBinding<FieldController>(this, (ctrl) => {
+  readonly #binding = new ControllerBinding<PrimitiveFieldController>(this, (ctrl) => {
     this.resolvedDescriptor = this.descriptor;
     this.fieldState = ctrl?.state ?? null;
     if (!this.resolvedDescriptor?.props.description) {
@@ -193,7 +193,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
   #createContext(
     props: Record<string, unknown>,
-    state: FieldStateSnapshot | null,
+    state: PrimitiveFieldStateSnapshot | null,
     controlId: string,
     errorId: string,
   ): PrimitiveFieldRenderContext | undefined {

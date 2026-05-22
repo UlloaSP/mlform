@@ -5,7 +5,8 @@ description: Mount MLForm from React with cleanup.
 
 ```tsx
 import { useEffect, useMemo, useRef } from "react";
-import { createJsonTransport, mountForm, type MountedForm } from "mlform";
+import { mountForm, type MountedForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 import type { FormSchema } from "mlform/schema";
 
 export function PredictionForm() {

@@ -3,8 +3,8 @@
 
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins-ml";
-import type { FieldPresenter, ReportPresenter } from "@/presentation";
+import { createMlRegistryPack } from "@/builtins";
+import type { FieldPresenter, ReportPresenter } from "@/primitives";
 import {
   ValidationError,
   createForm,
@@ -13,13 +13,19 @@ import {
   type ReportDefinition,
 } from "@/runtime";
 import type { FieldConfig, ReportConfig } from "@/schema";
-import { PrimitiveFormElement } from "@/primitives/components/form-root";
 import {
   PrimitiveAsyncReportElement,
+  PrimitiveFormElement,
   createBuiltinPrimitiveRegistry,
   createPrimitiveRegistry,
-  mountForm,
+  mountForm as mountPrimitiveForm,
 } from "@/primitives";
+
+const mountForm: typeof mountPrimitiveForm = (container, form, options) =>
+  mountPrimitiveForm(container, form, {
+    descriptorRegistry: createMlRegistryPack().descriptorRegistry,
+    ...options,
+  });
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -1187,7 +1193,7 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("renders transport content inside classifier reports when explanations are enabled", async () => {
+  it("renders transport content inside classifier reports when details are enabled", async () => {
     const explainTransport = {
       submit: vi.fn().mockResolvedValue("root\n|- income <= 1000\n  |- approve"),
     };
@@ -1206,7 +1212,7 @@ describe("primitives", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
-            explanations: true,
+            details: true,
           },
         ],
       },
@@ -1242,7 +1248,7 @@ describe("primitives", () => {
 
     await flush();
     await flush();
-    // Allow the async explanation fetch to resolve.
+    // Allow the async report fetch to resolve.
     await flush();
     await flush();
 
@@ -1273,7 +1279,7 @@ describe("primitives", () => {
             kind: "regressor",
             id: "score",
             label: "Score",
-            explanations: true,
+            details: true,
           },
         ],
       },
@@ -1454,7 +1460,7 @@ describe("primitives", () => {
       },
     });
     registry.registerField(contextProbeDefinition);
-    pack.presentationRegistry.registerField({
+    pack.descriptorRegistry.registerField({
       kind: contextProbeDefinition.kind,
       describe: contextProbeDefinition.describe,
     });
@@ -1484,7 +1490,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       reportPane: "hidden",
     });
 
@@ -1552,7 +1558,7 @@ describe("primitives", () => {
       },
     });
     registry.registerField(probeDefinition);
-    pack.presentationRegistry.registerField({
+    pack.descriptorRegistry.registerField({
       kind: probeDefinition.kind,
       describe: probeDefinition.describe,
     });
@@ -1581,7 +1587,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       reportPane: "hidden",
     });
 
@@ -1652,7 +1658,7 @@ describe("primitives", () => {
       },
     });
     registry.registerReport(probeReportDefinition);
-    pack.presentationRegistry.registerReport({
+    pack.descriptorRegistry.registerReport({
       kind: probeReportDefinition.kind,
       describe: probeReportDefinition.describe,
     });
@@ -1692,7 +1698,7 @@ describe("primitives", () => {
         "probe-report",
         "test-probe-report",
       ),
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       reportTransport,
     });
 
@@ -1811,7 +1817,7 @@ describe("primitives", () => {
           const reportId = this.request?.reportId ?? "";
           const name =
             typeof this.request?.values?.name === "string" ? this.request.values.name : "";
-          const enabled = this.descriptor?.props?.explanations === true ? "yes" : "no";
+          const enabled = this.descriptor?.props?.details === true ? "yes" : "no";
           this.textContent = `${reportId}|${name}|${enabled}`;
         }
       }
@@ -1830,7 +1836,7 @@ describe("primitives", () => {
             kind: "probe-request-report";
             id?: string;
             label?: string;
-            explanations?: boolean;
+            details?: boolean;
           };
         },
       } as never,
@@ -1844,13 +1850,13 @@ describe("primitives", () => {
             id: config.id,
             label: config.label ?? "Probe",
             payload: context.payload,
-            explanations: config.explanations ?? false,
+            details: config.details ?? false,
           },
         };
       },
     });
     registry.registerReport(requestReportDefinition);
-    pack.presentationRegistry.registerReport({
+    pack.descriptorRegistry.registerReport({
       kind: requestReportDefinition.kind,
       describe: requestReportDefinition.describe,
     });
@@ -1863,7 +1869,7 @@ describe("primitives", () => {
             kind: "probe-request-report",
             id: "probe",
             label: "Probe",
-            explanations: true,
+            details: true,
           } as never,
         ],
       },
@@ -1886,7 +1892,7 @@ describe("primitives", () => {
         "probe-request-report",
         "test-request-only-report",
       ),
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
     });
 
     await flush();

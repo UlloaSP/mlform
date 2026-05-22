@@ -5,10 +5,12 @@ description: Rutas publicas de import expuestas por MLForm.
 
 | Export                 | Uso                                                                                                                                 |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `mlform`               | API del kit para aplicaciones, incluyendo `mountForm`, `mountWizardForm`, `mountTabsForm`, `mountAccordionForm` y `createFormView`. |
-| `mlform/kit`           | La misma superficie del kit con ruta explicita.                                                                                     |
-| `mlform/runtime`       | Form controller, registry, schema, transport y tipos.                                                                               |
+| `mlform/kit`           | API del kit para aplicaciones: `mountForm`, helpers de layout, labels, defaults de diseño y `createFormView`. |
+| `mlform/runtime`       | Form controller, validacion, hooks, condiciones y orquestacion de submit.                                     |
+| `mlform/schema`        | Tipos de schema, normalizacion, helpers de registry y contratos de request backend.                          |
+| `mlform/builtins`   | Fields, reports, presenters y pack ML por defecto.                                                           |
+| `mlform/transport`     | Adapters transport, middleware, resiliencia y orquestacion.                                                  |
 | `mlform/primitives`    | Web Components primitives y registry de renderers.                                                                                  |
-| `mlform/design-system` | APIs de theme, recipe, tokens y runtime de diseño.                                                                                  |
+| `mlform/design` | APIs de theme, recipe, tokens y runtime de diseño.                                                                                  |
 
-Prefiere `mlform` para montar formularios en aplicaciones. Usa subpaths para integraciones avanzadas.
+Importa desde subpaths explicitos. El paquete no expone modulo raiz.

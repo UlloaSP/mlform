@@ -9,16 +9,16 @@ Install the runtime package in an application:
 npm install mlform
 ```
 
-If you want the exact release documented here, install `0.1.9` explicitly:
+If you want the exact release documented here, install `0.1.10` explicitly:
 
 ```bash
-npm install mlform@0.1.9
+npm install mlform@0.1.10
 ```
 
-Import from the root package for normal application use:
+Import from the kit for normal application use:
 
 ```ts
-import { mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
 ```
 
 Use subpath imports only when you need a specific layer:
@@ -26,7 +26,7 @@ Use subpath imports only when you need a specific layer:
 ```ts
 import { createForm } from "mlform/runtime";
 import { createPrimitiveRegistry } from "mlform/primitives";
-import { defineTheme } from "mlform/design-system";
+import { defineTheme } from "mlform/design";
 ```
 
 For this repository, use Vite+:

@@ -4,6 +4,18 @@
 import type { FormController } from "@/runtime";
 import { kitErrorMessages } from "./constants";
 import type { ResolvedLayoutResult } from "./layout";
+import type { ResolvedFormLayoutNode } from "./types";
+
+const filterOpenSections = (
+  nodes: readonly ResolvedFormLayoutNode[],
+  openSectionIds: Set<string>,
+): ResolvedFormLayoutNode[] =>
+  nodes.flatMap<ResolvedFormLayoutNode>((node) => {
+    if (node.kind === "section") {
+      return openSectionIds.has(node.id) ? [node] : [];
+    }
+    return [node];
+  });
 
 export const validateCurrentWizardStep = async (
   form: FormController,
@@ -34,35 +46,27 @@ export const getActiveLayoutNodes = (
   openSectionIds: Set<string>,
 ) => {
   switch (resolvedLayout.layout.kind) {
-    case "single-page":
-      return resolvedLayout.layout.children;
+    case "stacked":
+    case "split":
+      return filterOpenSections(resolvedLayout.layout.children, openSectionIds);
     case "wizard":
-      return resolvedLayout.layout.steps[stepIndex]?.children ?? [];
+      return filterOpenSections(
+        resolvedLayout.layout.steps[stepIndex]?.children ?? [],
+        openSectionIds,
+      );
     case "tabs":
-      return resolvedLayout.layout.tabs[activeTabIndex]?.children ?? [];
-    case "accordion":
-      return resolvedLayout.layout.sections
-        .filter((section) => openSectionIds.has(section.id))
-        .flatMap((section) => section.children);
+      return filterOpenSections(
+        resolvedLayout.layout.tabs[activeTabIndex]?.children ?? [],
+        openSectionIds,
+      );
   }
 };
 
-export const assertAccordionSection = (
-  resolvedLayout: ResolvedLayoutResult,
-  accordionSections: readonly { id: string }[],
+export const assertDisclosureSection = (
+  disclosureSections: readonly { id: string }[],
   sectionId: string,
 ): void => {
-  if (resolvedLayout.layout.kind !== "accordion") {
-    throw new TypeError(kitErrorMessages.nonAccordionToggleSection);
-  }
-
-  if (!accordionSections.some((section) => section.id === sectionId)) {
-    throw new TypeError(kitErrorMessages.unknownAccordionSection(sectionId));
-  }
-};
-
-export const assertAccordionLayout = (resolvedLayout: ResolvedLayoutResult): void => {
-  if (resolvedLayout.layout.kind !== "accordion") {
-    throw new TypeError(kitErrorMessages.nonAccordionToggleSection);
+  if (!disclosureSections.some((section) => section.id === sectionId)) {
+    throw new TypeError(kitErrorMessages.unknownDisclosureSection(sectionId));
   }
 };

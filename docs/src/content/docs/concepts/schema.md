@@ -1,34 +1,32 @@
 ---
 title: Schema
-description: The FormSchema shape used by the current MLForm API.
+description: The form contract shared by UI, runtime, and backend code.
 ---
 
-A form schema has `fields` and optional `reports`.
+`FormSchema` names the inputs MLForm collects and the reports it expects back.
 
 ```ts
 import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [
-    {
-      id: "age",
-      kind: "number",
-      label: "Age",
-      min: 0,
-      max: 120,
-      required: true,
-    },
+    { id: "age", kind: "number", label: "Age", min: 0, max: 120, required: true },
   ],
-  reports: [
-    {
-      id: "risk",
-      kind: "classifier",
-      label: "Risk",
-    },
-  ],
+  reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
 };
 ```
 
-Every field has a `kind` and `label`. `id` is optional; if omitted, MLForm derives a stable slug from the label and resolves duplicates.
+Use stable `id` values in production. MLForm can derive ids from labels, but explicit ids keep backend payloads, tests, analytics, and saved data predictable.
 
-Common field properties include `description`, `required`, `disabled`, `hidden`, `readOnly`, `defaultValue`, `ui`, and conditional variants such as `hiddenWhen`.
+Core terms:
+
+| Term | Meaning |
+| --- | --- |
+| field | One value collected from the user. |
+| report | One model output shown after submit or fetch. |
+| kind | Registry key that selects validation and descriptor behavior. |
+| condition | Rule such as `hiddenWhen`, `disabledWhen`, or `readOnlyWhen`. |
+| normalized schema | Runtime-ready schema after ids, defaults, reports, and registry checks are resolved. |
+| inactive field | Hidden, disabled, or read-only field. Submit behavior depends on policy. |
+
+Schema should describe meaning, not screen placement. Put grouping, steps, tabs, and review screens in layout.

@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -50,12 +50,7 @@
     "dist/**"
   ],
   "type": "module",
-  "types": "dist/types/src/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/types/src/index.d.ts",
-      "import": "./dist/mlform.mjs"
-    },
     "./kit": {
       "types": "./dist/types/src/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
@@ -68,17 +63,9 @@
       "types": "./dist/types/src/schema/index.d.ts",
       "import": "./dist/mlform/schema.mjs"
     },
-    "./presentation": {
-      "types": "./dist/types/src/presentation/index.d.ts",
-      "import": "./dist/mlform/presentation.mjs"
-    },
-    "./builtins-ml": {
-      "types": "./dist/types/src/builtins-ml/index.d.ts",
-      "import": "./dist/mlform/builtins-ml.mjs"
-    },
-    "./behaviors": {
-      "types": "./dist/types/src/behaviors/index.d.ts",
-      "import": "./dist/mlform/behaviors.mjs"
+    "./builtins": {
+      "types": "./dist/types/src/builtins/index.d.ts",
+      "import": "./dist/mlform/builtins.mjs"
     },
     "./transport": {
       "types": "./dist/types/src/transport/index.d.ts",
@@ -88,9 +75,9 @@
       "types": "./dist/types/src/primitives/index.d.ts",
       "import": "./dist/mlform/primitives.mjs"
     },
-    "./design-system": {
-      "types": "./dist/types/src/design-system/index.d.ts",
-      "import": "./dist/mlform/design-system.mjs"
+    "./design": {
+      "types": "./dist/types/src/design/index.d.ts",
+      "import": "./dist/mlform/design.mjs"
     }
   },
   "publishConfig": {
@@ -108,11 +95,11 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.1",
     "jsdom": "^29.1.1",
     "typescript": "~6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vite-plugin-dts": "^5.0.0",
+    "vite-plugin-dts": "^5.0.1",
     "vite-plus": "latest",
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
@@ -123,5 +110,5 @@
   "engines": {
     "node": ">=24.9.0"
   },
-  "packageManager": "pnpm@11.1.2"
+  "packageManager": "pnpm@11.2.2"
 }

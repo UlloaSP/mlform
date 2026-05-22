@@ -3,26 +3,32 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins-ml";
-import { defineExplanationKind, registerDefinedExplanationKind } from "@/presentation";
-import { collectLayoutReferences, createFormView, flattenLayoutNodes } from "@/kit";
+import { createMlRegistryPack } from "@/builtins";
+import {
+  collectLayoutReferences,
+  createFormView,
+  defineReportKind,
+  flattenLayoutNodes,
+  registerDefinedReportKind,
+} from "@/kit";
 
 describe("kit view", () => {
-  it("builds an automatic single-page layout when layout is omitted", () => {
+  it("builds an automatic stacked layout when layout is omitted", () => {
     const pack = createMlRegistryPack();
-    registerDefinedExplanationKind(
+    registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
-      defineExplanationKind({
-        kind: "mock-explanation",
+      pack.descriptorRegistry,
+      defineReportKind({
+        kind: "mock-report",
         schema: z.object({
           id: z.string().optional(),
-          kind: z.literal("mock-explanation"),
+          kind: z.literal("mock-report"),
           label: z.string().optional(),
         }),
         fetch: () => ({
           submit: async () => ({ items: [] }),
         }),
+        resolve: ({ result }) => result.reports["mock-report"],
         render: {
           content: () => [],
         },
@@ -38,20 +44,22 @@ describe("kit view", () => {
           { id: "name", kind: "text", label: "Name" },
           { id: "age", kind: "number", label: "Age" },
         ],
-        explanations: [{ id: "why", kind: "mock-explanation", label: "Why" }],
-        reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
+        reports: [
+          { id: "why", kind: "mock-report", label: "Why" },
+          { id: "risk", kind: "classifier", label: "Risk" },
+        ],
       },
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
     });
 
     const snapshot = view.getSnapshot();
 
-    expect(snapshot.layout.kind).toBe("single-page");
-    expect(snapshot.layout.kind === "single-page" ? snapshot.layout.children : []).toEqual([
+    expect(snapshot.layout.kind).toBe("stacked");
+    expect(snapshot.layout.kind === "stacked" ? snapshot.layout.children : []).toEqual([
       { kind: "field", field: "name" },
       { kind: "field", field: "age" },
-      { kind: "explanation", explanation: "why" },
+      { kind: "report", report: "why" },
       { kind: "report", report: "risk" },
     ]);
     expect(snapshot.wizard).toBeNull();
@@ -111,19 +119,20 @@ describe("kit view", () => {
 
   it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", () => {
     const pack = createMlRegistryPack();
-    registerDefinedExplanationKind(
+    registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
-      defineExplanationKind({
-        kind: "mock-explanation",
+      pack.descriptorRegistry,
+      defineReportKind({
+        kind: "mock-report",
         schema: z.object({
           id: z.string().optional(),
-          kind: z.literal("mock-explanation"),
+          kind: z.literal("mock-report"),
           label: z.string().optional(),
         }),
         fetch: () => ({
           submit: async () => ({ items: [] }),
         }),
+        resolve: ({ result }) => result.reports["mock-report"],
         render: {
           content: () => [],
         },
@@ -137,11 +146,13 @@ describe("kit view", () => {
           { id: "name", kind: "text", label: "Name" },
           { id: "email", kind: "text", label: "Email" },
         ],
-        reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
-        explanations: [{ id: "why", kind: "mock-explanation", label: "Why" }],
+        reports: [
+          { id: "why", kind: "mock-report", label: "Why" },
+          { id: "risk", kind: "classifier", label: "Risk" },
+        ],
       },
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       layout: {
         kind: "tabs",
         tabs: [
@@ -149,7 +160,7 @@ describe("kit view", () => {
             title: "Profile",
             children: [
               { kind: "field", field: "name" },
-              { kind: "explanation", explanation: "why" },
+              { kind: "report", report: "why" },
             ],
           },
           {
@@ -173,7 +184,7 @@ describe("kit view", () => {
     });
     expect(view.getField("name")?.visibleInLayout).toBe(true);
     expect(view.getField("email")?.visibleInLayout).toBe(false);
-    expect(view.getExplanation("why")?.visibleInLayout).toBe(true);
+    expect(view.getReport("why")?.visibleInLayout).toBe(true);
     expect(view.getReport("risk")?.visibleInLayout).toBe(false);
 
     expect(view.nextTab()).toBe(true);
@@ -185,7 +196,7 @@ describe("kit view", () => {
     });
     expect(view.getField("name")?.visibleInLayout).toBe(false);
     expect(view.getField("email")?.visibleInLayout).toBe(true);
-    expect(view.getExplanation("why")?.visibleInLayout).toBe(false);
+    expect(view.getReport("why")?.visibleInLayout).toBe(false);
     expect(view.getReport("risk")?.visibleInLayout).toBe(true);
 
     view.setActiveTab("profile");
@@ -286,7 +297,7 @@ describe("kit view", () => {
         fields: [{ id: "name", kind: "text", label: "Name" }],
       },
       layout: {
-        kind: "single-page",
+        kind: "stacked",
         children: [
           {
             kind: "section",
@@ -300,7 +311,6 @@ describe("kit view", () => {
     const snapshot = view.getSnapshot();
     expect(view.getVisibleFields().map((field) => field.id)).toEqual(["name"]);
     expect(view.getVisibleReports()).toEqual([]);
-    expect(view.getVisibleExplanations()).toEqual([]);
     expect(view.getActiveLayoutNodes()).toHaveLength(1);
     expect(view.getNodeById("profile")?.kind).toBe("section");
     expect(flattenLayoutNodes(snapshot.layout).map((node) => node.kind)).toEqual([
@@ -310,16 +320,14 @@ describe("kit view", () => {
     expect(collectLayoutReferences(snapshot.layout)).toEqual({
       fields: ["name"],
       reports: [],
-      explanations: [],
     });
     expect(view.getLayoutReferences()).toEqual({
       fields: ["name"],
       reports: [],
-      explanations: [],
     });
   });
 
-  it("resolves accordion layouts and supports multi-open section controls", () => {
+  it("resolves disclosure sections and supports multi-open section controls", () => {
     const view = createFormView({
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
@@ -330,14 +338,17 @@ describe("kit view", () => {
         reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
       },
       layout: {
-        kind: "accordion",
-        sections: [
+        kind: "stacked",
+        children: [
           {
+            kind: "section",
             title: "Profile",
             children: [{ kind: "field", field: "name" }],
           },
           {
+            kind: "section",
             title: "Details",
+            defaultOpen: false,
             children: [
               { kind: "field", field: "email" },
               { kind: "report", report: "risk" },
@@ -347,7 +358,7 @@ describe("kit view", () => {
       },
     });
 
-    expect(view.getSnapshot().accordion).toEqual({
+    expect(view.getSnapshot().disclosure).toEqual({
       openSectionIds: ["profile"],
       sectionCount: 2,
     });
@@ -355,49 +366,23 @@ describe("kit view", () => {
     expect(view.getField("email")?.visibleInLayout).toBe(false);
 
     view.openSection("details");
-    expect(view.getSnapshot().accordion?.openSectionIds).toEqual(["profile", "details"]);
+    expect(view.getSnapshot().disclosure?.openSectionIds).toEqual(["profile", "details"]);
     expect(view.getField("email")?.visibleInLayout).toBe(true);
     expect(view.getReport("risk")?.visibleInLayout).toBe(true);
 
     view.closeSection("profile");
-    expect(view.getSnapshot().accordion?.openSectionIds).toEqual(["details"]);
+    expect(view.getSnapshot().disclosure?.openSectionIds).toEqual(["details"]);
     expect(view.getField("name")?.visibleInLayout).toBe(false);
 
     view.openAllSections();
-    expect(view.getSnapshot().accordion?.openSectionIds).toEqual(["profile", "details"]);
+    expect(view.getSnapshot().disclosure?.openSectionIds).toEqual(["profile", "details"]);
 
     view.closeAllSections();
-    expect(view.getSnapshot().accordion?.openSectionIds).toEqual([]);
+    expect(view.getSnapshot().disclosure?.openSectionIds).toEqual([]);
     expect(view.getActiveLayoutNodes()).toEqual([]);
   });
 
-  it("rejects invalid accordion layouts and section controls on non-accordion views", () => {
-    expect(() =>
-      createFormView({
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
-        schema: {
-          fields: [{ id: "name", kind: "text", label: "Name" }],
-        },
-        layout: {
-          kind: "accordion",
-          sections: [],
-        },
-      }),
-    ).toThrow("Accordion layout must define at least one section.");
-
-    expect(() =>
-      createFormView({
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
-        schema: {
-          fields: [{ id: "name", kind: "text", label: "Name" }],
-        },
-        layout: {
-          kind: "accordion",
-          sections: [{ title: "Empty", children: [] }],
-        },
-      }),
-    ).toThrow('Accordion section "empty" must contain at least one layout node.');
-
+  it("rejects unknown disclosure section controls", () => {
     const singlePageView = createFormView({
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
@@ -406,7 +391,7 @@ describe("kit view", () => {
     });
 
     expect(() => singlePageView.toggleSection("anything")).toThrow(
-      "Accordion section controls are only available for accordion layouts.",
+      'Unknown disclosure section "anything".',
     );
   });
 

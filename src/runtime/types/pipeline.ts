@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ExplanationController, ExplanationFetchRequest } from "./explanation";
 import type { FormController } from "./form";
+import type { ReportController, ReportFetchRequest } from "./report";
 import type { SubmitOptions, SubmitResult } from "./transport";
 
-export interface ExplanationExecutionResult {
+export interface ReportFetchExecutionResult {
   results: Record<string, unknown>;
   errors: Record<string, string>;
 }
 
 export interface PipelineArtifactContext {
   submitResult: SubmitResult;
-  explanationResults: Record<string, unknown>;
-  explanationErrors: Record<string, string>;
+  reportFetchResults: Record<string, unknown>;
+  reportFetchErrors: Record<string, string>;
 }
 
 export interface PipelineArtifactAdapter<TArtifacts extends Record<string, unknown> = {}> {
@@ -24,17 +24,17 @@ export interface ExecuteFormPipelineOptions<TArtifacts extends Record<string, un
   form: FormController;
   submit?: SubmitOptions;
   artifactAdapter?: PipelineArtifactAdapter<TArtifacts>;
-  explanationMode?: "none" | "all";
+  reportFetchMode?: "none" | "all";
 }
 
 export interface PipelineResult<TArtifacts extends Record<string, unknown> = {}> {
   submitResult: SubmitResult;
-  explanationResults: Record<string, unknown>;
-  explanationErrors: Record<string, string>;
+  reportFetchResults: Record<string, unknown>;
+  reportFetchErrors: Record<string, string>;
   artifacts: TArtifacts;
 }
 
-export interface ExplanationExecutionContext {
-  explanations: readonly ExplanationController[];
-  request: ExplanationFetchRequest;
+export interface ReportFetchExecutionContext {
+  reports: readonly ReportController[];
+  request: ReportFetchRequest;
 }

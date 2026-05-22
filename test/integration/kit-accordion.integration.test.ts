@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { mountAccordionForm } from "@/kit";
+import { mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -27,8 +27,8 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   return getShadow(renderer).querySelector("[aria-label]") as HTMLElement;
 };
 
-describe("kit accordion integration", () => {
-  it("mounts accordion UI, toggles sections, submits, and renders reports", async () => {
+describe("kit disclosure integration", () => {
+  it("mounts disclosure UI, toggles sections, submits, and renders reports", async () => {
     const submit = vi.fn().mockResolvedValue({
       reports: {
         risk: {
@@ -41,7 +41,7 @@ describe("kit accordion integration", () => {
     const container = document.createElement("div");
     document.body.append(container);
 
-    const mounted = mountAccordionForm(container, {
+    const mounted = mountForm(container, {
       transport: { submit },
       schema: {
         fields: [
@@ -51,14 +51,17 @@ describe("kit accordion integration", () => {
         reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
       },
       layout: {
-        kind: "accordion",
-        sections: [
+        kind: "stacked",
+        children: [
           {
+            kind: "section",
             title: "Profile",
             children: [{ kind: "field", field: "name" }],
           },
           {
+            kind: "section",
             title: "Details",
+            defaultOpen: false,
             children: [
               { kind: "field", field: "age" },
               { kind: "report", report: "risk" },
@@ -117,36 +120,40 @@ describe("kit accordion integration", () => {
     container.remove();
   });
 
-  it("replaces a previous mounted accordion in the same container", async () => {
+  it("replaces a previous mounted disclosure in the same container", async () => {
     const container = document.createElement("div");
     document.body.append(container);
 
-    const first = mountAccordionForm(container, {
+    const first = mountForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [{ id: "first", kind: "text", label: "First" }],
       },
       layout: {
-        kind: "accordion",
-        sections: [{ title: "First", children: [{ kind: "field", field: "first" }] }],
+        kind: "stacked",
+        children: [
+          { kind: "section", title: "First", children: [{ kind: "field", field: "first" }] },
+        ],
       },
     });
 
-    const second = mountAccordionForm(container, {
+    const second = mountForm(container, {
       transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
       schema: {
         fields: [{ id: "second", kind: "text", label: "Second" }],
       },
       layout: {
-        kind: "accordion",
-        sections: [{ title: "Second", children: [{ kind: "field", field: "second" }] }],
+        kind: "stacked",
+        children: [
+          { kind: "section", title: "Second", children: [{ kind: "field", field: "second" }] },
+        ],
       },
     });
 
     await flush();
 
     expect(first.host.isConnected).toBe(false);
-    expect(container.querySelectorAll("mlf-kit-accordion").length).toBe(1);
+    expect(container.querySelectorAll("mlf-kit-disclosure").length).toBe(1);
     expect(getShadow(second.host).textContent).toContain("Second");
 
     second.unmount();

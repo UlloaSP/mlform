@@ -4,7 +4,7 @@ description: Share request quotas across many MLForm processes.
 ---
 
 ```ts
-import { pipe, withRateLimit } from "mlform";
+import { pipe, withRateLimit } from "mlform/transport";
 
 const limiter = {
   async acquire(scope, lease) {

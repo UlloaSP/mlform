@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export { createExplanationController } from "./explanations";
-export { executeExplanations, executeFormPipeline } from "./submission";
+export { executeFormPipeline, executeReportFetches } from "./submission";
 export {
   EngineError,
   ReportPayloadError,
@@ -23,30 +22,17 @@ export {
 } from "./equality";
 export { identity, isPromiseLike } from "./utils";
 export type {
-  AfterExplanationContext,
   AllConditions,
   AfterSubmitContext,
   AfterValidateContext,
   AnyConditions,
-  BaseExplanationConfig,
   BaseFieldConfig,
   BaseReportConfig,
   BeforeSubmitContext,
   BeforeValidateContext,
-  ExplanationFetchContext,
-  ExplanationFetchFactory,
   CreateFormConfig,
   DeclarativeFieldCondition,
-  ExplanationConfig,
-  ExplanationController,
-  ExplanationDefinition,
-  ExplanationErrorContext,
-  ExplanationExecutionContext,
-  ExplanationExecutionResult,
-  ExplanationFetchRequest,
-  ExplanationFetchTransport,
-  ExplanationStateSnapshot,
-  ExplanationStatus,
+  AfterReportFetchContext,
   FieldValidationFnContext,
   FieldValueAdapter,
   FieldConfig,
@@ -72,13 +58,20 @@ export type {
   FormValidationResult,
   InactiveFieldPolicy,
   MaybePromise,
-  NormalizedExplanationConfig,
   NormalizedFieldConfig,
   NormalizedReportConfig,
   Registry,
   ReportConfig,
   ReportController,
   ReportDefinition,
+  ReportFetchContext,
+  ReportFetchErrorContext,
+  ReportFetchExecutionContext,
+  ReportFetchExecutionResult,
+  ReportFetchFactory,
+  ReportFetchRequest,
+  ReportFetchStatus,
+  ReportFetchTransport,
   ReportResolveContext,
   ReportStateSnapshot,
   ReportStatus,
@@ -114,5 +107,4 @@ export type {
 
 export type FieldHandle = import("./types").FieldController;
 export type ReportHandle = import("./types").ReportController;
-export type ExplanationHandle = import("./types").ExplanationController;
 export type FormRuntime = import("./types").FormController;

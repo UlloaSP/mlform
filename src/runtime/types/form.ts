@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
-  ExplanationConfig,
   FieldConfig,
   FieldStateSnapshot,
   FormSchema,
@@ -24,7 +23,6 @@ import type {
   Transport,
   TransportStreamEvent,
 } from "./transport";
-import type { ExplanationController, ExplanationStateSnapshot } from "./explanation";
 import type { FieldController } from "./field";
 import type { ReportController } from "./report";
 
@@ -59,7 +57,6 @@ export interface FormState {
   touched: boolean;
   values: Record<string, unknown>;
   reportStates: Record<string, ReportStateSnapshot>;
-  explanationStates: Record<string, ExplanationStateSnapshot>;
   submissionProgress: SubmissionProgressState | null;
   errors: {
     form: string[];
@@ -99,14 +96,14 @@ export interface AfterValidateContext {
   submitCount: number;
 }
 
-export interface AfterExplanationContext {
-  explanationId: string;
+export interface AfterReportFetchContext {
+  reportId: string;
   kind: string;
-  result: unknown;
+  payload: unknown;
 }
 
-export interface ExplanationErrorContext {
-  explanationId: string;
+export interface ReportFetchErrorContext {
+  reportId: string;
   kind: string;
   error: unknown;
 }
@@ -117,8 +114,8 @@ export interface FormHooks {
   beforeSubmit?: (context: BeforeSubmitContext) => MaybePromise<void>;
   afterSubmit?: (context: AfterSubmitContext) => MaybePromise<void>;
   onSubmitError?: (context: SubmitErrorContext) => MaybePromise<void>;
-  afterExplanation?: (context: AfterExplanationContext) => MaybePromise<void>;
-  onExplanationError?: (context: ExplanationErrorContext) => MaybePromise<void>;
+  afterReportFetch?: (context: AfterReportFetchContext) => MaybePromise<void>;
+  onReportFetchError?: (context: ReportFetchErrorContext) => MaybePromise<void>;
 }
 
 export interface CreateFormConfig {
@@ -140,11 +137,9 @@ export interface CreateFormConfig {
 export interface FormController {
   readonly fields: readonly FieldController[];
   readonly reports: readonly ReportController[];
-  readonly explanations: readonly ExplanationController[];
   readonly state: FormState;
   getField(id: string): FieldController | undefined;
   getReport(id: string): ReportController | undefined;
-  getExplanation(id: string): ExplanationController | undefined;
   getValues(): Record<string, unknown>;
   setValues(values: Record<string, unknown>): void;
   validate(): Promise<FormValidationResult>;
@@ -159,4 +154,4 @@ export interface FormController {
   ): () => void;
 }
 
-export type { ExplanationConfig, FieldConfig, FormSchema, Registry, ReportConfig };
+export type { FieldConfig, FormSchema, Registry, ReportConfig };

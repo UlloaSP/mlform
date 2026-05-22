@@ -6,7 +6,7 @@ import type {
   DesignSystemConfig,
   DesignSystemRegistry,
   ResolvedDesignSystem,
-} from "@/design-system";
+} from "@/design";
 import type {
   FormController,
   FormHooks,
@@ -14,16 +14,17 @@ import type {
   FormValidator,
   InactiveFieldPolicy,
   Registry,
+  RuntimeBehavior,
   Transport,
 } from "@/runtime";
 import type {
   PrimitiveContainerStrategy,
-  PrimitiveLayout,
   PrimitiveRegistry,
   PrimitiveReportTransport,
   PrimitiveTextOverrides,
 } from "@/primitives";
-import type { PresentationRegistry } from "@/presentation";
+import type { PrimitiveDescriptorRegistry } from "@/primitives";
+import type { FormLayoutConfig } from "./layout-types";
 
 export interface KitDesignSystemSnapshot extends Omit<
   DesignSystemConfig,
@@ -46,7 +47,8 @@ export interface MountFormOptions {
   schema: FormSchema;
   transport: Transport;
   registry?: Registry;
-  presentationRegistry?: PresentationRegistry;
+  descriptorRegistry?: PrimitiveDescriptorRegistry;
+  behaviors?: RuntimeBehavior[];
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
   designSystem?: DesignSystemConfig;
@@ -59,7 +61,7 @@ export interface MountFormOptions {
   inactiveFieldPolicy?: InactiveFieldPolicy;
   listenerErrorPolicy?: "ignore" | "throw-aggregate";
   onListenerError?: (error: unknown) => void;
-  layout?: PrimitiveLayout;
+  layout?: FormLayoutConfig;
   containerStrategy?: PrimitiveContainerStrategy;
   reportPane?: "auto" | "always" | "hidden";
   reportTransport?: PrimitiveReportTransport;
@@ -72,7 +74,7 @@ export interface MountedForm {
   readonly form: FormController;
   readonly host: HTMLElement;
   readonly engineRegistry: Registry;
-  readonly presentationRegistry: PresentationRegistry;
+  readonly descriptorRegistry: PrimitiveDescriptorRegistry;
   readonly primitiveRegistry: PrimitiveRegistry;
   readonly designSystemRegistry: DesignSystemRegistry;
   readonly designSystem: AttachedDesignSystem;

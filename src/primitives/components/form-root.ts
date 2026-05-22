@@ -3,8 +3,8 @@
 
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import type { PresentationRegistry } from "@/presentation";
-import { SubmissionAbortedError, type FormController } from "@/runtime";
+import type { PrimitiveDescriptorRegistry } from "../descriptors";
+import type { PrimitiveFormController } from "../controller-types";
 import {
   primitiveDefaultLabels,
   primitiveEventNames,
@@ -27,9 +27,11 @@ import {
 export class PrimitiveFormElement extends LitElement {
   static styles = formRootStyles;
 
-  @property({ attribute: false }) accessor form: FormController | undefined;
+  @property({ attribute: false }) accessor form: PrimitiveFormController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
-  @property({ attribute: false }) accessor presentationRegistry: PresentationRegistry | undefined;
+  @property({ attribute: false }) accessor descriptorRegistry:
+    | PrimitiveDescriptorRegistry
+    | undefined;
   @property({ type: String }) accessor layout: PrimitiveLayout = "stacked";
   @property({ type: String, attribute: "form-label" }) accessor formLabel =
     primitiveDefaultLabels.form;
@@ -50,7 +52,7 @@ export class PrimitiveFormElement extends LitElement {
 
   @state() private accessor formState: FormRenderState | null = null;
   #unsubscribe: (() => void) | null = null;
-  #connectedForm: FormController | undefined;
+  #connectedForm: PrimitiveFormController | undefined;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has("form")) {
@@ -82,13 +84,13 @@ export class PrimitiveFormElement extends LitElement {
     const visibleFields = presentVisibleFields(
       form,
       state.visibleFieldIds,
-      this.presentationRegistry,
+      this.descriptorRegistry,
     );
     const reportsToRender = presentVisibleReports(
       form,
       state.visibleReportIds,
       this.reportPane,
-      this.presentationRegistry,
+      this.descriptorRegistry,
     );
     const showSplitReports =
       this.reportPane !== "hidden" && (form.reports.length > 0 || state.hasFormErrors);
@@ -109,7 +111,6 @@ export class PrimitiveFormElement extends LitElement {
         reportsToRender,
         showReports,
         registry: this.registry,
-        presentationRegistry: this.presentationRegistry,
         text,
         formLabel: this.formLabel,
         reportsLabel: this.reportsLabel,
@@ -128,7 +129,6 @@ export class PrimitiveFormElement extends LitElement {
       reportsToRender,
       showReports,
       registry: this.registry,
-      presentationRegistry: this.presentationRegistry,
       text,
       formLabel: this.formLabel,
       reportsLabel: this.reportsLabel,
@@ -178,7 +178,7 @@ export class PrimitiveFormElement extends LitElement {
 
       this.dispatchEvent(
         new CustomEvent(
-          error instanceof SubmissionAbortedError
+          isSubmissionAbortedError(error)
             ? primitiveEventNames.submitAbort
             : primitiveEventNames.submitError,
           {
@@ -227,6 +227,9 @@ export class PrimitiveFormElement extends LitElement {
     );
   }
 }
+
+const isSubmissionAbortedError = (error: unknown): boolean =>
+  error instanceof Error && error.name === "SubmissionAbortedError";
 
 declare global {
   interface HTMLElementTagNameMap {

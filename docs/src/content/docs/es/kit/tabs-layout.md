@@ -3,7 +3,7 @@ title: Layout Tabs
 description: Usa el layout oficial de tabs o el mismo config mediante la API headless.
 ---
 
-`mountTabsForm()` monta la UI oficial de tabs.
+`mountForm()` monta la UI oficial de tabs.
 
 Caracteristicas:
 

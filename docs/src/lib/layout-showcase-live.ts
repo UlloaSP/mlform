@@ -1,9 +1,9 @@
-import { mountAccordionForm, mountForm, mountTabsForm, mountWizardForm } from "@/index";
+import { mountForm } from "@/kit";
 
 import {
-  accordionLayout,
   cleanupSymbol,
   createDemoTransport,
+  disclosureLayout,
   schema,
   tabsLayout,
   type Cleanup,
@@ -36,7 +36,7 @@ export const mountLayoutShowcase = (root: HTMLElement, locale: ShowcaseLocale = 
 
   const wizardHost = resolveHost(root, "wizard");
   if (wizardHost) {
-    const mounted = mountWizardForm(wizardHost, {
+    const mounted = mountForm(wizardHost, {
       schema,
       transport: createDemoTransport(),
       layout: wizardLayout,
@@ -46,7 +46,7 @@ export const mountLayoutShowcase = (root: HTMLElement, locale: ShowcaseLocale = 
 
   const tabsHost = resolveHost(root, "tabs");
   if (tabsHost) {
-    const mounted = mountTabsForm(tabsHost, {
+    const mounted = mountForm(tabsHost, {
       schema,
       transport: createDemoTransport(),
       layout: tabsLayout,
@@ -54,12 +54,12 @@ export const mountLayoutShowcase = (root: HTMLElement, locale: ShowcaseLocale = 
     cleanups.push(() => mounted.unmount());
   }
 
-  const accordionHost = resolveHost(root, "accordion");
-  if (accordionHost) {
-    const mounted = mountAccordionForm(accordionHost, {
+  const disclosureHost = resolveHost(root, "disclosure");
+  if (disclosureHost) {
+    const mounted = mountForm(disclosureHost, {
       schema,
       transport: createDemoTransport(),
-      layout: accordionLayout,
+      layout: disclosureLayout,
     });
     cleanups.push(() => mounted.unmount());
   }

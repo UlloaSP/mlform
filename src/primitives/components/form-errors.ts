@@ -3,7 +3,7 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import type { FormController } from "@/runtime";
+import type { PrimitiveFormController } from "../controller-types";
 import { primitiveStaticText, primitiveTagNames, type PrimitiveText } from "../constants";
 
 @customElement(primitiveTagNames.formErrors)
@@ -42,13 +42,13 @@ export class PrimitiveFormErrorsElement extends LitElement {
     }
   `;
 
-  @property({ attribute: false }) accessor form: FormController | undefined;
+  @property({ attribute: false }) accessor form: PrimitiveFormController | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   @state() private accessor formErrors: readonly string[] = [];
 
   #unsubscribe: (() => void) | null = null;
-  #connectedForm: FormController | undefined;
+  #connectedForm: PrimitiveFormController | undefined;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     if (changedProperties.has("form")) {

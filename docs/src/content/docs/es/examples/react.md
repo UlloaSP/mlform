@@ -7,7 +7,8 @@ MLForm renderiza Web Components, asi que la integracion con React es un wrapper 
 
 ```tsx
 import { useEffect, useRef } from "react";
-import { createJsonTransport, mountForm, type MountedForm } from "mlform";
+import { mountForm, type MountedForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 export function PredictionForm() {
   const ref = useRef<HTMLDivElement>(null);

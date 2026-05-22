@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { MLFormError } from "@/shared";
 import { transportErrorCodes } from "@/transport";
 import type { FormValidationResult } from "./types";
 
-export class EngineError extends MLFormError {
+export class EngineError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "EngineError";

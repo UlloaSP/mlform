@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { MLFormError } from "@/shared";
-
 export const transportErrorCodes = {
   TIMEOUT: "TIMEOUT",
   AUTH_FAILED: "AUTH_FAILED",
@@ -24,7 +22,7 @@ export type TransportErrorCode =
   | (typeof transportErrorCodes)[keyof typeof transportErrorCodes]
   | (string & {});
 
-export class TransportError extends MLFormError {
+export class TransportError extends Error {
   readonly cause: unknown;
   readonly source?: string;
   readonly status?: number;

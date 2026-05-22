@@ -6,7 +6,8 @@ description: Monta MLForm en un elemento host con los defaults del kit.
 `mountForm(container, options)` crea el form engine, monta los Web Components primitives, adjunta el sistema de diseño y devuelve un handle montado.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 const mounted = mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),

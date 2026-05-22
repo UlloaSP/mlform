@@ -8,7 +8,8 @@ description: Build a complete text, number, category, and classifier form.
 Collect three inputs and render one classifier report.
 
 ```ts
-import { createJsonTransport, mountForm } from "mlform";
+import { mountForm } from "mlform/kit";
+import { createJsonTransport } from "mlform/transport";
 
 mountForm(document.querySelector("#lead-score") as HTMLElement, {
   transport: createJsonTransport({ endpoint: "/api/lead-score" }),
