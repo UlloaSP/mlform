@@ -1,5 +1,46 @@
 # Todo
 
+## Precise Side Effects Todo
+
+- [x] Identify source modules with global registration side effects.
+- [x] Add precise package `sideEffects` metadata for published files.
+- [x] Verify build, checks, tests, pack metadata, and graph update.
+
+## Precise Side Effects Review
+
+- Added `package.json` side effects only for published kit/primitives entrypoints and primitive custom-element chunk.
+- Kept runtime, schema, transport, builtins, and design export modules tree-shakeable.
+- Verification: `vp build`, `vp check --fix`, `vp test`, `vp run typecheck`, `npm pack --dry-run --json`, and `graphify update .` passed.
+
+## Side Effects Revert Todo
+
+- [x] Re-read `AGENTS.md` and graph report.
+- [x] Diagnose published-package custom element registration loss.
+- [x] Remove brittle package `sideEffects` metadata.
+- [x] Verify build/check/test/pack and update graph.
+
+## Side Effects Revert Review
+
+- Removed `package.json.sideEffects`; package no longer tells consumer bundlers that unlisted modules are pure.
+- Cause: custom element registration is top-level runtime behavior, not an exported value. Precise side effects on generated hashed chunks is brittle; consumer bundlers can drop registration code and leave `mlf-*` tags undefined.
+- Verification: `vp build`, `vp check`, `vp test`, `npm pack --dry-run --json`, `git diff --check`, and `graphify update .` passed.
+
+## Bundle Size + Astro Config Todo
+
+- [x] Measure current package/build size and identify largest contributors.
+- [x] Check whether `docs/astro.config.mjs` can become TypeScript without breaking Astro.
+- [x] Apply smallest size/config changes that preserve public API.
+- [x] Verify build/check/test as far as environment supports.
+- [x] Update `DEBT.md` if debt picture changes and refresh graph after edits.
+
+## Bundle Size + Astro Config Review
+
+- Externalized runtime deps `lit` and `zod` from library output.
+- Renamed docs config to `docs/astro.config.ts`; Astro docs support `.ts`, not `.mts`.
+- Built JS output changed from 491,487 B min / about 113 kB gzip to 374,876 B min / 85,665 B gzip.
+- `DEBT.md` reviewed; no active debt change.
+- Verification: `vp build`, `vp run typecheck`, docs `vp run build`, `vp check`, `vp test`, `npm pack --dry-run --json`, `git diff --check`, and `graphify update .` passed.
+
 ## Module Rename Todo
 
 - [x] Rename legacy design package path to `design`.

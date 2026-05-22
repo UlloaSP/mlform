@@ -7,6 +7,7 @@ import dts from "vite-plugin-dts";
 import { defineConfig } from "vite-plus";
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+const isRuntimeDependency = (id: string) => id === "zod" || id === "lit" || id.startsWith("lit/");
 const toolIgnorePatterns = [
   "node_modules/**",
   "dist/**",
@@ -125,6 +126,9 @@ export default defineConfig({
     arrowParens: "always",
   },
   build: {
+    rollupOptions: {
+      external: isRuntimeDependency,
+    },
     lib: {
       entry: {
         "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
