@@ -13,6 +13,8 @@ export {
   normalizeTransportCapabilities,
 } from "./capabilities";
 export { getTransportPolicyContext, withTransportPolicyContext } from "./policy-context";
+export { createTransportRequestRunner, extractErrorMessage } from "./request-runner";
+export type { TransportRequestOutcome, TransportRequestRunner } from "./request-runner";
 export * from "./protocols";
 export * from "./middleware";
 export * from "./composition";

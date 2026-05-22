@@ -71,10 +71,6 @@
       "types": "./dist/types/src/builtins-ml/index.d.ts",
       "import": "./dist/mlform/builtins-ml.mjs"
     },
-    "./behaviors": {
-      "types": "./dist/types/src/behaviors/index.d.ts",
-      "import": "./dist/mlform/behaviors.mjs"
-    },
     "./transport": {
       "types": "./dist/types/src/transport/index.d.ts",
       "import": "./dist/mlform/transport.mjs"
@@ -103,11 +99,11 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.8.0",
+    "@types/node": "^25.9.1",
     "jsdom": "^29.1.1",
     "typescript": "~6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vite-plugin-dts": "^5.0.0",
+    "vite-plugin-dts": "^5.0.1",
     "vite-plus": "latest",
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
@@ -118,5 +114,5 @@
   "engines": {
     "node": ">=24.9.0"
   },
-  "packageManager": "pnpm@11.1.3"
+  "packageManager": "pnpm@11.2.2"
 }

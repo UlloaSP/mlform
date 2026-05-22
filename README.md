@@ -184,7 +184,7 @@ Built-in recipes:
 
 | Surface                | Use it for                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, transport, labels, and lifecycle utilities. |
+| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, labels, layout, and lifecycle utilities.    |
 | `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
 | `mlform/design-system` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |

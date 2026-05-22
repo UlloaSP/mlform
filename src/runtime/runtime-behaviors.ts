@@ -2,7 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { Registry } from "@/schema";
-import { slugify, isPromiseLike } from "./utils";
+import { normalizeSchemaId } from "@/schema";
+import { isPromiseLike } from "./utils";
 import type { InternalFieldController } from "./fields";
 import type {
   CreateFormConfig,
@@ -40,7 +41,7 @@ export const createRuntimeBehaviors = ({
   );
 
   const resolveField = (targetId: string): InternalFieldController | undefined => {
-    return fieldMap.get(targetId) ?? fieldMap.get(slugify(targetId));
+    return fieldMap.get(targetId) ?? fieldMap.get(normalizeSchemaId(targetId));
   };
 
   const createBehaviorContext = (): RuntimeBehaviorContext => ({

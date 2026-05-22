@@ -15,12 +15,12 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-05-19`
+- Last reviewed: `2026-05-22`
 - Current focus: no active debt recorded
 
 ## Active Debt
 
-- None.
+None.
 
 ## Recent Progress
 
@@ -69,11 +69,11 @@ This file is the required ledger for active technical debt, known bugs, architec
   - built-in ML constants/guards moved out of runtime internals
   - graphify output pruned of stale deleted explanation nodes and reclustered
 - module interface seam debt closed:
-  - report fetch request builder moved from `shared` to schema-owned contract API
+  - report fetch request builder moved from the old shared bucket to schema-owned contract API
   - runtime built-in ML constants facade removed
-  - ML pack factory moved out of `packs` cycle and exposed through built-ins/packs one-way
+  - ML pack factory moved out of its old composition cycle and exposed through built-ins
   - kit primitive imports routed through public `@/primitives`
-  - default ML composition accessed through public `@/packs` seam from UI layers
+  - default ML composition moved to `@/builtins-ml`
   - behavior contracts imported through public `@/runtime`
 - module root API enforcement added:
   - cross-module source imports use only `@/module` root index APIs
@@ -84,6 +84,16 @@ This file is the required ledger for active technical debt, known bugs, architec
   - wizard/tabs render from `layout.kind`
   - disclosure sections replace the former accordion layout kind
   - architecture test guards against future `@/module/subpath` and cross-module internal imports
+- docs concept map added and stale docs copy corrected:
+  - concepts sidebar now covers architecture, schema, layout, transport, presentation, and lifecycle
+  - mapped-category docs reduced below the 300-line cap
+- module-domain debt closed:
+  - public `behaviors` module removed; mapped-category behavior now belongs to `builtins-ml`
+  - internal `packs` module removed; ML default registry pack now lives in `builtins-ml`
+  - `shared` and the temporary `foundation` bucket removed; helpers moved to schema, transport, or built-in field ownership
+  - runtime schema normalization now uses schema-owned `normalizeSchema`
+  - kit no longer reexports transport helpers or transport option types
+  - primitives no longer create ML registry packs by default
 
 ## Notes
 

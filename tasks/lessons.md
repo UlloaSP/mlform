@@ -10,3 +10,4 @@
 - `graphify update --force` can still preserve deleted-symbol nodes; verify graph text, then prune/recluster if deleted domain nodes remain.
 - Build graphify from the intended corpus path first; if graphify writes relative paths, normalize root graph `source_file` values so later analysis cannot confuse docs/tests with source corpus.
 - Disclosure sections should be invisible layout wrappers first; title/description/toggle affordance must inherit design-system tokens instead of looking like standalone accordion cards.
+- Do not rename a shared bucket into another shared bucket. Move helpers to owning domains, use native platform APIs where they exist, and keep barrels as exports only.

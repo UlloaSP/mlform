@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export type AsyncRequestOutcome<TResult> =
+export type TransportRequestOutcome<TResult> =
   | {
       status: "completed";
       value: TResult;
@@ -15,11 +15,11 @@ export type AsyncRequestOutcome<TResult> =
       message: string;
     };
 
-export type AsyncRequestRunner = {
+export type TransportRequestRunner = {
   run<TResult>(
     submit: (signal: AbortSignal | undefined) => Promise<TResult>,
     signals?: readonly (AbortSignal | undefined)[],
-  ): Promise<AsyncRequestOutcome<TResult>>;
+  ): Promise<TransportRequestOutcome<TResult>>;
   abort(reason?: unknown): void;
 };
 
@@ -33,43 +33,12 @@ const isAbortLikeError = (error: unknown): boolean => {
   return error instanceof Error && error.name === "AbortError";
 };
 
-const combineAbortSignals = (signals: readonly (AbortSignal | undefined)[]) => {
+const composeAbortSignal = (signals: readonly (AbortSignal | undefined)[]) => {
   const filtered = signals.filter((signal): signal is AbortSignal => signal !== undefined);
-  if (filtered.length === 0) {
-    return {
-      signal: undefined,
-      cleanup: () => {},
-    };
-  }
-
-  const controller = new AbortController();
-  const cleanups: Array<() => void> = [];
-
-  for (const signal of filtered) {
-    if (signal.aborted) {
-      controller.abort(signal.reason);
-      return {
-        signal: controller.signal,
-        cleanup: () => {},
-      };
-    }
-
-    const onAbort = () => controller.abort(signal.reason);
-    signal.addEventListener("abort", onAbort, { once: true });
-    cleanups.push(() => signal.removeEventListener("abort", onAbort));
-  }
-
-  return {
-    signal: controller.signal,
-    cleanup: () => {
-      for (const cleanup of cleanups) {
-        cleanup();
-      }
-    },
-  };
+  return filtered.length === 0 ? undefined : AbortSignal.any(filtered);
 };
 
-export const createAsyncRequestRunner = (): AsyncRequestRunner => {
+export const createTransportRequestRunner = (): TransportRequestRunner => {
   let activeAbortController: AbortController | null = null;
 
   return {
@@ -77,16 +46,16 @@ export const createAsyncRequestRunner = (): AsyncRequestRunner => {
       activeAbortController?.abort("request-restarted");
       const abortController = new AbortController();
       activeAbortController = abortController;
-      const combined = combineAbortSignals([...signals, abortController.signal]);
+      const signal = composeAbortSignal([...signals, abortController.signal]);
 
       try {
-        const value = await submit(combined.signal);
-        if (abortController.signal.aborted || combined.signal?.aborted) {
+        const value = await submit(signal);
+        if (abortController.signal.aborted || signal?.aborted) {
           return { status: "aborted" };
         }
         return { status: "completed", value };
       } catch (error: unknown) {
-        if (abortController.signal.aborted || combined.signal?.aborted || isAbortLikeError(error)) {
+        if (abortController.signal.aborted || signal?.aborted || isAbortLikeError(error)) {
           return { status: "aborted" };
         }
         return {
@@ -98,7 +67,6 @@ export const createAsyncRequestRunner = (): AsyncRequestRunner => {
         if (activeAbortController === abortController) {
           activeAbortController = null;
         }
-        combined.cleanup();
       }
     },
     abort(reason?: unknown) {

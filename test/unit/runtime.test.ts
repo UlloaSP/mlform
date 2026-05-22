@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMappedCategoryBehavior, createMlRegistryPack } from "@/builtins-ml";
 import {
   defineFieldKind,
   defineReportKind,
@@ -24,7 +24,6 @@ import {
   executeFormPipeline,
   shallowEquality,
 } from "@/runtime";
-import { createMappedCategoryBehavior } from "@/behaviors";
 
 const builtinPresentationRegistry = createMlRegistryPack().presentationRegistry;
 

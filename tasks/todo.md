@@ -1,5 +1,79 @@
 # Todo
 
+## Foundation Correction Todo
+
+- [x] Record correction lesson before changing code.
+- [x] Remove `foundation` as a cross-domain bucket.
+- [x] Move schema id normalization into `schema`.
+- [x] Move built-in field coercion helpers into `builtins-ml`.
+- [x] Move transport request runner into `transport` and use native abort composition.
+- [x] Keep `index.ts` files as export barrels only.
+- [x] Update debt notes, verify, and refresh graph.
+
+## Foundation Correction Review
+
+- Removed `foundation`; no `@/foundation` imports remain.
+- Replaced custom abort signal fan-in with native `AbortSignal.any()` inside transport request runner.
+- Moved `normalizeSchemaId()` to schema and reused it from kit/runtime/builtins where id compatibility matters.
+- Moved date/record coercion for built-in fields under `builtins-ml`.
+- Moved built-in ML pack construction out of `index.ts` into `registry-pack.ts`; index is now exports only.
+- Also moved old index logic from builtins definitions, design-system recipes/themes, and design-system resolve into named files.
+- Verification: no `@/foundation`/`MLFormError`/old async runner refs, `src/**/index.ts` scan has no imports/lifecycle logic, `vp run typecheck`, focused tests, `vp check`, `vp test`, `vp build`, docs `vp run build`, source line cap, `git diff --check`, and `graphify update .` passed.
+
+## Module Domain Debt Closure Todo
+
+- [x] Move mapped-category behavior under its built-in ML owner and remove public `behaviors`.
+- [x] Remove `packs` indirection; use builtins-owned pack/default wiring directly.
+- [x] Deduplicate runtime schema normalization by using schema-owned normalization.
+- [x] Keep primitives agnostic from ML defaults.
+- [x] Stop kit from reexporting transport helpers; transport stays under `mlform/transport`.
+- [x] Replace `shared` bucket imports with owned schema/transport/builtins helpers.
+- [x] Update package/build/docs/tests/debt, verify, and update graph.
+
+## Module Domain Debt Closure Review
+
+- Mapped-category behavior now lives in `builtins-ml`; `mlform/behaviors` removed from package/build.
+- `src/packs` deleted; kit defaults use `@/builtins-ml`.
+- `src/runtime/schema` deleted; runtime calls schema-owned `normalizeSchema`.
+- Primitive mount default presentation registry is empty/generic, not ML pack-backed.
+- Kit public API no longer reexports transport helpers or transport option types.
+- `shared` bucket replaced by owned schema/transport/builtins helpers; temporary `foundation` removed in follow-up.
+- Verification: import/debt scans, source line cap, `vp run typecheck`, focused boundary/runtime/kit/primitives tests, `vp check`, `vp build`, full `vp test`, docs `vp run build`, `git diff --check`, and `graphify update .` passed.
+
+## Module Domain Audit Todo
+
+- [x] Inventory root `src` modules, package exports, and top-level barrels.
+- [x] Build import/re-export graph to identify pass-through modules and grouping modules.
+- [x] Apply domain-question test: each module must answer what it owns.
+- [x] Check suspicious submodules for shallow seams and aggregation-only interfaces.
+- [x] Report candidates with files, problem, deletion-test result, and likely home.
+
+## Module Domain Audit Review
+
+- Found real module-domain debt: `behaviors`, `packs`, `shared`, duplicated runtime/schema normalization, kit transport reexports, and primitive defaults depending on ML packs.
+- No source refactor performed in this audit turn.
+
+## Docs Concepts Audit Todo
+
+- [x] Inventory docs sections and list concepts each page assumes without defining.
+- [x] Build a minimal concept map: only concepts needed across multiple docs or before first use.
+- [x] Decide concept page boundaries: keep overview pages small, move API detail to guides/reference.
+- [x] Draft human-language explanations: direct, concrete, no teaching voice, no self-referential narration.
+- [x] Align EN/ES concepts and sidebar placement.
+- [x] Fix stale or duplicated concept copy found during audit.
+- [x] Update `DEBT.md` only if docs debt scope/status changes.
+- [x] Verify docs build, link/navigation sanity, line caps, and graph update after docs edits.
+
+## Docs Concepts Audit Review
+
+- Added Concepts sidebar with architecture, schema, layout, transport, presentation, and lifecycle.
+- Rewrote EN/ES concept pages in short direct language, keeping API detail in schema/kit/guides/reference.
+- Fixed stale mount/root-package copy in concepts, installation, primitives overview, and layout overview.
+- Reduced `schema/mapped-category.md` from 350 to 88 lines, keeping contract, validation, and usage essentials.
+- Updated `DEBT.md` review date and recent progress.
+- Verification: line cap scan, `git diff --check`, docs `vp run build`, root `vp check`, root `vp test`, and `graphify update .` passed.
+- Graph semantic doc update command is not available in this installed CLI; `graphify . --update` and `graphify --update .` both failed as unknown command forms.
+
 ## Disclosure Section Styling Todo
 
 - [x] Make disclosure section wrappers visually neutral.
@@ -75,7 +149,7 @@
 - Deleted runtime built-in constants facade.
 - Moved ML pack construction into `builtins-ml`; `packs/ml` now points one way to built-ins.
 - Routed kit primitive constants/types/registration through public `@/primitives`; moved fallback descriptor policy into kit snapshot code.
-- Kept default ML behavior through public `@/packs` seam for kit/primitives, preserving existing tests while avoiding direct UI -> builtins coupling.
+- Kept default ML behavior isolated during that pass; later module-domain closure moved it to `@/builtins-ml`.
 - Verification: `vp run typecheck`, focused runtime/kit/primitives tests, source line cap, import seam scanner, `vp check`, `vp test`, src-only graph update/recluster, graph source path scan, and graph explanation scan passed.
 
 ## Module Interface Graph Audit Todo

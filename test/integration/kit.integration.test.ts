@@ -11,7 +11,8 @@ import {
   registerDefinedFieldKind,
   registerDefinedReportKind,
 } from "@/presentation";
-import { createJsonTransport, createRoutingTransport, mountForm } from "@/kit";
+import { mountForm } from "@/kit";
+import { createJsonTransport, createRoutingTransport } from "@/transport";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();

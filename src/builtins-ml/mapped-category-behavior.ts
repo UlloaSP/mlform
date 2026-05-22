@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { MLFormError, slugify } from "@/shared";
+import { normalizeSchemaId } from "@/schema";
 import type {
   FieldHandle,
   RuntimeBehavior,
@@ -29,7 +29,7 @@ const resolveMappedField = (
   context: RuntimeBehaviorContext,
   targetId: string,
 ): FieldHandle | undefined => {
-  return context.getField(targetId) ?? context.getField(slugify(targetId));
+  return context.getField(targetId) ?? context.getField(normalizeSchemaId(targetId));
 };
 
 const applyMappedCategoryUpdate = async (
@@ -55,7 +55,7 @@ const applyMappedCategoryUpdate = async (
   for (const [targetId, targetValue] of Object.entries(selectedOption.mapping)) {
     const targetField = resolveMappedField(context, targetId);
     if (!targetField) {
-      throw new MLFormError(
+      throw new Error(
         `mapped-category "${event.fieldId}": target field "${targetId}" not found in schema.`,
       );
     }
@@ -77,7 +77,7 @@ export const createMappedCategoryBehavior = (): RuntimeBehavior => ({
       for (const option of config.options) {
         for (const targetId of Object.keys(option.mapping ?? {})) {
           if (!resolveMappedField(context, targetId)) {
-            throw new MLFormError(
+            throw new Error(
               `mapped-category "${field.id}": mapping references unknown field "${targetId}".`,
             );
           }
@@ -89,10 +89,3 @@ export const createMappedCategoryBehavior = (): RuntimeBehavior => ({
     await applyMappedCategoryUpdate(event, context);
   },
 });
-
-export type {
-  RuntimeBehavior,
-  RuntimeBehaviorContext,
-  RuntimeBehaviorSubmissionRecords,
-  RuntimeBehaviorValueChangeEvent,
-} from "@/runtime";

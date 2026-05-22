@@ -4,8 +4,8 @@
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { toDate } from "@/shared";
 import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import { toDate } from "./value-helpers";
 
 type DateFieldConfig = BaseFieldConfig & {
   kind: "date";

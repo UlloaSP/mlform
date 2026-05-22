@@ -19,14 +19,11 @@ That split matters because the same form can be rendered as:
 
 Use these surfaces:
 
-| Surface                | Use it for                                                          |
-| ---------------------- | ------------------------------------------------------------------- |
-| `mountForm()`          | built-in one-page UI with `stacked` or `split` primitive layout     |
-| `mountForm()`    | built-in wizard UI                                                  |
-| `mountForm()`      | built-in tabs UI                                                    |
-| `mountForm()` | built-in disclosure UI                                               |
-| `createFormView()`     | headless app-facing API for custom layouts                          |
-| `mlform/runtime`       | low-level state orchestration when the kit is still too opinionated |
+| Surface            | Use it for                                                          |
+| ------------------ | ------------------------------------------------------------------- |
+| `mountForm()`      | built-in UI selected by `layout.kind`                               |
+| `createFormView()` | headless app-facing API for custom layouts                          |
+| `mlform/runtime`   | low-level state orchestration when the kit is still too opinionated |
 
 ## Why layout is external
 

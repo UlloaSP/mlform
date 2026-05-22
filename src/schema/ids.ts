@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export const slugify = (value: string): string => {
+export const normalizeSchemaId = (value: string): string => {
   const normalized = value
     .trim()
     .toLowerCase()

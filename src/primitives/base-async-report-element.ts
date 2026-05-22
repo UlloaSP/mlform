@@ -3,7 +3,7 @@
 
 import { css, html, nothing } from "lit";
 import { state } from "lit/decorators.js";
-import { createAsyncRequestRunner } from "@/shared";
+import { createTransportRequestRunner } from "@/transport";
 import { PrimitiveReportElement } from "./base-report-element";
 import type { PrimitiveText } from "./constants";
 import type { PrimitiveReportRequest } from "./types";
@@ -116,7 +116,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   @state() private accessor transportResultValue: unknown = undefined;
   @state() private accessor transportErrorValue: string | null = null;
 
-  #transportRunner = createAsyncRequestRunner();
+  #transportRunner = createTransportRequestRunner();
   #lastFetchedRequest: PrimitiveReportRequest | null = null;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {

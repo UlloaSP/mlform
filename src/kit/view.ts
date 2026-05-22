@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createForm } from "@/runtime";
-import { createMlRegistryPack } from "@/packs";
+import { createMlRegistryPack } from "@/builtins-ml";
 import { kitErrorMessages } from "./constants";
 import { cloneSchemaRegistry } from "./defaults";
 import { resolveFormLayout } from "./layout";

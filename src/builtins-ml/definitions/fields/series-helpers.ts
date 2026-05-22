@@ -4,13 +4,13 @@
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig, FieldDefinition } from "@/schema";
-import { isRecord } from "@/shared";
 import { baseFieldShape } from "../shared";
 import { booleanFieldDefinition } from "./boolean";
 import { categoryFieldDefinition } from "./category";
 import { dateFieldDefinition } from "./date";
 import { numberFieldDefinition } from "./number";
 import { textFieldDefinition } from "./text";
+import { isRecord } from "./value-helpers";
 
 export type SeriesPoint = {
   field1: unknown;

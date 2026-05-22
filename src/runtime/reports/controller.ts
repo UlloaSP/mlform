@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { defaultEquality } from "../equality";
-import { createAsyncRequestRunner, extractErrorMessage } from "@/shared";
+import { createTransportRequestRunner, extractErrorMessage } from "@/transport";
 import { ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
 import type {
@@ -133,7 +133,7 @@ export const createReportController = ({
   const readonlyConfig = deepFreeze(cloneValue(config));
   setReportState(store, readonlyConfig.id, idleState);
 
-  const fetchRunner = createAsyncRequestRunner();
+  const fetchRunner = createTransportRequestRunner();
 
   const controller: InternalReportController = {
     get id() {

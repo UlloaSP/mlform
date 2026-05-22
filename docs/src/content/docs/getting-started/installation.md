@@ -15,7 +15,7 @@ If you want the exact release documented here, install `0.1.9` explicitly:
 npm install mlform@0.1.9
 ```
 
-Import from the root package for normal application use:
+Import from the kit for normal application use:
 
 ```ts
 import { mountForm } from "mlform/kit";

@@ -2,8 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { MaybePromise } from "./types";
-import { isRecord, slugify, toDate } from "@/shared";
-export { isRecord, slugify, toDate };
+
+export const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+};
 
 const isObjectLike = (value: unknown): value is Record<PropertyKey, unknown> | Function => {
   return (typeof value === "object" && value !== null) || typeof value === "function";

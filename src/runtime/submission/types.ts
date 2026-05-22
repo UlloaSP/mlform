@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { NormalizedFormSchema } from "../schema";
+import type { NormalizedFormSchema } from "@/schema";
 import type { InternalFieldState, EngineStore } from "../state";
 import type {
   FormHooks,

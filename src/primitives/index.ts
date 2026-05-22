@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import "./register";
-
 export { PrimitiveFieldElement } from "./base-field-element";
 export { PrimitiveAsyncReportElement } from "./base-async-report-element";
 export { PrimitiveReportElement } from "./base-report-element";

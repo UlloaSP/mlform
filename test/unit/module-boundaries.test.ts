@@ -5,16 +5,13 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const moduleNames = new Set([
-  "behaviors",
   "builtins-ml",
   "design-system",
   "kit",
-  "packs",
   "presentation",
   "primitives",
   "runtime",
   "schema",
-  "shared",
   "transport",
 ]);
 

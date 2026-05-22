@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { FieldController, ReportController } from "@/runtime";
-import { slugify } from "@/shared";
+import { normalizeSchemaId } from "@/schema";
 import { kitErrorMessages } from "./constants";
 import type { FormLayoutNode } from "./types";
 
@@ -46,7 +46,7 @@ export const nextNodeId = (
   preferred: string | undefined,
   counts: Map<string, number>,
 ): string => {
-  const base = slugify(preferred ?? prefix) || prefix;
+  const base = normalizeSchemaId(preferred ?? prefix) || prefix;
   const current = counts.get(base) ?? 0;
   counts.set(base, current + 1);
   return current === 0 ? base : `${base}-${current + 1}`;

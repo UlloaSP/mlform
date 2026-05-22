@@ -18,8 +18,14 @@ import {
   PrimitiveFormElement,
   createBuiltinPrimitiveRegistry,
   createPrimitiveRegistry,
-  mountForm,
+  mountForm as mountPrimitiveForm,
 } from "@/primitives";
+
+const mountForm: typeof mountPrimitiveForm = (container, form, options) =>
+  mountPrimitiveForm(container, form, {
+    presentationRegistry: createMlRegistryPack().presentationRegistry,
+    ...options,
+  });
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();

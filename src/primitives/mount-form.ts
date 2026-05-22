@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { FormController } from "@/runtime";
-import { createMlRegistryPack } from "@/packs";
+import { createPresentationRegistry } from "@/presentation";
 import "./register";
 import {
   primitiveDefaultLabels,
@@ -35,7 +35,7 @@ const resolveRegistry = (registry: PrimitiveRegistry | undefined): PrimitiveRegi
 const resolvePresentationRegistry = (
   registry: PresentationRegistry | undefined,
 ): PresentationRegistry => {
-  return registry?.clone() ?? createMlRegistryPack().presentationRegistry;
+  return registry?.clone() ?? createPresentationRegistry();
 };
 
 export const mountForm = (

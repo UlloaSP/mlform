@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { MLFormError } from "@/shared";
 import type {
   FieldConfig,
   FieldDefinition,
@@ -10,7 +9,7 @@ import type {
   ReportDefinition,
 } from "./index";
 
-export class RegistryError extends MLFormError {
+export class RegistryError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "RegistryError";

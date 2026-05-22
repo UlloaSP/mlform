@@ -2,9 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { Registry } from "@/schema";
+import { normalizeSchema } from "@/schema";
 import { createFieldController, type InternalFieldController } from "./fields";
 import { createReportController, type InternalReportController } from "./reports";
-import { normalizeSchema } from "./schema";
 import { createInitialEngineState, createStore, toFormState, transitionEngineState } from "./state";
 import { createFormSubmitter } from "./submission";
 import { createFormValidator } from "./validation";
