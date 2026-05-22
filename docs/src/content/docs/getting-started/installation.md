@@ -9,10 +9,10 @@ Install the runtime package in an application:
 npm install mlform
 ```
 
-If you want the exact release documented here, install `0.1.9` explicitly:
+If you want the exact release documented here, install `0.1.10` explicitly:
 
 ```bash
-npm install mlform@0.1.9
+npm install mlform@0.1.10
 ```
 
 Import from the kit for normal application use:
