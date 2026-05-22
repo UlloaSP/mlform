@@ -11,7 +11,7 @@ MLForm keeps five jobs separate:
 | Runtime | `mlform/runtime` | State, validation, conditions, submit flow, report state. |
 | Schema | `mlform/schema` | Field and report contracts shared by UI and backends. |
 | Primitives | `mlform/primitives` | Web Components that render fields, reports, errors, and submit controls. |
-| Design system | `mlform/design-system` | Themes, recipes, tokens, host attachment. |
+| Design system | `mlform/design` | Themes, recipes, tokens, host attachment. |
 
 Most app code starts with `mountForm()` from the kit.
 

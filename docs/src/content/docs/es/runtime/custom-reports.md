@@ -7,7 +7,7 @@ Usa `defineReportKind` para resolver payloads y devolver un arbol de presentacio
 
 ```ts
 import { z } from "zod";
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { defineReportKind, registerDefinedReportKind } from "mlform/kit";
 
 const riskSummaryReport = defineReportKind({

@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMappedCategoryBehavior, createMlRegistryPack } from "@/builtins-ml";
+import { createMappedCategoryBehavior, createMlRegistryPack } from "@/builtins";
 import { defineFieldKind, defineReportKind } from "@/kit";
 import { type FieldPresenter, type ReportPresenter } from "@/primitives";
 import type { FieldConfig, ReportConfig } from "@/schema";

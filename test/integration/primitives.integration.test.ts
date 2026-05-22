@@ -3,7 +3,7 @@
 
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/builtins";
 import type { FieldPresenter, ReportPresenter } from "@/primitives";
 import {
   ValidationError,

@@ -6,7 +6,7 @@ import type {
   DesignSystemConfig,
   DesignSystemRegistry,
   ResolvedDesignSystem,
-} from "@/design-system";
+} from "@/design";
 import type {
   FormController,
   FormHooks,

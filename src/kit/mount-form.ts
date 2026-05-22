@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { attachDesignSystem, type DesignSystemConfig } from "@/design-system";
+import { attachDesignSystem, type DesignSystemConfig } from "@/design";
 import {
   mountForm as mountPrimitiveForm,
   resolvePrimitiveText,

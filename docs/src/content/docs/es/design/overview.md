@@ -29,7 +29,7 @@ Usa `mode: "inherit"` cuando el host controla el tema claro/oscuro.
 Prefiere aplicacion CSSOM-first cuando ya tienes un elemento real o un shadow root:
 
 ```ts
-import { resolveDesignSystem, writeDesignSystemTokenDeclarations } from "mlform/design-system";
+import { resolveDesignSystem, writeDesignSystemTokenDeclarations } from "mlform/design";
 
 const resolved = resolveDesignSystem({
   theme: "cobalt",

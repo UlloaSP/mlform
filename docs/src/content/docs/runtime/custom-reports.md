@@ -7,7 +7,7 @@ Use `defineReportKind` for the normal extension path. It lets you resolve payloa
 
 ```ts
 import { z } from "zod";
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { defineReportKind, registerDefinedReportKind } from "mlform/kit";
 
 const riskSummaryReport = defineReportKind({

@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/builtins";
 import {
   collectLayoutReferences,
   createFormView,

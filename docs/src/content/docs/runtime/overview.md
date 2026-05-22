@@ -6,7 +6,7 @@ description: Use MLForm without the kit UI when you need headless state control.
 The engine owns schema normalization, field state, validation, conditions, transport submission, reports, and subscriptions. Use it directly when you want your own renderer or a non-DOM integration.
 
 ```ts
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { createForm } from "mlform/runtime";
 
 const form = createForm({

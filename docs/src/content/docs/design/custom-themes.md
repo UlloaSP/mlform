@@ -6,7 +6,7 @@ description: Define custom light and dark token schemes.
 Custom themes provide color and semantic tokens for light and dark schemes.
 
 ```ts
-import { createDesignSystemRegistry, defineGlobalTokens, defineTheme } from "mlform/design-system";
+import { createDesignSystemRegistry, defineGlobalTokens, defineTheme } from "mlform/design";
 
 const brandTheme = defineTheme({
   id: "brand",

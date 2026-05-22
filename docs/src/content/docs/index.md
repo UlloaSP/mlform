@@ -34,6 +34,6 @@ Choose your path:
 | I want a working form           | [Quick Start](./getting-started/quick-start/)       |
 | I need backend integration      | [First Backend](./getting-started/first-backend/)   |
 | I need custom fields or reports | [Custom Fields](./runtime/custom-fields/)           |
-| I need theming                  | [Design System Overview](./design-system/overview/) |
+| I need theming                  | [Design System Overview](./design/overview/) |
 
 If you are new to MLForm, read [Mental Model](./getting-started/mental-model/) before the reference pages.

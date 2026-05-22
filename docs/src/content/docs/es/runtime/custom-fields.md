@@ -7,7 +7,7 @@ Usa `defineFieldKind` para el camino normal. Registra el resultado en el schema 
 
 ```ts
 import { z } from "zod";
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { defineFieldKind, registerDefinedFieldKind } from "mlform/kit";
 
 const scoreField = defineFieldKind({

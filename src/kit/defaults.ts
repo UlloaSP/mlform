@@ -6,7 +6,7 @@ import {
   type DesignSystemConfig,
   type DesignSystemRegistry,
   mergeDesignSystemConfig,
-} from "@/design-system";
+} from "@/design";
 import { createRegistry, type Registry } from "@/schema";
 import {
   createBuiltinPrimitiveRegistry,

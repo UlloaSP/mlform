@@ -217,7 +217,7 @@ export interface DesignSystemRegistry {
 }
 
 /**
- * Strategy for animating design-system transitions (theme/scheme switches).
+ * Strategy for animating design transitions (theme/scheme switches).
  *
  * - `"none"` — instant switch (default).
  * - `"view-transition"` — uses the View Transitions API (`document.startViewTransition`)

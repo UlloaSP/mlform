@@ -36,7 +36,7 @@ Use `mode: "inherit"` when the host app owns color-scheme state.
 Prefer CSSOM-first token application when you already have a real element or shadow root:
 
 ```ts
-import { resolveDesignSystem, writeDesignSystemTokenDeclarations } from "mlform/design-system";
+import { resolveDesignSystem, writeDesignSystemTokenDeclarations } from "mlform/design";
 
 const resolved = resolveDesignSystem({
   theme: "cobalt",
@@ -70,4 +70,4 @@ Registry lifecycle:
 
 - `attachDesignSystem` and `mountForm` clone the provided registry at attach time.
 - Later mutations to original registry do not affect mounted instances.
-- To mutate one mounted instance, update `attached.registry` or the mounted design-system registry, then trigger a refresh with `updateDesignSystem({})` or another config update.
+- To mutate one mounted instance, update `attached.registry` or the mounted design registry, then trigger a refresh with `updateDesignSystem({})` or another config update.

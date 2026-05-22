@@ -17,11 +17,11 @@ import {
   migrateThemeTokens,
   resolveDesignSystem,
   writeDesignSystemTokenDeclarations,
-} from "@/design-system";
-import type { ResolvedDesignSystem } from "@/design-system";
+} from "@/design";
+import type { ResolvedDesignSystem } from "@/design";
 
-describe("design-system", () => {
-  it("resolves the builtin design-system defaults", () => {
+describe("design", () => {
+  it("resolves the builtin design defaults", () => {
     const resolved = resolveDesignSystem();
 
     expect(resolved.themeId).toBe("neutral");
@@ -695,10 +695,10 @@ describe("design-system", () => {
 
   it("hydrateDesignSystem reuses stylesheet-backed SSR tokens without initial re-apply", () => {
     const host = document.createElement("div");
-    host.id = "ssr-design-system-host";
+    host.id = "ssr-design-host";
     const resolved = resolveDesignSystem({ theme: "cobalt", recipe: "soft" });
     const style = document.createElement("style");
-    style.textContent = createDesignSystemStylesheet(resolved, "#ssr-design-system-host");
+    style.textContent = createDesignSystemStylesheet(resolved, "#ssr-design-host");
     document.head.append(style);
     document.body.append(host);
     host.style.colorScheme = resolved.effectiveScheme;

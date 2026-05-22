@@ -11,7 +11,7 @@ MLForm separa cinco trabajos:
 | Runtime | `mlform/runtime` | Estado, validacion, condiciones, submit, estado de reports. |
 | Schema | `mlform/schema` | Contratos de campos y reports compartidos por UI y backend. |
 | Primitives | `mlform/primitives` | Web Components para campos, reports, errores y submit. |
-| Design system | `mlform/design-system` | Themes, recipes, tokens e integracion con el host. |
+| Design system | `mlform/design` | Themes, recipes, tokens e integracion con el host. |
 
 La mayoria de apps empieza con `mountForm()` desde kit.
 

@@ -26,7 +26,7 @@ Use subpath imports only when you need a specific layer:
 ```ts
 import { createForm } from "mlform/runtime";
 import { createPrimitiveRegistry } from "mlform/primitives";
-import { defineTheme } from "mlform/design-system";
+import { defineTheme } from "mlform/design";
 ```
 
 For this repository, use Vite+:

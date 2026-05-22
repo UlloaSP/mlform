@@ -7,7 +7,7 @@ Use `defineFieldKind` for the normal extension path. It lets you define parsing,
 
 ```ts
 import { z } from "zod";
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { defineFieldKind, registerDefinedFieldKind } from "mlform/kit";
 
 const scoreField = defineFieldKind({

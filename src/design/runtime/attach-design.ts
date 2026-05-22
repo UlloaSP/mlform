@@ -4,7 +4,7 @@
 import { builtinDesignSystemRegistry } from "../registry";
 import { deepFreeze } from "../registry/deep-freeze";
 import { mergeDesignSystemConfig } from "../resolve";
-import { DesignSystemController } from "./design-system-controller";
+import { DesignSystemController } from "./design-controller";
 import type { AttachDesignSystemOptions, AttachedDesignSystem, DesignSystemConfig } from "../types";
 
 /**

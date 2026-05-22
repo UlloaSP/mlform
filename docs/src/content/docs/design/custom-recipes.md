@@ -11,7 +11,7 @@ import {
   defineComponentTokens,
   defineGlobalTokens,
   defineRecipe,
-} from "mlform/design-system";
+} from "mlform/design";
 
 const compactOps = defineRecipe({
   id: "compact-ops",

@@ -1,9 +1,9 @@
 ---
-title: Design System Reference
-description: Theme, recipe, and token APIs.
+title: Referencia Design System
+description: APIs de theme, recipe y tokens.
 ---
 
-Exports from `mlform/design-system` include:
+Exports desde `mlform/design`:
 
 - `attachDesignSystem`
 - `resolveDesignSystem`
@@ -16,9 +16,9 @@ Exports from `mlform/design-system` include:
 - `defineTheme`
 - `defineRecipe`
 - `builtinDesignSystemRegistry`
-- built-in themes and recipes
+- themes y recipes integrados
 
-Important types:
+Tipos importantes:
 
 - `DesignSystemConfig`
 - `ThemeManifest`
@@ -31,4 +31,4 @@ Important types:
 - `DesignSystemRegistry`
 - `AttachedDesignSystem`
 
-Use custom themes for brand colors and custom recipes for density, motion, and component token packages.
+Usa themes personalizados para colores de marca y recipes personalizadas para densidad, movimiento y paquetes de tokens de componentes.

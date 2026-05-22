@@ -6,7 +6,7 @@ description: Per-component token defaults and override patterns.
 MLForm exposes component-level token defaults through `componentKeys` and `componentTokenDefaults`.
 
 ```ts
-import { componentKeys, componentTokenDefaults } from "mlform/design-system";
+import { componentKeys, componentTokenDefaults } from "mlform/design";
 ```
 
 Use component tokens when one part of the UI needs a different surface, border, radius, or shadow without changing the whole theme.

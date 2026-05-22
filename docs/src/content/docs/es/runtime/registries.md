@@ -4,7 +4,7 @@ description: Registra campos e informes integrados o personalizados.
 ---
 
 ```ts
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { createRegistry } from "mlform/schema";
 
 const empty = createRegistry();

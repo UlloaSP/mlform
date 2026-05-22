@@ -9,7 +9,7 @@ description: Full API guide for the app-facing headless kit controller.
 const view = createFormView(options);
 ```
 
-`CreateFormViewOptions` is the headless state/layout input surface. Mounted UI concerns such as primitive and design-system registries stay on `mountForm()` and the built-in shell mounts.
+`CreateFormViewOptions` is the headless state/layout input surface. Mounted UI concerns such as primitive and design registries stay on `mountForm()` and the built-in shell mounts.
 
 ## Input options
 

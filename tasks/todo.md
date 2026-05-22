@@ -1,5 +1,20 @@
 # Todo
 
+## Module Rename Todo
+
+- [x] Rename legacy design package path to `design`.
+- [x] Rename legacy built-in ML package path to `builtins`.
+- [x] Update package exports, build aliases, docs, tests, and internal imports.
+- [x] Update `DEBT.md`, verify old public paths are gone, run checks, and refresh graph.
+
+## Module Rename Review
+
+- Renamed source modules to `src/design` and `src/builtins`.
+- Renamed public package exports/build entries to `mlform/design` and `mlform/builtins`.
+- Updated internal imports, tests, README, docs imports, docs routes, and reference pages.
+- Preserved design-system runtime event/CSS names; those are runtime contracts, not module paths.
+- Verification: old public-path scan clean, source line cap clean, import matrix coherent, `vp run typecheck`, module boundary test, `vp check --fix`, full `vp test`, `vp build`, docs `vp run build`, `git diff --check`, and `graphify update .` passed.
+
 ## Presentation Module Removal Todo
 
 - [x] Move visual descriptor contract into `primitives`.
@@ -16,7 +31,7 @@
 - Moved `defineFieldKind`, `defineReportKind`, and `registerDefined*Kind` to `kit`.
 - Renamed `presentationRegistry` wiring to `descriptorRegistry`.
 - Removed `presentation` concept docs/sidebar/package refs.
-- Made `schema`, `transport`, `design-system`, and `primitives` dependency-free from other MLForm modules; primitives now use local structural controller/request contracts.
+- Made `schema`, `transport`, `design`, and `primitives` dependency-free from other MLForm modules; primitives now use local structural controller/request contracts.
 - Verification: import scans clean, source line cap clean, `vp run typecheck`, focused tests, `vp check`, full `vp test`, `vp build`, docs `vp run build`, `git diff --check`, and `graphify update .` passed.
 
 ## Foundation Correction Todo
@@ -24,7 +39,7 @@
 - [x] Record correction lesson before changing code.
 - [x] Remove `foundation` as a cross-domain bucket.
 - [x] Move schema id normalization into `schema`.
-- [x] Move built-in field coercion helpers into `builtins-ml`.
+- [x] Move built-in field coercion helpers into `builtins`.
 - [x] Move transport request runner into `transport` and use native abort composition.
 - [x] Keep `index.ts` files as export barrels only.
 - [x] Update debt notes, verify, and refresh graph.
@@ -34,9 +49,9 @@
 - Removed `foundation`; no `@/foundation` imports remain.
 - Replaced custom abort signal fan-in with native `AbortSignal.any()` inside transport request runner.
 - Moved `normalizeSchemaId()` to schema and reused it from kit/runtime/builtins where id compatibility matters.
-- Moved date/record coercion for built-in fields under `builtins-ml`.
+- Moved date/record coercion for built-in fields under `builtins`.
 - Moved built-in ML pack construction out of `index.ts` into `registry-pack.ts`; index is now exports only.
-- Also moved old index logic from builtins definitions, design-system recipes/themes, and design-system resolve into named files.
+- Also moved old index logic from builtins definitions, design recipes/themes, and design resolve into named files.
 - Verification: no `@/foundation`/`MLFormError`/old async runner refs, `src/**/index.ts` scan has no imports/lifecycle logic, `vp run typecheck`, focused tests, `vp check`, `vp test`, `vp build`, docs `vp run build`, source line cap, `git diff --check`, and `graphify update .` passed.
 
 ## Module Domain Debt Closure Todo
@@ -51,8 +66,8 @@
 
 ## Module Domain Debt Closure Review
 
-- Mapped-category behavior now lives in `builtins-ml`; `mlform/behaviors` removed from package/build.
-- `src/packs` deleted; kit defaults use `@/builtins-ml`.
+- Mapped-category behavior now lives in `builtins`; `mlform/behaviors` removed from package/build.
+- `src/packs` deleted; kit defaults use `@/builtins`.
 - `src/runtime/schema` deleted; runtime calls schema-owned `normalizeSchema`.
 - Primitive mount default presentation registry is empty/generic, not ML pack-backed.
 - Kit public API no longer reexports transport helpers or transport option types.
@@ -96,13 +111,13 @@
 ## Disclosure Section Styling Todo
 
 - [x] Make disclosure section wrappers visually neutral.
-- [x] Make section title, description, and +/- control inherit design-system tokens.
+- [x] Make section title, description, and +/- control inherit design tokens.
 - [x] Verify focused kit tests, typecheck/check, line cap, and graph update.
 
 ## Disclosure Section Styling Review
 
 - Disclosure sections now render as neutral layout wrappers.
-- Section title, description, and +/- affordance use semantic design-system tokens.
+- Section title, description, and +/- affordance use semantic design tokens.
 - Focus ring lives on the small +/- affordance, keeping the wrapper visually light.
 - `DEBT.md` reviewed; no active debt change.
 - Verification: focused kit tests, `vp run typecheck`, source line cap, `vp check`, and src-only graph update/recluster passed.
@@ -146,7 +161,7 @@
 
 ## Public Module API Enforcement Review
 
-- Exported needed primitive/builtins/design-system symbols from module root APIs.
+- Exported needed primitive/builtins/design symbols from module root APIs.
 - Rewrote test/docs imports to module roots.
 - Rewrote builtins internal absolute subpath imports to relative internal imports.
 - Added `test/unit/module-boundaries.test.ts` to reject module subpath aliases and cross-module internal imports.
@@ -155,8 +170,8 @@
 ## Module Interface Debt Closure Todo
 
 - [x] Move report fetch request builder out of `shared` to schema-owned contract seam.
-- [x] Remove upward `runtime -> builtins-ml` constants dependency.
-- [x] Break `builtins-ml <-> packs` composition cycle.
+- [x] Remove upward `runtime -> builtins` constants dependency.
+- [x] Break `builtins <-> packs` composition cycle.
 - [x] Route kit primitive usage through public primitive API, not internal files.
 - [x] Route UI default ML composition through public pack seam.
 - [x] Replace `behaviors -> runtime/types` with runtime public API.
@@ -166,9 +181,9 @@
 
 - Moved `createReportFetchRequest()` to `schema` and removed `shared -> schema`.
 - Deleted runtime built-in constants facade.
-- Moved ML pack construction into `builtins-ml`; `packs/ml` now points one way to built-ins.
+- Moved ML pack construction into `builtins`; `packs/ml` now points one way to built-ins.
 - Routed kit primitive constants/types/registration through public `@/primitives`; moved fallback descriptor policy into kit snapshot code.
-- Kept default ML behavior isolated during that pass; later module-domain closure moved it to `@/builtins-ml`.
+- Kept default ML behavior isolated during that pass; later module-domain closure moved it to `@/builtins`.
 - Verification: `vp run typecheck`, focused runtime/kit/primitives tests, source line cap, import seam scanner, `vp check`, `vp test`, src-only graph update/recluster, graph source path scan, and graph explanation scan passed.
 
 ## Module Interface Graph Audit Todo
@@ -180,8 +195,8 @@
 
 ## Module Interface Graph Audit Review
 
-- Graph top cross-module edges: `kit -> primitives` 26, `builtins-ml -> schema` 16, `primitives -> runtime` 16, `primitives -> presentation` 11, `kit -> runtime` 8.
-- Confirmed real seam debt: `shared <-> schema`, `runtime -> builtins-ml`, `builtins-ml <-> packs`, kit importing primitive internals, generic UI entrypoints creating ML packs, and `behaviors` importing `runtime/types`.
+- Graph top cross-module edges: `kit -> primitives` 26, `builtins -> schema` 16, `primitives -> runtime` 16, `primitives -> presentation` 11, `kit -> runtime` 8.
+- Confirmed real seam debt: `shared <-> schema`, `runtime -> builtins`, `builtins <-> packs`, kit importing primitive internals, generic UI entrypoints creating ML packs, and `behaviors` importing `runtime/types`.
 - Added active debt entries to `DEBT.md` with scope, reason, impact, and exit condition.
 - Verification: graph matrix script plus source import scan.
 
@@ -212,9 +227,9 @@
 ## Module Debt Closure Review
 
 - Added schema-owned neutral `SubmitResult` and shared report fetch request builder.
-- Removed primitive/design-system registries from `createFormView`; mounted adapters own UI registries.
+- Removed primitive/design registries from `createFormView`; mounted adapters own UI registries.
 - Replaced kit error-navigation primitive DOM import with a focus adapter.
-- Moved built-in ML constants to `builtins-ml` and date/report helpers to shared/schema-facing modules.
+- Moved built-in ML constants to `builtins` and date/report helpers to shared/schema-facing modules.
 - Pruned stale explanation nodes from graphify output after `graphify update --force` still preserved deleted nodes, then reclustered graph.
 - Verification: `vp run typecheck`, focused runtime/kit/primitives tests, full `vp check`, full `vp test`, docs `vp run build`, source line cap, source/grafo explanation scans.
 
@@ -277,8 +292,8 @@
 
 - Closed all active `DEBT.md` entries.
 - Split remaining oversized source files and kept every `src/**/*.ts` file at or below 300 lines.
-- Moved runtime-owned builtins under `builtins-ml/definitions`, removed `describe` from runtime definition aliases, renamed docs/tests from engine paths to runtime paths, and simplified `cloneSchemaRegistry`.
-- Fixed design-system fallback drift so full tests pass with neutral defaults.
+- Moved runtime-owned builtins under `builtins/definitions`, removed `describe` from runtime definition aliases, renamed docs/tests from engine paths to runtime paths, and simplified `cloneSchemaRegistry`.
+- Fixed design fallback drift so full tests pass with neutral defaults.
 - Verification: `vp check`, `vp run typecheck`, focused debt tests, and full `vp test` passed.
 
 ## Debt Continuation Todo
@@ -293,7 +308,7 @@
 - Split stacked/split form root CSS into `form-root-styles.ts` + `form-root-split-styles.ts`.
 - Split series builtin helpers into `series-helpers.ts`; public `seriesFieldDefinition` unchanged.
 - Verification: `vp check --fix`, `vp run typecheck`, focused primitives/builtins tests, and `graphify update .` passed.
-- Remaining oversized source files: `design-system-controller.ts`, primitive `series-field.ts`, `create-submitter.ts`, `create-runtime.ts`, `fanout.ts`.
+- Remaining oversized source files: `design-controller.ts`, primitive `series-field.ts`, `create-submitter.ts`, `create-runtime.ts`, `fanout.ts`.
 
 ## Old Compatibility Debt Todo
 
@@ -311,7 +326,7 @@
 - Deleted `src/runtime/declarative/*`; declarative helpers now live under `presentation`.
 - Removed kit auto-promotion from schema registry `describe` functions into presentation registry.
 - Updated custom-kind tests/docs to use explicit schema + presentation registration.
-- Verification: `vp check`, `vp run typecheck`, focused kit/builtins tests, and `graphify update .` passed. Full `vp test` still fails 3 existing design-system default-theme tests expecting `neutral` while dirty state resolves `cobalt`.
+- Verification: `vp check`, `vp run typecheck`, focused kit/builtins tests, and `graphify update .` passed. Full `vp test` still fails 3 existing design default-theme tests expecting `neutral` while dirty state resolves `cobalt`.
 
 ## Error Navigation Todo
 
@@ -328,7 +343,7 @@
 - Added kit error navigation for wizard/tabs/accordion: reveal invalid step/tab/section, then scroll/focus field.
 - Added single-file regression suite covering stacked primitive, wizard, tabs, and accordion error navigation.
 - Verification: focused error-navigation test passed; existing kit/primitives integration tests passed; `vp run typecheck` passed; graph updated.
-- Blockers: `vp check` still fails formatting in existing dirty design-system files `src/design-system/registry/builtins.ts` and `src/design-system/themes/clickhouse.ts`; full `vp test` still fails 3 design-system default-theme tests expecting `neutral` while current dirty state resolves `cobalt`.
+- Blockers: `vp check` still fails formatting in existing dirty design files `src/design/registry/builtins.ts` and `src/design/themes/clickhouse.ts`; full `vp test` still fails 3 design default-theme tests expecting `neutral` while current dirty state resolves `cobalt`.
 
 ## Dark Layout Color Todo
 
@@ -343,7 +358,7 @@
 - Replaced tabs/accordion plain button `#fff` backgrounds with input surface tokens.
 - Updated `DEBT.md` to remove stale `form-root-styles.ts` oversized entry; file is 271 lines after this change.
 - Verification: `git diff --check` passed; graph updated.
-- Blockers: `vp check` fails existing formatting in `src/design-system/themes/clickhouse.ts`; `vp run typecheck` fails existing missing exports from design-system index files; `vp test` fails existing design-system resolver errors from that same dirty design-system state.
+- Blockers: `vp check` fails existing formatting in `src/design/themes/clickhouse.ts`; `vp run typecheck` fails existing missing exports from design index files; `vp test` fails existing design resolver errors from that same dirty design state.
 
 - [x] Read `AGENTS.md` and graph report.
 - [x] Find classifier report `details` root usage.

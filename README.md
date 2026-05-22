@@ -187,7 +187,7 @@ Built-in recipes:
 | `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, labels, layout, and lifecycle utilities.    |
 | `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
-| `mlform/design-system` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
+| `mlform/design` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
 | `mlform/transport`     | Transport composition, middleware, resilience policies, and orchestration helpers.                                         |
 
 ## Custom Domain Kinds
@@ -195,7 +195,7 @@ Built-in recipes:
 When built-in kinds are not enough, define your own field and report kinds without rewriting the normal rendering path.
 
 ```ts
-import { createMlRegistryPack } from "mlform/builtins-ml";
+import { createMlRegistryPack } from "mlform/builtins";
 import { defineFieldKind, registerDefinedFieldKind } from "mlform/presentation";
 import { z } from "zod";
 
@@ -274,7 +274,7 @@ If you want a built-in step UI, use `mountForm()` with the same layout config.
 - Transport guide: https://ulloasp.github.io/mlform/kit/transport/
 - Headless kit: https://ulloasp.github.io/mlform/kit/headless-kit/
 - Wizard layout: https://ulloasp.github.io/mlform/kit/wizard-layout/
-- Design system: https://ulloasp.github.io/mlform/design-system/overview/
+- Design system: https://ulloasp.github.io/mlform/design/overview/
 - API reference: https://ulloasp.github.io/mlform/reference/kit/
 - Migration guide: https://ulloasp.github.io/mlform/migration/from-legacy-mlform/
 - Versioning notes: https://ulloasp.github.io/mlform/support/versioning/

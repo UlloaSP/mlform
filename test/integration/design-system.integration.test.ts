@@ -2,8 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins-ml";
-import { attachDesignSystem } from "@/design-system";
+import { createMlRegistryPack } from "@/builtins";
+import { attachDesignSystem } from "@/design";
 import { createForm } from "@/runtime";
 import { mountForm } from "@/primitives";
 
@@ -13,7 +13,7 @@ const flush = async (): Promise<void> => {
   await Promise.resolve();
 };
 
-describe("design-system integration", () => {
+describe("design integration", () => {
   it("applies tokens, supports patch vs replace semantics, and restores host state on disconnect", async () => {
     const form = createForm({
       schema: {
@@ -153,7 +153,7 @@ describe("design-system integration", () => {
     container.remove();
   });
 
-  it("inherits the resolved scheme from a parent design-system host", async () => {
+  it("inherits the resolved scheme from a parent design host", async () => {
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Prompt" }],

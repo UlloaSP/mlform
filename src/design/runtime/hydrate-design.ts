@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { AttachDesignSystemOptions, AttachedDesignSystem } from "../types";
-import { createAttachedDesignSystem } from "./attach-design-system";
+import { createAttachedDesignSystem } from "./attach-design";
 
 /**
  * Hydrate a server-rendered design system onto a host element.

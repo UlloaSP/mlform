@@ -1,4 +1,4 @@
-import { attachDesignSystem, builtinDesignSystemRegistry } from "@/design-system";
+import { attachDesignSystem, builtinDesignSystemRegistry } from "@/design";
 import { createFormView } from "@/kit";
 import type { FormViewSnapshot, ResolvedFormLayoutNode } from "@/kit";
 import { createBuiltinPrimitiveRegistry } from "@/primitives";

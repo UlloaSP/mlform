@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import { mountForm as mountKitForm } from "@/kit";
-import { createMlRegistryPack } from "@/builtins-ml";
+import { createMlRegistryPack } from "@/builtins";
 import { createForm } from "@/runtime";
 import { mountForm } from "@/primitives";
 

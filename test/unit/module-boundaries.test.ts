@@ -5,8 +5,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const moduleNames = new Set([
-  "builtins-ml",
-  "design-system",
+  "builtins",
+  "design",
   "kit",
   "primitives",
   "runtime",

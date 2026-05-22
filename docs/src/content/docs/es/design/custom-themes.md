@@ -4,7 +4,7 @@ description: Define esquemas light y dark.
 ---
 
 ```ts
-import { createDesignSystemRegistry, defineGlobalTokens, defineTheme } from "mlform/design-system";
+import { createDesignSystemRegistry, defineGlobalTokens, defineTheme } from "mlform/design";
 
 const brandTheme = defineTheme({
   id: "brand",
