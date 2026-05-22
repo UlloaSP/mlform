@@ -17,6 +17,15 @@ export {
   singleChoiceFieldDefinition,
   textFieldDefinition,
 } from "./definitions";
+export type {
+  BuiltinFieldConfig,
+  BuiltinFieldDefinition,
+  BuiltinReportConfig,
+  BuiltinReportDefinition,
+  SeriesFieldConfig,
+  SeriesPoint,
+  SeriesSubFieldConfig,
+} from "./definitions";
 export { createMappedCategoryBehavior } from "./mapped-category-behavior";
 export { createBuiltinMlRegistry, createMlRegistryPack } from "./registry-pack";
 export type { MlRegistryPack } from "./registry-pack";

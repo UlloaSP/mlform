@@ -39,7 +39,7 @@ export {
   globalTokenDefaults,
   mlfTokenKeys,
 } from "./contract";
-export type { MlfTokenKey } from "./contract";
+export type { ComponentKey, ComponentTokenManifest, MlfTokenKey } from "./contract";
 export {
   builtinRecipes,
   builtinThemes,

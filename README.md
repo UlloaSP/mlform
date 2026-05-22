@@ -9,7 +9,7 @@ Schema-driven forms for machine learning applications.
 
 MLForm gives you a predictable UI layer between users and model backends. You describe inputs and reports with a schema, MLForm renders accessible Web Components, validates values, submits structured payloads, and displays model results in the same host container.
 
-Version `0.1.10` is the current release in this repository.
+Version `0.1.11` is the current release in this repository.
 
 ## Why MLForm
 
@@ -196,14 +196,14 @@ When built-in kinds are not enough, define your own field and report kinds witho
 
 ```ts
 import { createMlRegistryPack } from "mlform/builtins";
-import { defineFieldKind, registerDefinedFieldKind } from "mlform/presentation";
+import { defineFieldKind, registerDefinedFieldKind } from "mlform/kit";
 import { z } from "zod";
 
 const pack = createMlRegistryPack();
 
 registerDefinedFieldKind(
   pack.registry,
-  pack.presentationRegistry,
+  pack.descriptorRegistry,
   defineFieldKind({
     kind: "score",
     schema: z.object({
@@ -306,7 +306,7 @@ The main package targets Node.js `>=24.9.0`.
 
 ## Release Notes
 
-For `0.1.10`, use the repository release entry and the published docs as the source of truth:
+For `0.1.11`, use the repository release entry and the published docs as the source of truth:
 
 - GitHub releases: https://github.com/UlloaSP/mlform/releases
 - npm package: https://www.npmjs.com/package/mlform

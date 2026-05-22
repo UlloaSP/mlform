@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -52,31 +52,31 @@
   "type": "module",
   "exports": {
     "./kit": {
-      "types": "./dist/types/src/kit/index.d.ts",
+      "types": "./dist/types/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
     },
     "./runtime": {
-      "types": "./dist/types/src/runtime/index.d.ts",
+      "types": "./dist/types/runtime/index.d.ts",
       "import": "./dist/mlform/runtime.mjs"
     },
     "./schema": {
-      "types": "./dist/types/src/schema/index.d.ts",
+      "types": "./dist/types/schema/index.d.ts",
       "import": "./dist/mlform/schema.mjs"
     },
     "./builtins": {
-      "types": "./dist/types/src/builtins/index.d.ts",
+      "types": "./dist/types/builtins/index.d.ts",
       "import": "./dist/mlform/builtins.mjs"
     },
     "./transport": {
-      "types": "./dist/types/src/transport/index.d.ts",
+      "types": "./dist/types/transport/index.d.ts",
       "import": "./dist/mlform/transport.mjs"
     },
     "./primitives": {
-      "types": "./dist/types/src/primitives/index.d.ts",
+      "types": "./dist/types/primitives/index.d.ts",
       "import": "./dist/mlform/primitives.mjs"
     },
     "./design": {
-      "types": "./dist/types/src/design/index.d.ts",
+      "types": "./dist/types/design/index.d.ts",
       "import": "./dist/mlform/design.mjs"
     }
   },

@@ -1,5 +1,36 @@
 # Todo
 
+## Pack Entry Todo
+
+- [x] Reproduce `vp pack` no-input error.
+- [x] Replace tarball step with `npm pack` after `vp build`.
+- [x] Verify package tarball dry-run, package exports, typecheck/tests/build.
+
+## Pack Entry Review
+
+- Release workflow tarball step now uses `npm pack`; `vp pack` is a library bundler and assumes `src/index.ts` when no entry is passed.
+- Kept no root module and no new public subpaths.
+
+## Module-Root Type Export Todo
+
+- [x] Remove invalid deep public `mlform/kit/kinds` export.
+- [x] Export declarative kind API/types from existing `mlform/kit` module root.
+- [x] Export missing public builtins/design helper types from existing module roots.
+- [x] Update import docs/tests to use existing module root paths only.
+- [x] Verify package exports, typecheck/tests/build, line cap, graph.
+
+## Module-Root Type Export Review
+
+- Removed public `mlform/kit/kinds` package export, Vite build entry, and resolver alias.
+- Fixed all package `types` exports to point at generated `dist/types/<module>/index.d.ts` paths instead of nonexistent `dist/types/src/...` paths.
+- Exported `define*Kind`, `registerDefined*Kind`, and their public types from existing `mlform/kit` module root.
+- Exported builtins definition/series config types from `mlform/builtins` and design contract helper types from `mlform/design`.
+- Updated README/docs/tests to import declarative kind helpers from `mlform/kit`.
+- Added regression checks: package exports cannot go below module root, and every existing module root source API exposes representative public types.
+- `DEBT.md` reviewed; no active debt change.
+- Verification: `vp install`, focused `vp check`, `vp check --no-fmt`, `vp run typecheck`, focused tests, full `vp test`, `vp build`, docs `vp run build`, `npm pack --dry-run --json`, public deep export scan, line cap scan, `git diff --check`, and `graphify update .` passed.
+- Blocker: full `vp check` still fails on pre-existing repository-wide formatting drift in 180 files; touched files pass focused `vp check`.
+
 ## Precise Side Effects Todo
 
 - [x] Identify source modules with global registration side effects.
