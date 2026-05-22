@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { PresentationRegistry } from "@/presentation";
-import type { FieldDescriptor } from "@/presentation";
+import type { PrimitiveDescriptorRegistry } from "@/primitives";
+import type { FieldDescriptor } from "@/primitives";
 import type { FieldController, FormController, ReportController } from "@/runtime";
 import type { FormViewFieldItem, FormViewReportItem, FormViewSnapshot } from "./types";
 import {
@@ -16,7 +16,7 @@ import type { ResolvedLayoutResult } from "./layout";
 
 type BuildSnapshotOptions = {
   form: FormController;
-  presentationRegistry: PresentationRegistry;
+  descriptorRegistry: PrimitiveDescriptorRegistry;
   resolvedLayout: ResolvedLayoutResult;
   stepIndex: number;
   activeTabIndex: number;
@@ -30,7 +30,7 @@ const fallbackFieldDescriptor = (field: FieldController): FieldDescriptor => ({
 
 const buildFieldItem = (
   field: FieldController,
-  presentationRegistry: PresentationRegistry,
+  descriptorRegistry: PrimitiveDescriptorRegistry,
   resolvedLayout: ResolvedLayoutResult,
   stepIndex: number,
   activeTabIndex: number,
@@ -39,7 +39,7 @@ const buildFieldItem = (
   const stepId = resolvedLayout.maps.fieldStepIds.get(field.id) ?? null;
   const tabId = resolvedLayout.maps.fieldTabIds.get(field.id) ?? null;
   const sectionId = resolvedLayout.maps.fieldSectionIds.get(field.id) ?? null;
-  const presenter = presentationRegistry.getField(field.kind);
+  const presenter = descriptorRegistry.getField(field.kind);
 
   return {
     id: field.id,
@@ -71,7 +71,7 @@ const buildFieldItem = (
 const buildReportItem = (
   report: ReportController,
   form: FormController,
-  presentationRegistry: PresentationRegistry,
+  descriptorRegistry: PrimitiveDescriptorRegistry,
   resolvedLayout: ResolvedLayoutResult,
   stepIndex: number,
   activeTabIndex: number,
@@ -80,7 +80,7 @@ const buildReportItem = (
   const stepId = resolvedLayout.maps.reportStepIds.get(report.id) ?? null;
   const tabId = resolvedLayout.maps.reportTabIds.get(report.id) ?? null;
   const sectionId = resolvedLayout.maps.reportSectionIds.get(report.id) ?? null;
-  const presenter = presentationRegistry.getReport(report.kind);
+  const presenter = descriptorRegistry.getReport(report.kind);
 
   return {
     id: report.id,
@@ -113,7 +113,7 @@ const buildReportItem = (
 
 export const buildFormViewSnapshot = ({
   form,
-  presentationRegistry,
+  descriptorRegistry,
   resolvedLayout,
   stepIndex,
   activeTabIndex,
@@ -124,7 +124,7 @@ export const buildFormViewSnapshot = ({
   fields: form.fields.map((field) =>
     buildFieldItem(
       field,
-      presentationRegistry,
+      descriptorRegistry,
       resolvedLayout,
       stepIndex,
       activeTabIndex,
@@ -135,7 +135,7 @@ export const buildFormViewSnapshot = ({
     buildReportItem(
       report,
       form,
-      presentationRegistry,
+      descriptorRegistry,
       resolvedLayout,
       stepIndex,
       activeTabIndex,

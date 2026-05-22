@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
+import type { FieldDescriptor, PrimitiveDescriptorRegistry, ReportDescriptor } from "@/primitives";
 import type {
   FieldController,
   FieldStateSnapshot,
@@ -93,7 +93,7 @@ export interface CreateFormViewOptions {
   schema: FormSchema;
   transport: Transport;
   registry?: Registry;
-  presentationRegistry?: PresentationRegistry;
+  descriptorRegistry?: PrimitiveDescriptorRegistry;
   behaviors?: RuntimeBehavior[];
   initialValues?: Record<string, unknown>;
   validators?: FormValidator[];
@@ -110,7 +110,7 @@ export interface CreateFormViewOptions {
 export interface FormViewController {
   readonly form: FormController;
   readonly engineRegistry: Registry;
-  readonly presentationRegistry: PresentationRegistry;
+  readonly descriptorRegistry: PrimitiveDescriptorRegistry;
   readonly state: FormViewState;
   getSnapshot(): FormViewSnapshot;
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;

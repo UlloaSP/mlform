@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { PresentationRegistry } from "@/presentation";
+import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { FormController } from "@/runtime";
 import type { ResolvedLayoutResult } from "./layout";
 import type { FormViewSnapshot } from "./types";
@@ -9,7 +9,7 @@ import { buildFormViewSnapshot } from "./view-snapshot";
 
 type SnapshotCacheOptions = {
   form: FormController;
-  presentationRegistry: PresentationRegistry;
+  descriptorRegistry: PrimitiveDescriptorRegistry;
   resolvedLayout: ResolvedLayoutResult;
   getStepIndex: () => number;
   getActiveTabIndex: () => number;
@@ -18,7 +18,7 @@ type SnapshotCacheOptions = {
 
 export const createFormViewSnapshotCache = ({
   form,
-  presentationRegistry,
+  descriptorRegistry,
   resolvedLayout,
   getStepIndex,
   getActiveTabIndex,
@@ -52,7 +52,7 @@ export const createFormViewSnapshotCache = ({
     cachedOpenSectionKey = currentOpenSectionKey;
     cachedSnapshot = buildFormViewSnapshot({
       form,
-      presentationRegistry,
+      descriptorRegistry,
       resolvedLayout,
       stepIndex,
       activeTabIndex,

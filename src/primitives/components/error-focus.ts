@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldController } from "@/runtime";
+import type { PrimitiveFieldController } from "../controller-types";
 
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => {
@@ -49,5 +49,7 @@ export const scrollFieldFrameIntoView = async (frame: HTMLElement | null): Promi
 export const focusPrimitiveField = async (host: HTMLElement, fieldId: string): Promise<boolean> =>
   scrollFieldFrameIntoView(findFieldFrame(host.shadowRoot ?? host, fieldId));
 
-export const findFirstInvalidField = (fields: readonly FieldController[]): FieldController | null =>
+export const findFirstInvalidField = (
+  fields: readonly PrimitiveFieldController[],
+): PrimitiveFieldController | null =>
   fields.find((field) => field.state.visible && field.state.errors.length > 0) ?? null;

@@ -4,7 +4,7 @@
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createMlRegistryPack } from "@/builtins-ml";
-import type { FieldPresenter, ReportPresenter } from "@/presentation";
+import type { FieldPresenter, ReportPresenter } from "@/primitives";
 import {
   ValidationError,
   createForm,
@@ -23,7 +23,7 @@ import {
 
 const mountForm: typeof mountPrimitiveForm = (container, form, options) =>
   mountPrimitiveForm(container, form, {
-    presentationRegistry: createMlRegistryPack().presentationRegistry,
+    descriptorRegistry: createMlRegistryPack().descriptorRegistry,
     ...options,
   });
 
@@ -1460,7 +1460,7 @@ describe("primitives", () => {
       },
     });
     registry.registerField(contextProbeDefinition);
-    pack.presentationRegistry.registerField({
+    pack.descriptorRegistry.registerField({
       kind: contextProbeDefinition.kind,
       describe: contextProbeDefinition.describe,
     });
@@ -1490,7 +1490,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       reportPane: "hidden",
     });
 
@@ -1558,7 +1558,7 @@ describe("primitives", () => {
       },
     });
     registry.registerField(probeDefinition);
-    pack.presentationRegistry.registerField({
+    pack.descriptorRegistry.registerField({
       kind: probeDefinition.kind,
       describe: probeDefinition.describe,
     });
@@ -1587,7 +1587,7 @@ describe("primitives", () => {
     document.body.append(container);
     const mounted = mountForm(container, form, {
       registry: primitiveRegistry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       reportPane: "hidden",
     });
 
@@ -1658,7 +1658,7 @@ describe("primitives", () => {
       },
     });
     registry.registerReport(probeReportDefinition);
-    pack.presentationRegistry.registerReport({
+    pack.descriptorRegistry.registerReport({
       kind: probeReportDefinition.kind,
       describe: probeReportDefinition.describe,
     });
@@ -1698,7 +1698,7 @@ describe("primitives", () => {
         "probe-report",
         "test-probe-report",
       ),
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       reportTransport,
     });
 
@@ -1856,7 +1856,7 @@ describe("primitives", () => {
       },
     });
     registry.registerReport(requestReportDefinition);
-    pack.presentationRegistry.registerReport({
+    pack.descriptorRegistry.registerReport({
       kind: requestReportDefinition.kind,
       describe: requestReportDefinition.describe,
     });
@@ -1892,7 +1892,7 @@ describe("primitives", () => {
         "probe-request-report",
         "test-request-only-report",
       ),
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
     });
 
     await flush();

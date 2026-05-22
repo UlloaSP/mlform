@@ -13,7 +13,7 @@ import type {
   ReportDefinition,
   SubmitResult,
 } from "@/schema";
-import type { FieldDescriptor, ReportDescriptor } from "@/presentation";
+import type { FieldDescriptor, ReportDescriptor } from "@/primitives";
 
 export const uiSchema = z.record(z.string(), z.unknown()).optional();
 

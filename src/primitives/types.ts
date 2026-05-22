@@ -2,19 +2,21 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
-  FieldController,
-  FormController,
-  FormState,
-  FormStatus,
-  ReportFetchRequest,
-  ReportController,
-  SubmitResult,
-} from "@/runtime";
+  PrimitiveFieldController,
+  PrimitiveFormController,
+  PrimitiveFormStatus,
+  PrimitiveReportRequest,
+  PrimitiveReportController,
+  PrimitiveSubmitResult,
+  PrimitiveFormState,
+} from "./controller-types";
 import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
-import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
+import type { FieldDescriptor, PrimitiveDescriptorRegistry, ReportDescriptor } from "./descriptors";
 
 export type PrimitiveLayout = "stacked" | "split";
 export type PrimitiveContainerStrategy = "error" | "replace";
+
+export type { PrimitiveReportRequest };
 
 export interface PrimitiveRegistry {
   // --- Fields ---
@@ -30,8 +32,6 @@ export interface PrimitiveRegistry {
   clone(): PrimitiveRegistry;
 }
 
-export type PrimitiveReportRequest = ReportFetchRequest;
-
 /**
  * Transport for fetching post-submit report content.
  * Receives the full submit result + report context; may return any value.
@@ -43,7 +43,7 @@ export interface PrimitiveReportTransport {
 
 export interface MountFormOptions {
   registry?: PrimitiveRegistry;
-  presentationRegistry?: PresentationRegistry;
+  descriptorRegistry?: PrimitiveDescriptorRegistry;
   layout?: PrimitiveLayout;
   containerStrategy?: PrimitiveContainerStrategy;
   formLabel?: string;
@@ -58,10 +58,10 @@ export interface MountFormOptions {
 }
 
 export interface MountedForm {
-  readonly form: FormController;
+  readonly form: PrimitiveFormController;
   readonly host: HTMLElement;
   readonly registry: PrimitiveRegistry;
-  readonly presentationRegistry: PresentationRegistry;
+  readonly descriptorRegistry: PrimitiveDescriptorRegistry;
   readonly text: PrimitiveText;
   unmount(): void;
 }
@@ -87,14 +87,14 @@ export interface PrimitiveReportRenderContext {
 }
 
 export interface PrimitiveFieldRendererElement extends HTMLElement {
-  controller?: FieldController;
+  controller?: PrimitiveFieldController;
   descriptor?: FieldDescriptor | null;
   context?: PrimitiveFieldRenderContext;
   text?: PrimitiveText;
 }
 
 export interface PrimitiveReportRendererElement extends HTMLElement {
-  controller?: ReportController;
+  controller?: PrimitiveReportController;
   descriptor?: ReportDescriptor | null;
   context?: PrimitiveReportRenderContext;
   text?: PrimitiveText;
@@ -103,21 +103,21 @@ export interface PrimitiveReportRendererElement extends HTMLElement {
 }
 
 export interface PrimitiveSubmitStartDetail {
-  form: FormController;
-  state: FormState;
+  form: PrimitiveFormController;
+  state: PrimitiveFormState;
 }
 
 export interface PrimitiveSubmitSuccessDetail {
-  form: FormController;
-  state: FormState;
-  result: SubmitResult;
+  form: PrimitiveFormController;
+  state: PrimitiveFormState;
+  result: PrimitiveSubmitResult;
 }
 
 export interface PrimitiveSubmitErrorDetail {
-  form: FormController;
-  state: FormState;
+  form: PrimitiveFormController;
+  state: PrimitiveFormState;
   error: unknown;
-  status: FormStatus;
+  status: PrimitiveFormStatus;
 }
 
 export type { PrimitiveText, PrimitiveTextOverrides } from "./constants";

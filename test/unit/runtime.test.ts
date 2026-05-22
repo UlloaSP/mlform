@@ -4,12 +4,8 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMappedCategoryBehavior, createMlRegistryPack } from "@/builtins-ml";
-import {
-  defineFieldKind,
-  defineReportKind,
-  type FieldPresenter,
-  type ReportPresenter,
-} from "@/presentation";
+import { defineFieldKind, defineReportKind } from "@/kit";
+import { type FieldPresenter, type ReportPresenter } from "@/primitives";
 import type { FieldConfig, ReportConfig } from "@/schema";
 import {
   EngineError,
@@ -25,13 +21,13 @@ import {
   shallowEquality,
 } from "@/runtime";
 
-const builtinPresentationRegistry = createMlRegistryPack().presentationRegistry;
+const builtinPrimitiveDescriptorRegistry = createMlRegistryPack().descriptorRegistry;
 
 const describeField = (
   field: NonNullable<ReturnType<import("@/runtime").FormController["getField"]>>,
-  presentationRegistry = builtinPresentationRegistry,
+  descriptorRegistry = builtinPrimitiveDescriptorRegistry,
 ) =>
-  presentationRegistry.getField(field.kind)?.describe(field.config, {
+  descriptorRegistry.getField(field.kind)?.describe(field.config, {
     fieldId: field.id,
     state: field.state,
     value: field.state.value,
@@ -41,7 +37,7 @@ const describeReport = (
   form: import("@/runtime").FormController,
   report: NonNullable<ReturnType<import("@/runtime").FormController["getReport"]>>,
 ) =>
-  builtinPresentationRegistry.getReport(report.kind)?.describe(report.config, {
+  builtinPrimitiveDescriptorRegistry.getReport(report.kind)?.describe(report.config, {
     reportId: report.id,
     state: report.state,
     payload: report.state.payload,
@@ -1482,7 +1478,7 @@ describe("runtime", () => {
       },
     });
     registry.registerField(pendingTextDefinition);
-    pack.presentationRegistry.registerField({
+    pack.descriptorRegistry.registerField({
       kind: pendingTextDefinition.kind,
       describe: pendingTextDefinition.describe,
     });
@@ -1507,7 +1503,7 @@ describe("runtime", () => {
     await Promise.resolve();
 
     expect(form.getField("username")?.state.status).toBe("validating");
-    expect(describeField(form.getField("username")!, pack.presentationRegistry)?.props.status).toBe(
+    expect(describeField(form.getField("username")!, pack.descriptorRegistry)?.props.status).toBe(
       "validating",
     );
 
@@ -3710,7 +3706,7 @@ describe("runtime", () => {
     expect(validation.fields.score).toEqual(["Score out of range."]);
   });
 
-  it("creates declarative custom reports with summary and presentation content", async () => {
+  it("creates declarative custom reports with summary and descriptor content", async () => {
     const registry = createMlRegistryPack().registry;
     const kind = defineReportKind({
       kind: "risk-summary",

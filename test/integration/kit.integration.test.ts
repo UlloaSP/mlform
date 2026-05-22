@@ -5,13 +5,13 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
 import { SubmissionAbortedError } from "@/runtime";
+import { mountForm } from "@/kit";
 import {
   defineFieldKind,
   defineReportKind,
   registerDefinedFieldKind,
   registerDefinedReportKind,
-} from "@/presentation";
-import { mountForm } from "@/kit";
+} from "@/kit";
 import { createJsonTransport, createRoutingTransport } from "@/transport";
 
 const flush = async (): Promise<void> => {
@@ -749,7 +749,7 @@ describe("kit integration", () => {
 
     registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineReportKind({
         kind: "shap",
         schema: z.object({
@@ -776,7 +776,7 @@ describe("kit integration", () => {
 
     const mounted = mountForm(container, {
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {
@@ -864,7 +864,7 @@ describe("kit integration", () => {
 
     registerDefinedFieldKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineFieldKind({
         kind: "score",
         schema: z.object({
@@ -898,7 +898,7 @@ describe("kit integration", () => {
 
     registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineReportKind({
         kind: "risk-summary",
         schema: z.object({
@@ -932,7 +932,7 @@ describe("kit integration", () => {
 
     registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineReportKind({
         kind: "shap",
         schema: z.object({
@@ -963,7 +963,7 @@ describe("kit integration", () => {
 
     const mounted = mountForm(container, {
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: {

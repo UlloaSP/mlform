@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { html, nothing, type TemplateResult } from "lit";
-import type { PresentationNode, PresentationSummary } from "@/presentation";
+import type { DescriptorNode, DescriptorSummary } from "../descriptors";
 import { toText } from "../utils";
 
 const toneClass = (tone: unknown): string => {
@@ -30,7 +30,7 @@ const renderValue = (value: unknown): string => {
 };
 
 const normalizeEntries = (
-  entries: PresentationNode extends never
+  entries: DescriptorNode extends never
     ? never
     : Array<{ label: string; value: unknown }> | Record<string, unknown>,
 ): Array<{ label: string; value: unknown }> => {
@@ -45,7 +45,7 @@ const renderCellValue = (value: unknown): TemplateResult => {
   return html`<span>${renderValue(value)}</span>`;
 };
 
-const renderNode = (node: PresentationNode, index: number): TemplateResult => {
+const renderNode = (node: DescriptorNode, index: number): TemplateResult => {
   switch (node.type) {
     case "text":
       if (typeof node.value === "string" && node.value.includes("\n")) {
@@ -151,8 +151,8 @@ const renderNode = (node: PresentationNode, index: number): TemplateResult => {
   }
 };
 
-export const renderPresentationSummary = (
-  summary: PresentationSummary | null | undefined,
+export const renderDescriptorSummary = (
+  summary: DescriptorSummary | null | undefined,
   fallbackTitle?: string,
 ): TemplateResult | typeof nothing => {
   if (!summary && !fallbackTitle) {
@@ -180,14 +180,10 @@ export const renderPresentationSummary = (
   `;
 };
 
-export const renderPresentationNodes = (
-  nodes: PresentationNode[],
-): TemplateResult | typeof nothing => {
+export const renderDescriptorNodes = (nodes: DescriptorNode[]): TemplateResult | typeof nothing => {
   if (nodes.length === 0) {
     return nothing;
   }
 
-  return html`<div class="presentation">
-    ${nodes.map((node, index) => renderNode(node, index))}
-  </div>`;
+  return html`<div class="Descriptor">${nodes.map((node, index) => renderNode(node, index))}</div>`;
 };

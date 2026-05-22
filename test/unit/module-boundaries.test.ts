@@ -8,7 +8,6 @@ const moduleNames = new Set([
   "builtins-ml",
   "design-system",
   "kit",
-  "presentation",
   "primitives",
   "runtime",
   "schema",

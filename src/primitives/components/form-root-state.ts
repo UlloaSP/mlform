@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FormController, FormStatus, ReportController } from "@/runtime";
+import type {
+  PrimitiveFormController,
+  PrimitiveFormStatus,
+  PrimitiveReportController,
+} from "../controller-types";
 
 export type FormRenderState = {
-  status: FormStatus;
+  status: PrimitiveFormStatus;
   submitCount: number;
   hasFormErrors: boolean;
   hasLastResult: boolean;
@@ -37,7 +41,7 @@ export const sameFormRenderState = (left: FormRenderState, right: FormRenderStat
   );
 };
 
-export const selectFormRenderState = (form: FormController): FormRenderState => {
+export const selectFormRenderState = (form: PrimitiveFormController): FormRenderState => {
   const state = form.state;
 
   return {
@@ -59,10 +63,10 @@ export const selectFormRenderState = (form: FormController): FormRenderState => 
 };
 
 export const resolveVisibleReports = (
-  form: FormController,
+  form: PrimitiveFormController,
   visibleReportIds: string[],
   reportPane: "auto" | "always" | "hidden",
-): readonly ReportController[] => {
+): readonly PrimitiveReportController[] => {
   const visibleReports = visibleReportIds
     .map((reportId) => form.getReport(reportId))
     .filter((report): report is NonNullable<typeof report> => report !== undefined);

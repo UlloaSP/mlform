@@ -8,6 +8,8 @@ export { PrimitiveFormElement } from "./components/form-root";
 export { mountForm, unmountForm } from "./mount-form";
 export { focusPrimitiveField } from "./components/error-focus";
 export { createBuiltinPrimitiveRegistry, createPrimitiveRegistry } from "./registry";
+export { createPrimitiveDescriptorRegistry, PrimitiveDescriptorRegistry } from "./descriptors";
+export { toDescriptorNodes } from "./descriptors";
 export {
   primitiveDefaultLabels,
   primitiveStaticText,
@@ -32,3 +34,5 @@ export type {
   PrimitiveReportRequest,
   PrimitiveReportTransport,
 } from "./types";
+export type * from "./controller-types";
+export type * from "./descriptors";

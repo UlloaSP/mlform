@@ -5,6 +5,8 @@ export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
 export { collectLayoutReferences, flattenLayoutNodes, walkLayoutNodes } from "./layout-utils";
 export { mountForm, unmountForm } from "./mount-form";
 export { createFormView } from "./view";
+export { defineFieldKind, defineReportKind } from "./kinds";
+export { registerDefinedFieldKind, registerDefinedReportKind } from "./kinds";
 export type {
   CreateFormViewOptions,
   DisclosureState,

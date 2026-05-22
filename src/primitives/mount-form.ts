@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FormController } from "@/runtime";
-import { createPresentationRegistry } from "@/presentation";
+import type { PrimitiveFormController } from "./controller-types";
+import { createPrimitiveDescriptorRegistry } from "./descriptors";
 import "./register";
 import {
   primitiveDefaultLabels,
@@ -17,7 +17,7 @@ import type {
   PrimitiveContainerStrategy,
   PrimitiveRegistry,
 } from "./types";
-import type { PresentationRegistry } from "@/presentation";
+import type { PrimitiveDescriptorRegistry } from "./descriptors";
 
 const assertContainerStrategy = (
   container: HTMLElement,
@@ -32,21 +32,21 @@ const resolveRegistry = (registry: PrimitiveRegistry | undefined): PrimitiveRegi
   return registry ? registry.clone() : createBuiltinPrimitiveRegistry();
 };
 
-const resolvePresentationRegistry = (
-  registry: PresentationRegistry | undefined,
-): PresentationRegistry => {
-  return registry?.clone() ?? createPresentationRegistry();
+const resolvePrimitiveDescriptorRegistry = (
+  registry: PrimitiveDescriptorRegistry | undefined,
+): PrimitiveDescriptorRegistry => {
+  return registry?.clone() ?? createPrimitiveDescriptorRegistry();
 };
 
 export const mountForm = (
   container: HTMLElement,
-  form: FormController,
+  form: PrimitiveFormController,
   options: MountFormOptions = {},
 ): MountedForm => {
   const host = document.createElement(primitiveTagNames.form) as HTMLElement & {
-    form: FormController;
+    form: PrimitiveFormController;
     registry: PrimitiveRegistry;
-    presentationRegistry: PresentationRegistry;
+    descriptorRegistry: PrimitiveDescriptorRegistry;
     layout: NonNullable<MountFormOptions["layout"]>;
     formLabel: string;
     reportsLabel: string;
@@ -58,7 +58,7 @@ export const mountForm = (
     reportTransport: MountFormOptions["reportTransport"];
   };
   const registry = resolveRegistry(options.registry);
-  const presentationRegistry = resolvePresentationRegistry(options.presentationRegistry);
+  const descriptorRegistry = resolvePrimitiveDescriptorRegistry(options.descriptorRegistry);
   const text = resolvePrimitiveText(options.text);
   const containerStrategy = options.containerStrategy ?? "error";
   const previousChildren = containerStrategy === "replace" ? Array.from(container.childNodes) : [];
@@ -67,7 +67,7 @@ export const mountForm = (
 
   host.form = form;
   host.registry = registry;
-  host.presentationRegistry = presentationRegistry;
+  host.descriptorRegistry = descriptorRegistry;
   host.layout = options.layout ?? "stacked";
   host.formLabel = options.formLabel ?? primitiveDefaultLabels.form;
   host.reportsLabel = options.reportsLabel ?? primitiveDefaultLabels.reports;
@@ -86,7 +86,7 @@ export const mountForm = (
     form,
     host,
     registry,
-    presentationRegistry,
+    descriptorRegistry,
     text,
     unmount() {
       if (unmounted) {

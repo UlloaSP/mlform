@@ -3,7 +3,7 @@
 
 import { html, nothing, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
-import type { FormController } from "@/runtime";
+import type { PrimitiveFormController } from "../controller-types";
 import type { PrimitiveText } from "../constants";
 import type { PrimitiveRegistry, PrimitiveReportTransport } from "../types";
 import type { FormRenderState } from "./form-root-state";
@@ -36,7 +36,7 @@ const renderReports = (
   registry: PrimitiveRegistry | undefined,
   text: PrimitiveText,
   reportTransport: PrimitiveReportTransport | undefined,
-  lastResult: FormController["state"]["lastResult"],
+  lastResult: PrimitiveFormController["state"]["lastResult"],
 ): TemplateResult => html`
   <div class="collection" part="report-list">
     ${repeat(
@@ -57,7 +57,7 @@ const renderReports = (
 `;
 
 export const renderStackedLayout = (options: {
-  form: FormController;
+  form: PrimitiveFormController;
   state: FormRenderState;
   visibleFields: readonly PresentedField[];
   reportsToRender: readonly PresentedReport[];
@@ -135,7 +135,7 @@ export const renderStackedLayout = (options: {
 `;
 
 export const renderSplitLayout = (options: {
-  form: FormController;
+  form: PrimitiveFormController;
   state: FormRenderState;
   visibleFields: readonly PresentedField[];
   reportsToRender: readonly PresentedReport[];

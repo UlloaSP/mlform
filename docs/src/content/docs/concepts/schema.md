@@ -24,7 +24,7 @@ Core terms:
 | --- | --- |
 | field | One value collected from the user. |
 | report | One model output shown after submit or fetch. |
-| kind | Registry key that selects validation and presentation behavior. |
+| kind | Registry key that selects validation and descriptor behavior. |
 | condition | Rule such as `hiddenWhen`, `disabledWhen`, or `readOnlyWhen`. |
 | normalized schema | Runtime-ready schema after ids, defaults, reports, and registry checks are resolved. |
 | inactive field | Hidden, disabled, or read-only field. Submit behavior depends on policy. |

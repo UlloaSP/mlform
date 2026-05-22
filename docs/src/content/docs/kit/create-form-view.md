@@ -35,7 +35,7 @@ Common optional inputs:
 interface FormViewController {
   form: FormController;
   engineRegistry: Registry;
-  presentationRegistry: PresentationRegistry;
+  descriptorRegistry: PrimitiveDescriptorRegistry;
   state: FormViewState;
   getSnapshot(): FormViewSnapshot;
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;

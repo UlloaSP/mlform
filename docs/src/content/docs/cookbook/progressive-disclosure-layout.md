@@ -3,7 +3,7 @@ title: Progressive Disclosure Layout
 description: Combine layout structure with field visibility conditions for staged experiences.
 ---
 
-Layout controls presentation structure. Conditions still control actual field visibility.
+Layout controls layout structure. Conditions still control actual field visibility.
 
 Use progressive disclosure when:
 

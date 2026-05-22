@@ -525,7 +525,7 @@ describe("design-system", () => {
       selector: ":root",
       layer: "mlform.tokens",
     });
-    expect(layered).toMatch(/^@layer mlform\.tokens \{/);
+    expect(layered).toMatch(/^@layer mlform.tokens \{/);
     expect(layered).toContain(":root {");
 
     // Default selector when using options object

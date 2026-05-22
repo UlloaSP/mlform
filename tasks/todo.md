@@ -1,5 +1,24 @@
 # Todo
 
+## Presentation Module Removal Todo
+
+- [x] Move visual descriptor contract into `primitives`.
+- [x] Move schema+descriptor declarative helpers into `kit`.
+- [x] Rename pack/view/mount wiring from presentation registry to descriptor registry.
+- [x] Delete public `mlform/presentation` package/build/doc references.
+- [x] Remove runtime/schema/transport imports from `primitives` via local structural contracts.
+- [x] Update tests/docs/debt and verify boundaries, typecheck, tests, build, graph.
+
+## Presentation Module Removal Review
+
+- Deleted public `mlform/presentation` export and `src/presentation`.
+- Moved descriptor contracts and descriptor registry to `primitives`.
+- Moved `defineFieldKind`, `defineReportKind`, and `registerDefined*Kind` to `kit`.
+- Renamed `presentationRegistry` wiring to `descriptorRegistry`.
+- Removed `presentation` concept docs/sidebar/package refs.
+- Made `schema`, `transport`, `design-system`, and `primitives` dependency-free from other MLForm modules; primitives now use local structural controller/request contracts.
+- Verification: import scans clean, source line cap clean, `vp run typecheck`, focused tests, `vp check`, full `vp test`, `vp build`, docs `vp run build`, `git diff --check`, and `graphify update .` passed.
+
 ## Foundation Correction Todo
 
 - [x] Record correction lesson before changing code.

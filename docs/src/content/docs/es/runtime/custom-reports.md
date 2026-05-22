@@ -8,7 +8,7 @@ Usa `defineReportKind` para resolver payloads y devolver un arbol de presentacio
 ```ts
 import { z } from "zod";
 import { createMlRegistryPack } from "mlform/builtins-ml";
-import { defineReportKind, registerDefinedReportKind } from "mlform/presentation";
+import { defineReportKind, registerDefinedReportKind } from "mlform/kit";
 
 const riskSummaryReport = defineReportKind({
   kind: "risk-summary",
@@ -33,7 +33,7 @@ const riskSummaryReport = defineReportKind({
 });
 
 const pack = createMlRegistryPack();
-registerDefinedReportKind(pack.registry, pack.presentationRegistry, riskSummaryReport);
+registerDefinedReportKind(pack.registry, pack.descriptorRegistry, riskSummaryReport);
 ```
 
 Si `resolve` falla, solo ese informe queda en estado `error`.

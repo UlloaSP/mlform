@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldStateSnapshot } from "@/runtime";
+import type { PrimitiveFieldStateSnapshot } from "../controller-types";
 import type { PrimitiveText } from "../constants";
 import { toText } from "../utils";
 
@@ -52,7 +52,7 @@ export const resolveCategorySelection = (
 export const hasIntroducedValue = (
   component: string,
   props: Record<string, unknown>,
-  state: FieldStateSnapshot,
+  state: PrimitiveFieldStateSnapshot,
   defaultValue: unknown,
 ): boolean => {
   const resolvedComponent = resolveFieldFeedbackComponent(component, props);
@@ -83,7 +83,7 @@ export const hasIntroducedValue = (
 export const createFieldSuccessMessage = (
   component: string,
   props: Record<string, unknown>,
-  state: FieldStateSnapshot,
+  state: PrimitiveFieldStateSnapshot,
   text: PrimitiveText,
 ): string => {
   const resolvedComponent = resolveFieldFeedbackComponent(component, props);

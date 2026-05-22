@@ -8,7 +8,7 @@ Use `defineFieldKind` for the normal extension path. It lets you define parsing,
 ```ts
 import { z } from "zod";
 import { createMlRegistryPack } from "mlform/builtins-ml";
-import { defineFieldKind, registerDefinedFieldKind } from "mlform/presentation";
+import { defineFieldKind, registerDefinedFieldKind } from "mlform/kit";
 
 const scoreField = defineFieldKind({
   kind: "score",
@@ -40,7 +40,7 @@ const scoreField = defineFieldKind({
 });
 
 const pack = createMlRegistryPack();
-registerDefinedFieldKind(pack.registry, pack.presentationRegistry, scoreField);
+registerDefinedFieldKind(pack.registry, pack.descriptorRegistry, scoreField);
 ```
 
 | Hook              | Purpose                                                            |

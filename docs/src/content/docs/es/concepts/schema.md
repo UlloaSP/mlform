@@ -24,7 +24,7 @@ Terminos base:
 | --- | --- |
 | field | Un valor que el usuario introduce. |
 | report | Una salida de modelo mostrada despues de submit o fetch. |
-| kind | Clave de registry que selecciona validacion y presentation. |
+| kind | Clave de registry que selecciona validacion y descriptor UI. |
 | condition | Regla como `hiddenWhen`, `disabledWhen` o `readOnlyWhen`. |
 | normalized schema | Schema listo para runtime tras resolver ids, defaults, reports y registry checks. |
 | inactive field | Campo hidden, disabled o read-only. Su envio depende de policy. |

@@ -1,38 +1,42 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldDescriptor, PresentationRegistry, ReportDescriptor } from "@/presentation";
-import type { FormController, ReportController } from "@/runtime";
-import { resolveFieldDescriptor, resolveReportDescriptor } from "../presentation";
+import type {
+  FieldDescriptor,
+  PrimitiveDescriptorRegistry,
+  ReportDescriptor,
+} from "../descriptors";
+import type { PrimitiveFormController, PrimitiveReportController } from "../controller-types";
+import { resolveFieldDescriptor, resolveReportDescriptor } from "../descriptor-resolution";
 
 export type PresentedField = {
-  controller: NonNullable<ReturnType<FormController["getField"]>>;
+  controller: NonNullable<ReturnType<PrimitiveFormController["getField"]>>;
   descriptor: FieldDescriptor;
 };
 
 export type PresentedReport = {
-  controller: ReportController;
+  controller: PrimitiveReportController;
   descriptor: ReportDescriptor | null;
 };
 
 export const presentVisibleFields = (
-  form: FormController,
+  form: PrimitiveFormController,
   fieldIds: readonly string[],
-  presentationRegistry: PresentationRegistry | undefined,
+  descriptorRegistry: PrimitiveDescriptorRegistry | undefined,
 ): PresentedField[] =>
   fieldIds
     .map((fieldId) => form.getField(fieldId))
     .filter((field): field is NonNullable<typeof field> => field !== undefined)
     .map((controller) => ({
       controller,
-      descriptor: resolveFieldDescriptor(controller, presentationRegistry),
+      descriptor: resolveFieldDescriptor(controller, descriptorRegistry),
     }));
 
 export const presentVisibleReports = (
-  form: FormController,
+  form: PrimitiveFormController,
   reportIds: readonly string[],
   reportPane: "auto" | "always" | "hidden",
-  presentationRegistry: PresentationRegistry | undefined,
+  descriptorRegistry: PrimitiveDescriptorRegistry | undefined,
 ): PresentedReport[] => {
   const reports =
     reportPane === "always"
@@ -44,7 +48,7 @@ export const presentVisibleReports = (
   return reports
     .map((controller) => ({
       controller,
-      descriptor: resolveReportDescriptor(controller, form, presentationRegistry),
+      descriptor: resolveReportDescriptor(controller, form, descriptorRegistry),
     }))
     .filter((report) => report.descriptor !== null);
 };

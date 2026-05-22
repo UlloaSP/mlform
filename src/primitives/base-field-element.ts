@@ -3,12 +3,12 @@
 
 import { css, html, LitElement, nothing, type CSSResultGroup, type TemplateResult } from "lit";
 import { property } from "lit/decorators.js";
-import type { FieldDescriptor } from "@/presentation";
-import type { FieldController } from "@/runtime";
+import type { FieldDescriptor } from "./descriptors";
+import type { PrimitiveFieldController } from "./controller-types";
 import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type { PrimitiveFieldRenderContext } from "./types";
 
-// field-frame.ts owns the subscription to FieldController and passes
+// field-frame.ts owns the subscription to PrimitiveFieldController and passes
 // descriptor + context as properties to this element.  No second subscription
 // is needed here — that would cause a redundant render on every state change.
 export abstract class PrimitiveFieldElement extends LitElement {
@@ -78,7 +78,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
     }
   `;
 
-  @property({ attribute: false }) accessor controller: FieldController | undefined;
+  @property({ attribute: false }) accessor controller: PrimitiveFieldController | undefined;
   @property({ attribute: false }) accessor descriptor: FieldDescriptor | null = null;
   @property({ attribute: false }) accessor context: PrimitiveFieldRenderContext | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;

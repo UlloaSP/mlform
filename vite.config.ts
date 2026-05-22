@@ -129,7 +129,6 @@ export default defineConfig({
       entry: {
         "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
         "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
-        "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
         "mlform/builtins-ml": resolve(rootDir, "src/builtins-ml/index.ts"),
         "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
         "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
@@ -157,7 +156,6 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       "mlform/runtime": resolve(rootDir, "src/runtime/index.ts"),
       "mlform/schema": resolve(rootDir, "src/schema/index.ts"),
-      "mlform/presentation": resolve(rootDir, "src/presentation/index.ts"),
       "mlform/builtins-ml": resolve(rootDir, "src/builtins-ml/index.ts"),
       "mlform/design-system": resolve(rootDir, "src/design-system/index.ts"),
       "mlform/kit": resolve(rootDir, "src/kit/index.ts"),

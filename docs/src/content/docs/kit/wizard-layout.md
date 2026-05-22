@@ -44,7 +44,7 @@ Rules:
 - references must point to existing ids
 - step navigation validates the current step before moving forward
 
-When you need a different presentation, keep the same wizard layout config and render it yourself through `createFormView()`.
+When you need a different UI, keep the same wizard layout config and render it yourself through `createFormView()`.
 
 Recommended path:
 

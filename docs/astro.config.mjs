@@ -32,7 +32,6 @@ const sidebar = [
       { label: "Schema", slug: "concepts/schema" },
       { label: "Layout", slug: "concepts/layout" },
       { label: "Transport", slug: "concepts/transport" },
-      { label: "Presentation", slug: "concepts/presentation" },
       { label: "Lifecycle", slug: "concepts/lifecycle" },
     ],
   },

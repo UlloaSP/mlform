@@ -6,7 +6,7 @@ description: Understand the headless layout model used by createFormView and the
 MLForm now separates:
 
 - `schema` for data, validation, serialization, and submission
-- `layout` for presentation structure and navigation
+- `layout` for layout structure and navigation
 
 That split matters because the same form can be rendered as:
 

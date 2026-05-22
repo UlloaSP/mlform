@@ -1,11 +1,11 @@
 ---
 title: Custom Renderers
-description: Map presentation descriptors to custom Web Components.
+description: Map primitive descriptors to custom Web Components.
 ---
 
 Use a primitive registry when you intentionally opt into the advanced path and return a custom `component` value from a low-level definition.
 
-For most custom kinds, prefer `defineFieldKind` or `defineReportKind` from `mlform/presentation`. Register those helpers with both the schema registry and presentation registry; they use built-in declarative renderers and do not require primitive registry wiring.
+For most custom kinds, prefer `defineFieldKind` or `defineReportKind` from `mlform/kit`. Register those helpers with both the schema registry and descriptor registry; they use built-in declarative renderers and do not require primitive registry wiring.
 
 ```ts
 import { createBuiltinPrimitiveRegistry } from "mlform/primitives";

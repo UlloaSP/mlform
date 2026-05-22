@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FormStatus, ReportStatus } from "@/runtime";
+import type { PrimitiveFormStatus, PrimitiveReportStatus } from "./controller-types";
 
 export const primitiveTagNames = {
   form: "mlf-form",
@@ -87,8 +87,8 @@ export interface PrimitiveText {
   formMetaFields: (count: number) => string;
   formMetaReports: (count: number) => string;
   formMetaSubmits: (count: number) => string;
-  formStatusLabel: (status: FormStatus) => string;
-  reportStatusLabel: (status: ReportStatus) => string;
+  formStatusLabel: (status: PrimitiveFormStatus) => string;
+  reportStatusLabel: (status: PrimitiveReportStatus) => string;
   reportsEmptyTitle: string;
   reportsEmptyBody: string;
 }
@@ -135,7 +135,7 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
   formMetaFields: (count: number): string => `${count} fields`,
   formMetaReports: (count: number): string => `${count} reports`,
   formMetaSubmits: (count: number): string => `${count} submits`,
-  formStatusLabel: (status: FormStatus): string => {
+  formStatusLabel: (status: PrimitiveFormStatus): string => {
     switch (status) {
       case "idle":
         return "Idle";
@@ -151,7 +151,7 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
         return "Error";
     }
   },
-  reportStatusLabel: (status: ReportStatus): string => {
+  reportStatusLabel: (status: PrimitiveReportStatus): string => {
     switch (status) {
       case "idle":
         return "Idle";

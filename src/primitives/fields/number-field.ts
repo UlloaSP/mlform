@@ -283,7 +283,7 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
       return null;
     }
 
-    if (/^[+-]?(?:\d+\.|\d*\.\d+)$/.test(trimmed)) {
+    if (/^[+-]?(?:\d+|\d+\.|\d*\.\d+)$/.test(trimmed)) {
       const parsed = Number(trimmed);
       return Number.isNaN(parsed) ? value : parsed;
     }

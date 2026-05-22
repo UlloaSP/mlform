@@ -1,14 +1,56 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { NormalizedReportConfig, ReportConfig, ReportDefinition } from "@/schema";
 import type {
-  DeclarativeReportKind,
+  NormalizedReportConfig,
+  ReportConfig,
+  ReportDefinition,
+  ReportFetchFactory,
+  ReportResolveContext,
+  ReportStateSnapshot,
+  SubmitResult,
+} from "@/schema";
+import type {
   ReportDescriptor,
   ReportDescriptorContext,
   ReportPresenter,
-} from "./index";
-import { toPresentationNodes } from "./types/presentation";
+  DescriptorContent,
+  DescriptorSummary,
+} from "@/primitives";
+import { toDescriptorNodes } from "@/primitives";
+import type { ZodType } from "zod";
+
+export interface ReportRenderSpecContext<
+  TConfig extends ReportConfig = ReportConfig,
+  TPayload = unknown,
+> {
+  config: NormalizedReportConfig<TConfig>;
+  report: NormalizedReportConfig<TConfig>;
+  reportId: string;
+  state: ReportStateSnapshot;
+  payload: TPayload;
+  result: SubmitResult | null;
+}
+
+export interface ReportRenderSpec<TConfig extends ReportConfig = ReportConfig, TPayload = unknown> {
+  summary?: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorSummary | undefined;
+  content: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorContent;
+}
+
+export interface DeclarativeReportKind<
+  TConfig extends ReportConfig = ReportConfig,
+  TPayload = unknown,
+> {
+  kind: string;
+  schema: ZodType<TConfig>;
+  payloadSchema?: ZodType<unknown>;
+  payloadValidationPolicy?: "report-error" | "fail-submit";
+  partialUpdatePolicy?: "trust" | "validate" | "defer";
+  clonePayload?: (payload: TPayload, config: TConfig) => TPayload;
+  fetch?: ReportFetchFactory<TConfig>;
+  resolve: (context: ReportResolveContext<TConfig>) => unknown;
+  render: ReportRenderSpec<TConfig, TPayload>;
+}
 
 export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
   kind: string;
@@ -24,7 +66,7 @@ export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
     context: ReportDescriptorContext,
   ) => ReportDescriptor | null;
   definition: ReportDefinition<TConfig>;
-  presenter: ReportPresenter<TConfig>;
+  presenter: ReportPresenter<NormalizedReportConfig<TConfig>>;
 };
 
 export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
@@ -46,7 +88,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
       }),
   };
 
-  const presenter: ReportPresenter<TConfig> = {
+  const presenter: ReportPresenter<NormalizedReportConfig<TConfig>> = {
     kind: kind.kind,
     describe(config, context) {
       if (
@@ -57,13 +99,13 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
         return null;
       }
 
-      const renderContext = {
+      const renderContext: ReportRenderSpecContext<TConfig, TPayload> = {
         config,
         report: config,
         reportId: config.id,
-        state: context.state,
+        state: context.state as ReportStateSnapshot,
         payload: context.payload as TPayload,
-        result: context.result,
+        result: context.result as SubmitResult | null,
       };
 
       return {
@@ -80,7 +122,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
           content:
             context.payload === undefined
               ? []
-              : toPresentationNodes(kind.render.content(renderContext)),
+              : toDescriptorNodes(kind.render.content(renderContext)),
           ...config.ui,
         },
         meta: {

@@ -94,6 +94,8 @@ None.
   - runtime schema normalization now uses schema-owned `normalizeSchema`
   - kit no longer reexports transport helpers or transport option types
   - primitives no longer create ML registry packs by default
+- public `mlform/presentation` module removed; descriptor contracts moved into `primitives`, and declarative custom kind helpers moved into `kit`
+- `primitives` no longer imports runtime, schema, transport, kit, builtins, or design-system; runtime compatibility uses local structural controller/request contracts
 
 ## Notes
 

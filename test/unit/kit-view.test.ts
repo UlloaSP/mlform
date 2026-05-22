@@ -4,15 +4,20 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins-ml";
-import { defineReportKind, registerDefinedReportKind } from "@/presentation";
-import { collectLayoutReferences, createFormView, flattenLayoutNodes } from "@/kit";
+import {
+  collectLayoutReferences,
+  createFormView,
+  defineReportKind,
+  flattenLayoutNodes,
+  registerDefinedReportKind,
+} from "@/kit";
 
 describe("kit view", () => {
   it("builds an automatic stacked layout when layout is omitted", () => {
     const pack = createMlRegistryPack();
     registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineReportKind({
         kind: "mock-report",
         schema: z.object({
@@ -45,7 +50,7 @@ describe("kit view", () => {
         ],
       },
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
     });
 
     const snapshot = view.getSnapshot();
@@ -116,7 +121,7 @@ describe("kit view", () => {
     const pack = createMlRegistryPack();
     registerDefinedReportKind(
       pack.registry,
-      pack.presentationRegistry,
+      pack.descriptorRegistry,
       defineReportKind({
         kind: "mock-report",
         schema: z.object({
@@ -147,7 +152,7 @@ describe("kit view", () => {
         ],
       },
       registry: pack.registry,
-      presentationRegistry: pack.presentationRegistry,
+      descriptorRegistry: pack.descriptorRegistry,
       layout: {
         kind: "tabs",
         tabs: [

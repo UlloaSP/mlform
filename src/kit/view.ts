@@ -25,14 +25,13 @@ import { collectDisclosureSections } from "./view-layout-state";
 
 export const createFormView = (options: CreateFormViewOptions): FormViewController => {
   const defaultPack =
-    !options.registry || !options.presentationRegistry || !options.behaviors
+    !options.registry || !options.descriptorRegistry || !options.behaviors
       ? createMlRegistryPack()
       : null;
   const engineRegistry = options.registry
     ? cloneSchemaRegistry(options.registry)
     : defaultPack!.registry;
-  const presentationRegistry =
-    options.presentationRegistry?.clone() ?? defaultPack!.presentationRegistry;
+  const descriptorRegistry = options.descriptorRegistry?.clone() ?? defaultPack!.descriptorRegistry;
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
@@ -76,7 +75,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
 
   const getSnapshot = createFormViewSnapshotCache({
     form,
-    presentationRegistry,
+    descriptorRegistry,
     resolvedLayout,
     getStepIndex: () => stepIndex,
     getActiveTabIndex: () => activeTabIndex,
@@ -97,7 +96,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
   return Object.freeze({
     form,
     engineRegistry,
-    presentationRegistry,
+    descriptorRegistry,
     get state(): FormViewState {
       return getState();
     },

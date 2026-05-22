@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { createPresentationRegistry } from "@/presentation";
+import { createPrimitiveDescriptorRegistry } from "@/primitives";
 import { createRegistry, type FieldConfig, type Registry, type ReportConfig } from "@/schema";
-import type { FieldPresenter, PresentationRegistry, ReportPresenter } from "@/presentation";
+import type { FieldPresenter, PrimitiveDescriptorRegistry, ReportPresenter } from "@/primitives";
 import type { RuntimeBehavior } from "@/runtime";
 import {
   booleanFieldDefinition,
@@ -50,33 +50,33 @@ type DescriptorCapableReportDefinition = {
 
 export type MlRegistryPack = {
   registry: Registry;
-  presentationRegistry: PresentationRegistry;
+  descriptorRegistry: PrimitiveDescriptorRegistry;
   behaviors: RuntimeBehavior[];
 };
 
 const registerFieldPresenterFromDefinition = (
-  presentationRegistry: PresentationRegistry,
+  descriptorRegistry: PrimitiveDescriptorRegistry,
   definition: DescriptorCapableFieldDefinition,
 ): void => {
-  if (!definition.describe || presentationRegistry.getField(definition.kind)) {
+  if (!definition.describe || descriptorRegistry.getField(definition.kind)) {
     return;
   }
 
-  presentationRegistry.registerField({
+  descriptorRegistry.registerField({
     kind: definition.kind,
     describe: definition.describe,
   });
 };
 
 const registerReportPresenterFromDefinition = (
-  presentationRegistry: PresentationRegistry,
+  descriptorRegistry: PrimitiveDescriptorRegistry,
   definition: DescriptorCapableReportDefinition,
 ): void => {
-  if (!definition.describe || presentationRegistry.getReport(definition.kind)) {
+  if (!definition.describe || descriptorRegistry.getReport(definition.kind)) {
     return;
   }
 
-  presentationRegistry.registerReport({
+  descriptorRegistry.registerReport({
     kind: definition.kind,
     describe: definition.describe,
   });
@@ -90,21 +90,21 @@ export const createBuiltinMlRegistry = (): Registry => {
 
 export const createMlRegistryPack = (): MlRegistryPack => {
   const registry = createRegistry();
-  const presentationRegistry = createPresentationRegistry();
+  const descriptorRegistry = createPrimitiveDescriptorRegistry();
 
   for (const definition of fieldDefinitions) {
     registry.registerField(definition as never);
-    registerFieldPresenterFromDefinition(presentationRegistry, definition as never);
+    registerFieldPresenterFromDefinition(descriptorRegistry, definition as never);
   }
 
   for (const definition of reportDefinitions) {
     registry.registerReport(definition as never);
-    registerReportPresenterFromDefinition(presentationRegistry, definition as never);
+    registerReportPresenterFromDefinition(descriptorRegistry, definition as never);
   }
 
   return {
     registry,
-    presentationRegistry,
+    descriptorRegistry,
     behaviors: [createMappedCategoryBehavior()],
   };
 };

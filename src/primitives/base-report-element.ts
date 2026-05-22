@@ -3,8 +3,8 @@
 
 import { css, LitElement, type CSSResultGroup } from "lit";
 import { property } from "lit/decorators.js";
-import type { ReportDescriptor } from "@/presentation";
-import type { ReportController } from "@/runtime";
+import type { ReportDescriptor } from "./descriptors";
+import type { PrimitiveReportController } from "./controller-types";
 import { primitiveStaticText, type PrimitiveText } from "./constants";
 import type {
   PrimitiveReportRenderContext,
@@ -12,7 +12,7 @@ import type {
   PrimitiveReportTransport,
 } from "./types";
 
-// report-frame.ts owns the subscription to ReportController and passes
+// report-frame.ts owns the subscription to PrimitiveReportController and passes
 // descriptor + context as properties to this element.  No second subscription
 // is needed here — that would cause a redundant render on every state change.
 export abstract class PrimitiveReportElement extends LitElement {
@@ -33,7 +33,7 @@ export abstract class PrimitiveReportElement extends LitElement {
     }
   `;
 
-  @property({ attribute: false }) accessor controller: ReportController | undefined;
+  @property({ attribute: false }) accessor controller: PrimitiveReportController | undefined;
   @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
   @property({ attribute: false }) accessor context: PrimitiveReportRenderContext | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;

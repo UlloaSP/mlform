@@ -45,7 +45,7 @@ const createView = (options: MountFormOptions) =>
     schema: options.schema,
     transport: options.transport,
     registry: options.registry,
-    presentationRegistry: options.presentationRegistry,
+    descriptorRegistry: options.descriptorRegistry,
     behaviors: options.behaviors,
     initialValues: options.initialValues,
     validators: options.validators,
@@ -78,7 +78,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     ? (() => {
         const mountedPrimitive = mountPrimitiveForm(container, view.form, {
           registry: primitiveRegistry,
-          presentationRegistry: view.presentationRegistry,
+          descriptorRegistry: view.descriptorRegistry,
           layout: options.layout?.kind === "split" ? "split" : "stacked",
           containerStrategy: options.containerStrategy,
           formLabel: labels.form,
@@ -111,7 +111,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     form: view.form,
     host,
     engineRegistry: view.engineRegistry,
-    presentationRegistry: view.presentationRegistry,
+    descriptorRegistry: view.descriptorRegistry,
     primitiveRegistry,
     designSystemRegistry,
     designSystem,

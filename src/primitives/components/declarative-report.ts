@@ -3,10 +3,10 @@
 
 import { css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import type { PresentationNode, PresentationSummary } from "@/presentation";
+import type { DescriptorNode, DescriptorSummary } from "../descriptors";
 import { PrimitiveReportElement } from "../base-report-element";
 import { primitiveTagNames } from "../constants";
-import { renderPresentationNodes, renderPresentationSummary } from "./presentation";
+import { renderDescriptorNodes, renderDescriptorSummary } from "./descriptor-content";
 
 @customElement(primitiveTagNames.declarativeReport)
 export class PrimitiveDeclarativeReportElement extends PrimitiveReportElement {
@@ -28,7 +28,7 @@ export class PrimitiveDeclarativeReportElement extends PrimitiveReportElement {
         background: color-mix(in srgb, var(--mlf-color-surface, #ffffff) 88%, transparent);
       }
 
-      .presentation {
+      .Descriptor {
         display: grid;
         gap: 0.85rem;
       }
@@ -161,15 +161,14 @@ export class PrimitiveDeclarativeReportElement extends PrimitiveReportElement {
 
   render() {
     const props = this.props;
-    const nodes = Array.isArray(props.content) ? (props.content as PresentationNode[]) : [];
+    const nodes = Array.isArray(props.content) ? (props.content as DescriptorNode[]) : [];
     const summary =
       props.summary && typeof props.summary === "object"
-        ? (props.summary as PresentationSummary)
+        ? (props.summary as DescriptorSummary)
         : null;
 
     return html`
-      ${renderPresentationSummary(summary, this.reportContext?.label)}
-      ${renderPresentationNodes(nodes)}
+      ${renderDescriptorSummary(summary, this.reportContext?.label)} ${renderDescriptorNodes(nodes)}
     `;
   }
 }

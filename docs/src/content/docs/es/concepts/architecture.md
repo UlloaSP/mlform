@@ -32,4 +32,4 @@ mountForm(container, {
 
 Usa `createFormView()` cuando MLForm debe mantener estado y validacion, pero tu app pinta el layout. Usa `createForm()` desde runtime cuando no quieres la UI del kit.
 
-La frontera importante: schema dice que significa el formulario, layout dice como se organiza, transport dice adonde van los valores, presentation dice como se ven campos y reports.
+La frontera importante: schema dice que significa el formulario, layout dice como se organiza, transport dice adonde van los valores, primitives dice que piezas UI renderizan los descriptores de fields y reports.

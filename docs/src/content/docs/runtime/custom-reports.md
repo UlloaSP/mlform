@@ -3,12 +3,12 @@ title: Custom Reports
 description: Define report kinds with declarative rendering and low boilerplate.
 ---
 
-Use `defineReportKind` for the normal extension path. It lets you resolve payloads and return a small presentation tree instead of building a custom renderer for each report.
+Use `defineReportKind` for the normal extension path. It lets you resolve payloads and return a small descriptor tree instead of building a custom renderer for each report.
 
 ```ts
 import { z } from "zod";
 import { createMlRegistryPack } from "mlform/builtins-ml";
-import { defineReportKind, registerDefinedReportKind } from "mlform/presentation";
+import { defineReportKind, registerDefinedReportKind } from "mlform/kit";
 
 const riskSummaryReport = defineReportKind({
   kind: "risk-summary",
@@ -33,7 +33,7 @@ const riskSummaryReport = defineReportKind({
 });
 
 const pack = createMlRegistryPack();
-registerDefinedReportKind(pack.registry, pack.presentationRegistry, riskSummaryReport);
+registerDefinedReportKind(pack.registry, pack.descriptorRegistry, riskSummaryReport);
 ```
 
 `render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.

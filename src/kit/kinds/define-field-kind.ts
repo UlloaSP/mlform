@@ -1,15 +1,32 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldConfig, FieldDefinition, NormalizedFieldConfig } from "@/schema";
 import type {
-  DeclarativeFieldKind,
+  FieldConfig,
+  FieldDefinition,
+  FieldValidationFnContext,
+  FieldValueAdapter,
+  NormalizedFieldConfig,
+} from "@/schema";
+import type {
   FieldDescriptor,
   FieldDescriptorContext,
   FieldPresenter,
   FieldRenderHints,
+  FieldRenderSpec,
   FieldRenderSpecContext,
-} from "./index";
+} from "@/primitives";
+import type { ZodType } from "zod";
+
+export interface DeclarativeFieldKind<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
+  kind: string;
+  schema: ZodType<TConfig>;
+  value?: FieldValueAdapter<TConfig, TValue>;
+  validate?: (
+    context: FieldValidationFnContext<TConfig, TValue>,
+  ) => string[] | PromiseLike<string[]>;
+  render: FieldRenderSpec<TConfig, TValue>;
+}
 
 const resolveHints = <TConfig extends FieldConfig, TValue>(
   hints:
@@ -39,7 +56,7 @@ export type DefinedFieldKind<TConfig extends FieldConfig, TValue> = {
     context: FieldDescriptorContext & { value: TValue },
   ) => FieldDescriptor;
   definition: FieldDefinition<TConfig, TValue>;
-  presenter: FieldPresenter<TConfig, TValue>;
+  presenter: FieldPresenter<NormalizedFieldConfig<TConfig>, TValue>;
 };
 
 export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
@@ -64,7 +81,7 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
       : undefined,
   };
 
-  const presenter: FieldPresenter<TConfig, TValue> = {
+  const presenter: FieldPresenter<NormalizedFieldConfig<TConfig>, TValue> = {
     kind: kind.kind,
     describe(config, context) {
       const hints = resolveHints(kind.render.hints, {
