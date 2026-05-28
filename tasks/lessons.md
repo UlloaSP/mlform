@@ -13,3 +13,4 @@
 - Do not rename a shared bucket into another shared bucket. Move helpers to owning domains, use native platform APIs where they exist, and keep barrels as exports only.
 - Public imports must stop at existing package module roots. Do not create new public subpaths or deeper module exports when asked to expose types; export them from existing module barrels.
 - For UI value-loss bugs, regression must exercise user edit + blur path, not only initial descriptor hydration.
+- Boolean fields need tri-state tests: unset, explicit `false`, explicit `true`; never conflate unanswered with false.

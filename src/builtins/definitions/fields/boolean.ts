@@ -11,7 +11,7 @@ type BooleanFieldConfig = BaseFieldConfig & {
   falseLabel?: string;
 };
 
-export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, boolean> = {
+export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, boolean | null> = {
   kind: "boolean",
   schema: z.object({
     kind: z.literal("boolean"),
@@ -20,9 +20,18 @@ export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, 
     falseLabel: z.string().optional(),
   }),
   getDefaultValue(config) {
-    return typeof config.defaultValue === "boolean" ? config.defaultValue : false;
+    return typeof config.defaultValue === "boolean" ? config.defaultValue : null;
   },
   normalizeValue(value) {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+    if (value === true || value === "true") {
+      return true;
+    }
+    if (value === false || value === "false") {
+      return false;
+    }
     return Boolean(value);
   },
   describe(config, context) {

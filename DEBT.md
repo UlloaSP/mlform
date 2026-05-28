@@ -15,7 +15,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-05-27`
+- Last reviewed: `2026-05-28`
 - Current focus: no active debt recorded
 
 ## Active Debt
@@ -99,6 +99,7 @@ None.
 - public package paths renamed to `mlform/design` and `mlform/builtins`; source modules now live under `src/design` and `src/builtins`
 - Boolean built-in required validation no longer models acceptance; `false` is treated as a present boolean value.
 - Primitive field frames now refresh descriptors from the descriptor registry when field state changes, preventing valid number values from rendering as blank after blur.
+- Boolean fields now distinguish unset (`null`) from explicit `false`; no default value leaves both primitive radio options unselected.
 
 ## Notes
 

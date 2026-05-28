@@ -148,4 +148,64 @@ describe("number and boolean regressions", () => {
     expect(form.getField("enabled")?.state.value).toBe(false);
     expect(form.getField("enabled")?.state.errors).toEqual([]);
   });
+
+  it("leaves boolean fields unset when no default value is configured", async () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "boolean", id: "enabled", label: "Enabled" }],
+      },
+      registry: createMlRegistryPack().registry,
+      transport: { submit: vi.fn() },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await flush();
+
+    const frame = shadow(mounted.host).querySelector("mlf-field-frame");
+    const renderer = shadow(frame).querySelector("mlf-boolean-field");
+    const radios = shadow(renderer).querySelectorAll("input[type='radio']");
+
+    expect(form.getField("enabled")?.state.value).toBeNull();
+    expect((radios.item(0) as HTMLInputElement).checked).toBe(false);
+    expect((radios.item(1) as HTMLInputElement).checked).toBe(false);
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("requires a boolean choice while accepting false as a choice", async () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "boolean", id: "enabled", label: "Enabled", required: true }],
+      },
+      registry: createMlRegistryPack().registry,
+      transport: { submit: vi.fn() },
+    });
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, form);
+
+    await form.validate();
+    await flush();
+
+    const frame = shadow(mounted.host).querySelector("mlf-field-frame");
+    const renderer = shadow(frame).querySelector("mlf-boolean-field");
+    const falseRadio = shadow(renderer).querySelector("input[value='false']") as HTMLInputElement;
+
+    expect(form.getField("enabled")?.state.value).toBeNull();
+    expect(form.getField("enabled")?.state.errors).toEqual(["This field is required."]);
+
+    falseRadio.checked = true;
+    falseRadio.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+    await form.validate();
+    await flush();
+
+    expect(form.getField("enabled")?.state.value).toBe(false);
+    expect(form.getField("enabled")?.state.errors).toEqual([]);
+
+    mounted.unmount();
+    container.remove();
+  });
 });

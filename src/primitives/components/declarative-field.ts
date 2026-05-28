@@ -83,7 +83,7 @@ export class PrimitiveDeclarativeFieldElement extends PrimitiveFieldElement {
     delete props.widget;
 
     if (widget === "boolean") {
-      props.checked = props.value === true;
+      props.checked = props.value === true ? true : props.value === false ? false : null;
     }
 
     return props;
