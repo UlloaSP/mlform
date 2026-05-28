@@ -15,7 +15,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-05-22`
+- Last reviewed: `2026-05-27`
 - Current focus: no active debt recorded
 
 ## Active Debt
@@ -97,6 +97,8 @@ None.
 - public `mlform/presentation` module removed; descriptor contracts moved into `primitives`, and declarative custom kind helpers moved into `kit`
 - `primitives` no longer imports runtime, schema, transport, kit, builtins, or design; runtime compatibility uses local structural controller/request contracts
 - public package paths renamed to `mlform/design` and `mlform/builtins`; source modules now live under `src/design` and `src/builtins`
+- Boolean built-in required validation no longer models acceptance; `false` is treated as a present boolean value.
+- Primitive field frames now refresh descriptors from the descriptor registry when field state changes, preventing valid number values from rendering as blank after blur.
 
 ## Notes
 

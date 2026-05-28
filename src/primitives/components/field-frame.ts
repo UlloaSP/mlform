@@ -5,7 +5,8 @@ import { LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type { PrimitiveFieldController, PrimitiveFieldStateSnapshot } from "../controller-types";
-import type { FieldDescriptor } from "../descriptors";
+import { resolveFieldDescriptor } from "../descriptor-resolution";
+import type { FieldDescriptor, PrimitiveDescriptorRegistry } from "../descriptors";
 import { ControllerBinding } from "../controller-binding";
 import {
   primitiveIdPrefixes,
@@ -26,6 +27,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
 
   @property({ attribute: false }) accessor controller: PrimitiveFieldController | undefined;
   @property({ attribute: false }) accessor descriptor: FieldDescriptor | null = null;
+  @property({ attribute: false }) accessor descriptorRegistry:
+    | PrimitiveDescriptorRegistry
+    | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
@@ -41,7 +45,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
   #memoizedErrorId = "";
 
   readonly #binding = new ControllerBinding<PrimitiveFieldController>(this, (ctrl) => {
-    this.resolvedDescriptor = this.descriptor;
+    this.resolvedDescriptor = this.#resolveDescriptor(ctrl);
     this.fieldState = ctrl?.state ?? null;
     if (!this.resolvedDescriptor?.props.description) {
       this.descriptionVisibilityOverride = null;
@@ -53,8 +57,12 @@ export class PrimitiveFieldFrameElement extends LitElement {
       this.#binding.bind(this.controller);
     }
 
-    if (changedProperties.has("descriptor")) {
-      this.resolvedDescriptor = this.descriptor;
+    if (
+      changedProperties.has("controller") ||
+      changedProperties.has("descriptor") ||
+      changedProperties.has("descriptorRegistry")
+    ) {
+      this.resolvedDescriptor = this.#resolveDescriptor(this.controller);
     }
 
     if (changedProperties.has("descriptor") && !this.resolvedDescriptor?.props.description) {
@@ -165,6 +173,14 @@ export class PrimitiveFieldFrameElement extends LitElement {
         .text=${this.text}
       ></${tag}>
     `;
+  }
+
+  #resolveDescriptor(controller: PrimitiveFieldController | undefined): FieldDescriptor | null {
+    if (controller && this.descriptorRegistry) {
+      return resolveFieldDescriptor(controller, this.descriptorRegistry);
+    }
+
+    return this.descriptor;
   }
 
   #getContext(controlId: string, errorId: string): PrimitiveFieldRenderContext | undefined {

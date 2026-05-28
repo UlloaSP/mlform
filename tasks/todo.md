@@ -1,5 +1,37 @@
 # Todo
 
+## Number Blur Visibility Todo
+
+- [x] Reproduce number input disappearing after edit + blur.
+- [x] Identify descriptor/render mismatch causing valid state with blank UI.
+- [x] Patch minimal root cause.
+- [x] Update `DEBT.md` if debt picture changes.
+- [x] Verify focused path, broad checks, and graph update.
+
+## Number Blur Visibility Review
+
+- Root cause: primitive form root kept render state stable after status was already `editing`, while field frames reused stale descriptor props.
+- Fix: field frames now re-present their descriptor from `descriptorRegistry` on field state changes, without forcing root rerenders.
+- Regression: multi-number edit path now asserts renderer descriptor `props.value` updates to `1`, matching visible feedback.
+- Verification: focused regression + existing primitives integration, touched-file fmt/lint, typecheck, full `vp test`, `vp build`, source line cap, `git diff --check`, and `graphify update .` passed.
+- Blocker: full `vp check` still fails on pre-existing repo-wide formatting drift in 174 files; touched files pass focused fmt/lint.
+
+## Primitive Number + Boolean Required Todo
+
+- [x] Reproduce hidden number value and boolean required false rejection.
+- [x] Confirm primitive number field value rendering.
+- [x] Fix built-in boolean required semantics so false counts as present.
+- [x] Update `DEBT.md` if debt picture changes.
+- [x] Run focused verification, broad verification, and graph update.
+
+## Primitive Number + Boolean Required Review
+
+- Added regression coverage for normalized number values rendering in primitive number controls.
+- Removed the built-in boolean accept-terms validation path; `required` no longer forces `true`.
+- Removed stale `booleanRequired` message.
+- Verification: focused regression test, touched-file fmt/lint, typecheck, full `vp test`, `vp build`, source line cap, `git diff --check`, and `graphify update .` passed.
+- Blocker: full `vp check` still fails on pre-existing repo-wide formatting drift in 180 files; touched files pass focused fmt/lint.
+
 ## Pack Entry Todo
 
 - [x] Reproduce `vp pack` no-input error.

@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
 import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
 
@@ -25,12 +24,6 @@ export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, 
   },
   normalizeValue(value) {
     return Boolean(value);
-  },
-  validate(value, config) {
-    if (config.required && value !== true) {
-      return [builtinValidationMessages.booleanRequired];
-    }
-    return [];
   },
   describe(config, context) {
     return makeFieldDescriptor(
