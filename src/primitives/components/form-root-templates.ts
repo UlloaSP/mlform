@@ -4,6 +4,7 @@
 import { html, nothing, type TemplateResult } from "lit";
 import { repeat } from "lit/directives/repeat.js";
 import type { PrimitiveFormController } from "../controller-types";
+import type { PrimitiveDescriptorRegistry } from "../descriptors";
 import type { PrimitiveText } from "../constants";
 import type { PrimitiveRegistry, PrimitiveReportTransport } from "../types";
 import type { FormRenderState } from "./form-root-state";
@@ -12,6 +13,7 @@ import type { PresentedField, PresentedReport } from "./form-root-presenters";
 const renderFieldFrames = (
   fields: readonly PresentedField[],
   registry: PrimitiveRegistry | undefined,
+  descriptorRegistry: PrimitiveDescriptorRegistry | undefined,
   text: PrimitiveText,
 ): TemplateResult => html`
   <div class="collection" part="field-list">
@@ -23,6 +25,7 @@ const renderFieldFrames = (
           data-field-id=${field.controller.id}
           .controller=${field.controller}
           .descriptor=${field.descriptor}
+          .descriptorRegistry=${descriptorRegistry}
           .registry=${registry}
           .text=${text}
         ></mlf-field-frame>
@@ -63,6 +66,7 @@ export const renderStackedLayout = (options: {
   reportsToRender: readonly PresentedReport[];
   showReports: boolean;
   registry: PrimitiveRegistry | undefined;
+  descriptorRegistry: PrimitiveDescriptorRegistry | undefined;
   text: PrimitiveText;
   formLabel: string;
   reportsLabel: string;
@@ -90,7 +94,12 @@ export const renderStackedLayout = (options: {
         </div>
 
         <mlf-form-errors .form=${options.form} .text=${options.text}></mlf-form-errors>
-        ${renderFieldFrames(options.visibleFields, options.registry, options.text)}
+        ${renderFieldFrames(
+          options.visibleFields,
+          options.registry,
+          options.descriptorRegistry,
+          options.text,
+        )}
       </div>
 
       <div class="actions" part="actions">
@@ -141,6 +150,7 @@ export const renderSplitLayout = (options: {
   reportsToRender: readonly PresentedReport[];
   showReports: boolean;
   registry: PrimitiveRegistry | undefined;
+  descriptorRegistry: PrimitiveDescriptorRegistry | undefined;
   text: PrimitiveText;
   formLabel: string;
   reportsLabel: string;
@@ -167,7 +177,12 @@ export const renderSplitLayout = (options: {
             </div>
 
             <mlf-form-errors .form=${options.form} .text=${options.text}></mlf-form-errors>
-            ${renderFieldFrames(options.visibleFields, options.registry, options.text)}
+            ${renderFieldFrames(
+              options.visibleFields,
+              options.registry,
+              options.descriptorRegistry,
+              options.text,
+            )}
           </div>
         </div>
 

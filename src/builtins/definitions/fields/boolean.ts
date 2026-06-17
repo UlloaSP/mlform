@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
 import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
 
@@ -12,7 +11,7 @@ type BooleanFieldConfig = BaseFieldConfig & {
   falseLabel?: string;
 };
 
-export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, boolean> = {
+export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, boolean | null> = {
   kind: "boolean",
   schema: z.object({
     kind: z.literal("boolean"),
@@ -21,16 +20,19 @@ export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, 
     falseLabel: z.string().optional(),
   }),
   getDefaultValue(config) {
-    return typeof config.defaultValue === "boolean" ? config.defaultValue : false;
+    return typeof config.defaultValue === "boolean" ? config.defaultValue : null;
   },
   normalizeValue(value) {
-    return Boolean(value);
-  },
-  validate(value, config) {
-    if (config.required && value !== true) {
-      return [builtinValidationMessages.booleanRequired];
+    if (value === null || value === undefined || value === "") {
+      return null;
     }
-    return [];
+    if (value === true || value === "true") {
+      return true;
+    }
+    if (value === false || value === "false") {
+      return false;
+    }
+    return Boolean(value);
   },
   describe(config, context) {
     return makeFieldDescriptor(

@@ -15,3 +15,10 @@ export { textFieldDefinition } from "./fields/text";
 export { classifierReportDefinition } from "./reports/classifier";
 export { regressorReportDefinition } from "./reports/regressor";
 export { builtinFieldDefinitions, builtinReportDefinitions } from "./collections";
+export type { SeriesFieldConfig, SeriesPoint, SeriesSubFieldConfig } from "./fields/series-helpers";
+export type {
+  BuiltinFieldConfig,
+  BuiltinFieldDefinition,
+  BuiltinReportConfig,
+  BuiltinReportDefinition,
+} from "./shared";

@@ -8,6 +8,14 @@ export { createFormView } from "./view";
 export { defineFieldKind, defineReportKind } from "./kinds";
 export { registerDefinedFieldKind, registerDefinedReportKind } from "./kinds";
 export type {
+  DeclarativeFieldKind,
+  DeclarativeReportKind,
+  DefinedFieldKind,
+  DefinedReportKind,
+  ReportRenderSpec,
+  ReportRenderSpecContext,
+} from "./kinds";
+export type {
   CreateFormViewOptions,
   DisclosureState,
   FormLayoutConfig,

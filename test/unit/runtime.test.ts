@@ -1750,7 +1750,7 @@ describe("runtime", () => {
     }).toThrow(EngineError);
 
     expect(form.getValues()).toEqual({
-      advanced: false,
+      advanced: null,
       locked: "",
     });
   });

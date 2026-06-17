@@ -248,7 +248,7 @@ jobs:
         run: vp build
 
       - name: Create package tarball
-        run: vp pack
+        run: npm pack
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

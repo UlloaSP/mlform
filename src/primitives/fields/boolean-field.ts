@@ -83,7 +83,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
   render() {
     const props = this.props;
     const context = this.fieldContext;
-    const checked = props.checked === true;
+    const selected = props.checked === true ? true : props.checked === false ? false : null;
     const text = this.text;
     const fallbackControlId = primitiveIdPrefixes.booleanGroup;
     const trueId = `${context?.controlId ?? fallbackControlId}-true`;
@@ -105,7 +105,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
           id=${trueId}
           name=${context?.controlId ?? fallbackControlId}
           value="true"
-          .checked=${checked}
+          .checked=${selected === true}
           ?disabled=${disabled}
           @change=${this.#handleChange}
           @blur=${this.#handleBlur}
@@ -117,7 +117,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
           id=${falseId}
           name=${context?.controlId ?? fallbackControlId}
           value="false"
-          .checked=${!checked}
+          .checked=${selected === false}
           ?disabled=${disabled}
           @change=${this.#handleChange}
           @blur=${this.#handleBlur}

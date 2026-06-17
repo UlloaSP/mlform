@@ -3,6 +3,13 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
+import type { BuiltinFieldDefinition, SeriesPoint } from "@/builtins";
+import type { ComponentKey, ThemeManifest } from "@/design";
+import type { DefinedReportKind } from "@/kit";
+import type { PrimitiveReportRequest, ReportDescriptor } from "@/primitives";
+import type { FieldController } from "@/runtime";
+import type { FormSchema, ReportConfig } from "@/schema";
+import type { JsonTransportOptions, Transport } from "@/transport";
 
 const moduleNames = new Set([
   "builtins",
@@ -53,6 +60,46 @@ const moduleNameForPath = (filePath: string): string | null => {
 };
 
 describe("module boundaries", () => {
+  it("keeps package exports at existing module roots", () => {
+    const packageJson = JSON.parse(
+      readFileSync(resolve(process.cwd(), "package.json"), "utf8"),
+    ) as {
+      exports: Record<string, { types?: string }>;
+    };
+    const exportPaths = Object.keys(packageJson.exports);
+    const typePaths = Object.values(packageJson.exports).map((entry) => entry.types);
+
+    expect(exportPaths.every((path) => /^\.\/[^/]+$/.test(path))).toBe(true);
+    expect(typePaths).toContain("./dist/types/kit/index.d.ts");
+    expect(typePaths.filter(Boolean).every((path) => !path?.includes("/src/"))).toBe(true);
+  });
+
+  it("exposes declarative kind types from the kit module source API", () => {
+    const kind = null as DefinedReportKind<ReportConfig, unknown> | null;
+
+    expect(kind).toBeNull();
+  });
+
+  it("exposes public types from every existing module root source API", () => {
+    type RootTypes = [
+      BuiltinFieldDefinition,
+      SeriesPoint,
+      ComponentKey,
+      ThemeManifest,
+      DefinedReportKind<ReportConfig, unknown>,
+      PrimitiveReportRequest,
+      ReportDescriptor,
+      FieldController,
+      FormSchema,
+      JsonTransportOptions,
+      Transport,
+    ];
+
+    const roots = null as RootTypes | null;
+
+    expect(roots).toBeNull();
+  });
+
   it("does not use module subpath aliases", () => {
     const violations: string[] = [];
 
