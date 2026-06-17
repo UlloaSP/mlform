@@ -26,6 +26,7 @@ Hard constraints override convenience. If a requested change conflicts with them
 - No source file may exceed 300 lines.
 - If an edit would exceed 300 lines, split the file first.
 - Prefer new modules over growing existing files.
+- For any modification in the code, always use the `ponytail` skill in `ultra` mode.
 - For any communication with the user, always use the `caveman` skill in `ultra` mode.
 - `DEBT.md` is mandatory repo memory for technical debt, known bugs, architectural compromises, and incomplete migrations.
 - Any change touching `src\`, `test\`, `docs\`, or `README.md` must update `DEBT.md` if the debt picture changes, including debt removed, debt added, or scope/status changes.

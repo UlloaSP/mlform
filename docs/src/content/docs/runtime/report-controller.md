@@ -22,4 +22,4 @@ Each report has a `ReportController`.
 | `error`   | Report-local error message, if resolution failed. |
 | `status`  | `idle`, `ready`, or `error`.                      |
 
-Use `source` on report config when a backend key differs from the report id.
+Use `mappedTo` on report config for backend output keys or numeric positions.

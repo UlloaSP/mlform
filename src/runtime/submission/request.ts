@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { normalizeValuePath, setPathValue } from "../paths";
+import { mappedToKey, resolveMappedTo } from "@/schema";
 import type { NormalizedFieldConfig, TransportResponse } from "../types";
 import { cloneValue } from "../values";
 import { isRecord } from "../utils";
@@ -58,6 +59,7 @@ export const shouldIncludeFieldInSubmission = (
 
 export const buildSubmissionValueRecords = (
   fields: readonly SubmissionField[],
+  backend: string | undefined,
   resolveInactiveFieldPolicy: (field: SubmissionField) => "include" | "omit" | "reset-on-hide",
 ): SubmissionValueRecords => {
   const values: Record<string, unknown> = {};
@@ -70,14 +72,26 @@ export const buildSubmissionValueRecords = (
       continue;
     }
 
-    const valuePath = normalizeValuePath(field.config.valuePath, field.id);
+    const mappedTo = resolveMappedTo(field.config.mappedTo, backend);
+    const valuePath =
+      mappedTo === undefined
+        ? field.config.valuePath
+        : typeof mappedTo === "number"
+          ? mappedToKey(mappedTo)
+          : mappedTo;
     const rawValue = field.state.value;
     const serializedValue = field.serialize();
 
     fieldValues[field.id] = cloneValue(rawValue);
     serializedFieldValues[field.id] = cloneValue(serializedValue);
-    setPathValue(values, valuePath, cloneValue(rawValue));
-    setPathValue(serializedValues, valuePath, cloneValue(serializedValue));
+
+    if (valuePath === undefined) {
+      continue;
+    }
+
+    const normalizedValuePath = normalizeValuePath(valuePath, field.id);
+    setPathValue(values, normalizedValuePath, cloneValue(rawValue));
+    setPathValue(serializedValues, normalizedValuePath, cloneValue(serializedValue));
   }
 
   return {

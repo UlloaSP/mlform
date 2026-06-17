@@ -13,7 +13,7 @@ User selects "Red"
   -> subordinate fields update in one batch
 ```
 
-By default, the master `mapped-category` value is not submitted. The backend receives the subordinate fields. Set `includeInSubmission: true` on the master only when the backend also needs the selected label/value.
+By default, the master `mapped-category` value is not submitted. The backend receives the subordinate fields through their own `mappedTo` values. Set `includeInSubmission: true` on the master only when the backend also needs the selected label/value.
 
 ## Schema
 
@@ -31,9 +31,9 @@ const schema = {
         { label: "Blue", value: "blue", mapping: { is_red: 0, is_green: 0, is_blue: 1 } },
       ],
     },
-    { kind: "number", id: "is_red", label: "is_red", hidden: true, inactiveFieldPolicy: "include" },
-    { kind: "number", id: "is_green", label: "is_green", hidden: true, inactiveFieldPolicy: "include" },
-    { kind: "number", id: "is_blue", label: "is_blue", hidden: true, inactiveFieldPolicy: "include" },
+    { kind: "number", id: "is_red", label: "is_red", mappedTo: "is_red", hidden: true, inactiveFieldPolicy: "include" },
+    { kind: "number", id: "is_green", label: "is_green", mappedTo: "is_green", hidden: true, inactiveFieldPolicy: "include" },
+    { kind: "number", id: "is_blue", label: "is_blue", mappedTo: "is_blue", hidden: true, inactiveFieldPolicy: "include" },
     { kind: "number", id: "size", label: "Size (cm)", min: 1, max: 100, required: true },
   ],
   reports: [{ kind: "classifier" }],
@@ -54,7 +54,7 @@ Every option must be an object with `label`, `value`, and `mapping`.
 | --- | --- | --- |
 | `label` | `string` | Text shown in the dropdown. |
 | `value` | `string` | Stored value for the master field. |
-| `mapping` | `Record<string, unknown>` | Target field ids and values to write. |
+| `mapping` | `Record<string, unknown>` | Internal target field ids and values to write. |
 
 Plain string options are not valid for `mapped-category`.
 
@@ -67,6 +67,7 @@ Fields referenced in `mapping` are subordinate fields. They usually should be hi
   kind: "number",
   id: "is_red",
   label: "is_red",
+  mappedTo: "is_red",
   hidden: true,
   inactiveFieldPolicy: "include",
 }

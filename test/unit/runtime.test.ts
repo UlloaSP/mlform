@@ -6,6 +6,7 @@ import * as z from "zod";
 import { createMappedCategoryBehavior, createMlRegistryPack } from "@/builtins";
 import { defineFieldKind, defineReportKind } from "@/kit";
 import { type FieldPresenter, type ReportPresenter } from "@/primitives";
+import { resolveMappedReportPayload } from "@/schema";
 import type { FieldConfig, ReportConfig } from "@/schema";
 import {
   EngineError,
@@ -140,6 +141,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
             minLength: 3,
           },
           {
@@ -938,6 +940,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
       },
@@ -1141,12 +1144,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "classifier",
             id: "classifier",
+            mappedTo: "classifier",
           },
         ],
       },
@@ -1328,6 +1333,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
       },
@@ -1364,6 +1370,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
       },
@@ -1776,11 +1783,13 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
           {
             kind: "date",
             label: "Birthday",
             required: true,
+            mappedTo: "birthday",
           },
         ],
         reports: [
@@ -1788,6 +1797,7 @@ describe("runtime", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
+            mappedTo: "risk",
             showClassProbabilities: true,
           },
         ],
@@ -1866,6 +1876,7 @@ describe("runtime", () => {
           {
             kind: "number",
             label: "Score",
+            mappedTo: "score",
           },
         ],
       },
@@ -1923,6 +1934,61 @@ describe("runtime", () => {
     });
   });
 
+  it("uses mappedTo names and positions without id fallback", async () => {
+    const submit = vi.fn().mockResolvedValue([{ ignored: true }, { value: 88 }]);
+    const form = createForm({
+      schema: {
+        fields: [
+          {
+            kind: "number",
+            id: "visible-age",
+            label: "Age",
+            mappedTo: { default: 0, remote: "actual_age" },
+          },
+          {
+            kind: "text",
+            id: "ui-only",
+            label: "UI only",
+          },
+        ],
+        reports: [
+          {
+            kind: "regressor",
+            id: "visible-score",
+            mappedTo: { default: "score", remote: 1 },
+          },
+        ],
+      },
+      registry: createMlRegistryPack().registry,
+      transport: { submit },
+    });
+
+    form.setValues({ "visible-age": 42, "ui-only": "local" });
+    const result = await form.submit({ backend: "remote" });
+
+    expect(submit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        values: { actual_age: 42 },
+        fieldValues: { "visible-age": 42, "ui-only": "local" },
+        serializedValues: { actual_age: 42 },
+      }),
+    );
+    expect(result.values).toEqual({ actual_age: 42 });
+    expect(result.reportStates["visible-score"]?.payload).toEqual({ value: 88 });
+  });
+
+  it("rejects negative mappedTo positions", () => {
+    expect(() =>
+      createForm({
+        schema: {
+          fields: [{ kind: "number", label: "Age", mappedTo: -1 }],
+        },
+        registry: createMlRegistryPack().registry,
+        transport: { submit: vi.fn() },
+      }),
+    ).toThrow();
+  });
+
   it("classifier descriptor is populated after submit", async () => {
     const form = createForm({
       schema: {
@@ -1937,6 +2003,7 @@ describe("runtime", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -1995,6 +2062,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
@@ -2033,7 +2101,7 @@ describe("runtime", () => {
               return input as {
                 kind: "good-report";
                 id?: string;
-                source?: string;
+                mappedTo?: string | number;
               };
             },
           } as never,
@@ -2059,7 +2127,7 @@ describe("runtime", () => {
               return input as {
                 kind: "bad-report";
                 id?: string;
-                source?: string;
+                mappedTo?: string | number;
               };
             },
           } as never,
@@ -2085,6 +2153,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
@@ -2142,7 +2211,7 @@ describe("runtime", () => {
         schema: z.object({
           kind: z.literal("typed-score"),
           id: z.string().optional(),
-          source: z.string().optional(),
+          mappedTo: z.union([z.string(), z.number()]).optional(),
         }),
         payloadSchema: z.object({
           score: z.number(),
@@ -2166,12 +2235,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "typed-score",
             id: "score",
+            mappedTo: "score",
           },
         ],
       },
@@ -2204,7 +2275,7 @@ describe("runtime", () => {
         schema: z.object({
           kind: z.literal("strict-score"),
           id: z.string().optional(),
-          source: z.string().optional(),
+          mappedTo: z.union([z.string(), z.number()]).optional(),
         }),
         payloadSchema: z.object({
           score: z.number(),
@@ -2229,12 +2300,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "strict-score",
             id: "score",
+            mappedTo: "score",
           },
         ],
       },
@@ -2276,7 +2349,7 @@ describe("runtime", () => {
           return input as {
             kind: "async-report";
             id?: string;
-            source?: string;
+            mappedTo?: string | number;
           };
         },
       } as never,
@@ -2304,6 +2377,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
@@ -2369,12 +2443,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "classifier",
             id: "classifier",
+            mappedTo: "classifier",
           },
         ],
       },
@@ -2418,12 +2494,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "classifier",
             id: "classifier",
+            mappedTo: "classifier",
           },
         ],
       },
@@ -2473,12 +2551,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "classifier",
             id: "classifier",
+            mappedTo: "classifier",
           },
         ],
       },
@@ -2524,12 +2604,14 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
           {
             kind: "classifier",
             id: "classifier",
+            mappedTo: "classifier",
           },
         ],
       },
@@ -2556,6 +2638,7 @@ describe("runtime", () => {
           {
             kind: "boolean",
             label: "Advanced",
+            mappedTo: "advanced",
           },
           {
             kind: "text",
@@ -2597,6 +2680,7 @@ describe("runtime", () => {
           {
             kind: "boolean",
             label: "Advanced",
+            mappedTo: "advanced",
           },
           {
             kind: "text",
@@ -2659,6 +2743,7 @@ describe("runtime", () => {
           {
             kind: "boolean",
             label: "Advanced",
+            mappedTo: "advanced",
           },
           {
             kind: "text",
@@ -2672,6 +2757,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Note",
             inactiveFieldPolicy: "include",
+            mappedTo: "note",
             hiddenWhen: ({ values }) => values.advanced !== true,
             disabledWhen: ({ values }) => values.advanced !== true,
           },
@@ -2737,6 +2823,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
       },
@@ -2835,6 +2922,7 @@ describe("runtime", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
       },
@@ -2894,6 +2982,7 @@ describe("runtime", () => {
           {
             kind: "series",
             label: "Series",
+            mappedTo: "series",
             field1: { kind: "date", label: "field1", required: true },
             field2: { kind: "number", label: "field2", required: true },
           },
@@ -2940,6 +3029,7 @@ describe("runtime", () => {
           {
             kind: "classifier",
             id: "risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -3056,6 +3146,7 @@ describe("runtime", () => {
           {
             kind: "classifier",
             id: "risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -3125,7 +3216,7 @@ describe("runtime", () => {
           kind: z.literal("shap"),
           id: z.string().optional(),
           label: z.string().optional(),
-          source: z.string().optional(),
+          mappedTo: z.union([z.string(), z.number()]).optional(),
         })
         .passthrough(),
       fetch: () => ({ submit: vi.fn() }),
@@ -3408,7 +3499,7 @@ describe("runtime", () => {
           kind: z.literal("shap"),
           id: z.string().optional(),
           label: z.string().optional(),
-          source: z.string().optional(),
+          mappedTo: z.union([z.string(), z.number()]).optional(),
         })
         .passthrough(),
       fetch: () => ({ submit: reportFetchTransport }),
@@ -3431,7 +3522,7 @@ describe("runtime", () => {
             },
           },
           meta: {
-            source: "predict",
+            mappedTo: "predict",
           },
           raw: {
             outputs: [{ prediction: "high" }],
@@ -3714,9 +3805,9 @@ describe("runtime", () => {
         kind: z.literal("risk-summary"),
         id: z.string().optional(),
         label: z.string().optional(),
-        source: z.string().optional(),
+        mappedTo: z.union([z.string(), z.number()]).optional(),
       }),
-      resolve: ({ report, result }) => result.reports[report.source],
+      resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
       render: {
         summary: ({ payload }) => ({
           title: "Risk summary",
@@ -3742,8 +3833,8 @@ describe("runtime", () => {
 
     const form = createForm({
       schema: {
-        fields: [{ kind: "text", label: "Name" }],
-        reports: [{ kind: "risk-summary", id: "risk", label: "Risk" }],
+        fields: [{ kind: "text", label: "Name", mappedTo: "name" }],
+        reports: [{ kind: "risk-summary", id: "risk", label: "Risk", mappedTo: "risk" }],
       },
       registry,
       transport: {
@@ -3810,9 +3901,9 @@ describe("runtime", () => {
         kind: z.literal("shap"),
         id: z.string().optional(),
         label: z.string().optional(),
-        source: z.string().optional(),
+        mappedTo: z.union([z.string(), z.number()]).optional(),
       }),
-      resolve: ({ report, result }) => result.reports[report.source],
+      resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
       fetch: ({ reportId: _reportId }) => ({
         submit: reportFetchTransport,
       }),

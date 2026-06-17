@@ -33,16 +33,15 @@ MLForm normalizes every field and report before rendering:
 - explicit `id` values are preserved
 - missing field ids are generated from the field label when possible
 - missing report ids are generated from the report label or kind
-- missing report `source` defaults to the report id
 - duplicate explicit ids throw a registry/schema error
 
-Use explicit ids in production. Generated ids are useful for demos, but stable ids make backend payloads, tests, and analytics predictable.
+Use explicit ids in production. Generated ids are useful for demos, but stable ids make UI state, tests, and analytics predictable. Backend payload keys belong in `mappedTo`.
 
 ## Shared Field Options
 
 | Option                                       | Type                      | Notes                                            |
 | -------------------------------------------- | ------------------------- | ------------------------------------------------ |
-| `id`                                         | `string`                  | Stable backend key. Recommended.                 |
+| `id`                                         | `string`                  | Stable UI/schema identity. Recommended.          |
 | `kind`                                       | `string`                  | Field kind resolved through the engine registry. |
 | `label`                                      | `string`                  | User-facing label.                               |
 | `description`                                | `string`                  | Help text rendered near the control.             |
@@ -50,17 +49,18 @@ Use explicit ids in production. Generated ids are useful for demos, but stable i
 | `defaultValue`                               | `unknown`                 | Schema-level initial value.                      |
 | `hidden`, `disabled`, `readOnly`             | `boolean`                 | Static inactive states.                          |
 | `hiddenWhen`, `disabledWhen`, `readOnlyWhen` | `FieldCondition`          | Dynamic inactive states.                         |
+| `mappedTo`                                  | `string \| number \| record` | Backend input key, position, or backend map.  |
 | `ui`                                         | `Record<string, unknown>` | Renderer-specific metadata.                      |
 
 ## Shared Report Options
 
 | Option        | Type                      | Notes                                             |
 | ------------- | ------------------------- | ------------------------------------------------- |
-| `id`          | `string`                  | Report id and default backend response key.       |
+| `id`          | `string`                  | Stable UI/schema identity.                        |
 | `kind`        | `string`                  | Report kind resolved through the engine registry. |
 | `label`       | `string`                  | User-facing heading.                              |
 | `description` | `string`                  | Help text for the report region.                  |
-| `source`      | `string`                  | Backend response key when it differs from `id`.   |
+| `mappedTo`    | `string \| number \| record` | Backend output key, position, or backend map. |
 | `ui`          | `Record<string, unknown>` | Renderer-specific metadata.                       |
 
 ## Related Pages

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { defaultEquality } from "../equality";
+import { resolveMappedReportPayload } from "@/schema";
 import { createTransportRequestRunner, extractErrorMessage } from "@/transport";
 import { ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
@@ -170,7 +171,7 @@ export const createReportController = ({
               report: readonlyConfig,
               result,
             })
-          : result.reports[readonlyConfig.source];
+          : resolveMappedReportPayload(readonlyConfig, result);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         return {

@@ -122,6 +122,7 @@ describe("primitives", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
       },
@@ -228,6 +229,7 @@ describe("primitives", () => {
             kind: "number",
             label: "Age",
             required: true,
+            mappedTo: "age",
           },
           {
             id: "tier",
@@ -1020,6 +1022,7 @@ describe("primitives", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -1147,6 +1150,7 @@ describe("primitives", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
@@ -1154,6 +1158,7 @@ describe("primitives", () => {
             kind: "regressor",
             id: "score",
             label: "Score",
+            mappedTo: "score",
           },
         ],
       },
@@ -1205,6 +1210,7 @@ describe("primitives", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
@@ -1213,6 +1219,7 @@ describe("primitives", () => {
             id: "risk",
             label: "Risk",
             details: true,
+            mappedTo: "risk",
           },
         ],
       },
@@ -1273,13 +1280,14 @@ describe("primitives", () => {
 
     const form = createForm({
       schema: {
-        fields: [{ kind: "text", label: "Name", required: true }],
+        fields: [{ kind: "text", label: "Name", required: true, mappedTo: "name" }],
         reports: [
           {
             kind: "regressor",
             id: "score",
             label: "Score",
             details: true,
+            mappedTo: "score",
           },
         ],
       },
@@ -1676,8 +1684,8 @@ describe("primitives", () => {
 
     const form = createForm({
       schema: {
-        fields: [{ kind: "text", id: "name", label: "Name", required: true }],
-        reports: [{ kind: "probe-report", id: "probe", label: "Probe" }],
+        fields: [{ kind: "text", id: "name", label: "Name", required: true, mappedTo: "name" }],
+        reports: [{ kind: "probe-report", id: "probe", label: "Probe", mappedTo: "probe" }],
       },
       registry,
       transport: {
@@ -1863,13 +1871,14 @@ describe("primitives", () => {
 
     const form = createForm({
       schema: {
-        fields: [{ kind: "text", id: "name", label: "Name", required: true }],
+        fields: [{ kind: "text", id: "name", label: "Name", required: true, mappedTo: "name" }],
         reports: [
           {
             kind: "probe-request-report",
             id: "probe",
             label: "Probe",
             details: true,
+            mappedTo: "probe",
           } as never,
         ],
       },

@@ -3,7 +3,7 @@
 
 import * as z from "zod";
 import { builtinLegacyOutputTypes, builtinReportLabels } from "../../constants";
-import type { BaseReportConfig } from "@/schema";
+import { resolveMappedReportPayload, type BaseReportConfig } from "@/schema";
 import { baseReportShape, resolveLegacyOutput, type BuiltinReportDefinition } from "../shared";
 
 type RegressorReportConfig = BaseReportConfig & {
@@ -23,7 +23,7 @@ export const regressorReportDefinition: BuiltinReportDefinition<RegressorReportC
   }),
   resolvePayload(_config, context) {
     return (
-      context.result.reports[context.report.source] ??
+      resolveMappedReportPayload(context.report, context.result) ??
       resolveLegacyOutput(context.result, builtinLegacyOutputTypes.regressor)
     );
   },
