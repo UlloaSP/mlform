@@ -3,6 +3,7 @@
 
 import type { ZodType } from "zod";
 import type { MaybePromise } from "./field";
+import type { MappedTo } from "../mapped-to";
 import type { SubmitResult } from "./submit";
 
 export type ReportStatus = "idle" | "loading" | "ready" | "error";
@@ -15,7 +16,7 @@ export interface BaseReportConfig {
   kind: string;
   label?: string;
   description?: string;
-  source?: string;
+  mappedTo?: MappedTo;
   ui?: Record<string, unknown>;
   [key: string]: unknown;
 }
@@ -24,7 +25,6 @@ export type ReportConfig = BaseReportConfig;
 
 export type NormalizedReportConfig<TConfig extends ReportConfig = ReportConfig> = TConfig & {
   id: string;
-  source: string;
 };
 
 export interface ReportStateSnapshot {

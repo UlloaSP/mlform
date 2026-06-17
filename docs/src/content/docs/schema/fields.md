@@ -12,6 +12,7 @@ Built-in field kinds:
 | `boolean`         | `boolean`        | `required` requires `true`                                                                                                   |
 | `category`        | `string \| null` | `options` as strings or `{ label, value }`                                                                                   |
 | `mapped-category` | `string \| null` | `options` as `{ label, value, mapping }`. See [Mapped Category](/schema/mapped-category/).                                   |
+| `onehot-category` | `string \| null` | `options` as `{ label, value, mappedTo }`. Emits 0/1 one-hot columns. See [OneHot Category](/schema/onehot-category/).       |
 | `date`            | `Date \| null`   | `min`, `max`, `step`                                                                                                         |
 | `series`          | points array     | `minPoints`, `maxPoints`, `granularity`, `ordered`, `uniqueTimestamps`, `minDate`, `maxDate`, `minValue`, `maxValue`, `unit` |
 
@@ -27,6 +28,7 @@ Shared options:
   required: true,
   defaultValue: "",
   includeInSubmission: true,
+  mappedTo: "email",
   hiddenWhen: { kind: "field-value", field: "anonymous", equals: true },
   ui: { autocomplete: "email" }
 }
@@ -37,4 +39,5 @@ Shared field options also include:
 - `showDescriptionInline`: Shows `description` by default instead of waiting for the help button.
 - `inactiveFieldPolicy`: Controls whether hidden/disabled fields are submitted.
 - `includeInSubmission`: Set to `false` to keep a field out of `values`, `fieldValues`, `serializedValues`, and `serializedFieldValues`.
+- `mappedTo`: Writes the field to a backend feature name, numeric position, or backend-specific map.
 - `valuePath`: Writes the field into a nested payload path while keeping flat `fieldValues`.

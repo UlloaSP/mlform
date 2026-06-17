@@ -125,7 +125,6 @@ const normalizeReport = (
   return {
     ...parsed,
     id,
-    source: parsed.source ?? id,
   };
 };
 

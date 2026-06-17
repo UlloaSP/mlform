@@ -12,6 +12,7 @@ import {
   registerDefinedFieldKind,
   registerDefinedReportKind,
 } from "@/kit";
+import { resolveMappedReportPayload } from "@/schema";
 import { createJsonTransport, createRoutingTransport } from "@/transport";
 
 const flush = async (): Promise<void> => {
@@ -97,6 +98,7 @@ describe("kit integration", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
         ],
         reports: [
@@ -104,6 +106,7 @@ describe("kit integration", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -220,11 +223,13 @@ describe("kit integration", () => {
             kind: "text",
             label: "Name",
             required: true,
+            mappedTo: "name",
           },
           {
             id: "mode",
             kind: "text",
             label: "Mode",
+            mappedTo: "mode",
           },
         ],
         reports: [
@@ -232,6 +237,7 @@ describe("kit integration", () => {
             kind: "classifier",
             id: "risk",
             label: "Risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -571,8 +577,8 @@ describe("kit integration", () => {
         },
       },
       schema: {
-        fields: [{ id: "name", kind: "text", label: "Name", required: true }],
-        reports: [{ kind: "classifier", id: "risk", label: "Risk" }],
+        fields: [{ id: "name", kind: "text", label: "Name", required: true, mappedTo: "name" }],
+        reports: [{ kind: "classifier", id: "risk", label: "Risk", mappedTo: "risk" }],
       },
       initialValues: {
         name: "Alice",
@@ -620,12 +626,13 @@ describe("kit integration", () => {
       },
       reportTransport,
       schema: {
-        fields: [{ kind: "text", id: "name", label: "Name", required: true }],
+        fields: [{ kind: "text", id: "name", label: "Name", required: true, mappedTo: "name" }],
         reports: [
           {
             kind: "classifier",
             id: "risk",
             label: "Risk",
+            mappedTo: "risk",
           },
         ],
       },
@@ -789,9 +796,9 @@ describe("kit integration", () => {
         }),
       },
       schema: {
-        fields: [{ kind: "text", label: "Name", required: true }],
+        fields: [{ kind: "text", label: "Name", required: true, mappedTo: "name" }],
         reports: [
-          { kind: "classifier", id: "risk", label: "Risk" },
+          { kind: "classifier", id: "risk", label: "Risk", mappedTo: "risk" },
           { kind: "shap", label: "SHAP Values" },
         ],
       },
@@ -871,6 +878,7 @@ describe("kit integration", () => {
           kind: z.literal("score"),
           id: z.string().optional(),
           label: z.string(),
+          mappedTo: z.union([z.string(), z.number()]).optional(),
           min: z.number().default(0),
           max: z.number().default(100),
           step: z.number().optional(),
@@ -905,9 +913,9 @@ describe("kit integration", () => {
           kind: z.literal("risk-summary"),
           id: z.string().optional(),
           label: z.string().optional(),
-          source: z.string().optional(),
+          mappedTo: z.union([z.string(), z.number()]).optional(),
         }),
-        resolve: ({ report, result }) => result.reports[report.source],
+        resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
         render: {
           summary: ({ payload }) => ({
             title: "Risk summary",
@@ -975,9 +983,9 @@ describe("kit integration", () => {
         }),
       },
       schema: {
-        fields: [{ kind: "score", label: "Score", min: 0, max: 100, step: 5 }],
+        fields: [{ kind: "score", label: "Score", min: 0, max: 100, step: 5, mappedTo: "score" }],
         reports: [
-          { kind: "risk-summary", id: "risk", label: "Risk" },
+          { kind: "risk-summary", id: "risk", label: "Risk", mappedTo: "risk" },
           { kind: "shap", label: "SHAP Values" },
         ],
       },

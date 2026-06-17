@@ -130,7 +130,7 @@ export const createFormSubmitter = ({
         throw createAbortError(String(options.signal.reason ?? ""));
       }
 
-      const records = buildSubmissionValueRecords(fields, resolveInactiveFieldPolicy);
+      const records = buildSubmissionValueRecords(fields, backend, resolveInactiveFieldPolicy);
       await beforeSubmitRecords?.(records);
       abortManager.setActiveController(
         submissionRequestId,

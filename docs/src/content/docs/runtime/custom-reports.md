@@ -9,6 +9,7 @@ Use `defineReportKind` for the normal extension path. It lets you resolve payloa
 import { z } from "zod";
 import { createMlRegistryPack } from "mlform/builtins";
 import { defineReportKind, registerDefinedReportKind } from "mlform/kit";
+import { resolveMappedReportPayload } from "mlform/schema";
 
 const riskSummaryReport = defineReportKind({
   kind: "risk-summary",
@@ -16,9 +17,9 @@ const riskSummaryReport = defineReportKind({
     id: z.string().optional(),
     kind: z.literal("risk-summary"),
     label: z.string().optional(),
-    source: z.string().optional(),
+    mappedTo: z.union([z.string(), z.number()]).optional(),
   }),
-  resolve: ({ report, result }) => result.reports[report.source],
+  resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
   render: {
     summary: ({ payload }) => ({
       title: payload.label ?? "Risk",

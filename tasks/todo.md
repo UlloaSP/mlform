@@ -1,16 +1,17 @@
 # Todo
 
-## Boolean Unset Default Todo
+## OneHot Category Todo
 
-- [x] Reproduce boolean field with no `defaultValue` selecting false.
-- [x] Preserve explicit `defaultValue: false` as selected false.
-- [x] Make required boolean treat unset as missing and false as present.
-- [x] Update `DEBT.md` and lessons.
-- [x] Run focused and broad verification plus graph update.
+- [x] Add built-in `onehot-category` schema kind using category UI.
+- [x] Encode selected option into `mappedTo` columns as 0/1 during submission.
+- [x] Reject invalid/duplicate onehot output mappings.
+- [x] Document concise schema, no hidden subordinate fields.
+- [x] Update `DEBT.md`, focused tests, checks, and graph.
 
-## Boolean Unset Default Review
+## OneHot Category Review
 
-- Root cause: built-in boolean defaulted missing `defaultValue` to `false`, and primitive radio rendering selected false for any non-true value.
-- Fix: boolean state is now tri-state (`true`, `false`, `null`); missing/default-empty is `null`, explicit `false` remains false.
-- Regression: no-default boolean asserts state `null` and no radios checked; required boolean errors while unset and accepts a false choice.
-- Verification: regression failed before fix, then focused tests, nearby integration/runtime tests, typecheck, full `vp test`, full `vp check`, `vp build`, source line cap, `git diff --check`, and `graphify update .` passed.
+- Added built-in `onehot-category` using the existing category primitive.
+- `options[].mappedTo` is the only backend target contract; hidden subordinate fields are not needed.
+- Submission emits strict 0/1 encoded columns and rejects duplicate or unresolved resolved targets.
+- Docs added for English/Spanish schema usage; `mapped-category` docs now points strict one-hot users to `onehot-category`.
+- Verification: `vp test run test/unit/runtime.test.ts`, `vp run typecheck`, `vp check --fix`, `vp test run`, `vp build`, source line cap, and `graphify update .` passed.

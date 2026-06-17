@@ -4,6 +4,7 @@
 import { booleanFieldDefinition } from "./fields/boolean";
 import { categoryFieldDefinition } from "./fields/category";
 import { mappedCategoryFieldDefinition } from "./fields/mapped-category";
+import { oneHotCategoryFieldDefinition } from "./fields/onehot-category";
 import { dateFieldDefinition } from "./fields/date";
 import { longTextFieldDefinition } from "./fields/long-text";
 import { multiChoiceFieldDefinition } from "./fields/multi-choice";
@@ -21,6 +22,7 @@ export const builtinFieldDefinitions = [
   booleanFieldDefinition,
   categoryFieldDefinition,
   mappedCategoryFieldDefinition,
+  oneHotCategoryFieldDefinition,
   dateFieldDefinition,
   seriesFieldDefinition,
   longTextFieldDefinition,

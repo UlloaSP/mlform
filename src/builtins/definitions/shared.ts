@@ -17,6 +17,12 @@ import type { FieldDescriptor, ReportDescriptor } from "@/primitives";
 
 export const uiSchema = z.record(z.string(), z.unknown()).optional();
 
+const mappedToTargetSchema = z.union([z.string().min(1), z.number().int().nonnegative()]);
+
+export const mappedToSchema = z
+  .union([mappedToTargetSchema, z.record(z.string().min(1), mappedToTargetSchema.nullish())])
+  .optional();
+
 const functionFieldConditionSchema = z.custom<(context: unknown) => boolean>(
   (value) => typeof value === "function",
 );
@@ -99,6 +105,7 @@ export const baseFieldShape = {
   asyncValidationDebounceMs: z.number().int().nonnegative().optional(),
   inactiveFieldPolicy: z.enum(["include", "omit", "reset-on-hide"]).optional(),
   includeInSubmission: z.boolean().optional(),
+  mappedTo: mappedToSchema,
   valuePath: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]).optional(),
   defaultValue: z.unknown().optional(),
   ui: uiSchema,
@@ -108,7 +115,7 @@ export const baseReportShape = {
   id: z.string().optional(),
   label: z.string().optional(),
   description: z.string().optional(),
-  source: z.string().optional(),
+  mappedTo: mappedToSchema,
   ui: uiSchema,
 };
 

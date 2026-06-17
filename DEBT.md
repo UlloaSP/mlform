@@ -15,7 +15,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-05-28`
+- Last reviewed: `2026-06-17`
 - Current focus: no active debt recorded
 
 ## Active Debt
@@ -100,6 +100,8 @@ None.
 - Boolean built-in required validation no longer models acceptance; `false` is treated as a present boolean value.
 - Primitive field frames now refresh descriptors from the descriptor registry when field state changes, preventing valid number values from rendering as blank after blur.
 - Boolean fields now distinguish unset (`null`) from explicit `false`; no default value leaves both primitive radio options unselected.
+- Field/report backend mapping now uses explicit `mappedTo`; report `source` and report-id backend fallback were removed from active schema contracts.
+- `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
 
 ## Notes
 

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { cloneValue } from "../values";
+import { mappedToKey, resolveMappedTo } from "@/schema";
 import type { SubmitResult } from "../types";
 import type { LiveSubmissionReport } from "./types";
 import type { SubmissionValueRecords } from "./request";
@@ -75,7 +76,7 @@ export const createReportUpdates = ({
     payload: unknown,
   ): SubmitResult => {
     const report = reportMap.get(reportId);
-    const source = report?.config?.source ?? reportId;
+    const target = resolveMappedTo(report?.config.mappedTo, backend) ?? reportId;
 
     return {
       backend,
@@ -84,7 +85,7 @@ export const createReportUpdates = ({
       serializedValues: cloneValue(records.serializedValues),
       serializedFieldValues: cloneValue(records.serializedFieldValues),
       reports: {
-        [source]: cloneValue(payload),
+        [mappedToKey(target)]: cloneValue(payload),
       },
       reportStates: cloneValue(getReportStates()) as SubmitResult["reportStates"],
       meta: cloneValue(getSubmissionMeta()),

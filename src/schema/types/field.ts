@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { ZodType } from "zod";
+import type { MappedTo } from "../mapped-to";
 
 export type MaybePromise<T> = T | PromiseLike<T>;
 export type FormStatus = "idle" | "editing" | "validating" | "submitting" | "success" | "error";
@@ -24,6 +25,7 @@ export interface BaseFieldConfig {
   asyncValidationDebounceMs?: number;
   inactiveFieldPolicy?: InactiveFieldPolicy;
   includeInSubmission?: boolean;
+  mappedTo?: MappedTo;
   valuePath?: string | string[];
   defaultValue?: unknown;
   ui?: Record<string, unknown>;

@@ -11,6 +11,7 @@ export {
   mappedCategoryFieldDefinition,
   multiChoiceFieldDefinition,
   numberFieldDefinition,
+  oneHotCategoryFieldDefinition,
   ratingFieldDefinition,
   regressorReportDefinition,
   seriesFieldDefinition,
@@ -23,6 +24,8 @@ export type {
   BuiltinReportConfig,
   BuiltinReportDefinition,
   SeriesFieldConfig,
+  OneHotCategoryFieldConfig,
+  OneHotCategoryOption,
   SeriesPoint,
   SeriesSubFieldConfig,
 } from "./definitions";

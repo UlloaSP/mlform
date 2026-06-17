@@ -45,10 +45,10 @@ describe("kit wizard integration", () => {
       transport: { submit },
       schema: {
         fields: [
-          { id: "name", kind: "text", label: "Name", required: true },
-          { id: "age", kind: "number", label: "Age", required: true },
+          { id: "name", kind: "text", label: "Name", required: true, mappedTo: "name" },
+          { id: "age", kind: "number", label: "Age", required: true, mappedTo: "age" },
         ],
-        reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
+        reports: [{ id: "risk", kind: "classifier", label: "Risk", mappedTo: "risk" }],
       },
       layout: {
         kind: "wizard",
