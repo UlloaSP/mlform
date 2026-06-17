@@ -70,8 +70,10 @@ describe("module boundaries", () => {
     const typePaths = Object.values(packageJson.exports).map((entry) => entry.types);
 
     expect(exportPaths.every((path) => /^\.\/[^/]+$/.test(path))).toBe(true);
-    expect(typePaths).toContain("./dist/types/kit/index.d.ts");
-    expect(typePaths.filter(Boolean).every((path) => !path?.includes("/src/"))).toBe(true);
+    expect(typePaths).toContain("./dist/types/src/kit/index.d.ts");
+    expect(typePaths.filter(Boolean).every((path) => path?.startsWith("./dist/types/src/"))).toBe(
+      true,
+    );
   });
 
   it("exposes declarative kind types from the kit module source API", () => {

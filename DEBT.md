@@ -102,6 +102,7 @@ None.
 - Boolean fields now distinguish unset (`null`) from explicit `false`; no default value leaves both primitive radio options unselected.
 - Field/report backend mapping now uses explicit `mappedTo`; report `source` and report-id backend fallback were removed from active schema contracts.
 - `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
+- Package export type paths now point at emitted `dist/types/src/*` declarations.
 
 ## Notes
 
