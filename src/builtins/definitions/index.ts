@@ -4,6 +4,7 @@
 export { booleanFieldDefinition } from "./fields/boolean";
 export { categoryFieldDefinition } from "./fields/category";
 export { mappedCategoryFieldDefinition } from "./fields/mapped-category";
+export { oneHotCategoryFieldDefinition } from "./fields/onehot-category";
 export { dateFieldDefinition } from "./fields/date";
 export { longTextFieldDefinition } from "./fields/long-text";
 export { multiChoiceFieldDefinition } from "./fields/multi-choice";
@@ -16,6 +17,7 @@ export { classifierReportDefinition } from "./reports/classifier";
 export { regressorReportDefinition } from "./reports/regressor";
 export { builtinFieldDefinitions, builtinReportDefinitions } from "./collections";
 export type { SeriesFieldConfig, SeriesPoint, SeriesSubFieldConfig } from "./fields/series-helpers";
+export type { OneHotCategoryFieldConfig, OneHotCategoryOption } from "./fields/onehot-category";
 export type {
   BuiltinFieldConfig,
   BuiltinFieldDefinition,

@@ -3,7 +3,7 @@ title: Mapped Category
 description: A category field that writes mapped values into subordinate fields.
 ---
 
-`mapped-category` is for model inputs that are awkward for users to edit directly. A model may expect one-hot values like `is_red`, `is_green`, and `is_blue`; the user should pick "Red" once.
+`mapped-category` is for model inputs that are awkward for users to edit directly. Use `onehot-category` instead when each option only activates one 0/1 model column.
 
 The master field renders like a category dropdown. When the value changes, MLForm writes each mapped value into its target field.
 

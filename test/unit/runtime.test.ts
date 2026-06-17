@@ -4330,4 +4330,122 @@ describe("runtime", () => {
       expect(form.getField("is-blue")!.state.value).toBe(1);
     });
   });
+
+  describe("onehot-category", () => {
+    const createOneHotForm = (submit = vi.fn().mockResolvedValue({ raw: {} })) =>
+      createForm({
+        schema: {
+          fields: [
+            {
+              kind: "onehot-category",
+              id: "color",
+              label: "Color",
+              options: [
+                { label: "Red", value: "red", mappedTo: "is_red" },
+                { label: "Green", value: "green", mappedTo: "is_green" },
+                { label: "Blue", value: "blue", mappedTo: "is_blue" },
+              ],
+            },
+          ],
+        },
+        registry: createMlRegistryPack().registry,
+        transport: { submit },
+      });
+
+    it("submits one selected column as 1 and the rest as 0", async () => {
+      const submit = vi.fn().mockResolvedValue({ raw: {} });
+      const form = createOneHotForm(submit);
+
+      form.getField("color")!.setValue("green");
+      await form.submit();
+
+      expect(submit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          values: { is_red: 0, is_green: 1, is_blue: 0 },
+          serializedValues: { is_red: 0, is_green: 1, is_blue: 0 },
+          fieldValues: { color: "green" },
+        }),
+      );
+    });
+
+    it("uses backend-specific onehot targets", async () => {
+      const submit = vi.fn().mockResolvedValue({ raw: {} });
+      const form = createForm({
+        schema: {
+          fields: [
+            {
+              kind: "onehot-category",
+              id: "color",
+              label: "Color",
+              options: [
+                { label: "Red", value: "red", mappedTo: { default: "is_red", remote: 0 } },
+                { label: "Green", value: "green", mappedTo: { default: "is_green", remote: 1 } },
+              ],
+            },
+          ],
+        },
+        registry: createMlRegistryPack().registry,
+        transport: { submit },
+      });
+
+      form.getField("color")!.setValue("red");
+      await form.submit({ backend: "remote" });
+
+      expect(submit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          values: { "0": 1, "1": 0 },
+        }),
+      );
+    });
+
+    it("rejects duplicate onehot targets", async () => {
+      const form = createForm({
+        schema: {
+          fields: [
+            {
+              kind: "onehot-category",
+              id: "color",
+              label: "Color",
+              options: [
+                { label: "Red", value: "red", mappedTo: "is_color" },
+                { label: "Green", value: "green", mappedTo: "is_color" },
+              ],
+            },
+          ],
+        },
+        registry: createMlRegistryPack().registry,
+        transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
+      });
+
+      await expect(form.submit()).rejects.toThrow(/onehot-category.*duplicate mappedTo/);
+    });
+
+    it("rejects unresolved onehot backend targets", async () => {
+      const form = createForm({
+        schema: {
+          fields: [
+            {
+              kind: "onehot-category",
+              id: "color",
+              label: "Color",
+              options: [
+                { label: "Red", value: "red", mappedTo: { remote: "is_red" } },
+                { label: "Green", value: "green", mappedTo: { remote: "is_green" } },
+              ],
+            },
+          ],
+        },
+        registry: createMlRegistryPack().registry,
+        transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
+      });
+
+      await expect(form.submit()).rejects.toThrow(/onehot-category.*has no mappedTo/);
+    });
+
+    it("describes onehot-category as category UI", () => {
+      const form = createOneHotForm();
+
+      expect(describeField(form.getField("color")!)?.component).toBe("category-field");
+    });
+  });
 });

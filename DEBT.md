@@ -101,6 +101,7 @@ None.
 - Primitive field frames now refresh descriptors from the descriptor registry when field state changes, preventing valid number values from rendering as blank after blur.
 - Boolean fields now distinguish unset (`null`) from explicit `false`; no default value leaves both primitive radio options unselected.
 - Field/report backend mapping now uses explicit `mappedTo`; report `source` and report-id backend fallback were removed from active schema contracts.
+- `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
 
 ## Notes
 

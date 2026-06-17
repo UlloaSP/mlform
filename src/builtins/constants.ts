@@ -16,6 +16,7 @@ export const builtinFieldKinds = {
   number: "number",
   boolean: "boolean",
   category: "category",
+  oneHotCategory: "onehot-category",
   date: "date",
   series: "series",
   longText: "long-text",

@@ -12,6 +12,7 @@ Built-in field kinds:
 | `boolean`         | `boolean`        | `required` requires `true`                                                                                                   |
 | `category`        | `string \| null` | `options` as strings or `{ label, value }`                                                                                   |
 | `mapped-category` | `string \| null` | `options` as `{ label, value, mapping }`. See [Mapped Category](/schema/mapped-category/).                                   |
+| `onehot-category` | `string \| null` | `options` as `{ label, value, mappedTo }`. Emits 0/1 one-hot columns. See [OneHot Category](/schema/onehot-category/).       |
 | `date`            | `Date \| null`   | `min`, `max`, `step`                                                                                                         |
 | `series`          | points array     | `minPoints`, `maxPoints`, `granularity`, `ordered`, `uniqueTimestamps`, `minDate`, `maxDate`, `minValue`, `maxValue`, `unit` |
 

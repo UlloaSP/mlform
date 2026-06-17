@@ -1,19 +1,17 @@
 # Todo
 
-## MappedTo Contract Todo
+## OneHot Category Todo
 
-- [x] Add schema-level `mappedTo` type/helper for string feature names and numeric positions.
-- [x] Route submitted field payload keys through `mappedTo` when present.
-- [x] Replace report `source` contract with `mappedTo`.
-- [x] Keep mapped-category field references internal and document `fieldId` semantics.
-- [x] Update focused tests, docs, and `DEBT.md`.
-- [x] Run focused verification, line cap, full checks when feasible, and `graphify update .`.
+- [x] Add built-in `onehot-category` schema kind using category UI.
+- [x] Encode selected option into `mappedTo` columns as 0/1 during submission.
+- [x] Reject invalid/duplicate onehot output mappings.
+- [x] Document concise schema, no hidden subordinate fields.
+- [x] Update `DEBT.md`, focused tests, checks, and graph.
 
-## MappedTo Contract Review
+## OneHot Category Review
 
-- Added `mappedTo` for fields and reports as explicit backend contract.
-- `mappedTo` supports string keys, numeric positions, and backend-specific maps with `default`.
-- Field `id` remains UI/schema identity; `fieldValues` still use ids, while submitted `values` use `mappedTo` or explicit `valuePath`.
-- Report `source` was removed from schema normalization/types; built-in reports resolve payloads through `mappedTo`.
-- `mapped-category` still maps to internal field ids; docs now state subordinate fields need their own `mappedTo` for backend payloads.
-- Verification: `vp run typecheck`, `vp test run test/unit/runtime.test.ts`, `vp test run test/integration/kit.integration.test.ts`, `vp test run`, `vp check`, `vp build`, `git diff --check`, `src` line cap, and `graphify update .` passed.
+- Added built-in `onehot-category` using the existing category primitive.
+- `options[].mappedTo` is the only backend target contract; hidden subordinate fields are not needed.
+- Submission emits strict 0/1 encoded columns and rejects duplicate or unresolved resolved targets.
+- Docs added for English/Spanish schema usage; `mapped-category` docs now points strict one-hot users to `onehot-category`.
+- Verification: `vp test run test/unit/runtime.test.ts`, `vp run typecheck`, `vp check --fix`, `vp test run`, `vp build`, source line cap, and `graphify update .` passed.
