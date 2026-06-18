@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export { executeFormPipeline, executeReportFetches } from "./submission";
+export { createSubmissionSnapshot, executeFormPipeline, executeReportFetches } from "./submission";
+export { createMultiBackendSubmissionSnapshot, executeMultiBackendPipeline } from "./submission";
+export type {
+  CreateMultiBackendSubmissionSnapshotOptions,
+  CreateSubmissionSnapshotOptions,
+  ExecuteMultiBackendPipelineOptions,
+  MultiBackendPipelineResult,
+  MultiBackendRunResult,
+  MultiBackendSubmit,
+  SubmissionSnapshot,
+} from "./submission";
 export {
   EngineError,
   ReportPayloadError,
@@ -86,6 +96,7 @@ export type {
   SubmitRequest,
   SubmitRequestTransportContext,
   SubmitResult,
+  SubmissionInputRecord,
   Transport,
   TransportAuthKind,
   TransportBackpressureMode,

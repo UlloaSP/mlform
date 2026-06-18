@@ -31,9 +31,12 @@ Seleccionar `green` envia:
 
 No hacen falta campos hidden subordinados.
 
+Usa `resolveOneHotDisplayValue(field, modelValues, options)` para restaurar el valor UI seleccionado desde columnas one-hot guardadas.
+
 Reglas:
 
 - `mappedTo` acepta clave, posicion numerica o mapa por backend.
 - targets `mappedTo` duplicados fallan.
 - targets sin resolucion para el backend fallan.
+- reverse display falla si varias opciones estan seleccionadas.
 - usa `mapped-category` solo para mappings arbitrarios.

@@ -4,7 +4,8 @@
 import type { ZodType } from "zod";
 import type { MaybePromise } from "./field";
 import type { MappedTo } from "../mapped-to";
-import type { SubmitResult } from "./submit";
+import type { ReportContext, SubmitResult } from "./submit";
+import type { SubmissionInputRecord } from "./submit";
 
 export type ReportStatus = "idle" | "loading" | "ready" | "error";
 export type ReportFetchStatus = ReportStatus;
@@ -47,11 +48,16 @@ export interface ReportResolveContext<TConfig extends ReportConfig = ReportConfi
 export interface ReportFetchRequest {
   reportId: string;
   backend?: string;
+  inputs?: SubmissionInputRecord[];
+  displayValues?: Record<string, unknown>;
+  modelValues?: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
   reports: Record<string, unknown>;
+  reportContext?: ReportContext;
+  reportContexts?: Record<string, ReportContext>;
   meta: Record<string, unknown>;
   raw: unknown;
   signal?: AbortSignal;

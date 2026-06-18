@@ -4,6 +4,7 @@
 type MaybePromise<T> = T | PromiseLike<T>;
 
 import type { Registry } from "@/schema";
+import type { SubmissionInputRecord } from "@/transport";
 import type { FieldHandle } from "./field";
 import type { FormStatus } from "./form";
 
@@ -14,6 +15,9 @@ export interface RuntimeBehaviorValueChangeEvent {
 }
 
 export interface RuntimeBehaviorSubmissionRecords {
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;

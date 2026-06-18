@@ -29,11 +29,15 @@ export const cloneSubmissionResult = (
 
   return {
     backend: result.backend,
+    inputs: cloneValue(result.inputs ?? []),
+    displayValues: cloneValue(result.displayValues ?? {}),
+    modelValues: cloneValue(result.modelValues ?? result.serializedValues),
     values: cloneValue(result.values),
     fieldValues: cloneValue(result.fieldValues),
     serializedValues: cloneValue(result.serializedValues),
     serializedFieldValues: cloneValue(result.serializedFieldValues),
     reports: cloneValue(result.reports),
+    reportContexts: cloneValue(result.reportContexts ?? {}),
     reportStates,
     meta: cloneValue(result.meta),
     raw: cloneValue(result.raw),

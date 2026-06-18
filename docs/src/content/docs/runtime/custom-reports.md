@@ -19,7 +19,11 @@ const riskSummaryReport = defineReportKind({
     label: z.string().optional(),
     mappedTo: z.union([z.string(), z.number()]).optional(),
   }),
-  resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
+  resolve: ({ report, result }) =>
+    resolveMappedReportPayload(report, result, {
+      aliases: ["old_risk_summary"],
+      onAlias: (alias, target) => console.warn(`Report alias ${alias} used for ${target}`),
+    }),
   render: {
     summary: ({ payload }) => ({
       title: payload.label ?? "Risk",
@@ -40,5 +44,15 @@ registerDefinedReportKind(pack.registry, pack.descriptorRegistry, riskSummaryRep
 `render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.
 
 If `resolve` throws, MLForm marks only that report as `error`; the form submission can still complete for other reports.
+
+Fetch-backed reports receive `request.reportContext` with the report `id`, resolved `mappedTo` target, backend, `modelValues`, `displayValues`, submit `meta`, and raw output. Use it instead of normalizing ids yourself:
+
+```ts
+fetch: () => ({
+  async submit(request) {
+    return fetchDetails(request.reportContext?.targetKey, request.modelValues);
+  },
+});
+```
 
 Use `defineReportDefinition` plus an explicit presenter or custom primitive renderer only when you need a fully custom visual contract.

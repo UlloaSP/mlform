@@ -25,11 +25,26 @@ export interface SubmitRequestMetadata {
   estimatedPayloadBytes?: number;
 }
 
+export interface SubmissionInputRecord {
+  fieldId: string;
+  displayKey?: string;
+  label: string;
+  value: unknown;
+  serializedValue: unknown;
+  mappedTo?: string | number;
+  modelValues: Record<string, unknown>;
+  visible: boolean;
+  disabled: boolean;
+}
+
 export interface SubmitRequest<
   TField extends Record<string, unknown> = Record<string, unknown>,
   TReport extends Record<string, unknown> = Record<string, unknown>,
 > {
   backend?: string;
+  inputs?: SubmissionInputRecord[];
+  displayValues?: Record<string, unknown>;
+  modelValues?: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
@@ -51,6 +66,9 @@ export interface SubmitResult<
   TReportState extends Record<string, unknown> = Record<string, unknown>,
 > {
   backend?: string;
+  inputs?: SubmissionInputRecord[];
+  displayValues?: Record<string, unknown>;
+  modelValues?: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;

@@ -8,6 +8,7 @@ import {
   transportErrorCodes,
   ValidationError,
 } from "../errors";
+import { createReportContexts } from "@/schema";
 import { createSubmissionAbortManager } from "./abort";
 import { createSubmissionLifecycle } from "./lifecycle";
 import {
@@ -227,6 +228,7 @@ export const createFormSubmitter = ({
           meta: normalizedResponse.meta ?? {},
           raw: normalizedResponse.raw,
         };
+        baseResult.reportContexts = createReportContexts(normalizedSchema.reports, baseResult);
         const nextReportStates = await prepareReportStates(reports, {
           ...baseResult,
           reportStates: {},

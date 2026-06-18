@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { createForm } from "@/runtime";
+import { createForm, executeFormPipeline } from "@/runtime";
 import { createMlRegistryPack } from "@/builtins";
 import { kitErrorMessages } from "./constants";
 import { cloneSchemaRegistry } from "./defaults";
@@ -45,6 +45,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     listenerErrorPolicy: options.listenerErrorPolicy,
     onListenerError: options.onListenerError,
   });
+  const reportFetchMode = options.reportFetchMode ?? "lazy";
   const resolvedLayout = resolveFormLayout(options.layout, form.fields, form.reports);
 
   let stepIndex = 0;
@@ -125,8 +126,24 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     validate() {
       return form.validate();
     },
-    submit(options) {
-      return form.submit(options);
+    async submit(options) {
+      if (reportFetchMode === "lazy") {
+        return form.submit(options);
+      }
+
+      const result = await executeFormPipeline({
+        form,
+        submit: options,
+        reportFetchMode,
+      });
+      return result.submitResult;
+    },
+    submitPipeline(options) {
+      return executeFormPipeline({
+        form,
+        submit: options,
+        reportFetchMode: reportFetchMode === "lazy" ? "none" : reportFetchMode,
+      });
     },
     reset() {
       form.reset();

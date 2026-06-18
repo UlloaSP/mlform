@@ -4,6 +4,7 @@ description: Built-in classifier and regressor reports.
 ---
 
 Reports render model output after submit. Use `mappedTo` for the backend response key.
+Keyed backend `reports` payloads and validated streamed report updates require `mappedTo`; MLForm fails the submit instead of guessing from report `id`.
 
 ```ts
 const schema = {
@@ -23,3 +24,5 @@ const schema = {
 { id: "visible-score", kind: "regressor", mappedTo: "model_score" }
 { id: "first-output", kind: "regressor", mappedTo: 0 }
 ```
+
+Two reports cannot resolve to the same `mappedTo` target for the same backend.

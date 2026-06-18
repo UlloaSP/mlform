@@ -16,7 +16,9 @@ const schema: FormSchema = {
 };
 ```
 
-Usa `id` estables en produccion. MLForm puede derivar ids desde labels, pero ids explicitos mantienen predecibles payloads backend, tests, analytics y datos guardados.
+Usa `id` estables en produccion. MLForm puede derivar ids desde labels, pero ids explicitos son handles runtime para estado UI, layout refs, validacion, foco, tests y analytics. Las claves backend van en `mappedTo`. Las claves de review, persistencia y export van en `displayKey`; campos sin `displayKey` se omiten de `displayValues`. Los labels son copy visible, no claves de datos.
+
+Usa `form.getField(id)` y `form.getReport(id)` solo para handles runtime. Usa `form.getFieldByDisplayKey(key)` para campos de review/export y `form.getFieldByMappedTo(target, { backend })` para campos ligados al modelo.
 
 Terminos base:
 

@@ -56,6 +56,8 @@ export const mountForm = (
     reportPane: NonNullable<MountFormOptions["reportPane"]>;
     text: PrimitiveText;
     reportTransport: MountFormOptions["reportTransport"];
+    reportFetchMode: NonNullable<MountFormOptions["reportFetchMode"]>;
+    submitHandler: MountFormOptions["submitHandler"];
   };
   const registry = resolveRegistry(options.registry);
   const descriptorRegistry = resolvePrimitiveDescriptorRegistry(options.descriptorRegistry);
@@ -77,6 +79,8 @@ export const mountForm = (
   host.reportPane = options.reportPane ?? "auto";
   host.text = text;
   host.reportTransport = options.reportTransport;
+  host.reportFetchMode = options.reportFetchMode ?? "lazy";
+  host.submitHandler = options.submitHandler;
 
   container.replaceChildren(host);
 

@@ -16,6 +16,7 @@ import type {
   ReportController,
   ReportStateSnapshot,
   RuntimeBehavior,
+  PipelineResult,
   SubmitOptions,
   SubmitResult,
   Transport,
@@ -23,6 +24,7 @@ import type {
 import type { LayoutReferences } from "./layout-utils";
 import type { FormLayoutConfig, ResolvedFormLayout, ResolvedFormLayoutNode } from "./layout-types";
 import type { PanelState } from "./panel-nav";
+import type { MountedReportFetchMode } from "./mount-types";
 
 export interface WizardState {
   stepIndex: number;
@@ -105,6 +107,7 @@ export interface CreateFormViewOptions {
   listenerErrorPolicy?: "ignore" | "throw-aggregate";
   onListenerError?: (error: unknown) => void;
   layout?: FormLayoutConfig;
+  reportFetchMode?: MountedReportFetchMode;
 }
 
 export interface FormViewController {
@@ -122,6 +125,7 @@ export interface FormViewController {
   getLayoutReferences(): LayoutReferences;
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
+  submitPipeline(options?: SubmitOptions): Promise<PipelineResult>;
   reset(): void;
   subscribe(listener: (snapshot: FormViewSnapshot) => void): () => void;
   nextStep(): Promise<boolean>;

@@ -15,12 +15,12 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-06-17`
-- Current focus: no active debt recorded
+- Last reviewed: `2026-06-18`
+- Current focus: MLSuite local integration
 
 ## Active Debt
 
-None.
+No active debt.
 
 ## Recent Progress
 
@@ -103,6 +103,25 @@ None.
 - Field/report backend mapping now uses explicit `mappedTo`; report `source` and report-id backend fallback were removed from active schema contracts.
 - `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
 - Package export type paths now point at emitted `dist/types/src/*` declarations.
+- Submission results and requests now expose `inputs`, `displayValues`, and `modelValues` so consumers can use `mappedTo`/`displayKey` contracts instead of field ids for external data.
+- Validated streaming report updates no longer fall back to report id as an external payload key when `mappedTo` is missing.
+- Runtime id boundary now has regression coverage: changing field/report ids changes runtime handles only, not `displayKey`/`mappedTo` external contracts.
+- Explicit `displayKey` values are now normalized and duplicate explicit display keys fail before display data can be overwritten; docs now distinguish `id`, `mappedTo`, `displayKey`, and `label`.
+- Transport default dedup/cache keys now prefer resolved report `mappedTo` targets over report ids when the mapped target exists.
+- Display values no longer use labels as fallback data keys; fields without `displayKey` are omitted from `displayValues`.
+- Validated streamed report updates now fail submit when the target report lacks a resolved `mappedTo`, instead of silently ignoring the payload or forcing consumers to infer report ids.
+- Public `createSubmissionSnapshot(form, options)` exposes the same submission records before submit so consumers no longer need a transport call to inspect review/export/model payloads.
+- Public `resolveOneHotDisplayValue(field, modelValues, options)` restores selected one-hot UI values from saved model columns, including backend-specific targets.
+- Submission snapshot coverage now proves backend-specific and numeric `mappedTo` targets produce stable display/model records without consumer-side reconstruction.
+- One-hot inactive policy coverage now proves hidden `onehot-category` fields follow `include`, `omit`, and `reset-on-hide` submission behavior without parent field `mappedTo`.
+- Mounted kit submit now supports `reportFetchMode: "lazy" | "all" | "none"`; `"all"` exposes full pipeline report fetch results in success events and `"none"` prevents renderer-driven async report fetches.
+- Submit results and report fetch requests now expose official report context keyed by runtime report id, with helper lookup by id or resolved `mappedTo` target, removing consumer-side normalized-id report context lookups.
+- Report payload lookup now rejects keyed backend `reports` without report `mappedTo` except exact legacy report-id keys, rejects duplicate resolved report targets, and supports explicit alias migration through `resolveMappedReportPayload(..., { aliases, onAlias })`.
+- Runtime now exposes schema-aware multi-backend snapshots and pipeline execution. `createFanoutTransport` remains transport-only fanout; multi-model form runs use `executeMultiBackendPipeline` to preserve per-backend mappings, results, errors, skipped reports, and report contexts.
+- Runtime id boundaries are explicit: `getField(id)`/`getReport(id)` remain runtime-handle lookups, while `getFieldByDisplayKey` and `getFieldByMappedTo` support external-contract field lookup without label or id fallback.
+- Exact report-id payload fallback removed from `resolveMappedReportPayload`; keyed report payloads now require `mappedTo`.
+- Submission snapshots without an explicit backend now emit every target in a backend map, so multi-model consumers can use `modelValues` directly without reconstructing from field ids.
+- MLSuite local integration now renders, saves, and prefills schema-run visible inputs from MLForm `displayValues`/`displayKey` data instead of reconstructing from field ids, labels, `mappedTo`, or model columns.
 
 ## Notes
 

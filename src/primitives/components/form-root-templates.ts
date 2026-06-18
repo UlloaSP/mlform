@@ -6,7 +6,11 @@ import { repeat } from "lit/directives/repeat.js";
 import type { PrimitiveFormController } from "../controller-types";
 import type { PrimitiveDescriptorRegistry } from "../descriptors";
 import type { PrimitiveText } from "../constants";
-import type { PrimitiveRegistry, PrimitiveReportTransport } from "../types";
+import type {
+  PrimitiveRegistry,
+  PrimitiveReportFetchMode,
+  PrimitiveReportTransport,
+} from "../types";
 import type { FormRenderState } from "./form-root-state";
 import type { PresentedField, PresentedReport } from "./form-root-presenters";
 
@@ -39,6 +43,7 @@ const renderReports = (
   registry: PrimitiveRegistry | undefined,
   text: PrimitiveText,
   reportTransport: PrimitiveReportTransport | undefined,
+  reportFetchMode: PrimitiveReportFetchMode,
   lastResult: PrimitiveFormController["state"]["lastResult"],
 ): TemplateResult => html`
   <div class="collection" part="report-list">
@@ -52,6 +57,7 @@ const renderReports = (
           .registry=${registry}
           .text=${text}
           .transport=${reportTransport}
+          .fetchMode=${reportFetchMode}
           .lastResult=${lastResult}
         ></mlf-report-frame>
       `,
@@ -74,6 +80,7 @@ export const renderStackedLayout = (options: {
   validatingLabel: string;
   submittingLabel: string;
   reportTransport: PrimitiveReportTransport | undefined;
+  reportFetchMode: PrimitiveReportFetchMode;
   onSubmitRequest: () => Promise<void>;
 }): TemplateResult => html`
   <div class="root stacked">
@@ -134,6 +141,7 @@ export const renderStackedLayout = (options: {
                 options.registry,
                 options.text,
                 options.reportTransport,
+                options.reportFetchMode,
                 options.form.state.lastResult ?? null,
               )}
             </div>
@@ -158,6 +166,7 @@ export const renderSplitLayout = (options: {
   validatingLabel: string;
   submittingLabel: string;
   reportTransport: PrimitiveReportTransport | undefined;
+  reportFetchMode: PrimitiveReportFetchMode;
   onSubmitRequest: () => Promise<void>;
 }): TemplateResult => html`
   <div class="root split">
@@ -217,6 +226,7 @@ export const renderSplitLayout = (options: {
                         options.registry,
                         options.text,
                         options.reportTransport,
+                        options.reportFetchMode,
                         options.form.state.lastResult ?? null,
                       )
                     : html`

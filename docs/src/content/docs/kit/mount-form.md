@@ -16,6 +16,7 @@ const mounted = mountForm(container, {
   labels: { submit: "Predict" },
   layout: "split",
   reportPane: "auto",
+  reportFetchMode: "all",
 });
 ```
 
@@ -35,3 +36,4 @@ Notes:
 - Calling `mountForm` again on the same container automatically unmounts the previous MLForm instance first.
 - `mountForm` expects an empty container by default.
 - Pass `containerStrategy: "replace"` only when you want MLForm to replace existing host content and restore it on `unmount()`.
+- `reportFetchMode` controls async reports after submit: `"lazy"` keeps renderer-driven fetches, `"all"` waits for all fetch-backed reports before success events, and `"none"` skips report fetches.

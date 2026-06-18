@@ -105,6 +105,7 @@ export const baseFieldShape = {
   asyncValidationDebounceMs: z.number().int().nonnegative().optional(),
   inactiveFieldPolicy: z.enum(["include", "omit", "reset-on-hide"]).optional(),
   includeInSubmission: z.boolean().optional(),
+  displayKey: z.string().min(1).optional(),
   mappedTo: mappedToSchema,
   valuePath: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]).optional(),
   defaultValue: z.unknown().optional(),

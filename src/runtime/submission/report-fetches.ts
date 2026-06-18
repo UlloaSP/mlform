@@ -25,6 +25,7 @@ export const executeReportFetches = async ({
       report.fetch({
         ...request,
         reportId: report.id,
+        reportContext: request.reportContexts?.[report.id],
       }),
     ),
   );

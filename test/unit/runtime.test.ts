@@ -2466,22 +2466,26 @@ describe("runtime", () => {
 
     const result = await form.submit();
 
-    expect(beforeSubmit).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      signal: expect.any(AbortSignal),
-    });
-    expect(afterSubmit).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      result,
-    });
+    expect(beforeSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        values: { name: "Alice" },
+        fieldValues: { name: "Alice" },
+        serializedValues: { name: "Alice" },
+        serializedFieldValues: { name: "Alice" },
+        submitCount: 1,
+        signal: expect.any(AbortSignal),
+      }),
+    );
+    expect(afterSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        values: { name: "Alice" },
+        fieldValues: { name: "Alice" },
+        serializedValues: { name: "Alice" },
+        serializedFieldValues: { name: "Alice" },
+        submitCount: 1,
+        result,
+      }),
+    );
   });
 
   it("can preserve submit success when afterSubmit fails by policy", async () => {
@@ -2528,14 +2532,16 @@ describe("runtime", () => {
     expect(result.reportStates.classifier?.status).toBe("ready");
     expect(form.state.status).toBe("success");
     expect(form.state.lastResult).toEqual(result);
-    expect(onSubmitError).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      error: afterSubmitError,
-    });
+    expect(onSubmitError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        values: { name: "Alice" },
+        fieldValues: { name: "Alice" },
+        serializedValues: { name: "Alice" },
+        serializedFieldValues: { name: "Alice" },
+        submitCount: 1,
+        error: afterSubmitError,
+      }),
+    );
   });
 
   it("passes optional backend selection through transport requests", async () => {
@@ -2842,14 +2848,16 @@ describe("runtime", () => {
     await expect(pendingSubmit).rejects.toBeInstanceOf(SubmissionAbortedError);
     expect(form.state.status).toBe("idle");
     expect(form.state.errors.form).toEqual(["Form submission was aborted: user-cancelled"]);
-    expect(onSubmitError).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      error: expect.any(SubmissionAbortedError),
-    });
+    expect(onSubmitError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        values: { name: "Alice" },
+        fieldValues: { name: "Alice" },
+        serializedValues: { name: "Alice" },
+        serializedFieldValues: { name: "Alice" },
+        submitCount: 1,
+        error: expect.any(SubmissionAbortedError),
+      }),
+    );
   });
 
   it("does not mark reports as loading when submit receives an already aborted signal", async () => {
@@ -4439,7 +4447,9 @@ describe("runtime", () => {
         transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
       });
 
-      await expect(form.submit()).rejects.toThrow(/onehot-category.*has no mappedTo/);
+      await expect(form.submit({ backend: "local" })).rejects.toThrow(
+        /onehot-category.*has no mappedTo/,
+      );
     });
 
     it("describes onehot-category as category UI", () => {

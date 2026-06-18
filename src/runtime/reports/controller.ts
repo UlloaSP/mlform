@@ -115,6 +115,9 @@ const preparePayloadState = (
   }
 };
 
+const isMissingReportMappedToError = (error: unknown): boolean =>
+  error instanceof Error && error.name === "MissingReportMappedToError";
+
 export type InternalReportController = ReportController & {
   cloneState(state: ReportStateSnapshot): ReportStateSnapshot;
   prepareState(result: SubmitResult): Promise<ReportStateSnapshot>;
@@ -171,8 +174,14 @@ export const createReportController = ({
               report: readonlyConfig,
               result,
             })
-          : resolveMappedReportPayload(readonlyConfig, result);
+          : definition.fetch && readonlyConfig.mappedTo === undefined
+            ? undefined
+            : resolveMappedReportPayload(readonlyConfig, result);
       } catch (error) {
+        if (isMissingReportMappedToError(error)) {
+          throw new ReportPayloadError(readonlyConfig.id, (error as Error).message, error);
+        }
+
         const message = error instanceof Error ? error.message : String(error);
         return {
           payload: undefined,

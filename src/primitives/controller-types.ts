@@ -31,12 +31,50 @@ export interface PrimitiveReportStateSnapshot {
 
 export interface PrimitiveSubmitResult {
   backend?: string;
+  inputs?: PrimitiveSubmissionInputRecord[];
+  displayValues?: Record<string, unknown>;
+  modelValues?: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
   reports: Record<string, unknown>;
+  reportContexts?: Record<string, PrimitiveReportContext>;
   reportStates: Record<string, unknown>;
+  meta: Record<string, unknown>;
+  raw: unknown;
+}
+
+export interface PrimitivePipelineResult {
+  submitResult: PrimitiveSubmitResult;
+  reportFetchResults: Record<string, unknown>;
+  reportFetchErrors: Record<string, string>;
+  artifacts: Record<string, unknown>;
+}
+
+export interface PrimitiveSubmissionInputRecord {
+  fieldId: string;
+  displayKey?: string;
+  label: string;
+  value: unknown;
+  serializedValue: unknown;
+  mappedTo?: string | number;
+  modelValues: Record<string, unknown>;
+  visible: boolean;
+  disabled: boolean;
+}
+
+export interface PrimitiveReportContext {
+  reportId: string;
+  kind: string;
+  label?: string;
+  mappedTo?: unknown;
+  target?: string | number;
+  targetKey?: string;
+  backend?: string;
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
+  reports: Record<string, unknown>;
   meta: Record<string, unknown>;
   raw: unknown;
 }
@@ -89,14 +127,24 @@ export interface PrimitiveFormController {
   ): () => void;
 }
 
+export interface PrimitiveSubmitExecutionResult {
+  result: PrimitiveSubmitResult;
+  pipelineResult?: PrimitivePipelineResult;
+}
+
 export interface PrimitiveReportRequest {
   reportId: string;
   backend?: string;
+  inputs?: PrimitiveSubmissionInputRecord[];
+  displayValues?: Record<string, unknown>;
+  modelValues?: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
   reports: Record<string, unknown>;
+  reportContext?: PrimitiveReportContext;
+  reportContexts?: Record<string, PrimitiveReportContext>;
   meta: Record<string, unknown>;
   raw: unknown;
   signal?: AbortSignal;
@@ -108,11 +156,17 @@ export const createPrimitiveReportRequest = (
 ): PrimitiveReportRequest => ({
   reportId: options.reportId ?? "",
   backend: submitResult.backend,
+  inputs: submitResult.inputs ?? [],
+  displayValues: submitResult.displayValues ?? {},
+  modelValues: submitResult.modelValues ?? submitResult.serializedValues,
   values: submitResult.values,
   fieldValues: submitResult.fieldValues,
   serializedValues: submitResult.serializedValues,
   serializedFieldValues: submitResult.serializedFieldValues,
   reports: submitResult.reports,
+  reportContext:
+    options.reportId === undefined ? undefined : submitResult.reportContexts?.[options.reportId],
+  reportContexts: submitResult.reportContexts ?? {},
   meta: submitResult.meta,
   raw: submitResult.raw,
   signal: options.signal,

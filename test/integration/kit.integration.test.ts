@@ -465,7 +465,7 @@ describe("kit integration", () => {
       },
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
-        reports: [{ kind: "classifier", id: "risk", label: "Risk" }],
+        reports: [{ kind: "classifier", id: "risk", label: "Risk", mappedTo: "risk" }],
       },
       initialValues: {
         name: "Alice",

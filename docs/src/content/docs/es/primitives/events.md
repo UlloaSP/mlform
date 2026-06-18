@@ -7,7 +7,7 @@ description: Eventos de submit emitidos por primitives.
 | -------------------- | --------------------------------- |
 | `mlf-submit-request` | El usuario solicitó submit.       |
 | `mlf-submit-start`   | `{ form, state }`.                |
-| `mlf-submit-success` | `{ form, state, result }`.        |
+| `mlf-submit-success` | `{ form, state, result, pipelineResult? }`. |
 | `mlf-submit-abort`   | Submit cancelado.                 |
 | `mlf-submit-error`   | `{ form, state, error, status }`. |
 

@@ -96,11 +96,33 @@ export const withRequestPolicyScope = (
   });
 };
 
+const resolveReportRequestKey = (
+  report: Record<string, unknown>,
+  backend: string | undefined,
+): unknown => {
+  const mappedTo = report["mappedTo"];
+  if (typeof mappedTo === "string" || typeof mappedTo === "number") {
+    return mappedTo;
+  }
+
+  if (mappedTo && typeof mappedTo === "object" && !Array.isArray(mappedTo)) {
+    const targets = mappedTo as Record<string, unknown>;
+    const target = (backend ? targets[backend] : undefined) ?? targets["default"];
+    if (typeof target === "string" || typeof target === "number") {
+      return target;
+    }
+  }
+
+  return report["id"];
+};
+
 export const defaultDedupKey = (request: SubmitRequest): string => {
   return JSON.stringify({
     backend: request.backend,
     serializedValues: request.serializedValues,
-    reports: request.reports.map((report) => (report as Record<string, unknown>).id),
+    reports: request.reports.map((report) =>
+      resolveReportRequestKey(report as Record<string, unknown>, request.backend),
+    ),
   });
 };
 

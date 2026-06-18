@@ -76,17 +76,21 @@ export const createReportUpdates = ({
     payload: unknown,
   ): SubmitResult => {
     const report = reportMap.get(reportId);
-    const target = resolveMappedTo(report?.config.mappedTo, backend) ?? reportId;
+    const target = resolveMappedTo(report?.config.mappedTo, backend);
+    if (target === undefined) {
+      throw new Error(`Report "${reportId}" requires mappedTo for validated stream updates.`);
+    }
 
     return {
       backend,
+      inputs: cloneValue(records.inputs),
+      displayValues: cloneValue(records.displayValues),
+      modelValues: cloneValue(records.modelValues),
       values: cloneValue(records.values),
       fieldValues: cloneValue(records.fieldValues),
       serializedValues: cloneValue(records.serializedValues),
       serializedFieldValues: cloneValue(records.serializedFieldValues),
-      reports: {
-        [mappedToKey(target)]: cloneValue(payload),
-      },
+      reports: { [mappedToKey(target)]: cloneValue(payload) },
       reportStates: cloneValue(getReportStates()) as SubmitResult["reportStates"],
       meta: cloneValue(getSubmissionMeta()),
       raw: cloneValue(payload),
@@ -117,10 +121,10 @@ export const createReportUpdates = ({
       return;
     }
 
+    const partialResult = createLivePartialResult(records, backend, reportId, payload);
+
     try {
-      const nextState = await report.prepareState(
-        createLivePartialResult(records, backend, reportId, payload),
-      );
+      const nextState = await report.prepareState(partialResult);
       report.commitState(nextState);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -180,10 +184,10 @@ export const createReportUpdates = ({
     const current = getReportState(reportId);
     const nextPayload = applyPatchValue(current?.payload, patch, strategy);
 
+    const partialResult = createLivePartialResult(records, backend, reportId, nextPayload);
+
     try {
-      const nextState = await report.prepareState(
-        createLivePartialResult(records, backend, reportId, nextPayload),
-      );
+      const nextState = await report.prepareState(partialResult);
       report.commitState(nextState);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

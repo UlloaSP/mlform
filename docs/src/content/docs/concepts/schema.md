@@ -16,7 +16,9 @@ const schema: FormSchema = {
 };
 ```
 
-Use stable `id` values in production. MLForm can derive ids from labels, but explicit ids keep backend payloads, tests, analytics, and saved data predictable.
+Use stable `id` values in production. MLForm can derive ids from labels, but explicit ids are runtime handles for UI state, layout refs, validation, focus, tests, and analytics. Backend keys belong in `mappedTo`. Review, persistence, and export keys belong in `displayKey`; fields without one are omitted from `displayValues`. Labels are user-facing copy, not stable data keys.
+
+Use `form.getField(id)` and `form.getReport(id)` only for runtime handles. Use `form.getFieldByDisplayKey(key)` for review/export fields and `form.getFieldByMappedTo(target, { backend })` for model-bound fields.
 
 Core terms:
 

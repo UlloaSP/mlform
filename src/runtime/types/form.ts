@@ -139,6 +139,11 @@ export interface FormController {
   readonly reports: readonly ReportController[];
   readonly state: FormState;
   getField(id: string): FieldController | undefined;
+  getFieldByDisplayKey(displayKey: string): FieldController | undefined;
+  getFieldByMappedTo(
+    target: string | number,
+    options?: { backend?: string },
+  ): FieldController | undefined;
   getReport(id: string): ReportController | undefined;
   getValues(): Record<string, unknown>;
   setValues(values: Record<string, unknown>): void;

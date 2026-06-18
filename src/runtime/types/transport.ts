@@ -4,6 +4,7 @@
 import type {
   SubmitRequest as BaseSubmitRequest,
   Transport as BaseTransport,
+  SubmissionInputRecord,
   TransportStreamEvent as BaseTransportStreamEvent,
 } from "@/transport";
 import type { SubmitResult as SchemaSubmitResult } from "@/schema";
@@ -17,6 +18,7 @@ export type {
   RateLimitLeaseRequest,
   SharedRateLimiter,
   SharedRateLimiterLease,
+  SubmissionInputRecord,
   SubmitRequestMetadata,
   SubmitRequestTransportContext,
   TransportAuthKind,
@@ -63,6 +65,9 @@ export interface SubmitOptions {
 
 export interface BeforeSubmitContext {
   backend?: string;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
@@ -73,6 +78,9 @@ export interface BeforeSubmitContext {
 
 export interface AfterSubmitContext {
   backend?: string;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
@@ -83,6 +91,9 @@ export interface AfterSubmitContext {
 
 export interface SubmitErrorContext {
   backend?: string;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   values: Record<string, unknown>;
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
