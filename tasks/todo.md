@@ -1,5 +1,23 @@
 # Todo
 
+## Playwright CI Browser Install
+
+## Goal
+
+- [x] Fix CI failure for browser-backed render matrix test.
+- [x] Keep Playwright integration test active.
+
+## Plan
+
+- [x] Install Chromium in the GitHub Actions test job after dependency install.
+- [ ] Verify focused Playwright test locally.
+- [ ] Run full MLForm test suite.
+
+## Review
+
+- Added `vp exec playwright install --with-deps chromium` before `vp test run` in CI.
+- Root cause: Playwright package was installed, but runner browser cache lacked Chromium.
+
 ## MLSuite Contract Cleanup Todo
 
 Scope: make MLForm remove MLSuite workarounds. Breaking changes are allowed when they remove ambiguity, duplicated rules, id leakage, or small edge-case bugs. Goal: zero consumer-side guessing.
