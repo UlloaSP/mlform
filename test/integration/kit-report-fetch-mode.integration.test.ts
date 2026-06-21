@@ -71,7 +71,7 @@ describe("kit reportFetchMode", () => {
       registry: pack.registry,
       descriptorRegistry: pack.descriptorRegistry,
       reportFetchMode: "all",
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ kind: "text", id: "name", label: "Name", mappedTo: "name" }],
         reports: [{ kind: "async-summary", id: "summary", label: "Summary" }],
@@ -121,7 +121,7 @@ describe("kit reportFetchMode", () => {
       registry: pack.registry,
       descriptorRegistry: pack.descriptorRegistry,
       reportFetchMode: "none",
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ kind: "text", id: "name", label: "Name", mappedTo: "name" }],
         reports: [{ kind: "async-summary", id: "summary", label: "Summary" }],

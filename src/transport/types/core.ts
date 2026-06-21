@@ -57,7 +57,7 @@ export interface SubmitRequest<
 }
 
 export interface TransportResponse {
-  reports?: Record<string, unknown>;
+  reports?: readonly unknown[];
   meta?: Record<string, unknown>;
   raw?: unknown;
 }
@@ -73,7 +73,7 @@ export interface SubmitResult<
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   reportStates: Record<string, TReportState>;
   meta: Record<string, unknown>;
   raw: unknown;

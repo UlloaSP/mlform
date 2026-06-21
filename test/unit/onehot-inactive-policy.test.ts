@@ -25,7 +25,7 @@ const createHiddenOneHotForm = () =>
       ],
     },
     registry: createMlRegistryPack().registry,
-    transport: { submit: async () => ({ reports: {} }) },
+    transport: { submit: async () => ({ reports: [] }) },
   });
 
 describe("onehot-category inactive submission policy", () => {

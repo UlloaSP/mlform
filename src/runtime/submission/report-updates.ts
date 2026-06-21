@@ -90,7 +90,7 @@ export const createReportUpdates = ({
       fieldValues: cloneValue(records.fieldValues),
       serializedValues: cloneValue(records.serializedValues),
       serializedFieldValues: cloneValue(records.serializedFieldValues),
-      reports: { [mappedToKey(target)]: cloneValue(payload) },
+      reports: [{ mappedTo: mappedToKey(target), payload: cloneValue(payload) }],
       reportStates: cloneValue(getReportStates()) as SubmitResult["reportStates"],
       meta: cloneValue(getSubmissionMeta()),
       raw: cloneValue(payload),

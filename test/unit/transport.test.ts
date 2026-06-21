@@ -46,7 +46,7 @@ describe("transport", () => {
       status: 200,
       statusText: "OK",
       headers: new Headers({ "content-type": "application/json" }),
-      json: vi.fn().mockResolvedValue({ reports: { risk: { prediction: "high" } } }),
+      json: vi.fn().mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "high" }] }),
       text: vi.fn(),
     });
     const transport = createJsonTransport({
@@ -63,9 +63,7 @@ describe("transport", () => {
         serializedFieldValues: { age: 34 },
       }),
     ).resolves.toEqual({
-      reports: {
-        risk: { prediction: "high" },
-      },
+      reports: [{ mappedTo: "risk", prediction: "high" }],
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -109,7 +107,7 @@ describe("transport", () => {
   });
 
   it("injects auth and tracing headers", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const emit = vi.fn();
     const transport = withMetrics({ emit })(
       withTracing({
@@ -137,8 +135,12 @@ describe("transport", () => {
   });
 
   it("routes submissions to selected backend", async () => {
-    const localSubmit = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "local" } } });
-    const remoteSubmit = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "remote" } } });
+    const localSubmit = vi
+      .fn()
+      .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "local" }] });
+    const remoteSubmit = vi
+      .fn()
+      .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "remote" }] });
     const transport = createRoutingTransport({
       transports: {
         local: { submit: localSubmit },
@@ -167,13 +169,13 @@ describe("transport", () => {
       transports: {
         primary: {
           submit: vi.fn().mockResolvedValue({
-            reports: { risk: { prediction: "approved" } },
+            reports: [{ mappedTo: "risk", prediction: "approved" }],
             meta: { model: "primary" },
           }),
         },
         shadow: {
           submit: vi.fn().mockResolvedValue({
-            reports: { score: { value: 0.92 } },
+            reports: [{ mappedTo: "score", value: 0.92 }],
             meta: { model: "shadow" },
           }),
         },
@@ -181,10 +183,10 @@ describe("transport", () => {
     });
 
     await expect(transport.submit(baseRequest)).resolves.toEqual({
-      reports: {
-        risk: { prediction: "approved" },
-        score: { value: 0.92 },
-      },
+      reports: [
+        { mappedTo: "risk", prediction: "approved" },
+        { mappedTo: "score", value: 0.92 },
+      ],
       meta: {
         transports: {
           primary: { model: "primary" },
@@ -193,11 +195,11 @@ describe("transport", () => {
       },
       raw: {
         primary: {
-          reports: { risk: { prediction: "approved" } },
+          reports: [{ mappedTo: "risk", prediction: "approved" }],
           meta: { model: "primary" },
         },
         shadow: {
-          reports: { score: { value: 0.92 } },
+          reports: [{ mappedTo: "score", value: 0.92 }],
           meta: { model: "shadow" },
         },
       },
@@ -208,14 +210,16 @@ describe("transport", () => {
     const transport = createFallbackTransport({
       transports: [
         { submit: vi.fn().mockRejectedValue(new Error("primary offline")) },
-        { submit: vi.fn().mockResolvedValue({ reports: { risk: { prediction: "fallback" } } }) },
+        {
+          submit: vi
+            .fn()
+            .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "fallback" }] }),
+        },
       ],
     });
 
     await expect(transport.submit(baseRequest)).resolves.toEqual({
-      reports: {
-        risk: { prediction: "fallback" },
-      },
+      reports: [{ mappedTo: "risk", prediction: "fallback" }],
     });
   });
 
@@ -230,12 +234,14 @@ describe("transport", () => {
     const deduped = withDedup()({ submit });
     const first = deduped.submit(baseRequest);
     const second = deduped.submit(baseRequest);
-    resolveSubmit?.({ reports: { risk: { prediction: "high" } } });
-    await expect(first).resolves.toEqual({ reports: { risk: { prediction: "high" } } });
-    await expect(second).resolves.toEqual({ reports: { risk: { prediction: "high" } } });
+    resolveSubmit?.({ reports: [{ mappedTo: "risk", prediction: "high" }] });
+    await expect(first).resolves.toEqual({ reports: [{ mappedTo: "risk", prediction: "high" }] });
+    await expect(second).resolves.toEqual({ reports: [{ mappedTo: "risk", prediction: "high" }] });
     expect(submit).toHaveBeenCalledTimes(1);
 
-    const cachedSubmit = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "cached" } } });
+    const cachedSubmit = vi
+      .fn()
+      .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "cached" }] });
     const cached = withCache({
       key: () => "same-request",
       ttl: 60_000,
@@ -266,10 +272,10 @@ describe("transport", () => {
       () =>
         new Promise((resolve) => {
           if (!releaseFirst) {
-            releaseFirst = () => resolve({ reports: { first: true } });
+            releaseFirst = () => resolve({ reports: [{ mappedTo: "first", value: true }] });
             return;
           }
-          resolve({ reports: { second: true } });
+          resolve({ reports: [{ mappedTo: "second", value: true }] });
         }),
     );
     const limited = withRateLimit({
@@ -329,7 +335,7 @@ describe("transport", () => {
       }) as typeof globalThis.fetch,
       stream: async function* () {
         yield { type: "progress", loaded: 1, total: 2 };
-        yield { type: "result", result: { reports: { risk: { prediction: "live" } } } };
+        yield { type: "result", result: { reports: [{ mappedTo: "risk", prediction: "live" }] } };
       },
     });
 
@@ -340,7 +346,7 @@ describe("transport", () => {
 
     expect(events).toEqual([
       { type: "progress", loaded: 1, total: 2 },
-      { type: "result", result: { reports: { risk: { prediction: "live" } } } },
+      { type: "result", result: { reports: [{ mappedTo: "risk", prediction: "live" }] } },
     ]);
   });
 
@@ -350,13 +356,16 @@ describe("transport", () => {
         primary: {
           async *stream() {
             yield { type: "progress", loaded: 1, total: 2 };
-            yield { type: "result", result: { reports: { risk: { prediction: "approved" } } } };
+            yield {
+              type: "result",
+              result: { reports: [{ mappedTo: "risk", prediction: "approved" }] },
+            };
           },
           submit: vi.fn(),
         },
         secondary: {
           async *stream() {
-            yield { type: "result", result: { reports: { score: { value: 0.91 } } } };
+            yield { type: "result", result: { reports: [{ mappedTo: "score", value: 0.91 }] } };
           },
           submit: vi.fn(),
         },
@@ -369,10 +378,10 @@ describe("transport", () => {
     expect(fanoutEvents.at(-1)).toMatchObject({
       type: "result",
       result: {
-        reports: {
-          risk: { prediction: "approved" },
-          score: { value: 0.91 },
-        },
+        reports: expect.arrayContaining([
+          { mappedTo: "risk", prediction: "approved" },
+          { mappedTo: "score", value: 0.91 },
+        ]),
       },
     });
 
@@ -401,7 +410,9 @@ describe("transport", () => {
             async *stream(request) {
               yield {
                 type: "result",
-                result: { reports: { risk: { prediction: request.serializedValues.prepared } } },
+                result: {
+                  reports: [{ mappedTo: "risk", prediction: request.serializedValues.prepared }],
+                },
               };
             },
           },
@@ -414,7 +425,7 @@ describe("transport", () => {
     }
     expect(pipelineEvents.at(-1)).toMatchObject({
       type: "result",
-      result: { reports: { risk: { prediction: true } } },
+      result: { reports: [{ mappedTo: "risk", prediction: true }] },
     });
 
     const racing = createRacingTransport({
@@ -423,13 +434,19 @@ describe("transport", () => {
           submit: vi.fn(),
           async *stream() {
             await new Promise((resolve) => setTimeout(resolve, 20));
-            yield { type: "result", result: { reports: { risk: { prediction: "slow" } } } };
+            yield {
+              type: "result",
+              result: { reports: [{ mappedTo: "risk", prediction: "slow" }] },
+            };
           },
         },
         fast: {
           submit: vi.fn(),
           async *stream() {
-            yield { type: "result", result: { reports: { risk: { prediction: "fast" } } } };
+            yield {
+              type: "result",
+              result: { reports: [{ mappedTo: "risk", prediction: "fast" }] },
+            };
           },
         },
       },
@@ -440,7 +457,7 @@ describe("transport", () => {
     }
     expect(racingEvents).toContainEqual({
       type: "result",
-      result: { reports: { risk: { prediction: "fast" } } },
+      result: { reports: [{ mappedTo: "risk", prediction: "fast" }] },
       meta: expect.objectContaining({ source: "fast", selection: "first-success" }),
     });
   });
@@ -462,14 +479,14 @@ describe("transport", () => {
           };
           yield {
             type: "result",
-            result: { reports: { risk: { prediction: "live" } } },
+            result: { reports: [{ mappedTo: "risk", prediction: "live" }] },
           };
         },
       }),
     });
 
     await expect(transport.submit(baseRequest)).resolves.toEqual({
-      reports: { risk: { prediction: "live" } },
+      reports: [{ mappedTo: "risk", prediction: "live" }],
     });
     const session = await transport.openSession!(baseRequest);
     await session.send({ type: "prompt", data: "go" });
@@ -479,8 +496,12 @@ describe("transport", () => {
   });
 
   it("supports weighted routing, quorum fanout, load balancing, and hedging", async () => {
-    const local = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "local" } } });
-    const remote = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "remote" } } });
+    const local = vi
+      .fn()
+      .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "local" }] });
+    const remote = vi
+      .fn()
+      .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "remote" }] });
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.95);
     const weighted = createWeightedRoutingTransport({
       transports: {
@@ -500,7 +521,9 @@ describe("transport", () => {
     const quorum = createQuorumFanoutTransport({
       transports: {
         primary: {
-          submit: vi.fn().mockResolvedValue({ reports: { risk: { prediction: "approved" } } }),
+          submit: vi
+            .fn()
+            .mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "approved" }] }),
         },
         secondary: {
           submit: vi.fn().mockRejectedValue(new Error("offline")),
@@ -514,8 +537,8 @@ describe("transport", () => {
 
     const health = createMemoryTransportHealthState<"a" | "b">();
     await health.recordFailure("transport", "a", new Error("offline"));
-    const a = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "a" } } });
-    const b = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "b" } } });
+    const a = vi.fn().mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "a" }] });
+    const b = vi.fn().mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "b" }] });
     const healthRandomSpy = vi.spyOn(Math, "random").mockReturnValue(0.7);
     const balanced = createLoadBalancedTransport({
       transports: { a: { submit: a }, b: { submit: b } },
@@ -531,10 +554,10 @@ describe("transport", () => {
     const slow = vi.fn().mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve({ reports: { risk: { prediction: "slow" } } }), 30);
+          setTimeout(() => resolve({ reports: [{ mappedTo: "risk", prediction: "slow" }] }), 30);
         }),
     );
-    const fast = vi.fn().mockResolvedValue({ reports: { risk: { prediction: "fast" } } });
+    const fast = vi.fn().mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "fast" }] });
     const hedged = createHedgedTransport({
       transports: {
         slow: { submit: slow },
@@ -544,7 +567,7 @@ describe("transport", () => {
       allowUnsafeHedging: true,
     });
     await expect(hedged.submit(baseRequest)).resolves.toEqual({
-      reports: { risk: { prediction: "fast" } },
+      reports: [{ mappedTo: "risk", prediction: "fast" }],
     });
   });
 
@@ -556,11 +579,7 @@ describe("transport", () => {
       headers: new Headers({ "content-type": "application/json" }),
       json: vi.fn().mockResolvedValue({
         data: {
-          reports: {
-            risk: {
-              prediction: "graphql",
-            },
-          },
+          reports: [{ mappedTo: "risk", prediction: "graphql" }],
         },
       }),
       text: vi.fn(),
@@ -581,11 +600,7 @@ describe("transport", () => {
         },
       }),
     ).resolves.toEqual({
-      reports: {
-        risk: {
-          prediction: "graphql",
-        },
-      },
+      reports: [{ mappedTo: "risk", prediction: "graphql" }],
     });
 
     const encoder = new TextEncoder();
@@ -594,7 +609,7 @@ describe("transport", () => {
         controller.enqueue(
           encoder.encode(
             'event: progress\ndata: {"loaded":1,"total":2}\n\n' +
-              'event: result\ndata: {"result":{"reports":{"risk":{"prediction":"sse"}}}}\n\n',
+              'event: result\ndata: {"result":{"reports":[{"mappedTo":"risk","prediction":"sse"}]}}\n\n',
           ),
         );
         controller.close();
@@ -616,7 +631,7 @@ describe("transport", () => {
     }
     expect(sseEvents.at(-1)).toMatchObject({
       type: "result",
-      result: { reports: { risk: { prediction: "sse" } } },
+      result: { reports: [{ mappedTo: "risk", prediction: "sse" }] },
     });
 
     class FakeSocket extends EventTarget {
@@ -670,7 +685,7 @@ describe("transport", () => {
     await expect(received).resolves.toEqual({ hello: "world" });
 
     const grpc = createGrpcTransport({
-      unary: vi.fn().mockResolvedValue({ reports: { risk: { prediction: "grpc" } } }),
+      unary: vi.fn().mockResolvedValue({ reports: [{ mappedTo: "risk", prediction: "grpc" }] }),
       capabilities: {
         modes: { submit: true, stream: false, session: false },
         safety: { idempotent: false, retrySafe: true, cacheable: false, hedgeSafe: false },
@@ -680,11 +695,7 @@ describe("transport", () => {
       },
     });
     await expect(grpc.submit(baseRequest)).resolves.toEqual({
-      reports: {
-        risk: {
-          prediction: "grpc",
-        },
-      },
+      reports: [{ mappedTo: "risk", prediction: "grpc" }],
     });
   });
 });

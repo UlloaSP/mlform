@@ -85,7 +85,7 @@ describe("multi-backend runtime pipeline", () => {
       if (backend === "bad") {
         throw new Error("bad backend");
       }
-      return { reports: {}, meta: { modelId: backend } };
+      return { reports: [], meta: { modelId: backend } };
     });
     const form = createForm({
       registry: pack.registry,

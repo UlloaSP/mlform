@@ -6,11 +6,6 @@ export const builtinReportKinds = {
   regressor: "regressor",
 } as const;
 
-export const builtinLegacyOutputTypes = {
-  classifier: builtinReportKinds.classifier,
-  regressor: builtinReportKinds.regressor,
-} as const;
-
 export const builtinFieldKinds = {
   text: "text",
   number: "number",

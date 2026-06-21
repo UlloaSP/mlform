@@ -28,10 +28,10 @@ describe("transport request key contract", () => {
 
     const first = transport.submit(request("ui-risk-a"));
     const second = transport.submit(request("ui-risk-b"));
-    resolveSubmit?.({ reports: { score: { prediction: "high" } } });
+    resolveSubmit?.({ reports: [{ mappedTo: "score", prediction: "high" }] });
 
-    await expect(first).resolves.toEqual({ reports: { score: { prediction: "high" } } });
-    await expect(second).resolves.toEqual({ reports: { score: { prediction: "high" } } });
+    await expect(first).resolves.toEqual({ reports: [{ mappedTo: "score", prediction: "high" }] });
+    await expect(second).resolves.toEqual({ reports: [{ mappedTo: "score", prediction: "high" }] });
     expect(submit).toHaveBeenCalledTimes(1);
   });
 });

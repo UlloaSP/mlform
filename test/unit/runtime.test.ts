@@ -24,6 +24,24 @@ import {
 
 const builtinPrimitiveDescriptorRegistry = createMlRegistryPack().descriptorRegistry;
 
+const reportPayload = (reports: readonly unknown[], id: string): unknown => {
+  const item = reports.find(
+    (report): report is Record<string, unknown> =>
+      typeof report === "object" &&
+      report !== null &&
+      !Array.isArray(report) &&
+      ((report as Record<string, unknown>).id === id ||
+        (report as Record<string, unknown>).mappedTo === id),
+  );
+  if (!item) return undefined;
+  if ("payload" in item) return item.payload;
+  const { id: _id, kind: _kind, mappedTo: _mappedTo, ...payload } = item;
+  void _id;
+  void _kind;
+  void _mappedTo;
+  return payload;
+};
+
 const describeField = (
   field: NonNullable<ReturnType<import("@/runtime").FormController["getField"]>>,
   descriptorRegistry = builtinPrimitiveDescriptorRegistry,
@@ -698,7 +716,7 @@ describe("runtime", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
     });
 
@@ -932,7 +950,7 @@ describe("runtime", () => {
   });
 
   it("treats form-level errors as invalid and blocks submit", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -1158,13 +1176,14 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            classifier: {
+          reports: [
+            {
+              mappedTo: "classifier",
               labels: ["low", "high"],
               probabilities: [0.25, 0.75],
               prediction: "high",
             },
-          },
+          ],
         }),
       },
     });
@@ -1320,7 +1339,7 @@ describe("runtime", () => {
   });
 
   it("recovers cleanly when validation hooks throw during submit", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const beforeValidate = vi
       .fn<() => Promise<void>>()
       .mockRejectedValueOnce(new Error("validation hook failed"))
@@ -1357,7 +1376,7 @@ describe("runtime", () => {
   });
 
   it("surfaces afterValidate failures without masking them as invalid transitions", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const afterValidate = vi
       .fn<() => Promise<void>>()
       .mockRejectedValueOnce(new Error("after validation hook failed"))
@@ -1764,13 +1783,14 @@ describe("runtime", () => {
 
   it("serializes values and updates report controllers after submit", async () => {
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        {
+          mappedTo: "risk",
           labels: ["low", "high"],
           probabilities: [0.2, 0.8],
           prediction: "high",
         },
-      },
+      ],
       meta: {
         requestId: "abc-123",
       },
@@ -1859,7 +1879,7 @@ describe("runtime", () => {
   });
 
   it("builds nested submission values from field valuePath while keeping flat field values", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -1935,7 +1955,7 @@ describe("runtime", () => {
   });
 
   it("uses mappedTo names and positions without id fallback", async () => {
-    const submit = vi.fn().mockResolvedValue([{ ignored: true }, { value: 88 }]);
+    const submit = vi.fn().mockResolvedValue({ reports: [{ mappedTo: 1, value: 88 }] });
     const form = createForm({
       schema: {
         fields: [
@@ -2010,12 +2030,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              prediction: "high",
-              probabilities: [0.1, 0.9],
-            },
-          },
+          reports: [{ mappedTo: "risk", prediction: "high", probabilities: [0.1, 0.9] }],
         }),
       },
     });
@@ -2106,7 +2121,7 @@ describe("runtime", () => {
             },
           } as never,
           resolvePayload(_config, context) {
-            return context.result.reports.good;
+            return reportPayload(context.result.reports, "good");
           },
           describe(config, context) {
             return {
@@ -2160,19 +2175,19 @@ describe("runtime", () => {
           {
             kind: "good-report",
             id: "good",
+            mappedTo: "good",
           },
           {
             kind: "bad-report",
             id: "bad",
+            mappedTo: "bad",
           },
         ],
       },
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            good: { score: 1 },
-          },
+          reports: [{ mappedTo: "good", score: 1 }],
         }),
       },
     });
@@ -2249,11 +2264,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            score: {
-              score: "not-a-number",
-            },
-          },
+          reports: [{ mappedTo: "score", score: "not-a-number" }],
         }),
       },
     });
@@ -2314,11 +2325,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            score: {
-              score: "not-a-number",
-            },
-          },
+          reports: [{ mappedTo: "score", score: "not-a-number" }],
         }),
       },
       hooks: {
@@ -2355,7 +2362,7 @@ describe("runtime", () => {
       } as never,
       async resolvePayload(_config, context) {
         await Promise.resolve();
-        return context.result.reports.async;
+        return reportPayload(context.result.reports, "async");
       },
       describe(config, context) {
         return {
@@ -2384,15 +2391,14 @@ describe("runtime", () => {
           {
             kind: "async-report",
             id: "async",
+            mappedTo: "async",
           },
         ],
       },
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            async: { score: 42 },
-          },
+          reports: [{ mappedTo: "async", score: 42 }],
         }),
       },
     });
@@ -2430,9 +2436,7 @@ describe("runtime", () => {
       expect(request.signal).toBeDefined();
       expect(request.signal?.aborted).toBe(false);
       return {
-        reports: {
-          classifier: { prediction: "ok" },
-        },
+        reports: [{ mappedTo: "classifier", prediction: "ok" }],
       };
     });
 
@@ -2512,9 +2516,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            classifier: { prediction: "ok" },
-          },
+          reports: [{ mappedTo: "classifier", prediction: "ok" }],
         }),
       },
       hooks: {
@@ -2546,9 +2548,7 @@ describe("runtime", () => {
 
   it("passes optional backend selection through transport requests", async () => {
     const submit = vi.fn().mockImplementation(async ({ backend }: { backend?: string }) => ({
-      reports: {
-        classifier: { prediction: backend ?? "default" },
-      },
+      reports: [{ mappedTo: "classifier", prediction: backend ?? "default" }],
     }));
     const form = createForm({
       schema: {
@@ -2583,7 +2583,7 @@ describe("runtime", () => {
       }),
     );
     expect(result.backend).toBe("remote");
-    expect(result.reports.classifier).toEqual({ prediction: "remote" });
+    expect(reportPayload(result.reports, "classifier")).toEqual({ prediction: "remote" });
   });
 
   it("marks reports as loading while submit is in flight", async () => {
@@ -2598,9 +2598,7 @@ describe("runtime", () => {
       expect(activeForm.state.reportStates.classifier?.status).toBe("loading");
     });
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        classifier: { prediction: "ok" },
-      },
+      reports: [{ mappedTo: "classifier", prediction: "ok" }],
     });
 
     const form = createForm({
@@ -2637,7 +2635,7 @@ describe("runtime", () => {
   });
 
   it("omits inactive fields from submission by default", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -2679,7 +2677,7 @@ describe("runtime", () => {
   });
 
   it("can reset inactive fields when they become hidden or disabled", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -2742,7 +2740,7 @@ describe("runtime", () => {
   });
 
   it("allows inactive field behavior to be overridden per field", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -2814,9 +2812,7 @@ describe("runtime", () => {
 
           setTimeout(() => {
             resolve({
-              reports: {
-                classifier: { prediction: "late" },
-              },
+              reports: [{ mappedTo: "classifier", prediction: "late" }],
             });
           }, 50);
         }),
@@ -2861,7 +2857,7 @@ describe("runtime", () => {
   });
 
   it("does not mark reports as loading when submit receives an already aborted signal", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const abortController = new AbortController();
     const form = createForm({
       schema: {
@@ -2899,14 +2895,14 @@ describe("runtime", () => {
   });
 
   it("does not let stale external abort signals cancel later submissions", async () => {
-    let resolveSecondSubmit: ((value: { reports: Record<string, unknown> }) => void) | undefined;
+    let resolveSecondSubmit: ((value: { reports: unknown[] }) => void) | undefined;
     let startSecondSubmit: (() => void) | undefined;
     const secondSubmitStarted = new Promise<void>((resolve) => {
       startSecondSubmit = resolve;
     });
     const submit = vi
       .fn()
-      .mockResolvedValueOnce({ reports: {} })
+      .mockResolvedValueOnce({ reports: [] })
       .mockImplementationOnce(
         ({ signal }: { signal?: AbortSignal }) =>
           new Promise((resolve, reject) => {
@@ -2919,7 +2915,7 @@ describe("runtime", () => {
               { once: true },
             );
 
-            resolveSecondSubmit = resolve as (value: { reports: Record<string, unknown> }) => void;
+            resolveSecondSubmit = resolve as (value: { reports: unknown[] }) => void;
           }),
       );
     const staleAbortController = new AbortController();
@@ -2944,7 +2940,7 @@ describe("runtime", () => {
     const secondSubmit = form.submit();
     await secondSubmitStarted;
     staleAbortController.abort("late-stale-abort");
-    resolveSecondSubmit?.({ reports: {} });
+    resolveSecondSubmit?.({ reports: [] });
 
     await expect(secondSubmit).resolves.toMatchObject({
       values: { name: "Alice" },
@@ -2976,7 +2972,7 @@ describe("runtime", () => {
           (values.series as { field1: Date; field2: number }[])[0]!.field2 = 30;
           (serializedValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
 
-          return { reports: {} };
+          return { reports: [] };
         },
       );
     const afterSubmit = vi.fn(({ result }: { result: { values: Record<string, unknown> } }) => {
@@ -3044,9 +3040,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: { prediction: "low" },
-          },
+          reports: [{ mappedTo: "risk", prediction: "low" }],
         }),
       },
     });
@@ -3084,7 +3078,7 @@ describe("runtime", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
     });
 
@@ -3103,7 +3097,7 @@ describe("runtime", () => {
   });
 
   it("does not let a stale submit overwrite state after reset", async () => {
-    let resolveSubmit: ((value: { reports: Record<string, unknown> }) => void) | undefined;
+    let resolveSubmit: ((value: { reports: unknown[] }) => void) | undefined;
 
     const form = createForm({
       schema: {
@@ -3121,7 +3115,7 @@ describe("runtime", () => {
         submit: vi.fn().mockImplementation(
           () =>
             new Promise((resolve) => {
-              resolveSubmit = resolve as (value: { reports: Record<string, unknown> }) => void;
+              resolveSubmit = resolve as (value: { reports: unknown[] }) => void;
             }),
         ),
       },
@@ -3130,7 +3124,7 @@ describe("runtime", () => {
     form.setValues({ name: "Changed" });
     const pending = form.submit();
     form.reset();
-    resolveSubmit?.({ reports: {} });
+    resolveSubmit?.({ reports: [] });
 
     await expect(pending).rejects.toBeInstanceOf(SubmissionAbortedError);
     expect(form.state.status).toBe("idle");
@@ -3180,11 +3174,7 @@ describe("runtime", () => {
           yield {
             type: "result",
             result: {
-              reports: {
-                risk: {
-                  prediction: "final",
-                },
-              },
+              reports: [{ mappedTo: "risk", prediction: "final" }],
             },
           } as const;
         },
@@ -3283,7 +3273,7 @@ describe("runtime", () => {
       fieldValues: { name: "Alice" },
       serializedValues: { name: "Alice" },
       serializedFieldValues: { name: "Alice" },
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
     });
@@ -3340,7 +3330,7 @@ describe("runtime", () => {
       fieldValues: {},
       serializedValues: {},
       serializedFieldValues: {},
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
     });
@@ -3381,7 +3371,7 @@ describe("runtime", () => {
       fieldValues: {},
       serializedValues: {},
       serializedFieldValues: {},
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
     };
@@ -3413,7 +3403,7 @@ describe("runtime", () => {
         reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     const ctrl = form.reports[0]!;
@@ -3423,7 +3413,7 @@ describe("runtime", () => {
       fieldValues: {},
       serializedValues: {},
       serializedFieldValues: {},
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
     });
@@ -3438,7 +3428,7 @@ describe("runtime", () => {
       fieldValues: {},
       serializedValues: {},
       serializedFieldValues: {},
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
     });
@@ -3448,16 +3438,12 @@ describe("runtime", () => {
 
   it("executes pipeline without report fetches when reportFetchMode is none", async () => {
     const submitResult = {
-      reports: {
-        risk: {
-          prediction: "low",
-        },
-      },
+      reports: [{ mappedTo: "risk", prediction: "low" }],
       meta: {
         requestId: "abc",
       },
       raw: {
-        outputs: [{ prediction: "low" }],
+        reports: [{ mappedTo: "risk", prediction: "low" }],
       },
     };
     const form = createForm({
@@ -3524,16 +3510,12 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              prediction: "high",
-            },
-          },
+          reports: [{ mappedTo: "risk", prediction: "high" }],
           meta: {
             mappedTo: "predict",
           },
           raw: {
-            outputs: [{ prediction: "high" }],
+            reports: [{ mappedTo: "risk", prediction: "high" }],
           },
         }),
       },
@@ -3550,7 +3532,7 @@ describe("runtime", () => {
       artifactAdapter: {
         derive({ submitResult, reportFetchResults, reportFetchErrors }) {
           return {
-            outputs: (submitResult.raw as { outputs: unknown[] }).outputs,
+            reports: (submitResult.raw as { reports: unknown[] }).reports,
             fetchErrors: reportFetchErrors,
             fetchedReportIds: Object.keys(reportFetchResults),
           };
@@ -3569,7 +3551,7 @@ describe("runtime", () => {
       "shap-error": "report fetch failed",
     });
     expect(result.artifacts).toEqual({
-      outputs: [{ prediction: "high" }],
+      reports: [{ mappedTo: "risk", prediction: "high" }],
       fetchErrors: {
         "shap-error": "report fetch failed",
       },
@@ -3598,7 +3580,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {},
+          reports: [],
           meta: {},
           raw: {},
         }),
@@ -3669,7 +3651,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {},
+          reports: [],
           meta: {},
           raw: {},
         }),
@@ -3687,7 +3669,7 @@ describe("runtime", () => {
       fieldValues: {},
       serializedValues: {},
       serializedFieldValues: {},
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
       signal: abortController.signal,
@@ -3847,12 +3829,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              score: 0.91,
-              drivers: ["income", "savings"],
-            },
-          },
+          reports: [{ mappedTo: "risk", score: 0.91, drivers: ["income", "savings"] }],
         }),
       },
     });
@@ -3948,7 +3925,7 @@ describe("runtime", () => {
       fieldValues: { name: "Alice" },
       serializedValues: { name: "Alice" },
       serializedFieldValues: { name: "Alice" },
-      reports: {},
+      reports: [],
       meta: {},
       raw: {},
     });

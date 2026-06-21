@@ -24,7 +24,7 @@ describe("report mapped contract", () => {
           } as const;
           yield {
             type: "result",
-            result: { reports: { risk_score: { prediction: "final" } } },
+            result: { reports: [{ mappedTo: "risk_score", prediction: "final" }] },
           } as const;
         },
       },
@@ -36,7 +36,7 @@ describe("report mapped contract", () => {
       status: "ready",
       payload: { prediction: "final" },
     });
-    expect(result.reports).toEqual({ risk_score: { prediction: "final" } });
+    expect(result.reports).toEqual([{ mappedTo: "risk_score", prediction: "final" }]);
   });
 
   it("fails validated stream updates when report mappedTo is missing", async () => {
@@ -56,7 +56,7 @@ describe("report mapped contract", () => {
           } as const;
           yield {
             type: "result",
-            result: { reports: {} },
+            result: { reports: [] },
           } as const;
         },
       },
@@ -84,7 +84,7 @@ describe("report mapped contract", () => {
           } as const;
           yield {
             type: "result",
-            result: { reports: {} },
+            result: { reports: [] },
           } as const;
         },
       },
@@ -95,7 +95,7 @@ describe("report mapped contract", () => {
     );
   });
 
-  it("fails keyed backend report payloads when report mappedTo is missing", async () => {
+  it("leaves mapped report payload unresolved when report mappedTo is missing", async () => {
     const form = createForm({
       schema: {
         fields: [{ kind: "text", label: "Name" }],
@@ -104,14 +104,14 @@ describe("report mapped contract", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: { risk_score: { prediction: "high" } },
+          reports: [{ mappedTo: "risk_score", prediction: "high" }],
         }),
       },
     });
 
-    await expect(form.submit()).rejects.toThrow(
-      /Report requires mappedTo when backend response contains keyed reports/,
-    );
+    const result = await form.submit();
+    expect(result.reportStates["ui-risk"]?.status).toBe("idle");
+    expect(result.reports).toEqual([{ mappedTo: "risk_score", prediction: "high" }]);
   });
 
   it("fails duplicate report mapped targets at schema normalization", () => {
@@ -125,26 +125,30 @@ describe("report mapped contract", () => {
           ],
         },
         registry: createMlRegistryPack().registry,
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       }),
     ).toThrow(/Duplicate report mappedTo "risk_score"/);
   });
 
-  it("supports explicit report output aliases during migration", () => {
-    const onAlias = vi.fn();
+  it("does not resolve legacy report output aliases", () => {
     const payload = resolveMappedReportPayload(
       { mappedTo: "new_risk" },
       {
-        reports: { old_risk: { prediction: "legacy" } },
-        raw: null,
-      },
-      {
-        aliases: ["old_risk"],
-        onAlias,
+        reports: [{ mappedTo: "old_risk", prediction: "legacy" }],
       },
     );
 
-    expect(payload).toEqual({ prediction: "legacy" });
-    expect(onAlias).toHaveBeenCalledWith("old_risk", "new_risk");
+    expect(payload).toBeUndefined();
+  });
+
+  it("resolves report mappedTo backend maps without falling back to report id", () => {
+    const payload = resolveMappedReportPayload(
+      { id: "ui-risk", mappedTo: { modelA: "risk_a", modelB: "risk_b" } },
+      {
+        reports: [{ mappedTo: "risk_b", prediction: "high" }],
+      },
+    );
+
+    expect(payload).toEqual({ prediction: "high" });
   });
 });

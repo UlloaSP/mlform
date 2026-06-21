@@ -55,7 +55,7 @@ export interface ReportFetchRequest {
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   reportContext?: ReportContext;
   reportContexts?: Record<string, ReportContext>;
   meta: Record<string, unknown>;

@@ -49,7 +49,7 @@ export const createFanoutTransport = <TTransportId extends string = string>(
       const activeEntries = await resolveActiveEntries(request);
 
       if (activeEntries.length === 0) {
-        return { reports: {}, meta: {}, raw: null };
+        return { reports: [], meta: {}, raw: null };
       }
 
       const abortPolicy = options.abortPolicy ?? "wait-all";
@@ -146,7 +146,7 @@ export const createFanoutTransport = <TTransportId extends string = string>(
     async function* (request: SubmitRequest) {
       const activeEntries = await resolveActiveEntries(request);
       if (activeEntries.length === 0) {
-        yield { type: "result", result: { reports: {}, meta: {}, raw: null } };
+        yield { type: "result", result: { reports: [], meta: {}, raw: null } };
         return;
       }
 

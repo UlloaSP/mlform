@@ -8,7 +8,7 @@ import { createReportFetchRequest } from "@/schema";
 
 describe("submission snapshot", () => {
   it("creates a submission snapshot without submitting", () => {
-    const submit = vi.fn().mockResolvedValue({ raw: {}, reports: {} });
+    const submit = vi.fn().mockResolvedValue({ raw: {}, reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -50,7 +50,7 @@ describe("submission snapshot", () => {
   });
 
   it("exposes display and model data without using ids as external keys", async () => {
-    const submit = vi.fn().mockResolvedValue({ raw: {}, reports: {} });
+    const submit = vi.fn().mockResolvedValue({ raw: {}, reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -136,7 +136,7 @@ describe("submission snapshot", () => {
         ],
       },
       registry: createMlRegistryPack().registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     form.setValues({ "ui-age": 42, "ui-color": "green" });
@@ -191,7 +191,7 @@ describe("submission snapshot", () => {
         ],
       },
       registry: createMlRegistryPack().registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     form.setValues({ "ui-age": 42, "ui-color": "green" });

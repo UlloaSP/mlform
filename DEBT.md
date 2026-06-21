@@ -116,12 +116,14 @@ No active debt.
 - One-hot inactive policy coverage now proves hidden `onehot-category` fields follow `include`, `omit`, and `reset-on-hide` submission behavior without parent field `mappedTo`.
 - Mounted kit submit now supports `reportFetchMode: "lazy" | "all" | "none"`; `"all"` exposes full pipeline report fetch results in success events and `"none"` prevents renderer-driven async report fetches.
 - Submit results and report fetch requests now expose official report context keyed by runtime report id, with helper lookup by id or resolved `mappedTo` target, removing consumer-side normalized-id report context lookups.
-- Report payload lookup now rejects keyed backend `reports` without report `mappedTo` except exact legacy report-id keys, rejects duplicate resolved report targets, and supports explicit alias migration through `resolveMappedReportPayload(..., { aliases, onAlias })`.
+- Report payload lookup now uses only `reports[]` items matched by explicit `mappedTo`, rejects duplicate resolved report targets, strips envelope metadata from payloads, and no longer supports keyed reports, report-id fallback, or alias migration.
 - Runtime now exposes schema-aware multi-backend snapshots and pipeline execution. `createFanoutTransport` remains transport-only fanout; multi-model form runs use `executeMultiBackendPipeline` to preserve per-backend mappings, results, errors, skipped reports, and report contexts.
 - Runtime id boundaries are explicit: `getField(id)`/`getReport(id)` remain runtime-handle lookups, while `getFieldByDisplayKey` and `getFieldByMappedTo` support external-contract field lookup without label or id fallback.
-- Exact report-id payload fallback removed from `resolveMappedReportPayload`; keyed report payloads now require `mappedTo`.
+- Exact report-id payload fallback, keyed report payload maps, and legacy `outputs` fallbacks removed from `resolveMappedReportPayload` and built-in report definitions.
 - Submission snapshots without an explicit backend now emit every target in a backend map, so multi-model consumers can use `modelValues` directly without reconstructing from field ids.
 - MLSuite local integration now renders, saves, and prefills schema-run visible inputs from MLForm `displayValues`/`displayKey` data instead of reconstructing from field ids, labels, `mappedTo`, or model columns.
+- Playwright is now a dev dependency and browser render coverage exercises real mounted UI with custom field/report plugins, `onehot-category`, backend-map `mappedTo`, mapped report payload lookup, and multi-backend report context targets.
+- Report payload lookup now resolves backend-map `mappedTo` targets when no single backend is selected, so mounted/fanout-like report arrays bind by external report target without report-id fallback.
 
 ## Notes
 

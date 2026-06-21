@@ -80,11 +80,16 @@ export const mergeFanoutResponses = (
   results: readonly { id: string | undefined; index: number; response: TransportResponse }[],
   failures: readonly { id: string | undefined; index: number; error: unknown }[],
 ): TransportResponse => {
-  const reports: Record<string, unknown> = {};
+  const reports: unknown[] = [];
   const reportSources = new Map<string, string>();
 
   for (const result of results) {
-    for (const [reportId, payload] of Object.entries(result.response.reports ?? {})) {
+    for (const payload of result.response.reports ?? []) {
+      const report = typeof payload === "object" && payload !== null ? payload : {};
+      const reportId =
+        "mappedTo" in report
+          ? String((report as { mappedTo?: unknown }).mappedTo)
+          : String(reports.length);
       const currentSource = result.id ?? `transport[${result.index}]`;
       const previousSource = reportSources.get(reportId);
       if (previousSource) {
@@ -94,7 +99,7 @@ export const mergeFanoutResponses = (
       }
 
       reportSources.set(reportId, currentSource);
-      reports[reportId] = payload;
+      reports.push(payload);
     }
   }
 

@@ -118,12 +118,12 @@ Scope: make MLForm remove MLSuite workarounds. Breaking changes are allowed when
 
 - [ ] Run focused runtime tests for submission snapshots.
 - [ ] Run report fetch tests.
-- [ ] Run mounted kit/browser tests for pipeline mode.
-- [ ] Run `vp check`.
-- [ ] Run `vp test`.
-- [ ] Run line-cap scan for changed source files.
-- [ ] Run `graphify update .`.
-- [ ] Update `DEBT.md` whenever debt is added, removed, or scoped.
+- [x] Run mounted kit/browser tests for pipeline mode.
+- [x] Run `vp check`.
+- [x] Run `vp test`.
+- [x] Run line-cap scan for changed source files.
+- [x] Run `graphify update .`.
+- [x] Update `DEBT.md` whenever debt is added, removed, or scoped.
 
 ## Submission Snapshot Todo
 
@@ -161,6 +161,7 @@ Scope: make MLForm remove MLSuite workarounds. Breaking changes are allowed when
 - Backend-map snapshot verification: submit/snapshot without an explicit backend now writes all resolved `mappedTo` map targets into `modelValues`, covering MLSuite multi-model transport without id reconstruction. `vp test run test/unit/submission-snapshot.test.ts test/unit/multi-backend.test.ts` passed.
 - MLSuite link verification: local MLSuite now consumes `mlform` through `file:../../mlform`; schema-run transport reads `modelValues`, `fieldValues`, and `displayValues` from MLForm instead of rebuilding payloads from ids. `vp check`, `vp test run`, `vp build`, and `graphify update .` passed in MLForm. MLSuite changed-file `vp check --fix`, `vp test run`, `vp build`, and `graphify update .` passed; full MLSuite `vp check` remains blocked by 150 pre-existing unrelated formatting issues.
 - MLSuite display-data verification: saved/reviewed schema run inputs now render and prefill from `displayKey` data only. MLSuite no longer reconstructs visible inputs from field ids, labels, `mappedTo`, or model columns. `vp test run`, changed-file `vp check --fix`, and `vp build` passed in MLSuite.
+- Playwright render verification: added Playwright dev dependency and real Chromium coverage for mounted rendering with custom field/report plugins, `onehot-category`, backend-map `mappedTo`, mapped report payload lookup without ids, async custom report context, and multi-backend fanout targets. `vp test run test/unit/report-mapped-contract.test.ts test/integration/playwright-render-matrix.test.ts`, `vp check`, `vp test run`, changed-file line-cap scan, and `graphify update .` passed.
 
 ## Package Types Todo
 

@@ -3,10 +3,6 @@
 
 export type MappedToTarget = string | number;
 export type MappedTo = MappedToTarget | Record<string, MappedToTarget | null | undefined>;
-export type ReportPayloadAliasOptions = {
-  aliases?: readonly MappedToTarget[];
-  onAlias?: (alias: MappedToTarget, target: MappedToTarget) => void;
-};
 
 export const resolveMappedTo = (
   mappedTo: MappedTo | undefined,
@@ -26,55 +22,73 @@ export const resolveMappedTo = (
 
 export const mappedToKey = (target: MappedToTarget): string => String(target);
 
-export class MissingReportMappedToError extends Error {
-  constructor() {
-    super("Report requires mappedTo when backend response contains keyed reports.");
-    this.name = "MissingReportMappedToError";
+export const resolveMappedTargets = (
+  mappedTo: MappedTo | undefined,
+  backend: string | undefined,
+): MappedToTarget[] => {
+  const target = resolveMappedTo(mappedTo, backend);
+  if (backend !== undefined || typeof mappedTo !== "object" || mappedTo === null) {
+    return target === undefined ? [] : [target];
   }
-}
+
+  const seen = new Set<string>();
+  return Object.values(mappedTo).filter((value): value is MappedToTarget => {
+    if (typeof value !== "string" && typeof value !== "number") {
+      return false;
+    }
+
+    const key = mappedToKey(value);
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
 
 const getReportPayload = (
   target: MappedToTarget,
   result: {
-    reports: Record<string, unknown>;
-    raw: unknown;
+    reports: readonly unknown[];
   },
 ): unknown => {
-  const keyed = result.reports[mappedToKey(target)];
-  if (keyed !== undefined) {
-    return keyed;
+  const key = mappedToKey(target);
+  const matches = result.reports.filter((item): item is Record<string, unknown> => {
+    return (
+      typeof item === "object" &&
+      item !== null &&
+      !Array.isArray(item) &&
+      mappedToKey((item as { mappedTo?: MappedToTarget }).mappedTo ?? "") === key
+    );
+  });
+  if (matches.length > 1) {
+    throw new Error(`Duplicate report payload for mappedTo "${key}".`);
   }
+  const match = matches[0];
+  if (!match) return undefined;
+  if ("payload" in match) return match.payload;
 
-  return typeof target === "number" && Array.isArray(result.raw) ? result.raw[target] : undefined;
+  const { id: _id, kind: _kind, mappedTo: _mappedTo, ...payload } = match;
+  void _id;
+  void _kind;
+  void _mappedTo;
+  return payload;
 };
 
 export const resolveMappedReportPayload = (
   report: { id?: string; mappedTo?: MappedTo },
   result: {
     backend?: string;
-    reports: Record<string, unknown>;
-    raw: unknown;
+    reports: readonly unknown[];
   },
-  options: ReportPayloadAliasOptions = {},
 ): unknown => {
-  const target = resolveMappedTo(report.mappedTo, result.backend);
-  if (target === undefined) {
-    if (Object.keys(result.reports).length > 0) {
-      throw new MissingReportMappedToError();
-    }
-    return undefined;
-  }
+  const targets = resolveMappedTargets(report.mappedTo, result.backend);
+  if (targets.length === 0) return undefined;
 
-  const payload = getReportPayload(target, result);
-  if (payload !== undefined) {
-    return payload;
-  }
-
-  for (const alias of options.aliases ?? []) {
-    const aliasPayload = getReportPayload(alias, result);
-    if (aliasPayload !== undefined) {
-      options.onAlias?.(alias, target);
-      return aliasPayload;
+  for (const target of targets) {
+    const payload = getReportPayload(target, result);
+    if (payload !== undefined) {
+      return payload;
     }
   }
 

@@ -41,6 +41,18 @@ const getShadow = (element: Element | null): ShadowRoot => {
   return element.shadowRoot;
 };
 
+const reportPayload = (reports: readonly unknown[], id: string): unknown => {
+  const item = reports.find(
+    (report): report is Record<string, unknown> =>
+      typeof report === "object" &&
+      report !== null &&
+      !Array.isArray(report) &&
+      ((report as Record<string, unknown>).id === id ||
+        (report as Record<string, unknown>).mappedTo === id),
+  );
+  return item && "payload" in item ? item.payload : item;
+};
+
 const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   const fieldFrame = getShadow(host).querySelectorAll("mlf-field-frame").item(index) as HTMLElement;
   const fieldShadow = getShadow(fieldFrame);
@@ -992,13 +1004,14 @@ describe("primitives", () => {
 
   it("binds built-in controls to the engine, emits success events, and renders reports after submit", async () => {
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        {
+          mappedTo: "risk",
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
         },
-      },
+      ],
     });
 
     const form = createForm({
@@ -1165,9 +1178,7 @@ describe("primitives", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            score: 0,
-          },
+          reports: [{ mappedTo: "score", value: 0 }],
         }),
       },
     });
@@ -1226,12 +1237,7 @@ describe("primitives", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              prediction: "approve",
-              probabilities: [0.85, 0.15],
-            },
-          },
+          reports: [{ mappedTo: "risk", prediction: "approve", probabilities: [0.85, 0.15] }],
         }),
       },
     });
@@ -1293,7 +1299,7 @@ describe("primitives", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: { score: 0.9 } }),
+        submit: vi.fn().mockResolvedValue({ reports: [{ mappedTo: "score", value: 0.9 }] }),
       },
     });
 
@@ -1652,7 +1658,7 @@ describe("primitives", () => {
         },
       } as never,
       resolvePayload(_config, context) {
-        return context.result.reports.probe;
+        return reportPayload(context.result.reports, "probe");
       },
       describe(config, context) {
         return {
@@ -1690,11 +1696,7 @@ describe("primitives", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            probe: {
-              ok: true,
-            },
-          },
+          reports: [{ mappedTo: "probe", ok: true }],
         }),
       },
     });
@@ -1849,7 +1851,7 @@ describe("primitives", () => {
         },
       } as never,
       resolvePayload(_config, context) {
-        return context.result.reports.probe;
+        return reportPayload(context.result.reports, "probe");
       },
       describe(config, context) {
         return {
@@ -1885,11 +1887,7 @@ describe("primitives", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            probe: {
-              ok: true,
-            },
-          },
+          reports: [{ mappedTo: "probe", ok: true }],
         }),
       },
     });

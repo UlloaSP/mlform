@@ -37,7 +37,7 @@ describe("report context", () => {
       registry: pack.registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: { summary_score: { score: 0.8 } },
+          reports: [{ mappedTo: "summary_score", score: 0.8 }],
           meta: { modelId: "remote-risk" },
         }),
       },
@@ -92,7 +92,7 @@ describe("report context", () => {
       registry: pack.registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {},
+          reports: [],
           meta: { modelId: "risk-v2" },
         }),
       },

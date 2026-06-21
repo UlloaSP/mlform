@@ -9,7 +9,7 @@ const registry = createMlRegistryPack().registry;
 
 describe("display key contract", () => {
   it("keeps display keys stable when labels change", async () => {
-    const submitA = vi.fn().mockResolvedValue({ reports: {} });
+    const submitA = vi.fn().mockResolvedValue({ reports: [] });
     const formA = createForm({
       schema: {
         fields: [
@@ -25,7 +25,7 @@ describe("display key contract", () => {
       registry,
       transport: { submit: submitA },
     });
-    const submitB = vi.fn().mockResolvedValue({ reports: {} });
+    const submitB = vi.fn().mockResolvedValue({ reports: [] });
     const formB = createForm({
       schema: {
         fields: [
@@ -71,7 +71,7 @@ describe("display key contract", () => {
         ],
       },
       registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     form.setValues({ age: 42 });
@@ -87,7 +87,7 @@ describe("display key contract", () => {
         fields: [{ id: "age", kind: "number", label: "Age" }],
       },
       registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     form.setValues({ age: 42 });
@@ -122,7 +122,7 @@ describe("display key contract", () => {
         ],
       },
       registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     form.setValues({ age: 42, score: 0.9 });

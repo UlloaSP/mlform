@@ -224,7 +224,7 @@ export const createFormSubmitter = ({
         const baseResult: Omit<import("../types").SubmitResult, "reportStates"> = {
           backend,
           ...records,
-          reports: normalizedResponse.reports ?? {},
+          reports: normalizedResponse.reports ?? [],
           meta: normalizedResponse.meta ?? {},
           raw: normalizedResponse.raw,
         };

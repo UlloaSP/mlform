@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -97,6 +97,7 @@
   "devDependencies": {
     "@types/node": "^25.9.3",
     "jsdom": "^29.1.1",
+    "playwright": "^1.61.0",
     "typescript": "~6.0.3",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
     "vite-plugin-dts": "^5.0.2",

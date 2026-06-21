@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { normalizeValuePath, setPathValue } from "../paths";
-import { mappedToKey, resolveMappedTo, type MappedTo, type MappedToTarget } from "@/schema";
+import { mappedToKey, resolveMappedTargets, type MappedTo } from "@/schema";
 import type { NormalizedFieldConfig, TransportResponse } from "../types";
 import { cloneValue } from "../values";
 import { isRecord } from "../utils";
@@ -97,30 +97,6 @@ const setSubmissionPath = (
   setPathValue(target, normalizeValuePath(path, fallback), cloneValue(value));
 };
 
-const mappedTargetsFor = (
-  mappedTo: MappedTo | undefined,
-  backend: string | undefined,
-): MappedToTarget[] => {
-  const target = resolveMappedTo(mappedTo, backend);
-  if (backend !== undefined || typeof mappedTo !== "object" || mappedTo === null) {
-    return target === undefined ? [] : [target];
-  }
-
-  const seen = new Set<string>();
-  return Object.values(mappedTo).filter((value): value is MappedToTarget => {
-    if (typeof value !== "string" && typeof value !== "number") {
-      return false;
-    }
-
-    const key = mappedToKey(value);
-    if (seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
-};
-
 const writeOneHotSubmissionValues = (
   field: SubmissionField,
   backend: string | undefined,
@@ -153,7 +129,7 @@ const writeOneHotSubmissionValues = (
 
   const modelValues: Record<string, unknown> = {};
   for (const option of field.config.options) {
-    const targets = mappedTargetsFor(option.mappedTo, backend);
+    const targets = resolveMappedTargets(option.mappedTo, backend);
     if (targets.length === 0) {
       throw new Error(`onehot-category "${field.id}": option "${option.value}" has no mappedTo.`);
     }
@@ -220,7 +196,7 @@ export const buildSubmissionValueRecords = (
       continue;
     }
 
-    const mappedTargets = mappedTargetsFor(field.config.mappedTo, backend);
+    const mappedTargets = resolveMappedTargets(field.config.mappedTo, backend);
     const valuePaths =
       mappedTargets.length > 0
         ? mappedTargets.map(mappedToKey)
@@ -288,7 +264,7 @@ export const normalizeTransportResponse = (response: unknown): TransportResponse
     return { raw: response };
   }
 
-  const reports = isRecord(response.reports) ? response.reports : undefined;
+  const reports = Array.isArray(response.reports) ? response.reports : undefined;
   const meta = isRecord(response.meta) ? response.meta : undefined;
   const raw = "raw" in response ? response.raw : response;
 

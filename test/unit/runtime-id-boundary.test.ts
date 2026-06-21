@@ -9,7 +9,7 @@ const registry = createMlRegistryPack().registry;
 
 describe("runtime id boundary", () => {
   it("keeps field ids as runtime handles, not external payload keys", async () => {
-    const submitA = vi.fn().mockResolvedValue({ reports: {} });
+    const submitA = vi.fn().mockResolvedValue({ reports: [] });
     const formA = createForm({
       schema: {
         fields: [
@@ -25,7 +25,7 @@ describe("runtime id boundary", () => {
       registry,
       transport: { submit: submitA },
     });
-    const submitB = vi.fn().mockResolvedValue({ reports: {} });
+    const submitB = vi.fn().mockResolvedValue({ reports: [] });
     const formB = createForm({
       schema: {
         fields: [
@@ -90,7 +90,7 @@ describe("runtime id boundary", () => {
         ],
       },
       registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     expect(form.getField("ui-age")?.config.label).toBe("Edited Age Label");
@@ -104,7 +104,7 @@ describe("runtime id boundary", () => {
 
   it("keeps report ids as runtime handles, not external output keys", async () => {
     const submitA = vi.fn().mockResolvedValue({
-      reports: { risk_score: { prediction: "high" } },
+      reports: [{ mappedTo: "risk_score", prediction: "high" }],
     });
     const formA = createForm({
       schema: {
@@ -115,7 +115,7 @@ describe("runtime id boundary", () => {
       transport: { submit: submitA },
     });
     const submitB = vi.fn().mockResolvedValue({
-      reports: { risk_score: { prediction: "high" } },
+      reports: [{ mappedTo: "risk_score", prediction: "high" }],
     });
     const formB = createForm({
       schema: {
@@ -143,7 +143,7 @@ describe("runtime id boundary", () => {
       resultB.reportStates["ui-risk-b"]?.payload,
     );
     expect(resultA.reports).toEqual(resultB.reports);
-    expect(resultA.reports).toEqual({ risk_score: { prediction: "high" } });
+    expect(resultA.reports).toEqual([{ mappedTo: "risk_score", prediction: "high" }]);
     expect(resultA.reports).not.toHaveProperty("ui-risk-a");
     expect(resultB.reports).not.toHaveProperty("ui-risk-b");
   });

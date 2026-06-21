@@ -25,7 +25,7 @@ export interface ReportContext {
   backend?: string;
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   meta: Record<string, unknown>;
   raw: unknown;
 }
@@ -39,7 +39,7 @@ export interface SubmitResult<TReportState = unknown> {
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   reportContexts?: Record<string, ReportContext>;
   reportStates: Record<string, TReportState>;
   meta: Record<string, unknown>;

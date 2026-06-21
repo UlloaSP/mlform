@@ -35,7 +35,7 @@ export const normalizeTransportResponse = (response: unknown): TransportResponse
     return { raw: response };
   }
 
-  const reports = isRecord(response.reports) ? response.reports : undefined;
+  const reports = Array.isArray(response.reports) ? response.reports : undefined;
   const meta = isRecord(response.meta) ? response.meta : undefined;
   const raw = "raw" in response ? response.raw : response;
 

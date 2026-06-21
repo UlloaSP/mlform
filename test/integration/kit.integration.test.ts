@@ -29,6 +29,18 @@ const getShadow = (element: Element | null): ShadowRoot => {
   return element.shadowRoot;
 };
 
+const reportPayload = (reports: readonly unknown[], id: string): unknown => {
+  const item = reports.find(
+    (report): report is Record<string, unknown> =>
+      typeof report === "object" &&
+      report !== null &&
+      !Array.isArray(report) &&
+      ((report as Record<string, unknown>).id === id ||
+        (report as Record<string, unknown>).mappedTo === id),
+  );
+  return item && "payload" in item ? item.payload : item;
+};
+
 const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
   const fieldFrame = getShadow(host).querySelectorAll("mlf-field-frame").item(index) as HTMLElement;
   const fieldShadow = getShadow(fieldFrame);
@@ -56,7 +68,7 @@ describe("kit integration", () => {
     expect(() =>
       mountForm(container, {
         transport: {
-          submit: vi.fn().mockResolvedValue({ reports: {} }),
+          submit: vi.fn().mockResolvedValue({ reports: [] }),
         },
         schema: {
           fields: [{ kind: "text", label: "Name" }],
@@ -67,13 +79,14 @@ describe("kit integration", () => {
 
   it("mounts a default form, submits through the endpoint transport, and applies the design system", async () => {
     const json = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        {
+          mappedTo: "risk",
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
         },
-      },
+      ],
     });
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -187,22 +200,24 @@ describe("kit integration", () => {
 
   it("routes mounted submissions through a composed transport", async () => {
     const localSubmit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        {
+          mappedTo: "risk",
           prediction: "local",
           labels: ["low", "high"],
           probabilities: [0.8, 0.2],
         },
-      },
+      ],
     });
     const remoteSubmit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        {
+          mappedTo: "risk",
           prediction: "remote",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
         },
-      },
+      ],
     });
     const container = document.createElement("div");
     document.body.append(container);
@@ -259,7 +274,7 @@ describe("kit integration", () => {
         },
       }),
     );
-    expect(localResult.reports.risk).toMatchObject({
+    expect(reportPayload(localResult.reports, "risk")).toMatchObject({
       prediction: "local",
     });
 
@@ -283,7 +298,7 @@ describe("kit integration", () => {
         },
       }),
     );
-    expect(remoteResult.reports.risk).toMatchObject({
+    expect(reportPayload(remoteResult.reports, "risk")).toMatchObject({
       prediction: "remote",
     });
 
@@ -307,7 +322,7 @@ describe("kit integration", () => {
 
     const first = mountForm(container, {
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
       schema: {
         fields: [{ kind: "text", label: "Name" }],
@@ -327,7 +342,7 @@ describe("kit integration", () => {
 
     const second = mountForm(container, {
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
       schema: {
         fields: [{ kind: "text", label: "Email" }],
@@ -373,7 +388,7 @@ describe("kit integration", () => {
 
     const mounted = mountForm(container, {
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
       schema: {
         fields: [{ kind: "text", label: "Name" }],
@@ -432,7 +447,7 @@ describe("kit integration", () => {
     expect(observedSignal?.aborted).toBe(true);
     await expect(pendingSubmit).rejects.toBeInstanceOf(SubmissionAbortedError);
 
-    resolveTransport?.({ reports: {} });
+    resolveTransport?.({ reports: [] });
     rejectTransport?.();
   });
 
@@ -452,13 +467,14 @@ describe("kit integration", () => {
           yield {
             type: "result",
             result: {
-              reports: {
-                risk: {
+              reports: [
+                {
+                  mappedTo: "risk",
                   prediction: "high",
                   labels: ["low", "high"],
                   probabilities: [0.2, 0.8],
                 },
-              },
+              ],
             },
           };
         },
@@ -514,7 +530,7 @@ describe("kit integration", () => {
           yield {
             type: "result",
             result: {
-              reports: {},
+              reports: [],
             },
           };
         },
@@ -567,11 +583,7 @@ describe("kit integration", () => {
           yield {
             type: "result",
             result: {
-              reports: {
-                risk: {
-                  prediction: "final",
-                },
-              },
+              reports: [{ mappedTo: "risk", prediction: "final" }],
             },
           } as const;
         },
@@ -615,13 +627,14 @@ describe("kit integration", () => {
     const mounted = mountForm(container, {
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
+          reports: [
+            {
+              mappedTo: "risk",
               prediction: "high",
               labels: ["low", "high"],
               probabilities: [0.15, 0.85],
             },
-          },
+          ],
         }),
       },
       reportTransport,
@@ -683,7 +696,7 @@ describe("kit integration", () => {
 
     const mounted = mountForm(container, {
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
       schema: {
         fields: [
@@ -730,7 +743,7 @@ describe("kit integration", () => {
     document.body.append(container);
     const mounted = mountForm(container, {
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
       schema: {
         fields: [{ kind: "text", label: "Name" }],
@@ -765,7 +778,7 @@ describe("kit integration", () => {
           label: z.string().optional(),
         }),
         fetch: () => ({ submit: transportSubmit }),
-        resolve: ({ result }) => result.reports.shap,
+        resolve: ({ result }) => reportPayload(result.reports, "shap"),
         render: {
           content: ({ payload }) => [
             {
@@ -786,13 +799,14 @@ describe("kit integration", () => {
       descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
+          reports: [
+            {
+              mappedTo: "risk",
               prediction: "high",
               labels: ["low", "high"],
               probabilities: [0.2, 0.8],
             },
-          },
+          ],
         }),
       },
       schema: {
@@ -821,7 +835,7 @@ describe("kit integration", () => {
       expect.objectContaining({
         reportId: "shap-values",
         values: { name: "Alice" },
-        reports: expect.objectContaining({ risk: expect.any(Object) }),
+        reports: expect.arrayContaining([expect.objectContaining({ mappedTo: "risk" })]),
       }),
     );
 
@@ -842,10 +856,8 @@ describe("kit integration", () => {
     const def = {
       kind: "shap",
       schema: z.object({ kind: z.literal("shap"), id: z.string().optional() }).passthrough(),
-      resolvePayload: (
-        _config: unknown,
-        context: { result: { reports: Record<string, unknown> } },
-      ) => context.result.reports.shap,
+      resolvePayload: (_config: unknown, context: { result: { reports: readonly unknown[] } }) =>
+        reportPayload(context.result.reports, "shap"),
       describe: () => null,
     };
 
@@ -949,7 +961,7 @@ describe("kit integration", () => {
           label: z.string().optional(),
         }),
         fetch: () => ({ submit: reportFetch }),
-        resolve: ({ result }) => result.reports.shap,
+        resolve: ({ result }) => reportPayload(result.reports, "shap"),
         render: {
           summary: ({ state }) => ({
             title: "SHAP",
@@ -974,12 +986,7 @@ describe("kit integration", () => {
       descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              score: 0.91,
-              drivers: ["income", "savings"],
-            },
-          },
+          reports: [{ mappedTo: "risk", score: 0.91, drivers: ["income", "savings"] }],
         }),
       },
       schema: {

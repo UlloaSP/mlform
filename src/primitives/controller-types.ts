@@ -38,7 +38,7 @@ export interface PrimitiveSubmitResult {
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   reportContexts?: Record<string, PrimitiveReportContext>;
   reportStates: Record<string, unknown>;
   meta: Record<string, unknown>;
@@ -74,7 +74,7 @@ export interface PrimitiveReportContext {
   backend?: string;
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   meta: Record<string, unknown>;
   raw: unknown;
 }
@@ -142,7 +142,7 @@ export interface PrimitiveReportRequest {
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  reports: readonly unknown[];
   reportContext?: PrimitiveReportContext;
   reportContexts?: Record<string, PrimitiveReportContext>;
   meta: Record<string, unknown>;

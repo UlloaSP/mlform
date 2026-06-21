@@ -128,22 +128,6 @@ export const optionSchema = z.union([
   }),
 ]);
 
-export const resolveLegacyOutput = (result: SubmitResult, kind: string): unknown => {
-  const raw = result.raw;
-  if (
-    typeof raw !== "object" ||
-    raw === null ||
-    !("outputs" in raw) ||
-    !Array.isArray((raw as { outputs?: unknown[] }).outputs)
-  ) {
-    return undefined;
-  }
-
-  return (raw as { outputs: Array<Record<string, unknown>> }).outputs.find(
-    (output) => output.type === kind,
-  );
-};
-
 export const makeFieldDescriptor = (
   component: string,
   config: NormalizedFieldConfig,

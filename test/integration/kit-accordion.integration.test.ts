@@ -30,13 +30,14 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
 describe("kit disclosure integration", () => {
   it("mounts disclosure UI, toggles sections, submits, and renders reports", async () => {
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        {
+          mappedTo: "risk",
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
         },
-      },
+      ],
     });
     const container = document.createElement("div");
     document.body.append(container);
@@ -125,7 +126,7 @@ describe("kit disclosure integration", () => {
     document.body.append(container);
 
     const first = mountForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "first", kind: "text", label: "First" }],
       },
@@ -138,7 +139,7 @@ describe("kit disclosure integration", () => {
     });
 
     const second = mountForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "second", kind: "text", label: "Second" }],
       },
