@@ -10,6 +10,8 @@ export {
   defineReportKind,
   type DeclarativeReportKind,
   type DefinedReportKind,
+  type ReportMountCleanup,
+  type ReportMountContext,
   type ReportRenderSpec,
   type ReportRenderSpecContext,
 } from "./define-report-kind";

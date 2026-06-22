@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -95,7 +95,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.0",
     "jsdom": "^29.1.1",
     "playwright": "^1.61.0",
     "typescript": "~6.0.3",
@@ -111,5 +111,5 @@
   "engines": {
     "node": ">=24.9.0"
   },
-  "packageManager": "pnpm@11.7.0"
+  "packageManager": "pnpm@11.8.0"
 }

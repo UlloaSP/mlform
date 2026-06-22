@@ -8,6 +8,7 @@ import "./components/field-frame";
 import "./components/report-frame";
 import "./components/declarative-field";
 import "./components/declarative-report";
+import "./components/mounted-report";
 import "./components/form-root";
 import "./fields/text-field";
 import "./fields/number-field";

@@ -12,6 +12,7 @@ export const primitiveTagNames = {
   reportFrame: "mlf-report-frame",
   declarativeField: "mlf-declarative-field",
   declarativeReport: "mlf-declarative-report",
+  mountedReport: "mlf-mounted-report",
   textField: "mlf-text-field",
   numberField: "mlf-number-field",
   booleanField: "mlf-boolean-field",

@@ -1,5 +1,28 @@
 # Todo
 
+## Trusted Report Mount Renderer
+
+## Goal
+
+- [x] Add an optional trusted DOM mount path for custom report plugins.
+- [x] Keep declarative report descriptors as the default path.
+- [x] Update Crystal Tree plugin to use the mount path.
+
+## Plan
+
+- [x] Add `render.mount` types and route mounted reports to a built-in primitive renderer.
+- [x] Add a primitive mounted report element with cleanup and error isolation.
+- [x] Add focused coverage for mount render and cleanup.
+- [x] Update the local Crystal Tree plugin to render into the mount host.
+- [x] Run type/test/build verification and update graphify.
+
+## Review
+
+- Added optional trusted `render.mount` for report plugins.
+- Added `mlf-mounted-report` with DOM host, abort signal, cleanup, and render error isolation.
+- Crystal Tree now renders directly into the MLForm mount host.
+- Verification passed: `vp check --fix`, `vp exec tsc -p tsconfig.json --noEmit`, `vp test run`, `vp build`, focused mounted-report test, plugin `vp run build`.
+
 ## Playwright CI Browser Install
 
 ## Goal

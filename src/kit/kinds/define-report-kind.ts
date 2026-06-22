@@ -32,9 +32,20 @@ export interface ReportRenderSpecContext<
   result: SubmitResult | null;
 }
 
+export type ReportMountCleanup = () => void;
+
+export type ReportMountContext<
+  TConfig extends ReportConfig = ReportConfig,
+  TPayload = unknown,
+> = ReportRenderSpecContext<TConfig, TPayload> & {
+  element: HTMLElement;
+  signal: AbortSignal;
+};
+
 export interface ReportRenderSpec<TConfig extends ReportConfig = ReportConfig, TPayload = unknown> {
   summary?: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorSummary | undefined;
-  content: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorContent;
+  content?: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorContent;
+  mount?: (context: ReportMountContext<TConfig, TPayload>) => ReportMountCleanup | void;
 }
 
 export interface DeclarativeReportKind<
@@ -108,8 +119,10 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
         result: context.result as SubmitResult | null,
       };
 
+      const mounted = typeof kind.render.mount === "function";
+
       return {
-        component: "declarative-report",
+        component: mounted ? "mounted-report" : "declarative-report",
         props: {
           id: config.id,
           kind: config.kind,
@@ -120,9 +133,11 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
           state: context.state.status,
           summary: kind.render.summary?.(renderContext) ?? null,
           content:
-            context.payload === undefined
-              ? []
-              : toDescriptorNodes(kind.render.content(renderContext)),
+            !mounted && context.payload !== undefined && kind.render.content
+              ? toDescriptorNodes(kind.render.content(renderContext))
+              : [],
+          mount: mounted ? kind.render.mount : null,
+          mountContext: mounted ? renderContext : null,
           ...config.ui,
         },
         meta: {

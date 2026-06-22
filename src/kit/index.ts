@@ -12,6 +12,8 @@ export type {
   DeclarativeReportKind,
   DefinedFieldKind,
   DefinedReportKind,
+  ReportMountCleanup,
+  ReportMountContext,
   ReportRenderSpec,
   ReportRenderSpecContext,
 } from "./kinds";

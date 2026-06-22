@@ -15,7 +15,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-06-18`
+- Last reviewed: `2026-06-22`
 - Current focus: MLSuite local integration
 
 ## Active Debt
@@ -124,6 +124,7 @@ No active debt.
 - MLSuite local integration now renders, saves, and prefills schema-run visible inputs from MLForm `displayValues`/`displayKey` data instead of reconstructing from field ids, labels, `mappedTo`, or model columns.
 - Playwright is now a dev dependency and browser render coverage exercises real mounted UI with custom field/report plugins, `onehot-category`, backend-map `mappedTo`, mapped report payload lookup, and multi-backend report context targets.
 - Report payload lookup now resolves backend-map `mappedTo` targets when no single backend is selected, so mounted/fanout-like report arrays bind by external report target without report-id fallback.
+- Trusted report plugins can now render custom DOM through `render.mount` while declarative report descriptors remain the default.
 
 ## Notes
 
