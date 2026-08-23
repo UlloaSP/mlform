@@ -51,15 +51,11 @@ export type ReportResult =
 
 export interface SubmitResult<TReportState = unknown> {
   backend?: string;
-  inputs?: SubmissionInputRecord[];
-  displayValues?: Record<string, unknown>;
-  modelValues?: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   reports: readonly ReportResult[];
-  reportContexts?: Record<string, ReportContext>;
+  reportContexts: Record<string, ReportContext>;
   reportStates: Record<string, TReportState>;
   meta: Record<string, unknown>;
   raw: unknown;

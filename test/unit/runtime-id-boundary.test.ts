@@ -52,19 +52,16 @@ describe("runtime id boundary", () => {
     expect(formB.getField("ui-age-b")?.state.value).toBe(42);
     expect(resultA.inputs?.[0]?.fieldId).toBe("ui-age-a");
     expect(resultB.inputs?.[0]?.fieldId).toBe("ui-age-b");
-    expect(resultA.fieldValues).toEqual({ "ui-age-a": 42 });
-    expect(resultB.fieldValues).toEqual({ "ui-age-b": 42 });
+    expect(resultA.inputs[0]?.fieldId).toBe("ui-age-a");
+    expect(resultB.inputs[0]?.fieldId).toBe("ui-age-b");
     expect(resultA.displayValues).toEqual(resultB.displayValues);
     expect(resultA.modelValues).toEqual(resultB.modelValues);
-    expect(resultA.serializedValues).toEqual(resultB.serializedValues);
     expect(resultA.displayValues).toEqual({ patientAge: 42 });
     expect(resultA.modelValues).toEqual({ age_years: 42 });
     expect(resultA.displayValues).not.toHaveProperty("ui-age-a");
     expect(resultA.modelValues).not.toHaveProperty("ui-age-a");
-    expect(resultA.serializedValues).not.toHaveProperty("ui-age-a");
     expect(resultB.displayValues).not.toHaveProperty("ui-age-b");
     expect(resultB.modelValues).not.toHaveProperty("ui-age-b");
-    expect(resultB.serializedValues).not.toHaveProperty("ui-age-b");
   });
 
   it("looks up fields by external display and model contracts without id fallback", () => {

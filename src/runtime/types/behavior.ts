@@ -17,10 +17,6 @@ export interface RuntimeBehaviorSubmissionRecords {
   inputs: SubmissionInputRecord[];
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
 }
 
 export interface RuntimeBehaviorContext {

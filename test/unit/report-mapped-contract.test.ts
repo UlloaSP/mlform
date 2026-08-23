@@ -4,9 +4,16 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createMlRegistryPack } from "@/builtins";
 import { createForm } from "@/runtime";
-import { resolveMappedReportPayload } from "@/schema";
+import { resolveMappedReportPayload, resolveMappedRoutes } from "@/schema";
 
 describe("report mapped contract", () => {
+  it("lists equal targets for every backend route", () => {
+    expect(resolveMappedRoutes({ risk: "score", cost: "score" }, undefined)).toEqual([
+      { backend: "risk", mappedTo: "score" },
+      { backend: "cost", mappedTo: "score" },
+    ]);
+  });
+
   it("leaves mapped report payload unresolved when report mappedTo is missing", async () => {
     const form = createForm({
       schema: {

@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { toJSONSchema, type ZodType } from "zod";
-import { normalizeSchema } from "./normalize";
+import { normalizeSchema, SchemaNormalizationError } from "./normalize";
 import type { FormSchema, NormalizedFormSchema, Registry } from "./index";
 
 export type SchemaIssuePath = readonly (string | number)[];
@@ -43,6 +43,20 @@ export const findUnknownKinds = (schema: unknown, registry: Registry): UnknownSc
         section === "fields" ? registry.getField(entry.kind) : registry.getReport(entry.kind);
       if (!definition) {
         unknown.push({ section, index, kind: entry.kind, path: [section, index, "kind"] });
+      }
+      if (section === "fields" && entry.kind === "series") {
+        for (const name of ["field1", "field2"] as const) {
+          const nested = entry[name];
+          if (!isRecord(nested) || typeof nested.kind !== "string") continue;
+          if (!registry.getField(nested.kind)) {
+            unknown.push({
+              section,
+              index,
+              kind: nested.kind,
+              path: [section, index, name, "kind"],
+            });
+          }
+        }
       }
     });
   };
@@ -145,13 +159,14 @@ export const validateSchema = (schema: unknown, registry: Registry): SchemaValid
       issues: [],
     };
   } catch (error) {
+    const normalizationError = error instanceof SchemaNormalizationError ? error : undefined;
     return {
       success: false,
       issues: [
         {
-          path: [],
+          path: normalizationError?.path ?? [],
           message: error instanceof Error ? error.message : "Schema normalization failed.",
-          code: "invalid-schema",
+          code: normalizationError?.code ?? "invalid-schema",
         },
       ],
     };

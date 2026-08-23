@@ -42,11 +42,10 @@ describe("submission snapshot", () => {
     expect(submit).not.toHaveBeenCalled();
     expect(snapshot.displayValues).toEqual({ patientAge: 42 });
     expect(snapshot.modelValues).toEqual({ actual_age: 42, note: "review" });
-    expect(snapshot.serializedValues).toEqual({ actual_age: 42, note: "review" });
-    expect(snapshot.fieldValues).toEqual({
-      "ui-age": 42,
-      "internal-note": "review",
-    });
+    expect(snapshot.inputs.map(({ fieldId, value }) => [fieldId, value])).toEqual([
+      ["ui-age", 42],
+      ["internal-note", "review"],
+    ]);
   });
 
   it("exposes display and model data without using ids as external keys", async () => {
@@ -84,7 +83,6 @@ describe("submission snapshot", () => {
       expect.objectContaining({
         displayValues: { patientAge: 42, sex: "M" },
         modelValues: { age_years: 42, sex_m: 1, sex_f: 0 },
-        serializedValues: { age_years: 42, sex_m: 1, sex_f: 0 },
       }),
     );
     expect(result.inputs).toEqual([
@@ -102,14 +100,22 @@ describe("submission snapshot", () => {
     ]);
     expect(result.displayValues).toEqual({ patientAge: 42, sex: "M" });
     expect(result.modelValues).toEqual({ age_years: 42, sex_m: 1, sex_f: 0 });
+    for (const alias of ["values", "fieldValues", "serializedValues", "serializedFieldValues"]) {
+      expect(result).not.toHaveProperty(alias);
+      expect(submit.mock.calls[0]?.[0]).not.toHaveProperty(alias);
+    }
 
-    expect(createReportFetchRequest(result)).toEqual(
+    const reportRequest = createReportFetchRequest(result);
+    expect(reportRequest).toEqual(
       expect.objectContaining({
         inputs: result.inputs,
         displayValues: result.displayValues,
         modelValues: result.modelValues,
       }),
     );
+    for (const alias of ["values", "fieldValues", "serializedValues", "serializedFieldValues"]) {
+      expect(reportRequest).not.toHaveProperty(alias);
+    }
   });
 
   it("supports numeric mappedTo targets in display and model snapshots", () => {

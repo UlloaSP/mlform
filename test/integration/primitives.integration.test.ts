@@ -1268,7 +1268,7 @@ describe("primitives", () => {
     expect(explainTransport.submit).toHaveBeenCalledTimes(1);
     const callArg = explainTransport.submit.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(callArg.reportId).toBe("risk");
-    expect(callArg.values).toBeDefined();
+    expect(callArg.modelValues).toBeDefined();
 
     const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
     const renderer = getShadow(reportFrame).querySelector("mlf-classifier-report");
@@ -1681,8 +1681,8 @@ describe("primitives", () => {
       submit: vi
         .fn()
         .mockImplementation(
-          async (request: { reportId: string; values: Record<string, unknown> }) => ({
-            label: request.values.name,
+          async (request: { reportId: string; modelValues: Record<string, unknown> }) => ({
+            label: request.modelValues.name,
             reportId: request.reportId,
           }),
         ),
@@ -1735,7 +1735,7 @@ describe("primitives", () => {
     expect(firstCallCount).toBeGreaterThan(0);
     expect(reportTransport.submit.mock.calls[firstCallCount - 1]?.[0]).toMatchObject({
       reportId: "probe",
-      values: { name: "Alice" },
+      modelValues: { name: "Alice" },
     });
     expect(getShadow(reportRenderer).textContent).toContain("done");
     expect(getShadow(reportRenderer).textContent).toContain("Alice");
@@ -1760,7 +1760,7 @@ describe("primitives", () => {
     expect(secondCallCount).toBeGreaterThan(firstCallCount);
     expect(reportTransport.submit.mock.calls[secondCallCount - 1]?.[0]).toMatchObject({
       reportId: "probe",
-      values: { name: "Bob" },
+      modelValues: { name: "Bob" },
     });
     expect(getShadow(reportRenderer).textContent).toContain("Bob");
 
@@ -1774,7 +1774,7 @@ describe("primitives", () => {
         #request:
           | {
               reportId?: string;
-              values?: Record<string, unknown>;
+              modelValues?: Record<string, unknown>;
             }
           | null
           | undefined;
@@ -1790,7 +1790,7 @@ describe("primitives", () => {
           value:
             | {
                 reportId?: string;
-                values?: Record<string, unknown>;
+                modelValues?: Record<string, unknown>;
               }
             | null
             | undefined,
@@ -1826,7 +1826,9 @@ describe("primitives", () => {
         render() {
           const reportId = this.request?.reportId ?? "";
           const name =
-            typeof this.request?.values?.name === "string" ? this.request.values.name : "";
+            typeof this.request?.modelValues?.name === "string"
+              ? this.request.modelValues.name
+              : "";
           const enabled = this.descriptor?.props?.details === true ? "yes" : "no";
           this.textContent = `${reportId}|${name}|${enabled}`;
         }

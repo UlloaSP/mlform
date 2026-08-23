@@ -13,14 +13,29 @@ import type {
   ReportConfig,
 } from "./index";
 
+export class SchemaNormalizationError extends Error {
+  constructor(
+    message: string,
+    readonly path: readonly (string | number)[],
+    readonly code: "invalid-config" | "unknown-kind" = "invalid-config",
+  ) {
+    super(message);
+    this.name = "SchemaNormalizationError";
+  }
+}
+
 const validateSeriesSubField = (
   parentLabel: string,
   name: "field1" | "field2",
   field: unknown,
   registry: Registry,
+  fieldIndex: number,
 ): void => {
   if (typeof field !== "object" || field === null) {
-    throw new Error(`Series field "${parentLabel}" requires "${name}" configuration.`);
+    throw new SchemaNormalizationError(
+      `Series field "${parentLabel}" requires "${name}" configuration.`,
+      ["fields", fieldIndex, name],
+    );
   }
 
   const kind =
@@ -29,35 +44,50 @@ const validateSeriesSubField = (
       : "";
 
   if (kind.length === 0) {
-    throw new Error(`Series field "${parentLabel}" requires "${name}.kind".`);
+    throw new SchemaNormalizationError(`Series field "${parentLabel}" requires "${name}.kind".`, [
+      "fields",
+      fieldIndex,
+      name,
+      "kind",
+    ]);
   }
 
   if (kind === "series") {
-    throw new Error(`Series field "${parentLabel}" cannot nest series in "${name}".`);
+    throw new SchemaNormalizationError(
+      `Series field "${parentLabel}" cannot nest series in "${name}".`,
+      ["fields", fieldIndex, name, "kind"],
+    );
   }
 
   if (!registry.getField(kind)) {
-    throw new RegistryError(
+    throw new SchemaNormalizationError(
       `Series field "${parentLabel}" uses unknown sub-field kind "${kind}" in "${name}".`,
+      ["fields", fieldIndex, name, "kind"],
+      "unknown-kind",
     );
   }
 };
 
-const validateSeriesFieldConfig = (field: FieldConfig, registry: Registry): void => {
+const validateSeriesFieldConfig = (
+  field: FieldConfig,
+  registry: Registry,
+  fieldIndex: number,
+): void => {
   if (field.kind !== "series") {
     return;
   }
 
-  validateSeriesSubField(field.label, "field1", field.field1, registry);
-  validateSeriesSubField(field.label, "field2", field.field2, registry);
+  validateSeriesSubField(field.label, "field1", field.field1, registry, fieldIndex);
+  validateSeriesSubField(field.label, "field2", field.field2, registry, fieldIndex);
 
   if (
     typeof field.minPoints === "number" &&
     typeof field.maxPoints === "number" &&
     field.minPoints > field.maxPoints
   ) {
-    throw new Error(
+    throw new SchemaNormalizationError(
       `Series field "${field.label}" requires minPoints to be less than or equal to maxPoints.`,
+      ["fields", fieldIndex, "minPoints"],
     );
   }
 };
@@ -67,12 +97,13 @@ const resolveId = (
   fallbackLabel: string,
   usedIds: Set<string>,
   fallbackPrefix: string,
+  path: readonly (string | number)[],
 ): string => {
   const baseId = normalizeSchemaId((explicitId ?? fallbackLabel) || fallbackPrefix);
 
   if (explicitId) {
     if (usedIds.has(baseId)) {
-      throw new Error(`Duplicate explicit id "${baseId}" in schema.`);
+      throw new SchemaNormalizationError(`Duplicate explicit id "${baseId}" in schema.`, path);
     }
 
     usedIds.add(baseId);
@@ -102,10 +133,10 @@ const normalizeField = (
   }
 
   const parsed = definition.schema.parse(field) as FieldConfig;
-  validateSeriesFieldConfig(parsed, registry);
+  validateSeriesFieldConfig(parsed, registry, index);
   return {
     ...parsed,
-    id: resolveId(parsed.id, parsed.label, usedIds, `field-${index + 1}`),
+    id: resolveId(parsed.id, parsed.label, usedIds, `field-${index + 1}`, ["fields", index, "id"]),
   };
 };
 
@@ -126,6 +157,7 @@ const normalizeReport = (
     report.label ?? parsed.label ?? parsed.kind,
     usedIds,
     `report-${index + 1}`,
+    ["reports", index, "id"],
   );
   return {
     ...parsed,

@@ -3,6 +3,7 @@
 
 export type MappedToTarget = string | number;
 export type MappedTo = MappedToTarget | Record<string, MappedToTarget | null | undefined>;
+export type MappedToRoute = { backend: string; mappedTo: MappedToTarget };
 
 import type { ReportResult } from "./types/submit";
 
@@ -48,12 +49,10 @@ export const resolveMappedTargets = (
   });
 };
 
-type ReportRoute = { backend: string; mappedTo: MappedToTarget };
-
-const reportRoutes = (
+export const resolveMappedRoutes = (
   mappedTo: MappedTo | undefined,
   backend: string | undefined,
-): ReportRoute[] => {
+): MappedToRoute[] => {
   if (typeof mappedTo === "string" || typeof mappedTo === "number") {
     return [{ backend: backend ?? "default", mappedTo }];
   }
@@ -73,7 +72,7 @@ export const resolveMappedReportResult = (
   report: { mappedTo?: MappedTo },
   result: { backend?: string; reports: readonly ReportResult[] },
 ): ReportResult | undefined => {
-  const routes = reportRoutes(report.mappedTo, result.backend);
+  const routes = resolveMappedRoutes(report.mappedTo, result.backend);
   const matches = result.reports.filter((item) =>
     routes.some(
       (route) =>

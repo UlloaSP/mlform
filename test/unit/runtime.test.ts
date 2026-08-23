@@ -1836,11 +1836,7 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          name: "Alice",
-          birthday: expect.any(Date),
-        },
-        serializedValues: {
+        modelValues: {
           name: "Alice",
           birthday: "2025-01-02T00:00:00.000Z",
         },
@@ -1913,44 +1909,29 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          person: {
-            name: "Alice",
-            birthday: expect.any(Date),
-          },
-          score: 10,
-        },
-        fieldValues: {
-          name: "Alice",
-          birthday: expect.any(Date),
-          score: 10,
-        },
-        serializedValues: {
+        modelValues: {
           person: {
             name: "Alice",
             birthday: "2025-01-02T00:00:00.000Z",
           },
           score: 10,
         },
-        serializedFieldValues: {
-          name: "Alice",
-          birthday: "2025-01-02T00:00:00.000Z",
-          score: 10,
-        },
       }),
     );
-    expect(result.values).toEqual({
+    expect(result.modelValues).toEqual({
       person: {
         name: "Alice",
-        birthday: expect.any(Date),
+        birthday: "2025-01-02T00:00:00.000Z",
       },
       score: 10,
     });
-    expect(result.fieldValues).toEqual({
-      name: "Alice",
-      birthday: expect.any(Date),
-      score: 10,
-    });
+    expect(result.inputs[1]).toEqual(
+      expect.objectContaining({
+        fieldId: "birthday",
+        value: expect.any(Date),
+        serializedValue: "2025-01-02T00:00:00.000Z",
+      }),
+    );
   });
 
   it("uses mappedTo names and positions without id fallback", async () => {
@@ -1989,12 +1970,10 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: { actual_age: 42 },
-        fieldValues: { "visible-age": 42, "ui-only": "local" },
-        serializedValues: { actual_age: 42 },
+        modelValues: { actual_age: 42 },
       }),
     );
-    expect(result.values).toEqual({ actual_age: 42 });
+    expect(result.modelValues).toEqual({ actual_age: 42 });
     expect(result.reportStates["visible-score"]?.payload).toEqual({ value: 88 });
   });
 
@@ -2473,20 +2452,14 @@ describe("runtime", () => {
 
     expect(beforeSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: { name: "Alice" },
-        fieldValues: { name: "Alice" },
-        serializedValues: { name: "Alice" },
-        serializedFieldValues: { name: "Alice" },
+        modelValues: { name: "Alice" },
         submitCount: 1,
         signal: expect.any(AbortSignal),
       }),
     );
     expect(afterSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: { name: "Alice" },
-        fieldValues: { name: "Alice" },
-        serializedValues: { name: "Alice" },
-        serializedFieldValues: { name: "Alice" },
+        modelValues: { name: "Alice" },
         submitCount: 1,
         result,
       }),
@@ -2537,10 +2510,7 @@ describe("runtime", () => {
     expect(form.state.lastResult).toEqual(result);
     expect(onSubmitError).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: { name: "Alice" },
-        fieldValues: { name: "Alice" },
-        serializedValues: { name: "Alice" },
-        serializedFieldValues: { name: "Alice" },
+        modelValues: { name: "Alice" },
         submitCount: 1,
         error: afterSubmitError,
       }),
@@ -2582,7 +2552,7 @@ describe("runtime", () => {
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
         backend: "remote",
-        values: { name: "Alice" },
+        modelValues: { name: "Alice" },
       }),
     );
     expect(result.backend).toBe("remote");
@@ -2666,15 +2636,12 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          advanced: false,
-        },
-        serializedValues: {
+        modelValues: {
           advanced: false,
         },
       }),
     );
-    expect(result.values).toEqual({
+    expect(result.modelValues).toEqual({
       advanced: false,
     });
   });
@@ -2729,15 +2696,12 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          advanced: false,
-        },
-        serializedValues: {
+        modelValues: {
           advanced: false,
         },
       }),
     );
-    expect(result.values).toEqual({
+    expect(result.modelValues).toEqual({
       advanced: false,
     });
   });
@@ -2790,11 +2754,7 @@ describe("runtime", () => {
 
     const result = await form.submit();
 
-    expect(result.values).toEqual({
-      advanced: false,
-      note: "keep-me",
-    });
-    expect(result.fieldValues).toEqual({
+    expect(result.modelValues).toEqual({
       advanced: false,
       note: "keep-me",
     });
@@ -2849,10 +2809,7 @@ describe("runtime", () => {
     expect(form.state.errors.form).toEqual(["Form submission was aborted: user-cancelled"]);
     expect(onSubmitError).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: { name: "Alice" },
-        fieldValues: { name: "Alice" },
-        serializedValues: { name: "Alice" },
-        serializedFieldValues: { name: "Alice" },
+        modelValues: { name: "Alice" },
         submitCount: 1,
         error: expect.any(SubmissionAbortedError),
       }),
@@ -2946,7 +2903,7 @@ describe("runtime", () => {
     resolveSecondSubmit?.({ reports: [] });
 
     await expect(secondSubmit).resolves.toMatchObject({
-      values: { name: "Alice" },
+      modelValues: { name: "Alice" },
     });
     expect(form.state.status).toBe("success");
     expect(submit).toHaveBeenCalledTimes(2);
@@ -2956,32 +2913,24 @@ describe("runtime", () => {
     const inputSeries = [{ field1: "2026-01-01", field2: 10 }];
     const normalizedSeries = [{ field1: new Date("2026-01-01"), field2: 10 }];
     const serializedSeries = [{ field1: "2026-01-01", field2: 10 }];
-    const beforeSubmit = vi.fn(({ values }: { values: Record<string, unknown> }) => {
-      expect(values).toEqual({ series: normalizedSeries });
-      (values.series as { field1: Date; field2: number }[])[0]!.field2 = 20;
+    const beforeSubmit = vi.fn(({ modelValues }: { modelValues: Record<string, unknown> }) => {
+      expect(modelValues).toEqual({ series: serializedSeries });
+      (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 20;
     });
     const submit = vi
       .fn()
-      .mockImplementation(
-        async ({
-          values,
-          serializedValues,
-        }: {
-          values: Record<string, unknown>;
-          serializedValues: Record<string, unknown>;
-        }) => {
-          expect(values).toEqual({ series: normalizedSeries });
-          expect(serializedValues).toEqual({ series: serializedSeries });
-          (values.series as { field1: Date; field2: number }[])[0]!.field2 = 30;
-          (serializedValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
+      .mockImplementation(async ({ modelValues }: { modelValues: Record<string, unknown> }) => {
+        expect(modelValues).toEqual({ series: serializedSeries });
+        (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
 
-          return { reports: [] };
-        },
-      );
-    const afterSubmit = vi.fn(({ result }: { result: { values: Record<string, unknown> } }) => {
-      expect(result.values).toEqual({ series: normalizedSeries });
-      (result.values.series as { field1: Date; field2: number }[])[0]!.field2 = 50;
-    });
+        return { reports: [] };
+      });
+    const afterSubmit = vi.fn(
+      ({ result }: { result: { modelValues: Record<string, unknown> } }) => {
+        expect(result.modelValues).toEqual({ series: serializedSeries });
+        (result.modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 50;
+      },
+    );
 
     const form = createForm({
       schema: {
@@ -3012,13 +2961,13 @@ describe("runtime", () => {
     expect(afterSubmit).toHaveBeenCalledTimes(1);
     expect(form.getValues()).toEqual({ series: normalizedSeries });
     expect(form.state.values).toEqual({ series: normalizedSeries });
-    expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
-    expect(result.values).toEqual({ series: normalizedSeries });
+    expect(form.state.lastResult?.modelValues).toEqual({ series: serializedSeries });
+    expect(result.modelValues).toEqual({ series: serializedSeries });
 
-    (result.values.series as { field1: Date; field2: number }[])[0]!.field2 = 60;
+    (result.modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 60;
 
     expect(form.getValues()).toEqual({ series: normalizedSeries });
-    expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
+    expect(form.state.lastResult?.modelValues).toEqual({ series: serializedSeries });
   });
 
   it("resets field and report state back to initial values", async () => {
@@ -3200,11 +3149,11 @@ describe("runtime", () => {
 
     const fetchPromise = ctrl.fetch({
       reportId: ctrl.id,
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
+      inputs: [],
+      displayValues: {},
+      modelValues: { name: "Alice" },
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3221,7 +3170,7 @@ describe("runtime", () => {
     expect(transportSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         reportId: ctrl.id,
-        values: { name: "Alice" },
+        modelValues: { name: "Alice" },
         signal: expect.any(AbortSignal),
       }),
     );
@@ -3257,11 +3206,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3298,11 +3247,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     const fetchRequest = {
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     };
@@ -3340,11 +3289,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3355,11 +3304,11 @@ describe("runtime", () => {
 
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3596,11 +3545,11 @@ describe("runtime", () => {
 
     const pending = ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
       signal: abortController.signal,
@@ -3852,11 +3801,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
+      inputs: [],
+      displayValues: {},
+      modelValues: { name: "Alice" },
       reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -4060,18 +4009,16 @@ describe("runtime", () => {
 
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          fieldValues: expect.objectContaining({
-            "is-red": 1,
-            "is-green": 0,
-            "is-blue": 0,
-          }),
+          inputs: expect.arrayContaining([
+            expect.objectContaining({ fieldId: "is-red", value: 1 }),
+            expect.objectContaining({ fieldId: "is-green", value: 0 }),
+            expect.objectContaining({ fieldId: "is-blue", value: 0 }),
+          ]),
         }),
       );
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          fieldValues: expect.not.objectContaining({
-            color: "red",
-          }),
+          inputs: expect.not.arrayContaining([expect.objectContaining({ fieldId: "color" })]),
         }),
       );
     });
@@ -4123,12 +4070,12 @@ describe("runtime", () => {
 
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          fieldValues: expect.objectContaining({
-            color: "red",
-            "is-red": 1,
-            "is-green": 0,
-            "is-blue": 0,
-          }),
+          inputs: expect.arrayContaining([
+            expect.objectContaining({ fieldId: "color", value: "red" }),
+            expect.objectContaining({ fieldId: "is-red", value: 1 }),
+            expect.objectContaining({ fieldId: "is-green", value: 0 }),
+            expect.objectContaining({ fieldId: "is-blue", value: 0 }),
+          ]),
         }),
       );
     });
@@ -4277,9 +4224,8 @@ describe("runtime", () => {
 
       expect(submit).toHaveBeenCalledWith(
         expect.objectContaining({
-          values: { is_red: 0, is_green: 1, is_blue: 0 },
-          serializedValues: { is_red: 0, is_green: 1, is_blue: 0 },
-          fieldValues: { color: "green" },
+          modelValues: { is_red: 0, is_green: 1, is_blue: 0 },
+          inputs: [expect.objectContaining({ fieldId: "color", value: "green" })],
         }),
       );
     });
@@ -4309,7 +4255,7 @@ describe("runtime", () => {
 
       expect(submit).toHaveBeenCalledWith(
         expect.objectContaining({
-          values: { "0": 1, "1": 0 },
+          modelValues: { "0": 1, "1": 0 },
         }),
       );
     });

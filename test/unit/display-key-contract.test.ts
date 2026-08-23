@@ -53,7 +53,6 @@ describe("display key contract", () => {
     expect(resultB.inputs?.[0]?.displayKey).toBe("patientAge");
     expect(resultA.displayValues).toEqual(resultB.displayValues);
     expect(resultA.modelValues).toEqual(resultB.modelValues);
-    expect(resultA.serializedValues).toEqual(resultB.serializedValues);
     expect(resultA.displayValues).toEqual({ patientAge: 42 });
     expect(resultA.modelValues).toEqual({ age_years: 42 });
   });

@@ -92,7 +92,7 @@ describe("kit integration", () => {
     expect(transportSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         reportId: "shap-values",
-        values: { name: "Alice" },
+        modelValues: { name: "Alice" },
         reports: expect.arrayContaining([expect.objectContaining({ mappedTo: "risk" })]),
       }),
     );
@@ -271,7 +271,7 @@ describe("kit integration", () => {
     expect(reportFetch).toHaveBeenCalledWith(
       expect.objectContaining({
         reportId: "shap-values",
-        values: { score: 85 },
+        modelValues: { score: 85 },
       }),
     );
 

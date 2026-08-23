@@ -85,7 +85,7 @@ describe("kit integration", () => {
     await flush();
 
     expect(submit).toHaveBeenCalledWith(
-      expect.objectContaining({ serializedValues: { name: "Alice" } }),
+      expect.objectContaining({ modelValues: { name: "Alice" } }),
     );
 
     const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
@@ -148,7 +148,7 @@ describe("kit integration", () => {
     const mounted = mountForm(container, {
       transport: {
         submit: (request) =>
-          request.serializedValues.mode === "remote" ? remoteSubmit(request) : localSubmit(request),
+          request.modelValues.mode === "remote" ? remoteSubmit(request) : localSubmit(request),
       },
       schema: {
         fields: [
@@ -186,7 +186,7 @@ describe("kit integration", () => {
 
     expect(localSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        serializedValues: {
+        modelValues: {
           name: "Alice",
           mode: "local",
         },
@@ -210,7 +210,7 @@ describe("kit integration", () => {
 
     expect(remoteSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
-        serializedValues: {
+        modelValues: {
           name: "Alice",
           mode: "remote",
         },

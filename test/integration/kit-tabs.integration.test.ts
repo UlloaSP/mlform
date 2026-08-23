@@ -101,7 +101,7 @@ describe("kit tabs integration", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        serializedValues: {
+        modelValues: {
           name: "Alice",
           age: 42,
         },

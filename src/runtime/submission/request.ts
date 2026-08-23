@@ -26,10 +26,6 @@ export type SubmissionValueRecords = {
   inputs: SubmissionInputRecord[];
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
 };
 
 export const cloneSubmissionValueRecords = (
@@ -38,10 +34,6 @@ export const cloneSubmissionValueRecords = (
   inputs: cloneValue(records.inputs),
   displayValues: cloneValue(records.displayValues),
   modelValues: cloneValue(records.modelValues),
-  values: cloneValue(records.values),
-  fieldValues: cloneValue(records.fieldValues),
-  serializedValues: cloneValue(records.serializedValues),
-  serializedFieldValues: cloneValue(records.serializedFieldValues),
 });
 
 export const shouldIncludeFieldInSubmission = (
@@ -84,8 +76,6 @@ const setSubmissionPath = (
 const writeOneHotSubmissionValues = (
   field: SubmissionField,
   backend: string | undefined,
-  values: Record<string, unknown>,
-  serializedValues: Record<string, unknown>,
 ): Record<string, unknown> => {
   if (!isOneHotFieldConfig(field.config)) {
     return {};
@@ -126,8 +116,6 @@ const writeOneHotSubmissionValues = (
       }
       seen.add(key);
 
-      setSubmissionPath(values, key, field.id, encoded);
-      setSubmissionPath(serializedValues, key, field.id, encoded);
       setSubmissionPath(modelValues, key, field.id, encoded);
     }
   }
@@ -169,10 +157,7 @@ export const buildSubmissionValueRecords = (
 ): SubmissionValueRecords => {
   const inputs: SubmissionInputRecord[] = [];
   const displayValues: Record<string, unknown> = {};
-  const values: Record<string, unknown> = {};
-  const fieldValues: Record<string, unknown> = {};
-  const serializedValues: Record<string, unknown> = {};
-  const serializedFieldValues: Record<string, unknown> = {};
+  const modelValues: Record<string, unknown> = {};
   const seenExplicitDisplayKeys = new Set<string>();
 
   for (const field of fields) {
@@ -192,11 +177,9 @@ export const buildSubmissionValueRecords = (
     const displayKey = explicitDisplayKeyFor(field);
     let inputModelValues: Record<string, unknown> = {};
 
-    fieldValues[field.id] = cloneValue(rawValue);
-    serializedFieldValues[field.id] = cloneValue(serializedValue);
-
     if (isOneHotFieldConfig(field.config)) {
-      inputModelValues = writeOneHotSubmissionValues(field, backend, values, serializedValues);
+      inputModelValues = writeOneHotSubmissionValues(field, backend);
+      Object.assign(modelValues, cloneValue(inputModelValues));
       writeVisibleDisplayValue(displayValues, seenExplicitDisplayKeys, field, displayKey, rawValue);
       inputs.push({
         fieldId: field.id,
@@ -213,8 +196,7 @@ export const buildSubmissionValueRecords = (
 
     for (const valuePath of valuePaths) {
       const normalizedValuePath = normalizeValuePath(valuePath, field.id);
-      setPathValue(values, normalizedValuePath, cloneValue(rawValue));
-      setPathValue(serializedValues, normalizedValuePath, cloneValue(serializedValue));
+      setPathValue(modelValues, normalizedValuePath, cloneValue(serializedValue));
       setPathValue(inputModelValues, normalizedValuePath, cloneValue(serializedValue));
     }
 
@@ -235,10 +217,6 @@ export const buildSubmissionValueRecords = (
   return {
     inputs,
     displayValues,
-    modelValues: cloneValue(serializedValues),
-    values,
-    fieldValues,
-    serializedValues,
-    serializedFieldValues,
+    modelValues,
   };
 };

@@ -132,19 +132,25 @@ export const createFormSubmitter = ({
         }
 
         const normalizedResponse = normalizeTransportResponse(response);
-        const baseResult: Omit<import("../types").SubmitResult, "reportStates"> = {
-          backend,
-          ...records,
-          reports: normalizedResponse.reports ?? [],
-          meta: normalizedResponse.meta ?? {},
-          raw: normalizedResponse.raw,
-        };
-        baseResult.reportContexts = createReportContexts(normalizedSchema.reports, baseResult);
+        const baseResult: Omit<import("../types").SubmitResult, "reportContexts" | "reportStates"> =
+          {
+            backend,
+            ...records,
+            reports: normalizedResponse.reports ?? [],
+            meta: normalizedResponse.meta ?? {},
+            raw: normalizedResponse.raw,
+          };
+        const reportContexts = createReportContexts(normalizedSchema.reports, baseResult);
         const nextReportStates = await prepareReportStates(reports, {
           ...baseResult,
+          reportContexts,
           reportStates: {},
         });
-        const result = createSubmissionResult(reports, baseResult, nextReportStates);
+        const result = createSubmissionResult(
+          reports,
+          { ...baseResult, reportContexts },
+          nextReportStates,
+        );
 
         const storedResult = cloneSubmissionResult(reports, result);
         store.batch(() => {

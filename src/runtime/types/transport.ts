@@ -26,10 +26,6 @@ export interface BeforeSubmitContext {
   inputs: SubmissionInputRecord[];
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
   submitCount: number;
   signal: AbortSignal;
 }
@@ -39,10 +35,6 @@ export interface AfterSubmitContext {
   inputs: SubmissionInputRecord[];
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
   submitCount: number;
   result: SubmitResult;
 }
@@ -52,10 +44,6 @@ export interface SubmitErrorContext {
   inputs: SubmissionInputRecord[];
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
   submitCount: number;
   error: unknown;
 }

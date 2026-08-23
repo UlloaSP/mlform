@@ -8,10 +8,9 @@ import type { SubmitRequest } from "@/transport";
 const request = {
   fields: [],
   reports: [],
-  values: {},
-  fieldValues: {},
-  serializedValues: {},
-  serializedFieldValues: {},
+  inputs: [],
+  displayValues: {},
+  modelValues: {},
 } satisfies SubmitRequest;
 
 describe("createFanoutTransport", () => {

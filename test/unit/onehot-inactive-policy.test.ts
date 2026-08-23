@@ -57,7 +57,6 @@ describe("onehot-category inactive submission policy", () => {
       expect(snapshot.inputs).toEqual([]);
       expect(snapshot.displayValues).toEqual({});
       expect(snapshot.modelValues).toEqual({});
-      expect(snapshot.serializedValues).toEqual({});
     },
   );
 });

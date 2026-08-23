@@ -50,7 +50,7 @@ describe("kit integration", () => {
     expect(reportTransport.submit).toHaveBeenCalledWith(
       expect.objectContaining({
         reportId: "risk",
-        values: {
+        modelValues: {
           name: "Alice",
         },
       }),

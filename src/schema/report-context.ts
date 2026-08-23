@@ -11,7 +11,7 @@ import type { NormalizedReportConfig } from "./types/report";
 import type { ReportContext, SubmitResult } from "./types/submit";
 
 type ReportContextSource = Pick<SubmitResult, "backend"> & {
-  reportContexts?: Record<string, ReportContext>;
+  reportContexts: Record<string, ReportContext>;
 };
 
 type ReportContextLookup =
@@ -54,7 +54,7 @@ export const createReportContexts = (
   reports: readonly NormalizedReportConfig[],
   result: Pick<
     SubmitResult,
-    "backend" | "displayValues" | "modelValues" | "serializedValues" | "reports" | "meta" | "raw"
+    "backend" | "displayValues" | "modelValues" | "reports" | "meta" | "raw"
   >,
 ): Record<string, ReportContext> =>
   Object.fromEntries(
@@ -72,8 +72,8 @@ export const createReportContexts = (
           target,
           targetKey: target === undefined ? undefined : mappedToKey(target),
           backend: reportResult?.backend ?? result.backend,
-          displayValues: context?.displayValues ?? result.displayValues ?? {},
-          modelValues: context?.modelValues ?? result.modelValues ?? result.serializedValues,
+          displayValues: context?.displayValues ?? result.displayValues,
+          modelValues: context?.modelValues ?? result.modelValues,
           reports: result.reports,
           meta: context?.meta ?? result.meta,
           raw: context && "raw" in context ? context.raw : result.raw,
@@ -86,7 +86,7 @@ export const getReportContext = (
   source: ReportContextSource,
   lookup: ReportContextLookup,
 ): ReportContext | undefined => {
-  const contexts = source.reportContexts ?? {};
+  const contexts = source.reportContexts;
   const id = directLookupId(lookup);
   if (id && contexts[id]) {
     return contexts[id];

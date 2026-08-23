@@ -2,8 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import { createMlRegistryPack } from "@/builtins";
-import { findUnknownKinds, toSchemaJsonSchema, validateSchema } from "@/schema";
+import { createRegistry, findUnknownKinds, toSchemaJsonSchema, validateSchema } from "@/schema";
 
 const registry = createMlRegistryPack().registry;
 
@@ -57,5 +58,60 @@ describe("schema validation tooling", () => {
       success: false,
       issues: [{ path: ["fields"], code: "invalid-schema" }],
     });
+  });
+
+  it("reports nested and normalization errors at their exact paths", () => {
+    const nested = validateSchema(
+      {
+        fields: [
+          {
+            kind: "series",
+            label: "History",
+            field1: { kind: "tenant-field", label: "When" },
+            field2: { kind: "number", label: "Value" },
+          },
+        ],
+      },
+      registry,
+    );
+    expect(nested).toMatchObject({
+      success: false,
+      issues: [{ path: ["fields", 0, "field1", "kind"], code: "unknown-kind" }],
+    });
+
+    const duplicate = validateSchema(
+      {
+        fields: [
+          { id: "same", kind: "text", label: "A" },
+          { id: "same", kind: "text", label: "B" },
+        ],
+      },
+      registry,
+    );
+    expect(duplicate).toMatchObject({
+      success: false,
+      issues: [{ path: ["fields", 1, "id"], code: "invalid-config" }],
+    });
+  });
+
+  it("includes custom registry definitions in JSON Schema", () => {
+    const customRegistry = createRegistry().registerField({
+      kind: "tenant-field",
+      schema: z.object({
+        kind: z.literal("tenant-field"),
+        label: z.string(),
+        tenantOption: z.string().min(1),
+      }),
+    });
+
+    expect(JSON.stringify(toSchemaJsonSchema(customRegistry))).toContain("tenantOption");
+    expect(
+      validateSchema(
+        {
+          fields: [{ kind: "tenant-field", label: "Tenant", tenantOption: "active" }],
+        },
+        customRegistry,
+      ).success,
+    ).toBe(true);
   });
 });

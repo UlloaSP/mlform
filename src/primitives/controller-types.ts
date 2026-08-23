@@ -31,15 +31,11 @@ export interface PrimitiveReportStateSnapshot {
 
 export interface PrimitiveSubmitResult {
   backend?: string;
-  inputs?: PrimitiveSubmissionInputRecord[];
-  displayValues?: Record<string, unknown>;
-  modelValues?: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
+  inputs: PrimitiveSubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   reports: readonly unknown[];
-  reportContexts?: Record<string, PrimitiveReportContext>;
+  reportContexts: Record<string, PrimitiveReportContext>;
   reportStates: Record<string, unknown>;
   meta: Record<string, unknown>;
   raw: unknown;
@@ -129,16 +125,12 @@ export interface PrimitiveSubmitExecutionResult {
 export interface PrimitiveReportRequest {
   reportId: string;
   backend?: string;
-  inputs?: PrimitiveSubmissionInputRecord[];
-  displayValues?: Record<string, unknown>;
-  modelValues?: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
+  inputs: PrimitiveSubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   reports: readonly unknown[];
   reportContext?: PrimitiveReportContext;
-  reportContexts?: Record<string, PrimitiveReportContext>;
+  reportContexts: Record<string, PrimitiveReportContext>;
   meta: Record<string, unknown>;
   raw: unknown;
   signal?: AbortSignal;
@@ -150,17 +142,13 @@ export const createPrimitiveReportRequest = (
 ): PrimitiveReportRequest => ({
   reportId: options.reportId ?? "",
   backend: submitResult.backend,
-  inputs: submitResult.inputs ?? [],
-  displayValues: submitResult.displayValues ?? {},
-  modelValues: submitResult.modelValues ?? submitResult.serializedValues,
-  values: submitResult.values,
-  fieldValues: submitResult.fieldValues,
-  serializedValues: submitResult.serializedValues,
-  serializedFieldValues: submitResult.serializedFieldValues,
+  inputs: submitResult.inputs,
+  displayValues: submitResult.displayValues,
+  modelValues: submitResult.modelValues,
   reports: submitResult.reports,
   reportContext:
     options.reportId === undefined ? undefined : submitResult.reportContexts?.[options.reportId],
-  reportContexts: submitResult.reportContexts ?? {},
+  reportContexts: submitResult.reportContexts,
   meta: submitResult.meta,
   raw: submitResult.raw,
   signal: options.signal,

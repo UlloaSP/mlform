@@ -1,5 +1,6 @@
 # Lessons
 
+- A numbered implementation is not complete when its own audit still finds active compatibility paths, stale docs, or unreproducible consumers. Close every confirmed residual or record an explicit blocker before reporting completion.
 - Alpha versions do not imply compatibility requirements. Before designing a migration, confirm whether the user wants a clean breaking contract; do not preserve legacy behavior by default.
 - Browser-backed tests need browser installation in CI. Installing `playwright` package is not enough; workflows that run `chromium.launch()` must run `vp exec playwright install --with-deps chromium` first.
 - When tests fail after type/tooling cleanup, diagnose and fix root behavior before labeling failures pre-existing.

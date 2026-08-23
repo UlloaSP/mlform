@@ -8,13 +8,9 @@ export interface SubmitRequest<
   TReport extends Record<string, unknown> = Record<string, unknown>,
 > {
   backend?: string;
-  inputs?: SubmissionInputRecord[];
-  displayValues?: Record<string, unknown>;
-  modelValues?: Record<string, unknown>;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
   fields: readonly TField[];
   reports: readonly TReport[];
   signal?: AbortSignal;
