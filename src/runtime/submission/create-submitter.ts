@@ -14,7 +14,6 @@ import { createSubmissionLifecycle } from "./lifecycle";
 import {
   buildSubmissionValueRecords,
   cloneSubmissionValueRecords,
-  estimatePayloadBytes,
   normalizeTransportResponse,
 } from "./request";
 import { cloneSubmissionResult, createSubmissionResult } from "./result";
@@ -167,12 +166,6 @@ export const createFormSubmitter = ({
           ...transportRecords,
           fields: normalizedSchema.fields,
           reports: normalizedSchema.reports,
-          metadata: {
-            estimatedPayloadBytes: estimatePayloadBytes({
-              values: transportRecords.serializedValues,
-              fieldValues: transportRecords.serializedFieldValues,
-            }),
-          },
           signal: submitSignal,
         };
 
@@ -201,11 +194,10 @@ export const createFormSubmitter = ({
           }
 
           if (!streamResultReceived) {
-            throw new TransportError("Form submission failed: stream completed without a result.", {
-              code: transportErrorCodes.SESSION_RESULT_MISSING,
-              retryable: false,
-              details: { backend },
-            });
+            throw new TransportError(
+              "Form submission failed: stream completed without a result.",
+              transportErrorCodes.SESSION_RESULT_MISSING,
+            );
           }
         } else {
           response = await transport.submit(submitRequest);

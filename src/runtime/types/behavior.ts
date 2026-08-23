@@ -4,7 +4,7 @@
 type MaybePromise<T> = T | PromiseLike<T>;
 
 import type { Registry } from "@/schema";
-import type { SubmissionInputRecord } from "@/transport";
+import type { SubmissionInputRecord } from "@/schema";
 import type { FieldHandle } from "./field";
 import type { FormStatus } from "./form";
 

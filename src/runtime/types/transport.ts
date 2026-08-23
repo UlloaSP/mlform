@@ -4,51 +4,14 @@
 import type {
   SubmitRequest as BaseSubmitRequest,
   Transport as BaseTransport,
-  SubmissionInputRecord,
   TransportStreamEvent as BaseTransportStreamEvent,
 } from "@/transport";
-import type { SubmitResult as SchemaSubmitResult } from "@/schema";
+import type { SubmissionInputRecord, SubmitResult as SchemaSubmitResult } from "@/schema";
 import type { NormalizedFieldConfig } from "./field";
 import type { NormalizedReportConfig, ReportStateSnapshot } from "./report";
 
-export type {
-  CapabilityRequirement,
-  CircuitBreakerSharedState,
-  CircuitBreakerStateSnapshot,
-  RateLimitLeaseRequest,
-  SharedRateLimiter,
-  SharedRateLimiterLease,
-  SubmissionInputRecord,
-  SubmitRequestMetadata,
-  SubmitRequestTransportContext,
-  TransportAuthKind,
-  TransportBackpressureMode,
-  TransportCacheEntry,
-  TransportCacheStore,
-  TransportCapabilities,
-  TransportCollection,
-  TransportConsistency,
-  TransportDeliveryMode,
-  TransportHealthSnapshot,
-  TransportHealthState,
-  TransportPolicyContext,
-  TransportResponse,
-  TransportSession,
-  TransportSessionCloseEvent,
-  TransportSessionErrorEvent,
-  TransportSessionEvent,
-  TransportSessionMessage,
-  TransportSessionMessageEvent,
-  TransportSessionMetaEvent,
-  TransportSessionProgressEvent,
-  TransportSessionResultEvent,
-  TransportStreamChunkEvent,
-  TransportStreamErrorEvent,
-  TransportStreamMetaEvent,
-  TransportStreamProgressEvent,
-  TransportStreamReportPatchEvent,
-  TransportStreamReportReplaceEvent,
-} from "@/transport";
+export type { SubmissionInputRecord } from "@/schema";
+export type { TransportResponse } from "@/transport";
 
 export type SubmitRequest = BaseSubmitRequest<NormalizedFieldConfig, NormalizedReportConfig>;
 

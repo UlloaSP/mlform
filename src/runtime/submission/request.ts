@@ -2,7 +2,12 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { normalizeValuePath, setPathValue } from "../paths";
-import { mappedToKey, resolveMappedTargets, type MappedTo } from "@/schema";
+import {
+  mappedToKey,
+  resolveMappedTargets,
+  type MappedTo,
+  type SubmissionInputRecord,
+} from "@/schema";
 import type { NormalizedFieldConfig, TransportResponse } from "../types";
 import { cloneValue } from "../values";
 import { isRecord } from "../utils";
@@ -18,18 +23,6 @@ type SubmissionField = {
   serialize(): unknown;
 };
 
-export type SubmissionInputRecord = {
-  fieldId: string;
-  displayKey?: string;
-  label: string;
-  value: unknown;
-  serializedValue: unknown;
-  mappedTo?: string | number;
-  modelValues: Record<string, unknown>;
-  visible: boolean;
-  disabled: boolean;
-};
-
 export type SubmissionValueRecords = {
   inputs: SubmissionInputRecord[];
   displayValues: Record<string, unknown>;
@@ -38,14 +31,6 @@ export type SubmissionValueRecords = {
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-};
-
-export const estimatePayloadBytes = (value: unknown): number | undefined => {
-  try {
-    return new TextEncoder().encode(JSON.stringify(value)).byteLength;
-  } catch {
-    return undefined;
-  }
 };
 
 export const cloneSubmissionValueRecords = (

@@ -9,7 +9,7 @@ import type { DefinedReportKind } from "@/kit";
 import type { PrimitiveReportRequest, ReportDescriptor } from "@/primitives";
 import type { FieldController } from "@/runtime";
 import type { FormSchema, ReportConfig } from "@/schema";
-import type { JsonTransportOptions, Transport } from "@/transport";
+import type { SubmitRequest, Transport } from "@/transport";
 
 const moduleNames = new Set([
   "builtins",
@@ -93,7 +93,7 @@ describe("module boundaries", () => {
       ReportDescriptor,
       FieldController,
       FormSchema,
-      JsonTransportOptions,
+      SubmitRequest,
       Transport,
     ];
 

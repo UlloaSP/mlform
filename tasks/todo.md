@@ -1,5 +1,31 @@
 # Todo
 
+## Transport reachability cleanup
+
+### Goal
+
+- [x] Keep only transport contracts and behavior reached by production `src` code.
+- [x] Remove optional public adapters, middleware, composition, state, capabilities, and barrels justified only by tests or stale docs.
+- [x] Remove stale cross-module reexports and tests for deleted behavior.
+- [x] Keep every remaining source file below 300 lines and update repository memory.
+
+### Plan
+
+- [x] Compute production symbol reachability from outside `src/transport`, excluding tests and docs.
+- [x] Reduce transport and runtime/kit barrels to the reachable contract.
+- [x] Delete unreachable transport source files and obsolete transport-focused tests.
+- [x] Run narrow type/module checks, then `vp check`, typecheck, full tests, and build.
+- [x] Run line-cap scan and `graphify update .`.
+
+### Review
+
+- Reduced `src/transport` from 62 files and 5,652 lines to 4 files and 172 lines.
+- Kept submit/stream contracts, runtime transport errors, and report request lifecycle handling.
+- Removed protocols, composition, middleware, state stores, capabilities, duplicate barrels, passive reexports, and tests that only protected deleted API.
+- Split the edited kit integration suite; every changed TypeScript file is below 300 lines.
+- Verification passed: focused module/kit/runtime tests, `vp check --fix`, `vp run typecheck`, `vp test run` with 30 files and 257 tests, `vp build`, package export target checks, `npm pack --dry-run --json`, and `git diff --check`.
+- `graphify update . --force` rebuilt the graph with 2,074 nodes and no deleted transport source paths.
+
 ## Trusted Report Mount Renderer
 
 ## Goal
@@ -112,7 +138,7 @@ Scope: make MLForm remove MLSuite workarounds. Breaking changes are allowed when
 
 ### Multi-Backend / Multi-Model
 
-- [x] Decide whether generic `createFanoutTransport` is enough for MLSuite after snapshot/report-context fixes.
+- [x] Decide transport-only fanout is unnecessary for MLSuite after snapshot/report-context fixes.
 - [x] If not enough, add schema-aware `submitMany` or `backendContexts` API.
 - [x] Support one submit producing N backend/model runs with per-backend resolved field mappings.
 - [x] Ensure submit/snapshot without explicit backend emits every backend target from `mappedTo` maps.
@@ -197,7 +223,7 @@ Scope: make MLForm remove MLSuite workarounds. Breaking changes are allowed when
 - Mounted pipeline verification: `mountForm({ reportFetchMode: "all" })` now routes UI submit through `executeFormPipeline`, waits for async report fetches, and emits `pipelineResult`; `"none"` submits without report fetches; default `"lazy"` preserves renderer-driven behavior. `vp test run test/integration/kit-report-fetch-mode.integration.test.ts test/integration/kit.integration.test.ts`, `vp check`, and `vp test run` passed. Line-cap scan is still blocked by pre-existing dirty `test/unit/runtime.test.ts` at 4459 lines.
 - Report context verification: submit results now expose `reportContexts`; `createReportFetchRequest` sends `reportContext`; `getReportContext` looks up by report id or resolved `mappedTo` target. Same-kind async report tests prove model-specific context without normalized-id lookup. `vp test run test/unit/report-context.test.ts test/unit/submission-snapshot.test.ts test/integration/kit-report-fetch-mode.integration.test.ts`, `vp check`, `vp test run`, and `graphify update .` passed. Line-cap scan is still blocked by pre-existing dirty `test/unit/runtime.test.ts` at 4459 lines.
 - Report payload mapping verification: `resolveMappedReportPayload` now fails keyed backend `reports` without `mappedTo`, supports explicit aliases with `onAlias`, and schema normalization rejects duplicate resolved report targets. Existing id-boundary tests prove report id/label changes do not affect mapped output lookup. `vp test run test/unit/report-mapped-contract.test.ts test/unit/runtime-id-boundary.test.ts test/unit/report-context.test.ts`, `vp check`, `vp test run`, and `graphify update .` passed. Line-cap scan is still blocked by pre-existing dirty `test/unit/runtime.test.ts` at 4459 lines. Exact report-id fallback has been removed.
-- Multi-backend verification: generic `createFanoutTransport` is transport-only and cannot provide per-backend schema snapshots/report context, so runtime now exposes `createMultiBackendSubmissionSnapshot` and `executeMultiBackendPipeline`. Per-backend runs include snapshot, submit result, report fetch outputs/errors, skipped report ids, and submit error. Focused coverage proves same field maps to different backend keys and partial backend failure keeps successful backend context intact. `vp test run test/unit/multi-backend.test.ts`, `vp test run test/unit/multi-backend.test.ts test/unit/submission-snapshot.test.ts test/unit/report-context.test.ts`, `vp check --fix`, `vp test run`, `vp check`, and `graphify update .` passed. Line-cap scan is still blocked by pre-existing dirty `test/unit/runtime.test.ts` at 4459 lines.
+- Multi-backend verification: transport-only fanout cannot provide per-backend schema snapshots/report context, so runtime exposes `createMultiBackendSubmissionSnapshot` and `executeMultiBackendPipeline`. Per-backend runs include snapshot, submit result, report fetch outputs/errors, skipped report ids, and submit error. Focused coverage proves same field maps to different backend keys and partial backend failure keeps successful backend context intact. `vp test run test/unit/multi-backend.test.ts`, `vp test run test/unit/multi-backend.test.ts test/unit/submission-snapshot.test.ts test/unit/report-context.test.ts`, `vp check --fix`, `vp test run`, `vp check`, and `graphify update .` passed. Line-cap scan is still blocked by pre-existing dirty `test/unit/runtime.test.ts` at 4459 lines.
 - Runtime id boundary verification: `getField(id)` and `getReport(id)` remain runtime-handle APIs for state/layout/validation/report states. `getFieldByDisplayKey(key)` and `getFieldByMappedTo(target, { backend })` now provide explicit external-contract lookup without label or id fallback. Coverage proves label/id changes do not change `displayValues`, `modelValues`, `serializedValues`, or report payload lookup. `vp test run test/unit/runtime-id-boundary.test.ts`, `vp check`, `vp test run test/unit/runtime-id-boundary.test.ts test/unit/submission-snapshot.test.ts test/unit/multi-backend.test.ts`, `vp test run`, and `graphify update .` passed. Line-cap scan is still blocked by pre-existing dirty `test/unit/runtime.test.ts` at 4459 lines.
 - Backend-map snapshot verification: submit/snapshot without an explicit backend now writes all resolved `mappedTo` map targets into `modelValues`, covering MLSuite multi-model transport without id reconstruction. `vp test run test/unit/submission-snapshot.test.ts test/unit/multi-backend.test.ts` passed.
 - MLSuite link verification: local MLSuite now consumes `mlform` through `file:../../mlform`; schema-run transport reads `modelValues`, `fieldValues`, and `displayValues` from MLForm instead of rebuilding payloads from ids. `vp check`, `vp test run`, `vp build`, and `graphify update .` passed in MLForm. MLSuite changed-file `vp check --fix`, `vp test run`, `vp build`, and `graphify update .` passed; full MLSuite `vp check` remains blocked by 150 pre-existing unrelated formatting issues.

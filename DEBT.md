@@ -15,8 +15,8 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-06-22`
-- Current focus: MLSuite local integration
+- Last reviewed: `2026-08-23`
+- Current focus: transport reachability cleanup
 
 ## Active Debt
 
@@ -37,10 +37,7 @@ No active debt.
 - `src/kit/types.ts` split
 - `src/kit/layout.ts` split
 - `src/primitives/fields/series-field.ts` split
-- `src/transport/types/options.ts` split
-- `src/transport/composition/fanout.ts` split
 - `src/design/runtime/design-controller.ts` split
-- `src/transport/internal.ts` split
 - `createBuiltinRegistry` removed
 - public `EngineRegistry` name removed
 - primitive form root now refreshes report/explanation descriptors when their live state changes
@@ -54,7 +51,6 @@ No active debt.
   - `src/primitives/fields/series-field.ts`
   - `src/runtime/submission/create-submitter.ts`
   - `src/runtime/create-runtime.ts`
-  - `src/transport/composition/fanout.ts`
 - Runtime definition aliases no longer accept presentation `describe` functions.
 - Runtime-owned builtins moved under `src/builtins/definitions`; packs and tests import them from the builtins package boundary.
 - Docs/tests old `engine` section paths moved to `runtime`.
@@ -107,7 +103,6 @@ No active debt.
 - Validated streaming report updates no longer fall back to report id as an external payload key when `mappedTo` is missing.
 - Runtime id boundary now has regression coverage: changing field/report ids changes runtime handles only, not `displayKey`/`mappedTo` external contracts.
 - Explicit `displayKey` values are now normalized and duplicate explicit display keys fail before display data can be overwritten; docs now distinguish `id`, `mappedTo`, `displayKey`, and `label`.
-- Transport default dedup/cache keys now prefer resolved report `mappedTo` targets over report ids when the mapped target exists.
 - Display values no longer use labels as fallback data keys; fields without `displayKey` are omitted from `displayValues`.
 - Validated streamed report updates now fail submit when the target report lacks a resolved `mappedTo`, instead of silently ignoring the payload or forcing consumers to infer report ids.
 - Public `createSubmissionSnapshot(form, options)` exposes the same submission records before submit so consumers no longer need a transport call to inspect review/export/model payloads.
@@ -117,7 +112,7 @@ No active debt.
 - Mounted kit submit now supports `reportFetchMode: "lazy" | "all" | "none"`; `"all"` exposes full pipeline report fetch results in success events and `"none"` prevents renderer-driven async report fetches.
 - Submit results and report fetch requests now expose official report context keyed by runtime report id, with helper lookup by id or resolved `mappedTo` target, removing consumer-side normalized-id report context lookups.
 - Report payload lookup now uses only `reports[]` items matched by explicit `mappedTo`, rejects duplicate resolved report targets, strips envelope metadata from payloads, and no longer supports keyed reports, report-id fallback, or alias migration.
-- Runtime now exposes schema-aware multi-backend snapshots and pipeline execution. `createFanoutTransport` remains transport-only fanout; multi-model form runs use `executeMultiBackendPipeline` to preserve per-backend mappings, results, errors, skipped reports, and report contexts.
+- Runtime now exposes schema-aware multi-backend snapshots and pipeline execution; multi-model form runs use `executeMultiBackendPipeline` to preserve per-backend mappings, results, errors, skipped reports, and report contexts.
 - Runtime id boundaries are explicit: `getField(id)`/`getReport(id)` remain runtime-handle lookups, while `getFieldByDisplayKey` and `getFieldByMappedTo` support external-contract field lookup without label or id fallback.
 - Exact report-id payload fallback, keyed report payload maps, and legacy `outputs` fallbacks removed from `resolveMappedReportPayload` and built-in report definitions.
 - Submission snapshots without an explicit backend now emit every target in a backend map, so multi-model consumers can use `modelValues` directly without reconstructing from field ids.
@@ -125,6 +120,7 @@ No active debt.
 - Playwright is now a dev dependency and browser render coverage exercises real mounted UI with custom field/report plugins, `onehot-category`, backend-map `mappedTo`, mapped report payload lookup, and multi-backend report context targets.
 - Report payload lookup now resolves backend-map `mappedTo` targets when no single backend is selected, so mounted/fanout-like report arrays bind by external report target without report-id fallback.
 - Trusted report plugins can now render custom DOM through `render.mount` while declarative report descriptors remain the default.
+- Transport now contains only production-reached submit/stream contracts, request lifecycle handling, and runtime errors. Unused protocols, composition, middleware, state stores, capabilities, and duplicate barrels were removed.
 
 ## Notes
 

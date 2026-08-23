@@ -29,5 +29,3 @@ export const kitTagNames = {
   disclosure: "mlf-kit-disclosure",
   stepIndicator: "mlf-kit-step-indicator",
 } as const;
-
-export { transportDefaults as kitTransportDefaults, transportErrorMessages } from "@/transport";

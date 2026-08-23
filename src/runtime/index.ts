@@ -22,7 +22,6 @@ export {
   transportErrorCodes,
   ValidationError,
 } from "./errors";
-export type { TransportErrorCode } from "./errors";
 export { createForm, createForm as createFormRuntime } from "./form";
 export {
   defaultEquality,
@@ -94,19 +93,9 @@ export type {
   SubmitErrorContext,
   SubmitOptions,
   SubmitRequest,
-  SubmitRequestTransportContext,
   SubmitResult,
   SubmissionInputRecord,
   Transport,
-  TransportAuthKind,
-  TransportBackpressureMode,
-  TransportCapabilities,
-  TransportConsistency,
-  TransportDeliveryMode,
-  TransportPolicyContext,
-  TransportSession,
-  TransportSessionEvent,
-  TransportSessionMessage,
   TransportStreamEvent,
   TransportResponse,
   NotCondition,
