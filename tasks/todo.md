@@ -1,3 +1,22 @@
+# Fix unresolved JSON Schema references
+
+## Goal
+
+- [x] Reproduce unresolved local `$ref` values through the public exporter.
+- [x] Generate one root Zod schema before JSON Schema conversion.
+- [x] Cover built-ins, recursive plugins, empty registries, and schema semantics.
+- [x] Run focused tests, typecheck, full tests, build, and line-limit checks.
+- [x] Review debt, refresh graphify, and inspect the final diff.
+
+## Review
+
+- Root cause: independently converted schemas kept root-relative `$ref` values after being embedded under `oneOf`.
+- Export now composes fields and reports as one strict Zod root and calls `toJSONSchema` once.
+- Regression resolves every local JSON Pointer and covers recursive plugins, invalid kinds, empty registries, and strict root behavior.
+- Verification passed: focused 9 tests, typecheck, `vp check`, all 264 tests, and production build.
+
+---
+
 # Fix docs demo transport typecheck
 
 ## Goal
@@ -18,7 +37,7 @@
 - `graphify update . --force` found no code topology changes and left existing graph outputs untouched.
 
 ---
-0.1.22
+0.1.23
 # Strict MLForm 0.1.21 contract
 
 ## Goal
@@ -29,7 +48,7 @@
 - [x] Carry official per-report and per-backend context.
 - [x] Separate report controller identity from backend payload routes.
 - [x] Expose backend-preserving mapped routes and reusable transport fanout.
-- [x] Delete Spanish and unver0.1.22e legacy documentation.
+- [x] Delete Spanish and unver0.1.23e legacy documentation.
 - [x] Prepare package version 0.1.21 without publishing.
 - [x] Migrate MLSuite and Crystal Tree to the strict contract.
 

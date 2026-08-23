@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { toJSONSchema, type ZodType } from "zod";
+import { array, never, strictObject, toJSONSchema, xor, type ZodType } from "zod";
 import { normalizeSchema, SchemaNormalizationError } from "./normalize";
 import type { FormSchema, NormalizedFormSchema, Registry } from "./index";
 
@@ -173,24 +173,17 @@ export const validateSchema = (schema: unknown, registry: Registry): SchemaValid
   }
 };
 
-const definitionSchemas = (definitions: readonly { schema: ZodType }[]): SchemaJsonSchema[] =>
-  definitions.map(
-    (definition) =>
-      toJSONSchema(definition.schema, { io: "input", unrepresentable: "any" }) as SchemaJsonSchema,
-  );
-
 const registryItemsSchema = (definitions: readonly { schema: ZodType }[]) => {
-  const schemas = definitionSchemas(definitions);
-  return schemas.length > 0 ? { oneOf: schemas } : false;
+  const schemas = definitions.map((definition) => definition.schema);
+  return schemas.length > 0 ? xor(schemas) : never();
 };
 
-export const toSchemaJsonSchema = (registry: Registry): SchemaJsonSchema => ({
-  $schema: "https://json-schema.org/draft/2020-12/schema",
-  type: "object",
-  additionalProperties: false,
-  required: ["fields"],
-  properties: {
-    fields: { type: "array", items: registryItemsSchema(registry.listFields()) },
-    reports: { type: "array", items: registryItemsSchema(registry.listReports()) },
-  },
-});
+/** Registered schemas that set metadata ids must use globally unique ids. */
+export const toSchemaJsonSchema = (registry: Registry): SchemaJsonSchema =>
+  toJSONSchema(
+    strictObject({
+      fields: array(registryItemsSchema(registry.listFields())),
+      reports: array(registryItemsSchema(registry.listReports())).optional(),
+    }),
+    { target: "draft-2020-12", io: "input", unrepresentable: "any" },
+  ) as SchemaJsonSchema;

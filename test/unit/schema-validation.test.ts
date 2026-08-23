@@ -8,6 +8,38 @@ import { createRegistry, findUnknownKinds, toSchemaJsonSchema, validateSchema } 
 
 const registry = createMlRegistryPack().registry;
 
+const unresolvedLocalRefs = (schema: Record<string, unknown>): string[] => {
+  const refs: string[] = [];
+
+  const visit = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (typeof value !== "object" || value === null) return;
+
+    const record = value as Record<string, unknown>;
+    if (typeof record.$ref === "string") {
+      refs.push(record.$ref);
+    }
+    Object.values(record).forEach(visit);
+  };
+
+  visit(schema);
+  return refs.filter((ref) => {
+    if (ref === "#") return false;
+    if (!ref.startsWith("#/")) return true;
+
+    let current: unknown = schema;
+    for (const encodedPart of ref.slice(2).split("/")) {
+      const part = encodedPart.replaceAll("~1", "/").replaceAll("~0", "~");
+      if (typeof current !== "object" || current === null || !(part in current)) return true;
+      current = (current as Record<string, unknown>)[part];
+    }
+    return false;
+  });
+};
+
 describe("schema validation tooling", () => {
   it("normalizes a valid schema and builds JSON Schema from the registry", () => {
     const result = validateSchema(
@@ -113,5 +145,97 @@ describe("schema validation tooling", () => {
         customRegistry,
       ).success,
     ).toBe(true);
+  });
+
+  it("resolves every local reference from the generated document root", () => {
+    const jsonSchema = toSchemaJsonSchema(registry);
+
+    expect(JSON.stringify(jsonSchema)).toContain('"$ref"');
+    expect(unresolvedLocalRefs(jsonSchema)).toEqual([]);
+  });
+
+  it("keeps recursive plugin schemas self-contained", () => {
+    type RecursiveField = {
+      kind: "recursive-field";
+      label: string;
+      children?: RecursiveField[];
+    };
+    const recursiveFieldSchema: z.ZodType<RecursiveField> = z.lazy(() =>
+      z.strictObject({
+        kind: z.literal("recursive-field"),
+        label: z.string(),
+        children: z.array(recursiveFieldSchema).optional(),
+      }),
+    );
+    type NestedField = {
+      kind: "nested-field";
+      label: string;
+      child?: NestedField;
+    };
+    const nestedFieldSchema: z.ZodType<NestedField> = z.lazy(() =>
+      z.strictObject({
+        kind: z.literal("nested-field"),
+        label: z.string(),
+        child: nestedFieldSchema.optional(),
+      }),
+    );
+    const customRegistry = createRegistry()
+      .registerField({
+        kind: "recursive-field",
+        schema: recursiveFieldSchema,
+      })
+      .registerField({
+        kind: "nested-field",
+        schema: nestedFieldSchema,
+      });
+    const jsonSchema = toSchemaJsonSchema(customRegistry);
+    const validator = z.fromJSONSchema(jsonSchema);
+
+    expect(unresolvedLocalRefs(jsonSchema)).toEqual([]);
+    expect(jsonSchema).toMatchObject({
+      properties: { fields: { items: { oneOf: expect.any(Array) } } },
+    });
+    expect(
+      validator.safeParse({
+        fields: [
+          {
+            kind: "recursive-field",
+            label: "Root",
+            children: [{ kind: "recursive-field", label: "Child" }],
+          },
+          { kind: "nested-field", label: "Root", child: { kind: "nested-field", label: "Leaf" } },
+        ],
+      }).success,
+    ).toBe(true);
+    expect(validator.safeParse({ fields: [{ kind: "unknown", label: "Wrong" }] }).success).toBe(
+      false,
+    );
+  });
+
+  it("preserves empty registry and root object constraints", () => {
+    const validator = z.fromJSONSchema(toSchemaJsonSchema(createRegistry()));
+
+    expect(validator.safeParse({ fields: [] }).success).toBe(true);
+    expect(validator.safeParse({ fields: [{}] }).success).toBe(false);
+    expect(validator.safeParse({ fields: [], reports: [{}] }).success).toBe(false);
+    expect(validator.safeParse({ fields: [], extra: true }).success).toBe(false);
+  });
+
+  it("rejects duplicate schema metadata ids", () => {
+    const duplicateIdRegistry = createRegistry()
+      .registerField({
+        kind: "first",
+        schema: z.object({ kind: z.literal("first"), label: z.string() }).meta({ id: "duplicate" }),
+      })
+      .registerField({
+        kind: "second",
+        schema: z
+          .object({ kind: z.literal("second"), label: z.string() })
+          .meta({ id: "duplicate" }),
+      });
+
+    expect(() => toSchemaJsonSchema(duplicateIdRegistry)).toThrow(
+      'Duplicate schema id "duplicate" detected during JSON Schema conversion.',
+    );
   });
 });
