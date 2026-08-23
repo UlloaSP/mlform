@@ -4,6 +4,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { createMlRegistryPack } from "@/builtins";
 import { createForm } from "@/runtime";
+import { readyReport } from "../report-result";
 
 const registry = createMlRegistryPack().registry;
 
@@ -104,7 +105,7 @@ describe("runtime id boundary", () => {
 
   it("keeps report ids as runtime handles, not external output keys", async () => {
     const submitA = vi.fn().mockResolvedValue({
-      reports: [{ mappedTo: "risk_score", prediction: "high" }],
+      reports: [readyReport("risk_score", { prediction: "high" })],
     });
     const formA = createForm({
       schema: {
@@ -115,7 +116,7 @@ describe("runtime id boundary", () => {
       transport: { submit: submitA },
     });
     const submitB = vi.fn().mockResolvedValue({
-      reports: [{ mappedTo: "risk_score", prediction: "high" }],
+      reports: [readyReport("risk_score", { prediction: "high" })],
     });
     const formB = createForm({
       schema: {
@@ -143,7 +144,7 @@ describe("runtime id boundary", () => {
       resultB.reportStates["ui-risk-b"]?.payload,
     );
     expect(resultA.reports).toEqual(resultB.reports);
-    expect(resultA.reports).toEqual([{ mappedTo: "risk_score", prediction: "high" }]);
+    expect(resultA.reports).toEqual([readyReport("risk_score", { prediction: "high" })]);
     expect(resultA.reports).not.toHaveProperty("ui-risk-a");
     expect(resultB.reports).not.toHaveProperty("ui-risk-b");
   });

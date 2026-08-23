@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
+import { readyReport } from "../report-result";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins";
 import { defineReportKind, mountForm, registerDefinedReportKind } from "@/kit";
@@ -52,8 +53,8 @@ describe("kit mounted report", () => {
 
     const submit = vi
       .fn()
-      .mockResolvedValueOnce({ reports: [{ mappedTo: "summary", text: "first" }] })
-      .mockResolvedValueOnce({ reports: [{ mappedTo: "summary", text: "second" }] });
+      .mockResolvedValueOnce({ reports: [readyReport("summary", { text: "first" })] })
+      .mockResolvedValueOnce({ reports: [readyReport("summary", { text: "second" })] });
     const container = document.createElement("div");
     document.body.append(container);
 
@@ -121,7 +122,7 @@ describe("kit mounted report", () => {
     const mounted = mountForm(container, {
       registry: pack.registry,
       descriptorRegistry: pack.descriptorRegistry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: [{ mappedTo: "broken" }] }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [readyReport("broken", {})] }) },
       schema: {
         fields: [],
         reports: [

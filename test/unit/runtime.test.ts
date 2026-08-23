@@ -21,6 +21,7 @@ import {
   executeFormPipeline,
   shallowEquality,
 } from "@/runtime";
+import { readyReport } from "../report-result";
 
 const builtinPrimitiveDescriptorRegistry = createMlRegistryPack().descriptorRegistry;
 
@@ -1177,12 +1178,11 @@ describe("runtime", () => {
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [
-            {
-              mappedTo: "classifier",
+            readyReport("classifier", {
               labels: ["low", "high"],
               probabilities: [0.25, 0.75],
               prediction: "high",
-            },
+            }),
           ],
         }),
       },
@@ -1784,12 +1784,11 @@ describe("runtime", () => {
   it("serializes values and updates report controllers after submit", async () => {
     const submit = vi.fn().mockResolvedValue({
       reports: [
-        {
-          mappedTo: "risk",
+        readyReport("risk", {
           labels: ["low", "high"],
           probabilities: [0.2, 0.8],
           prediction: "high",
-        },
+        }),
       ],
       meta: {
         requestId: "abc-123",
@@ -1955,7 +1954,9 @@ describe("runtime", () => {
   });
 
   it("uses mappedTo names and positions without id fallback", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: [{ mappedTo: 1, value: 88 }] });
+    const submit = vi
+      .fn()
+      .mockResolvedValue({ reports: [readyReport(1, { value: 88 }, "remote")] });
     const form = createForm({
       schema: {
         fields: [
@@ -2030,7 +2031,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk", prediction: "high", probabilities: [0.1, 0.9] }],
+          reports: [readyReport("risk", { prediction: "high", probabilities: [0.1, 0.9] })],
         }),
       },
     });
@@ -2187,7 +2188,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "good", score: 1 }],
+          reports: [readyReport("good", { score: 1 })],
         }),
       },
     });
@@ -2264,7 +2265,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "score", score: "not-a-number" }],
+          reports: [readyReport("score", { score: "not-a-number" })],
         }),
       },
     });
@@ -2325,7 +2326,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "score", score: "not-a-number" }],
+          reports: [readyReport("score", { score: "not-a-number" })],
         }),
       },
       hooks: {
@@ -2398,7 +2399,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "async", score: 42 }],
+          reports: [readyReport("async", { score: 42 })],
         }),
       },
     });
@@ -2436,7 +2437,7 @@ describe("runtime", () => {
       expect(request.signal).toBeDefined();
       expect(request.signal?.aborted).toBe(false);
       return {
-        reports: [{ mappedTo: "classifier", prediction: "ok" }],
+        reports: [readyReport("classifier", { prediction: "ok" })],
       };
     });
 
@@ -2516,7 +2517,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "classifier", prediction: "ok" }],
+          reports: [readyReport("classifier", { prediction: "ok" })],
         }),
       },
       hooks: {
@@ -2548,7 +2549,9 @@ describe("runtime", () => {
 
   it("passes optional backend selection through transport requests", async () => {
     const submit = vi.fn().mockImplementation(async ({ backend }: { backend?: string }) => ({
-      reports: [{ mappedTo: "classifier", prediction: backend ?? "default" }],
+      reports: [
+        readyReport("classifier", { prediction: backend ?? "default" }, backend ?? "default"),
+      ],
     }));
     const form = createForm({
       schema: {
@@ -2598,7 +2601,7 @@ describe("runtime", () => {
       expect(activeForm.state.reportStates.classifier?.status).toBe("loading");
     });
     const submit = vi.fn().mockResolvedValue({
-      reports: [{ mappedTo: "classifier", prediction: "ok" }],
+      reports: [readyReport("classifier", { prediction: "ok" })],
     });
 
     const form = createForm({
@@ -2812,7 +2815,7 @@ describe("runtime", () => {
 
           setTimeout(() => {
             resolve({
-              reports: [{ mappedTo: "classifier", prediction: "late" }],
+              reports: [readyReport("classifier", { prediction: "late" })],
             });
           }, 50);
         }),
@@ -3040,7 +3043,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk", prediction: "low" }],
+          reports: [readyReport("risk", { prediction: "low" })],
         }),
       },
     });
@@ -3366,12 +3369,12 @@ describe("runtime", () => {
 
   it("executes pipeline without report fetches when reportFetchMode is none", async () => {
     const submitResult = {
-      reports: [{ mappedTo: "risk", prediction: "low" }],
+      reports: [readyReport("risk", { prediction: "low" })],
       meta: {
         requestId: "abc",
       },
       raw: {
-        reports: [{ mappedTo: "risk", prediction: "low" }],
+        reports: [readyReport("risk", { prediction: "low" })],
       },
     };
     const form = createForm({
@@ -3438,12 +3441,12 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk", prediction: "high" }],
+          reports: [readyReport("risk", { prediction: "high" })],
           meta: {
             mappedTo: "predict",
           },
           raw: {
-            reports: [{ mappedTo: "risk", prediction: "high" }],
+            reports: [readyReport("risk", { prediction: "high" })],
           },
         }),
       },
@@ -3479,7 +3482,7 @@ describe("runtime", () => {
       "shap-error": "report fetch failed",
     });
     expect(result.artifacts).toEqual({
-      reports: [{ mappedTo: "risk", prediction: "high" }],
+      reports: [readyReport("risk", { prediction: "high" })],
       fetchErrors: {
         "shap-error": "report fetch failed",
       },
@@ -3757,7 +3760,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk", score: 0.91, drivers: ["income", "savings"] }],
+          reports: [readyReport("risk", { score: 0.91, drivers: ["income", "savings"] })],
         }),
       },
     });

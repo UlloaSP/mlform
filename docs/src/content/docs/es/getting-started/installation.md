@@ -9,10 +9,10 @@ Instala el paquete runtime en una aplicacion:
 npm install mlform
 ```
 
-Si quieres instalar exactamente la version documentada aqui, fija `0.1.19`:
+Si quieres instalar exactamente la version documentada aqui, fija `0.1.20`:
 
 ```bash
-npm install mlform@0.1.19
+npm install mlform@0.1.20
 ```
 
 Para este repositorio, usa Vite+:

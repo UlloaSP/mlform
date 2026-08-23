@@ -32,3 +32,17 @@ Terminos base:
 | inactive field | Campo hidden, disabled o read-only. Su envio depende de policy. |
 
 Schema describe significado, no colocacion en pantalla. Grupos, pasos, tabs y review screens van en layout.
+
+## Tooling dirigido por el registry
+
+Usa el mismo registry para runtime, diagnosticos y autocompletado del editor:
+
+```ts
+import { findUnknownKinds, toSchemaJsonSchema, validateSchema } from "mlform/schema";
+
+const validation = validateSchema(input, registry);
+const jsonSchema = toSchemaJsonSchema(registry);
+const unknownKinds = findUnknownKinds(input, registry);
+```
+
+`validateSchema` devuelve datos normalizados o issues con path. El JSON Schema incluye todas las definiciones de fields y reports registradas, incluidos los plugins de la aplicacion.

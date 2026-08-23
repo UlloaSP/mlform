@@ -8,3 +8,4 @@ export * from "./request";
 export * from "./reports";
 export * from "./snapshot";
 export * from "./submitter";
+export { normalizeTransportResponse } from "./transport-response";

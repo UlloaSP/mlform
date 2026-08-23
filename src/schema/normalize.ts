@@ -3,7 +3,6 @@
 
 import { RegistryError } from "./registry";
 import { normalizeSchemaId } from "./ids";
-import { mappedToKey, resolveMappedTo } from "./mapped-to";
 import type {
   FieldConfig,
   FormSchema,
@@ -122,46 +121,20 @@ const normalizeReport = (
   }
 
   const parsed = definition.schema.parse(report) as ReportConfig;
-  const id = resolveId(parsed.id, parsed.label ?? parsed.kind, usedIds, `report-${index + 1}`);
+  const id = resolveId(
+    report.id ?? parsed.id,
+    report.label ?? parsed.label ?? parsed.kind,
+    usedIds,
+    `report-${index + 1}`,
+  );
   return {
     ...parsed,
+    ...(report.label === undefined ? {} : { label: report.label }),
+    ...(report.description === undefined ? {} : { description: report.description }),
+    ...(report.mappedTo === undefined ? {} : { mappedTo: report.mappedTo }),
+    ...(report.ui === undefined ? {} : { ui: report.ui }),
     id,
   };
-};
-
-const mappedToEntries = (report: NormalizedReportConfig): Array<[string, string]> => {
-  const mappedTo = report.mappedTo;
-  if (typeof mappedTo === "string" || typeof mappedTo === "number") {
-    return [["default", mappedToKey(mappedTo)]];
-  }
-
-  if (!mappedTo) {
-    return [];
-  }
-
-  return Object.keys(mappedTo)
-    .map((backend) => {
-      const target = resolveMappedTo(mappedTo, backend === "default" ? undefined : backend);
-      return target === undefined ? null : ([backend, mappedToKey(target)] as [string, string]);
-    })
-    .filter((entry): entry is [string, string] => entry !== null);
-};
-
-const validateReportMappedTargets = (reports: readonly NormalizedReportConfig[]): void => {
-  const seen = new Map<string, string>();
-
-  for (const report of reports) {
-    for (const [backend, target] of mappedToEntries(report)) {
-      const key = `${backend}:${target}`;
-      const existing = seen.get(key);
-      if (existing) {
-        throw new Error(
-          `Duplicate report mappedTo "${target}" for backend "${backend}" in "${existing}" and "${report.id}".`,
-        );
-      }
-      seen.set(key, report.id);
-    }
-  }
 };
 
 export const normalizeSchema = (schema: FormSchema, registry: Registry): NormalizedFormSchema => {
@@ -170,9 +143,6 @@ export const normalizeSchema = (schema: FormSchema, registry: Registry): Normali
   const reports = (schema.reports ?? []).map((report, index) =>
     normalizeReport(report, index, registry, usedReportIds),
   );
-
-  validateReportMappedTargets(reports);
-
   return {
     fields: schema.fields.map((field, index) =>
       normalizeField(field, index, registry, usedFieldIds),

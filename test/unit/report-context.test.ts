@@ -37,7 +37,19 @@ describe("report context", () => {
       registry: pack.registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "summary_score", score: 0.8 }],
+          reports: [
+            {
+              backend: "remote",
+              mappedTo: "summary_score",
+              status: "ready",
+              payload: { score: 0.8 },
+              context: {
+                modelValues: { patient_name: "Alice", normalized_age: 41 },
+                meta: { modelId: "remote-risk", region: "eu" },
+                raw: { traceId: "trace-1" },
+              },
+            },
+          ],
           meta: { modelId: "remote-risk" },
         }),
       },
@@ -65,8 +77,9 @@ describe("report context", () => {
         target: "summary_score",
         targetKey: "summary_score",
         backend: "remote",
-        modelValues: { patient_name: "Alice" },
-        meta: { modelId: "remote-risk" },
+        modelValues: { patient_name: "Alice", normalized_age: 41 },
+        meta: { modelId: "remote-risk", region: "eu" },
+        raw: { traceId: "trace-1" },
       }),
     );
     expect(getReportContext(result, "ui-summary")?.targetKey).toBe("summary_score");

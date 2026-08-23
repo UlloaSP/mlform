@@ -4,6 +4,8 @@
 export type MappedToTarget = string | number;
 export type MappedTo = MappedToTarget | Record<string, MappedToTarget | null | undefined>;
 
+import type { ReportResult } from "./types/submit";
+
 export const resolveMappedTo = (
   mappedTo: MappedTo | undefined,
   backend: string | undefined,
@@ -46,51 +48,55 @@ export const resolveMappedTargets = (
   });
 };
 
-const getReportPayload = (
-  target: MappedToTarget,
-  result: {
-    reports: readonly unknown[];
-  },
-): unknown => {
-  const key = mappedToKey(target);
-  const matches = result.reports.filter((item): item is Record<string, unknown> => {
-    return (
-      typeof item === "object" &&
-      item !== null &&
-      !Array.isArray(item) &&
-      mappedToKey((item as { mappedTo?: MappedToTarget }).mappedTo ?? "") === key
-    );
-  });
-  if (matches.length > 1) {
-    throw new Error(`Duplicate report payload for mappedTo "${key}".`);
-  }
-  const match = matches[0];
-  if (!match) return undefined;
-  if ("payload" in match) return match.payload;
+type ReportRoute = { backend: string; mappedTo: MappedToTarget };
 
-  const { id: _id, kind: _kind, mappedTo: _mappedTo, ...payload } = match;
-  void _id;
-  void _kind;
-  void _mappedTo;
-  return payload;
+const reportRoutes = (
+  mappedTo: MappedTo | undefined,
+  backend: string | undefined,
+): ReportRoute[] => {
+  if (typeof mappedTo === "string" || typeof mappedTo === "number") {
+    return [{ backend: backend ?? "default", mappedTo }];
+  }
+  if (!mappedTo) return [];
+  if (backend) {
+    const target = resolveMappedTo(mappedTo, backend);
+    return target === undefined ? [] : [{ backend, mappedTo: target }];
+  }
+  return Object.entries(mappedTo).flatMap(([routeBackend, target]) =>
+    typeof target === "string" || typeof target === "number"
+      ? [{ backend: routeBackend, mappedTo: target }]
+      : [],
+  );
+};
+
+export const resolveMappedReportResult = (
+  report: { mappedTo?: MappedTo },
+  result: { backend?: string; reports: readonly ReportResult[] },
+): ReportResult | undefined => {
+  const routes = reportRoutes(report.mappedTo, result.backend);
+  const matches = result.reports.filter((item) =>
+    routes.some(
+      (route) =>
+        route.backend === item.backend &&
+        mappedToKey(route.mappedTo) === mappedToKey(item.mappedTo),
+    ),
+  );
+  if (matches.length > 1) {
+    const route = matches[0];
+    throw new Error(
+      `Duplicate report result for backend "${route?.backend}" and mappedTo "${String(route?.mappedTo)}".`,
+    );
+  }
+  return matches[0];
 };
 
 export const resolveMappedReportPayload = (
   report: { id?: string; mappedTo?: MappedTo },
   result: {
     backend?: string;
-    reports: readonly unknown[];
+    reports: readonly ReportResult[];
   },
 ): unknown => {
-  const targets = resolveMappedTargets(report.mappedTo, result.backend);
-  if (targets.length === 0) return undefined;
-
-  for (const target of targets) {
-    const payload = getReportPayload(target, result);
-    if (payload !== undefined) {
-      return payload;
-    }
-  }
-
-  return undefined;
+  const match = resolveMappedReportResult(report, result);
+  return match?.status === "ready" ? match.payload : undefined;
 };

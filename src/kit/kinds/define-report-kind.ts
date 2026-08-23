@@ -58,7 +58,7 @@ export interface DeclarativeReportKind<
   payloadValidationPolicy?: "report-error" | "fail-submit";
   clonePayload?: (payload: TPayload, config: TConfig) => TPayload;
   fetch?: ReportFetchFactory<TConfig>;
-  resolve: (context: ReportResolveContext<TConfig>) => unknown;
+  resolve?: (context: ReportResolveContext<TConfig>) => unknown;
   render: ReportRenderSpec<TConfig, TPayload>;
 }
 
@@ -88,12 +88,14 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     payloadValidationPolicy: kind.payloadValidationPolicy,
     clonePayload: kind.clonePayload as ((payload: unknown, config: TConfig) => unknown) | undefined,
     fetch: kind.fetch,
-    resolvePayload: (_config, context) =>
-      kind.resolve({
-        config: context.report,
-        report: context.report,
-        result: context.result,
-      }),
+    resolvePayload: kind.resolve
+      ? (_config, context) =>
+          kind.resolve?.({
+            config: context.report,
+            report: context.report,
+            result: context.result,
+          })
+      : undefined,
   };
 
   const presenter: ReportPresenter<NormalizedReportConfig<TConfig>> = {

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
+import { readyReport } from "../report-result";
 import * as z from "zod";
 import { createMlRegistryPack } from "@/builtins";
 import {
@@ -58,12 +59,11 @@ describe("kit integration", () => {
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [
-            {
-              mappedTo: "risk",
+            readyReport("risk", {
               prediction: "high",
               labels: ["low", "high"],
               probabilities: [0.2, 0.8],
-            },
+            }),
           ],
         }),
       },
@@ -244,7 +244,7 @@ describe("kit integration", () => {
       descriptorRegistry: pack.descriptorRegistry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk", score: 0.91, drivers: ["income", "savings"] }],
+          reports: [readyReport("risk", { score: 0.91, drivers: ["income", "savings"] })],
         }),
       },
       schema: {

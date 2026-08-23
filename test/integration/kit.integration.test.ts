@@ -4,6 +4,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { mountForm } from "@/kit";
 import { flush, getFieldControlHost, getShadow, reportPayload } from "./kit-integration-helpers";
+import { readyReport } from "../report-result";
 
 describe("kit integration", () => {
   it("rejects mounting into a non-empty container unless replacement is explicit", () => {
@@ -25,12 +26,11 @@ describe("kit integration", () => {
   it("mounts a default form, submits through its transport, and applies the design system", async () => {
     const submit = vi.fn().mockResolvedValue({
       reports: [
-        {
-          mappedTo: "risk",
+        readyReport("risk", {
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
-        },
+        }),
       ],
     });
     const container = document.createElement("div");
@@ -126,22 +126,20 @@ describe("kit integration", () => {
   it("routes mounted submissions through inline transport selection", async () => {
     const localSubmit = vi.fn().mockResolvedValue({
       reports: [
-        {
-          mappedTo: "risk",
+        readyReport("risk", {
           prediction: "local",
           labels: ["low", "high"],
           probabilities: [0.8, 0.2],
-        },
+        }),
       ],
     });
     const remoteSubmit = vi.fn().mockResolvedValue({
       reports: [
-        {
-          mappedTo: "risk",
+        readyReport("risk", {
           prediction: "remote",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
-        },
+        }),
       ],
     });
     const container = document.createElement("div");

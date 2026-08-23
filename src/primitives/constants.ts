@@ -160,6 +160,8 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
         return "Loading";
       case "ready":
         return "Ready";
+      case "skipped":
+        return "Skipped";
       case "error":
         return "Error";
     }

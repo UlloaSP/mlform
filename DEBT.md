@@ -16,7 +16,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 ## Status
 
 - Last reviewed: `2026-08-23`
-- Current focus: submit-only transport cleanup
+- Current focus: report result contract 0.1.20
 
 ## Active Debt
 
@@ -24,6 +24,9 @@ No active debt.
 
 ## Recent Progress
 
+- Registry-driven schema diagnostics and JSON Schema generation now live in MLForm; MLSuite's handwritten Zod/JSON Schema mirrors were removed.
+- Report results now use one strict backend-scoped 0.1.20 envelope with exact `mappedTo` routing, embedded context, and terminal `skipped` state; legacy payload inference and consumer-side context maps were removed.
+- Multi-target submit composition now uses the public `createFanoutTransport`; MLSuite consumes it instead of owning `Promise.all` fanout.
 - `src/runtime/form.ts` split
 - `src/runtime/submission/submitter.ts` split
 - `src/runtime/validation/field.ts` split
@@ -97,6 +100,7 @@ No active debt.
 - Primitive field frames now refresh descriptors from the descriptor registry when field state changes, preventing valid number values from rendering as blank after blur.
 - Boolean fields now distinguish unset (`null`) from explicit `false`; no default value leaves both primitive radio options unselected.
 - Field/report backend mapping now uses explicit `mappedTo`; report `source` and report-id backend fallback were removed from active schema contracts.
+- Report results now use one strict `(backend, mappedTo)` envelope with explicit `pending`, `ready`, or terminal `skipped` status; parallel context maps and payload-shape inference are unnecessary.
 - `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
 - Package export type paths now point at emitted `dist/types/src/*` declarations.
 - Submission results and requests now expose `inputs`, `displayValues`, and `modelValues` so consumers can use `mappedTo`/`displayKey` contracts instead of field ids for external data.

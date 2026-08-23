@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { SubmissionInputRecord } from "@/schema";
+import type { ReportResult, SubmissionInputRecord } from "@/schema";
 
 export interface SubmitRequest<
   TField extends Record<string, unknown> = Record<string, unknown>,
@@ -21,7 +21,7 @@ export interface SubmitRequest<
 }
 
 export interface TransportResponse {
-  reports?: readonly unknown[];
+  reports?: readonly ReportResult[];
   meta?: Record<string, unknown>;
   raw?: unknown;
 }

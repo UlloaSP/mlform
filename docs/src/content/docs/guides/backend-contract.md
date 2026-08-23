@@ -3,7 +3,7 @@ title: Backend Contract
 description: Shape requests and responses for MLForm transports.
 ---
 
-The default JSON transport sends model values keyed by resolved `mappedTo` targets:
+Transports receive model values keyed by resolved `mappedTo` targets:
 
 ```json
 {
@@ -13,15 +13,18 @@ The default JSON transport sends model values keyed by resolved `mappedTo` targe
 }
 ```
 
-It expects any parseable response. The recommended response is:
+Return explicit report envelopes:
 
 ```json
 {
-  "reports": {
-    "report_key": {
-      "value": "model output"
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "report_key",
+      "status": "ready",
+      "payload": { "value": "model output" }
     }
-  },
+  ],
   "meta": {
     "model": "version"
   }
@@ -32,22 +35,6 @@ Use `request.displayValues` for review/export data keyed by `displayKey`; fields
 
 Use `createSubmissionSnapshot(form, options)` when an app needs the same records for review, persistence, or export before submit.
 
-Use `createMultiBackendSubmissionSnapshot(form, { backends })` when one visible form feeds several models with different `mappedTo` keys. Use `executeMultiBackendPipeline({ form, backends })` when one user action should submit each backend and keep per-backend results, report fetch outputs, errors, skipped reports, and report contexts. `createFanoutTransport` is still transport-level fanout; it does not resolve schema mappings per backend.
+Use `createMultiBackendSubmissionSnapshot(form, { backends })` when one visible form feeds several models with different `mappedTo` keys. Use `executeMultiBackendPipeline({ form, backends })` when one user action should submit each backend and keep per-backend results, report fetch outputs, errors, skipped reports, and report contexts.
 
-Use `createJsonTransport({ body })` when the backend needs a different request shape:
-
-```ts
-const transport = createJsonTransport({
-  endpoint: "/api/predict",
-  body(request) {
-    return JSON.stringify({
-      values: request.modelValues,
-      reports: request.reports.map((report) => report.mappedTo),
-    });
-  },
-});
-```
-
-Use `createJsonTransport({ parse })` when the backend returns text, nested JSON, or a streaming gateway result.
-
-Legacy `outputs` responses are compatibility behavior only. New backends should return `reports`.
+`ready` requires `payload`. `pending` carries optional report-specific context into client fetch. `skipped` records non-applicability as terminal state. Each envelope is addressed by its exact `(backend, mappedTo)` pair; malformed and legacy shapes fail submission.

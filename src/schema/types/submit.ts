@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { MappedTo } from "../mapped-to";
+import type { MappedToTarget } from "../mapped-to";
 
 export interface SubmissionInputRecord {
   fieldId: string;
@@ -25,10 +26,28 @@ export interface ReportContext {
   backend?: string;
   displayValues: Record<string, unknown>;
   modelValues: Record<string, unknown>;
-  reports: readonly unknown[];
+  reports: readonly ReportResult[];
   meta: Record<string, unknown>;
   raw: unknown;
 }
+
+export interface ReportResultContext {
+  displayValues?: Record<string, unknown>;
+  modelValues?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+  raw?: unknown;
+}
+
+interface BaseReportResult {
+  backend: string;
+  mappedTo: MappedToTarget;
+  context?: ReportResultContext;
+}
+
+export type ReportResult =
+  | (BaseReportResult & { status: "pending" })
+  | (BaseReportResult & { status: "ready"; payload: unknown })
+  | (BaseReportResult & { status: "skipped"; reason?: string });
 
 export interface SubmitResult<TReportState = unknown> {
   backend?: string;
@@ -39,7 +58,7 @@ export interface SubmitResult<TReportState = unknown> {
   fieldValues: Record<string, unknown>;
   serializedValues: Record<string, unknown>;
   serializedFieldValues: Record<string, unknown>;
-  reports: readonly unknown[];
+  reports: readonly ReportResult[];
   reportContexts?: Record<string, ReportContext>;
   reportStates: Record<string, TReportState>;
   meta: Record<string, unknown>;

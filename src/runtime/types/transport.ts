@@ -7,6 +7,7 @@ import type { NormalizedFieldConfig } from "./field";
 import type { NormalizedReportConfig, ReportStateSnapshot } from "./report";
 
 export type { SubmissionInputRecord } from "@/schema";
+export type { ReportContext, ReportResult, ReportResultContext } from "@/schema";
 export type { TransportResponse } from "@/transport";
 
 export type SubmitRequest = BaseSubmitRequest<NormalizedFieldConfig, NormalizedReportConfig>;

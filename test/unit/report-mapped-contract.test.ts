@@ -16,51 +16,109 @@ describe("report mapped contract", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk_score", prediction: "high" }],
+          reports: [],
         }),
       },
     });
 
     const result = await form.submit();
     expect(result.reportStates["ui-risk"]?.status).toBe("idle");
-    expect(result.reports).toEqual([{ mappedTo: "risk_score", prediction: "high" }]);
+    expect(result.reports).toEqual([]);
   });
 
-  it("fails duplicate report mapped targets at schema normalization", () => {
-    expect(() =>
-      createForm({
-        schema: {
-          fields: [{ kind: "text", label: "Name" }],
+  it("lets distinct report controllers consume one backend payload", async () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+        reports: [
+          { kind: "classifier", id: "risk-a", mappedTo: "risk_score" },
+          { kind: "classifier", id: "risk-b", mappedTo: "risk_score" },
+        ],
+      },
+      registry: createMlRegistryPack().registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
           reports: [
-            { kind: "classifier", id: "risk-a", mappedTo: "risk_score" },
-            { kind: "classifier", id: "risk-b", mappedTo: "risk_score" },
+            {
+              backend: "model-a",
+              mappedTo: "risk_score",
+              status: "ready",
+              payload: { prediction: "high" },
+            },
           ],
-        },
-        registry: createMlRegistryPack().registry,
-        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
-      }),
-    ).toThrow(/Duplicate report mappedTo "risk_score"/);
+        }),
+      },
+    });
+
+    const result = await form.submit({ backend: "model-a" });
+    expect(result.reportStates["risk-a"]).toEqual(
+      expect.objectContaining({ status: "ready", payload: { prediction: "high" } }),
+    );
+    expect(result.reportStates["risk-b"]).toEqual(
+      expect.objectContaining({ status: "ready", payload: { prediction: "high" } }),
+    );
   });
 
-  it("does not resolve legacy report output aliases", () => {
+  it("resolves the exact backend and mappedTo pair", () => {
     const payload = resolveMappedReportPayload(
-      { mappedTo: "new_risk" },
+      { id: "ui-risk", mappedTo: { modelA: "risk", modelB: "risk" } },
       {
-        reports: [{ mappedTo: "old_risk", prediction: "legacy" }],
+        backend: "modelA",
+        reports: [
+          { backend: "modelA", mappedTo: "risk", status: "ready", payload: { score: 1 } },
+          { backend: "modelB", mappedTo: "risk", status: "ready", payload: { score: 2 } },
+        ],
       },
     );
 
-    expect(payload).toBeUndefined();
+    expect(payload).toEqual({ score: 1 });
   });
 
-  it("resolves report mappedTo backend maps without falling back to report id", () => {
-    const payload = resolveMappedReportPayload(
-      { id: "ui-risk", mappedTo: { modelA: "risk_a", modelB: "risk_b" } },
-      {
-        reports: [{ mappedTo: "risk_b", prediction: "high" }],
+  it("rejects legacy report payload shapes", async () => {
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+        reports: [{ kind: "classifier", id: "risk", mappedTo: "risk_score" }],
       },
-    );
+      registry: createMlRegistryPack().registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: [{ mappedTo: "risk_score", prediction: "high" }],
+        }),
+      },
+    });
 
-    expect(payload).toEqual({ prediction: "high" });
+    await expect(form.submit()).rejects.toThrow(/invalid report result/i);
+  });
+
+  it("commits skipped as a terminal report state", async () => {
+    const pack = createMlRegistryPack();
+
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", label: "Name" }],
+        reports: [{ kind: "classifier", id: "risk", mappedTo: "risk_score" }],
+      },
+      registry: pack.registry,
+      transport: {
+        submit: vi.fn().mockResolvedValue({
+          reports: [
+            {
+              backend: "model-a",
+              mappedTo: "risk_score",
+              status: "skipped",
+              reason: "not-applicable",
+            },
+          ],
+        }),
+      },
+    });
+
+    const result = await form.submit({ backend: "model-a" });
+    expect(result.reportStates.risk).toEqual({
+      payload: undefined,
+      error: null,
+      status: "skipped",
+    });
   });
 });

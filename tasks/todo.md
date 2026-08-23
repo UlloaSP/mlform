@@ -1,5 +1,36 @@
 # Todo
 
+## MLSuite capability contract 0.1.20
+
+### Goal
+
+- [x] Distinguish report runtime identity from backend `mappedTo` payload identity.
+- [x] Let transports provide per-report context without hiding maps in `raw` or `meta`.
+- [x] Represent non-applicable reports with terminal `skipped` state.
+- [x] Replace legacy report envelopes; compatibility is intentionally out of scope before stable release.
+- [x] Own registry-driven schema diagnostics and JSON Schema generation.
+- [x] Own reusable concurrent transport fanout.
+
+### Plan
+
+- [x] Add focused contract tests for backend-scoped payloads, transport contexts, and skipped reports.
+- [x] Define one required `ReportResult` envelope keyed by `(backend, mappedTo)` with `pending`, `ready`, and `skipped` variants.
+- [x] Remove duplicate-target normalization restriction once lookup is unambiguous.
+- [x] Delete legacy payload inference and reject malformed transport responses.
+- [x] Update public docs, package version, debt ledger, and migration notes.
+- [x] Run focused tests, `vp check`, typecheck, full tests, build, line scan, and graphify.
+- [x] Migrate MLSuite off handwritten schema tooling, mappedTo resolution, and Promise fanout.
+
+### Review
+
+- Prepared the source contract as 0.1.20: every transport report is a strict backend-scoped `pending`, `ready`, or `skipped` envelope.
+- Report configuration ids remain runtime identity; payload lookup uses exact `(backend, mappedTo)` and permits multiple report instances to consume one result.
+- Report context now travels in each result envelope and reaches report fetchers without consumer-side maps or request patching.
+- Legacy payload inference, artificial targets, skipped sentinels, and duplicate-target rejection were removed.
+- Added public `validateSchema`, `findUnknownKinds`, and `toSchemaJsonSchema`; JSON Schema is generated directly from the active registry.
+- Added public `createFanoutTransport` with collect/fail-fast policies and ordered merge outcomes.
+- Verification passed: `vp check`, typecheck, 31 test files/257 tests, package build, docs check/build, source line cap, `git diff --check`, and `graphify update .` (2,062 nodes/5,588 edges).
+
 ## Transport reachability cleanup
 
 ### Goal

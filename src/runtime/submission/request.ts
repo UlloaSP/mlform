@@ -8,9 +8,8 @@ import {
   type MappedTo,
   type SubmissionInputRecord,
 } from "@/schema";
-import type { NormalizedFieldConfig, TransportResponse } from "../types";
+import type { NormalizedFieldConfig } from "../types";
 import { cloneValue } from "../values";
-import { isRecord } from "../utils";
 
 type SubmissionField = {
   readonly id: string;
@@ -241,21 +240,5 @@ export const buildSubmissionValueRecords = (
     fieldValues,
     serializedValues,
     serializedFieldValues,
-  };
-};
-
-export const normalizeTransportResponse = (response: unknown): TransportResponse => {
-  if (!isRecord(response)) {
-    return { raw: response };
-  }
-
-  const reports = Array.isArray(response.reports) ? response.reports : undefined;
-  const meta = isRecord(response.meta) ? response.meta : undefined;
-  const raw = "raw" in response ? response.raw : response;
-
-  return {
-    reports,
-    meta,
-    raw,
   };
 };

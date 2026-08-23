@@ -32,3 +32,17 @@ Core terms:
 | inactive field | Hidden, disabled, or read-only field. Submit behavior depends on policy. |
 
 Schema should describe meaning, not screen placement. Put grouping, steps, tabs, and review screens in layout.
+
+## Registry-driven tooling
+
+Use the same registry for runtime, diagnostics, and editor completion:
+
+```ts
+import { findUnknownKinds, toSchemaJsonSchema, validateSchema } from "mlform/schema";
+
+const validation = validateSchema(input, registry);
+const jsonSchema = toSchemaJsonSchema(registry);
+const unknownKinds = findUnknownKinds(input, registry);
+```
+
+`validateSchema` returns normalized data or path-based issues. JSON Schema includes every field and report definition currently registered, including application plugins.

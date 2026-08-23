@@ -5,11 +5,8 @@ import { createAbortError, isAbortLikeError, ValidationError } from "../errors";
 import { createReportContexts } from "@/schema";
 import { createSubmissionAbortManager } from "./abort";
 import { createSubmissionLifecycle } from "./lifecycle";
-import {
-  buildSubmissionValueRecords,
-  cloneSubmissionValueRecords,
-  normalizeTransportResponse,
-} from "./request";
+import { buildSubmissionValueRecords, cloneSubmissionValueRecords } from "./request";
+import { normalizeTransportResponse } from "./transport-response";
 import { cloneSubmissionResult, createSubmissionResult } from "./result";
 import { commitReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";

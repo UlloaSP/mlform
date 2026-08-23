@@ -4,6 +4,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { mountForm } from "@/kit";
 import { flush, getShadow } from "./kit-integration-helpers";
+import { readyReport } from "../report-result";
 
 describe("kit integration", () => {
   it("forwards report transport to built-in reports through the kit mount", async () => {
@@ -16,12 +17,11 @@ describe("kit integration", () => {
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [
-            {
-              mappedTo: "risk",
+            readyReport("risk", {
               prediction: "high",
               labels: ["low", "high"],
               probabilities: [0.15, 0.85],
-            },
+            }),
           ],
         }),
       },

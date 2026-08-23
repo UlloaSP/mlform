@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { mappedToKey, resolveMappedTo, type MappedTo } from "./mapped-to";
+import {
+  mappedToKey,
+  resolveMappedReportResult,
+  resolveMappedTo,
+  type MappedTo,
+} from "./mapped-to";
 import type { NormalizedReportConfig } from "./types/report";
 import type { ReportContext, SubmitResult } from "./types/submit";
 
@@ -54,7 +59,9 @@ export const createReportContexts = (
 ): Record<string, ReportContext> =>
   Object.fromEntries(
     reports.map((report) => {
-      const target = resolveMappedTo(report.mappedTo, result.backend);
+      const reportResult = resolveMappedReportResult(report, result);
+      const context = reportResult?.context;
+      const target = reportResult?.mappedTo ?? resolveMappedTo(report.mappedTo, result.backend);
       return [
         report.id,
         {
@@ -64,12 +71,12 @@ export const createReportContexts = (
           mappedTo: report.mappedTo,
           target,
           targetKey: target === undefined ? undefined : mappedToKey(target),
-          backend: result.backend,
-          displayValues: result.displayValues ?? {},
-          modelValues: result.modelValues ?? result.serializedValues,
+          backend: reportResult?.backend ?? result.backend,
+          displayValues: context?.displayValues ?? result.displayValues ?? {},
+          modelValues: context?.modelValues ?? result.modelValues ?? result.serializedValues,
           reports: result.reports,
-          meta: result.meta,
-          raw: result.raw,
+          meta: context?.meta ?? result.meta,
+          raw: context && "raw" in context ? context.raw : result.raw,
         },
       ];
     }),
@@ -90,5 +97,10 @@ export const getReportContext = (
     return undefined;
   }
 
-  return Object.values(contexts).find((context) => context.targetKey === targetKey);
+  const matches = Object.values(contexts).filter(
+    (context) =>
+      context.targetKey === targetKey &&
+      (source.backend === undefined || context.backend === source.backend),
+  );
+  return matches.length === 1 ? matches[0] : undefined;
 };

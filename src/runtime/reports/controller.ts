@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { defaultEquality } from "../equality";
-import { resolveMappedReportPayload } from "@/schema";
+import { resolveMappedReportPayload, resolveMappedReportResult } from "@/schema";
 import { createTransportRequestRunner, extractErrorMessage } from "@/transport";
 import { ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
@@ -161,6 +161,10 @@ export const createReportController = ({
       let rawPayload: unknown;
 
       try {
+        const mappedResult = resolveMappedReportResult(readonlyConfig, result);
+        if (mappedResult?.status === "skipped") {
+          return { payload: undefined, error: null, status: "skipped" };
+        }
         rawPayload = definition.resolvePayload
           ? await definition.resolvePayload(readonlyConfig, {
               report: readonlyConfig,

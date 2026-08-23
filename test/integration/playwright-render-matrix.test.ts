@@ -136,7 +136,16 @@ const appModule = `
     initialValues: { "runtime-score": 7, "runtime-sex": "M" },
     transport: {
       submit: async (request) => {
-        return { reports: [{ mappedTo: "risk_b", prediction: "high", score: 0.91 }] };
+        return {
+          reports: [
+            {
+              backend: "modelB",
+              mappedTo: "risk_b",
+              status: "ready",
+              payload: { prediction: "high", score: 0.91 },
+            },
+          ],
+        };
       },
     },
   });
@@ -277,7 +286,14 @@ describe("Playwright render matrix", () => {
       sex_f_a: 0,
       sex_f_b: 0,
     });
-    expect(submitResult.reports).toEqual([{ mappedTo: "risk_b", prediction: "high", score: 0.91 }]);
+    expect(submitResult.reports).toEqual([
+      {
+        backend: "modelB",
+        mappedTo: "risk_b",
+        status: "ready",
+        payload: { prediction: "high", score: 0.91 },
+      },
+    ]);
     expect(submitResult.fetchRequest.modelValues).toEqual(submitResult.modelValues);
     expect(submitResult.text).toContain("Risk summary");
     expect(submitResult.text).toContain("Context dump");

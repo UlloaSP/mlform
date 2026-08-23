@@ -9,7 +9,7 @@ export type PrimitiveFormStatus =
   | "success"
   | "error";
 
-export type PrimitiveReportStatus = "idle" | "loading" | "ready" | "error";
+export type PrimitiveReportStatus = "idle" | "loading" | "ready" | "skipped" | "error";
 
 export interface PrimitiveFieldStateSnapshot {
   value: unknown;

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
+import { readyReport } from "../report-result";
 import { mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
@@ -31,12 +32,11 @@ describe("kit disclosure integration", () => {
   it("mounts disclosure UI, toggles sections, submits, and renders reports", async () => {
     const submit = vi.fn().mockResolvedValue({
       reports: [
-        {
-          mappedTo: "risk",
+        readyReport("risk", {
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
-        },
+        }),
       ],
     });
     const container = document.createElement("div");

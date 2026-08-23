@@ -7,7 +7,7 @@ import type { MappedTo } from "../mapped-to";
 import type { ReportContext, SubmitResult } from "./submit";
 import type { SubmissionInputRecord } from "./submit";
 
-export type ReportStatus = "idle" | "loading" | "ready" | "error";
+export type ReportStatus = "idle" | "loading" | "ready" | "skipped" | "error";
 export type ReportFetchStatus = ReportStatus;
 export type ReportPayloadValidationPolicy = "report-error" | "fail-submit";
 

@@ -3,6 +3,7 @@
 
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { readyReport } from "../report-result";
 import { createMlRegistryPack } from "@/builtins";
 import type { FieldPresenter, ReportPresenter } from "@/primitives";
 import {
@@ -1005,12 +1006,11 @@ describe("primitives", () => {
   it("binds built-in controls to the engine, emits success events, and renders reports after submit", async () => {
     const submit = vi.fn().mockResolvedValue({
       reports: [
-        {
-          mappedTo: "risk",
+        readyReport("risk", {
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
-        },
+        }),
       ],
     });
 
@@ -1178,7 +1178,7 @@ describe("primitives", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "score", value: 0 }],
+          reports: [readyReport("score", { value: 0 })],
         }),
       },
     });
@@ -1237,7 +1237,7 @@ describe("primitives", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "risk", prediction: "approve", probabilities: [0.85, 0.15] }],
+          reports: [readyReport("risk", { prediction: "approve", probabilities: [0.85, 0.15] })],
         }),
       },
     });
@@ -1299,7 +1299,7 @@ describe("primitives", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: [{ mappedTo: "score", value: 0.9 }] }),
+        submit: vi.fn().mockResolvedValue({ reports: [readyReport("score", { value: 0.9 })] }),
       },
     });
 
@@ -1696,7 +1696,7 @@ describe("primitives", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "probe", ok: true }],
+          reports: [readyReport("probe", { ok: true })],
         }),
       },
     });
@@ -1887,7 +1887,7 @@ describe("primitives", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: [{ mappedTo: "probe", ok: true }],
+          reports: [readyReport("probe", { ok: true })],
         }),
       },
     });
