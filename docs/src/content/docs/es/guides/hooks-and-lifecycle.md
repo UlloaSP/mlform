@@ -14,8 +14,8 @@ const mounted = mountForm(container, {
     afterValidate({ result }) {
       console.log(result.valid);
     },
-    beforeSubmit({ serializedValues, signal }) {
-      console.log(serializedValues, signal.aborted);
+    beforeSubmit({ modelValues, signal }) {
+      console.log(modelValues, signal.aborted);
     },
     afterSubmit({ result }) {
       console.log(result.reports);

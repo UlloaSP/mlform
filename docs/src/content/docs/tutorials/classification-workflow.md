@@ -11,12 +11,13 @@ Show a classifier report with class labels and probabilities.
 mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/classify" }),
   schema: {
-    fields: [{ id: "text", kind: "text", label: "Text", required: true }],
+    fields: [{ id: "text", kind: "text", label: "Text", mappedTo: "text", required: true }],
     reports: [
       {
         id: "intent",
         kind: "classifier",
         label: "Intent",
+        mappedTo: "intent",
         labels: ["support", "sales", "other"],
         showClassProbabilities: true,
       },
@@ -29,17 +30,17 @@ Response:
 
 ```json
 {
-  "reports": {
-    "intent": {
-      "label": "support",
-      "confidence": 0.88,
-      "probabilities": {
-        "support": 0.88,
-        "sales": 0.07,
-        "other": 0.05
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "intent",
+      "status": "ready",
+      "payload": {
+        "prediction": "support",
+        "probabilities": [0.88, 0.07, 0.05]
       }
     }
-  }
+  ]
 }
 ```
 

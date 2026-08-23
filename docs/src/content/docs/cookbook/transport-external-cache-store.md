@@ -22,7 +22,7 @@ const transport = pipe(
   myTransport,
   withCache({
     scope: "predict-form",
-    key: (request) => JSON.stringify(request.serializedValues),
+    key: (request) => JSON.stringify(request.modelValues),
     ttl: 60_000,
     store: cacheStore,
     allowUnsafeCache: true,

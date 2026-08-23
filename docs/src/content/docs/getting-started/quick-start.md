@@ -31,6 +31,7 @@ const mounted = mountForm(container as HTMLElement, {
         id: "prompt",
         kind: "text",
         label: "Prompt",
+        mappedTo: "prompt",
         required: true,
         minLength: 3,
       },
@@ -38,6 +39,7 @@ const mounted = mountForm(container as HTMLElement, {
         id: "threshold",
         kind: "number",
         label: "Confidence threshold",
+        mappedTo: "threshold",
         min: 0,
         max: 1,
         step: 0.05,
@@ -49,6 +51,7 @@ const mounted = mountForm(container as HTMLElement, {
         id: "prediction",
         kind: "classifier",
         label: "Prediction",
+        mappedTo: "prediction",
       },
     ],
   },
@@ -80,20 +83,21 @@ The default JSON transport sends serialized values under the `inputs` key:
 
 Next, build the endpoint in [First Backend](./first-backend/).
 
-Return reports keyed by report id:
+Return explicit report envelopes:
 
 ```json
 {
-  "reports": {
-    "prediction": {
-      "label": "Approved",
-      "confidence": 0.91,
-      "probabilities": {
-        "Approved": 0.91,
-        "Rejected": 0.09
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "prediction",
+      "status": "ready",
+      "payload": {
+        "prediction": "Approved",
+        "probabilities": [0.91, 0.09]
       }
     }
-  },
+  ],
   "meta": {
     "model": "credit-risk-v2"
   }

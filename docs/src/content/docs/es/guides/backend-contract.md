@@ -7,7 +7,7 @@ El transporte recibe valores de modelo keyed por `mappedTo` resuelto:
 
 ```json
 {
-  "inputs": {
+  "modelValues": {
     "feature_key": "Example text"
   }
 }
@@ -22,7 +22,7 @@ La respuesta recomendada es:
       "backend": "default",
       "mappedTo": "report_key",
       "status": "ready",
-      "payload": { "label": "Approved", "confidence": 0.91 }
+      "payload": { "prediction": "Approved", "probabilities": [0.91, 0.09] }
     }
   ],
   "meta": {
@@ -31,7 +31,7 @@ La respuesta recomendada es:
 }
 ```
 
-Usa `request.displayValues` para review/export keyed por `displayKey`; campos sin `displayKey` se omiten. Usa `request.serializedValues` o `request.modelValues` para backend/modelo keyed por `mappedTo`. El field `id` sigue siendo handle runtime para estado UI.
+Usa `request.displayValues` para review/export keyed por `displayKey`; campos sin `displayKey` se omiten. Usa `request.modelValues` para backend/modelo keyed por `mappedTo`. El field `id` sigue siendo handle runtime para estado UI.
 
 Usa `createSubmissionSnapshot(form, options)` cuando una app necesita los mismos records para review, persistencia o export antes del submit.
 

@@ -6,21 +6,24 @@ description: Predicciones numéricas con unidades, precisión e intervalo.
 Usa `regressor` para valores numéricos.
 
 ```ts
-reports: [{ id: "forecast", kind: "regressor", label: "Forecast" }];
+reports: [{ id: "forecast", kind: "regressor", label: "Forecast", mappedTo: "forecast" }];
 ```
 
 Respuesta recomendada:
 
 ```json
 {
-  "reports": {
-    "forecast": {
-      "value": 128400,
-      "unit": "USD",
-      "precision": 0,
-      "confidenceInterval": [112000, 142500]
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "forecast",
+      "status": "ready",
+      "payload": {
+        "value": 128400,
+        "interval": [112000, 142500]
+      }
     }
-  }
+  ]
 }
 ```
 

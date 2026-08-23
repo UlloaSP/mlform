@@ -7,7 +7,7 @@ Transports receive model values keyed by resolved `mappedTo` targets:
 
 ```json
 {
-  "inputs": {
+  "modelValues": {
     "feature_key": "serialized value"
   }
 }
@@ -31,7 +31,7 @@ Return explicit report envelopes:
 }
 ```
 
-Use `request.displayValues` for review/export data keyed by `displayKey`; fields without `displayKey` are omitted. Use `request.serializedValues` or `request.modelValues` for backend/model data keyed by `mappedTo`. Field `id` remains a runtime handle for UI state.
+Use `request.displayValues` for review/export data keyed by `displayKey`; fields without `displayKey` are omitted. Use `request.modelValues` for backend/model data keyed by `mappedTo`. Field `id` remains a runtime handle for UI state.
 
 Use `createSubmissionSnapshot(form, options)` when an app needs the same records for review, persistence, or export before submit.
 

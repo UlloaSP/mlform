@@ -14,16 +14,21 @@ MLForm envía los valores serializados en una petición JSON. El contrato recome
 }
 ```
 
-La respuesta recomendada usa `reports`, con claves que coinciden con los ids de informes.
+La respuesta recomendada usa un array `reports` de envelopes explícitos.
 
 ```json
 {
-  "reports": {
-    "prediction": {
-      "label": "Approved",
-      "confidence": 0.91
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "prediction",
+      "status": "ready",
+      "payload": {
+        "prediction": "Approved",
+        "probabilities": [0.91, 0.09]
+      }
     }
-  },
+  ],
   "meta": {
     "model": "credit-risk-v2"
   }
@@ -42,12 +47,17 @@ app.post("/api/predict", (request, response) => {
   const values = request.body["inputs"];
 
   response.json({
-    reports: {
-      prediction: {
-        label: values.prompt.length > 10 ? "Approved" : "Review",
-        confidence: 0.86,
+    reports: [
+      {
+        backend: "default",
+        mappedTo: "prediction",
+        status: "ready",
+        payload: {
+          prediction: values.prompt.length > 10 ? "Approved" : "Review",
+          probabilities: [0.86, 0.14],
+        },
       },
-    },
+    ],
     meta: { model: "demo" },
   });
 });
@@ -68,12 +78,17 @@ class PredictRequest(BaseModel):
 def predict(payload: PredictRequest):
     prompt = payload.values.get("prompt", "")
     return {
-        "reports": {
-            "prediction": {
-                "label": "Approved" if len(prompt) > 10 else "Review",
-                "confidence": 0.86,
+        "reports": [
+            {
+                "backend": "default",
+                "mappedTo": "prediction",
+                "status": "ready",
+                "payload": {
+                    "prediction": "Approved" if len(prompt) > 10 else "Review",
+                    "probabilities": [0.86, 0.14],
+                },
             }
-        },
+        ],
         "meta": {"model": "demo"},
     }
 ```

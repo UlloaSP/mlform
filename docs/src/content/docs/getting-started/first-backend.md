@@ -14,16 +14,21 @@ The default kit transport sends a JSON request with serialized field values unde
 }
 ```
 
-Return a `reports` object keyed by report id. `meta` is optional and can carry request ids, model version, timing, or audit information.
+Return a `reports` array of explicit envelopes. `meta` is optional and can carry request ids, model version, timing, or audit information.
 
 ```json
 {
-  "reports": {
-    "prediction": {
-      "label": "Approved",
-      "confidence": 0.91
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "prediction",
+      "status": "ready",
+      "payload": {
+        "prediction": "Approved",
+        "probabilities": [0.91, 0.09]
+      }
     }
-  },
+  ],
   "meta": {
     "model": "credit-risk-v2"
   }
@@ -47,12 +52,17 @@ app.post("/api/predict", (req, res) => {
   }
 
   res.json({
-    reports: {
-      prediction: {
-        label: "Approved",
-        confidence: Number(threshold ?? 0.75),
+    reports: [
+      {
+        backend: "default",
+        mappedTo: "prediction",
+        status: "ready",
+        payload: {
+          prediction: "Approved",
+          probabilities: [Number(threshold ?? 0.75), 1 - Number(threshold ?? 0.75)],
+        },
       },
-    },
+    ],
     meta: { model: "demo" },
   });
 });
@@ -76,12 +86,17 @@ def predict(request: PredictRequest):
         raise HTTPException(status_code=400, detail="Prompt is required.")
 
     return {
-        "reports": {
-            "prediction": {
-                "label": "Approved",
-                "confidence": request.values.get("threshold", 0.75),
+        "reports": [
+            {
+                "backend": "default",
+                "mappedTo": "prediction",
+                "status": "ready",
+                "payload": {
+                    "prediction": "Approved",
+                    "probabilities": [request.values.get("threshold", 0.75), 1 - request.values.get("threshold", 0.75)],
+                },
             }
-        },
+        ],
         "meta": {"model": "demo"},
     }
 ```

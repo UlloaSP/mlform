@@ -15,12 +15,17 @@ class PredictRequest(BaseModel):
 @app.post("/api/predict")
 def predict(payload: PredictRequest):
     return {
-        "reports": {
-            "prediction": {
-                "label": "Approved",
-                "confidence": 0.91,
+        "reports": [
+            {
+                "backend": "default",
+                "mappedTo": "prediction",
+                "status": "ready",
+                "payload": {
+                    "prediction": "Approved",
+                    "probabilities": [0.91, 0.09],
+                },
             }
-        }
+        ]
     }
 ```
 

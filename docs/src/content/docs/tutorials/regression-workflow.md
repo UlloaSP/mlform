@@ -12,11 +12,11 @@ mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/price" }),
   schema: {
     fields: [
-      { id: "area", kind: "number", label: "Area", min: 0, unit: "m2" },
-      { id: "rooms", kind: "number", label: "Rooms", min: 1, step: 1 },
+      { id: "area", kind: "number", label: "Area", mappedTo: "area", min: 0, unit: "m2" },
+      { id: "rooms", kind: "number", label: "Rooms", mappedTo: "rooms", min: 1, step: 1 },
     ],
     reports: [
-      { id: "price", kind: "regressor", label: "Estimated price", unit: "EUR", precision: 0 },
+      { id: "price", kind: "regressor", label: "Estimated price", mappedTo: "price", unit: "EUR", precision: 0 },
     ],
   },
 });
@@ -26,11 +26,14 @@ Response:
 
 ```json
 {
-  "reports": {
-    "price": {
-      "value": 275000
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "price",
+      "status": "ready",
+      "payload": { "value": 275000 }
     }
-  }
+  ]
 }
 ```
 

@@ -9,7 +9,7 @@ Hooks run around validation and submit:
 hooks: {
   beforeValidate({ values, submitCount }) {},
   afterValidate({ result }) {},
-  beforeSubmit({ serializedValues, signal }) {},
+  beforeSubmit({ modelValues, signal }) {},
   afterSubmit({ result }) {},
   onSubmitError({ error }) {},
 }

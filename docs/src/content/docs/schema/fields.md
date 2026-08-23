@@ -38,6 +38,6 @@ Shared field options also include:
 
 - `showDescriptionInline`: Shows `description` by default instead of waiting for the help button.
 - `inactiveFieldPolicy`: Controls whether hidden/disabled fields are submitted.
-- `includeInSubmission`: Set to `false` to keep a field out of `values`, `fieldValues`, `serializedValues`, and `serializedFieldValues`.
+- `includeInSubmission`: Set to `false` to keep a field out of `inputs`, `displayValues`, and `modelValues`.
 - `mappedTo`: Writes the field to a backend feature name, numeric position, or backend-specific map.
-- `valuePath`: Writes the field into a nested payload path while keeping flat `fieldValues`.
+- `valuePath`: Writes the field into a nested `modelValues` path.

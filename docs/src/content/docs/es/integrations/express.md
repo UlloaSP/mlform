@@ -18,9 +18,14 @@ app.post("/api/predict", (request, response) => {
   }
 
   response.json({
-    reports: {
-      prediction: { label: "Approved", confidence: 0.91 },
-    },
+    reports: [
+      {
+        backend: "default",
+        mappedTo: "prediction",
+        status: "ready",
+        payload: { prediction: "Approved", probabilities: [0.91, 0.09] },
+      },
+    ],
   });
 });
 ```

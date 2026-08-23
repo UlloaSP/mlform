@@ -1,4 +1,5 @@
 import type { FormLayoutConfig, TabsLayoutConfig, WizardLayoutConfig } from "@/kit";
+import type { SubmitRequest, TransportResponse } from "@/runtime";
 import type { FormSchema } from "@/schema";
 
 export type ShowcaseLocale = "en" | "es";
@@ -55,6 +56,7 @@ export const schema: FormSchema = {
       kind: "text",
       label: "Applicant name",
       description: "Shown only to prove the same input can flow through every host.",
+      mappedTo: "name",
       required: true,
     },
     {
@@ -62,6 +64,7 @@ export const schema: FormSchema = {
       kind: "number",
       label: "Annual income",
       description: "Simple number field with the default primitive renderer.",
+      mappedTo: "income",
       required: true,
     },
     {
@@ -69,6 +72,7 @@ export const schema: FormSchema = {
       kind: "number",
       label: "Risk score",
       description: "Higher score means lower risk in the mock transport.",
+      mappedTo: "score",
       required: true,
     },
   ],
@@ -78,6 +82,7 @@ export const schema: FormSchema = {
       kind: "classifier",
       label: "Risk band",
       labels: ["High", "Medium", "Low"],
+      mappedTo: "risk",
     },
   ],
 };
@@ -167,11 +172,11 @@ const normalizeProbabilities = (values: number[]): number[] => {
 };
 
 export const createDemoTransport = () => ({
-  async submit(request: { serializedValues: Record<string, unknown> }) {
+  async submit(request: SubmitRequest): Promise<TransportResponse> {
     await delay(180);
 
-    const income = Number(request.serializedValues.income ?? 0);
-    const score = Number(request.serializedValues.score ?? 0);
+    const income = Number(request.modelValues.income ?? 0);
+    const score = Number(request.modelValues.score ?? 0);
     const stableScore = Number.isFinite(score) ? score : 0;
     const stableIncome = Number.isFinite(income) ? income : 0;
 
@@ -185,12 +190,17 @@ export const createDemoTransport = () => ({
     const prediction = ["high", "medium", "low"][normalized.indexOf(max)] ?? "medium";
 
     return {
-      reports: {
-        risk: {
-          prediction,
-          probabilities: normalized,
+      reports: [
+        {
+          backend: request.backend ?? "default",
+          mappedTo: "risk",
+          status: "ready",
+          payload: {
+            prediction,
+            probabilities: normalized,
+          },
         },
-      },
+      ],
       meta: {
         source: "layout-showcase",
       },

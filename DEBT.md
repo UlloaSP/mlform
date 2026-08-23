@@ -16,7 +16,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 ## Status
 
 - Last reviewed: `2026-08-23`
-- Current focus: strict submission contract 0.1.21
+- Current focus: strict submission contract 0.1.22
 
 ## Active Debt
 
@@ -24,13 +24,14 @@ No active debt.
 
 ## Recent Progress
 
+- Docs demo transport and contract examples now use `modelValues`, explicit `mappedTo`, and strict report envelopes; removed submission aliases and keyed report responses no longer remain in docs code or copy.
 - Submission and report-fetch APIs now expose only `inputs`, `displayValues`, and `modelValues`; migration-only value aliases were removed.
 - Schema diagnostics now preserve exact normalization paths, include nested series kinds, and generate JSON Schema from the active registry.
 - Public mapped-target routing preserves backend identity through `resolveMappedRoutes`.
 - Spanish and unverifiable legacy documentation was removed; the English documentation now covers only current exports and contracts.
 
 - Registry-driven schema diagnostics and JSON Schema generation now live in MLForm; MLSuite's handwritten Zod/JSON Schema mirrors were removed.
-- Report results now use one strict backend-scoped 0.1.21 envelope with exact `mappedTo` routing, embedded context, and terminal `skipped` state; legacy payload inference and consumer-side context maps were removed.
+- Report results now use one strict backend-scoped 0.1.22 envelope with exact `mappedTo` routing, embedded context, and terminal `skipped` state; legacy payload inference and consumer-side context maps were removed.
 - Multi-target submit composition now uses the public `createFanoutTransport`; MLSuite consumes it instead of owning `Promise.all` fanout.
 - `src/runtime/form.ts` split
 - `src/runtime/submission/submitter.ts` split
