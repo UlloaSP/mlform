@@ -16,7 +16,7 @@ This file is the required ledger for active technical debt, known bugs, architec
 ## Status
 
 - Last reviewed: `2026-08-23`
-- Current focus: transport reachability cleanup
+- Current focus: submit-only transport cleanup
 
 ## Active Debt
 
@@ -100,11 +100,9 @@ No active debt.
 - `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
 - Package export type paths now point at emitted `dist/types/src/*` declarations.
 - Submission results and requests now expose `inputs`, `displayValues`, and `modelValues` so consumers can use `mappedTo`/`displayKey` contracts instead of field ids for external data.
-- Validated streaming report updates no longer fall back to report id as an external payload key when `mappedTo` is missing.
 - Runtime id boundary now has regression coverage: changing field/report ids changes runtime handles only, not `displayKey`/`mappedTo` external contracts.
 - Explicit `displayKey` values are now normalized and duplicate explicit display keys fail before display data can be overwritten; docs now distinguish `id`, `mappedTo`, `displayKey`, and `label`.
 - Display values no longer use labels as fallback data keys; fields without `displayKey` are omitted from `displayValues`.
-- Validated streamed report updates now fail submit when the target report lacks a resolved `mappedTo`, instead of silently ignoring the payload or forcing consumers to infer report ids.
 - Public `createSubmissionSnapshot(form, options)` exposes the same submission records before submit so consumers no longer need a transport call to inspect review/export/model payloads.
 - Public `resolveOneHotDisplayValue(field, modelValues, options)` restores selected one-hot UI values from saved model columns, including backend-specific targets.
 - Submission snapshot coverage now proves backend-specific and numeric `mappedTo` targets produce stable display/model records without consumer-side reconstruction.
@@ -120,7 +118,7 @@ No active debt.
 - Playwright is now a dev dependency and browser render coverage exercises real mounted UI with custom field/report plugins, `onehot-category`, backend-map `mappedTo`, mapped report payload lookup, and multi-backend report context targets.
 - Report payload lookup now resolves backend-map `mappedTo` targets when no single backend is selected, so mounted/fanout-like report arrays bind by external report target without report-id fallback.
 - Trusted report plugins can now render custom DOM through `render.mount` while declarative report descriptors remain the default.
-- Transport now contains only production-reached submit/stream contracts, request lifecycle handling, and runtime errors. Unused protocols, composition, middleware, state stores, capabilities, and duplicate barrels were removed.
+- Submission streaming removed because no production transport produced events; transport now contains only promise-based submit contracts, request lifecycle handling, and runtime errors.
 
 ## Notes
 

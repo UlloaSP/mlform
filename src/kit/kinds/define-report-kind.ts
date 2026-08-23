@@ -56,7 +56,6 @@ export interface DeclarativeReportKind<
   schema: ZodType<TConfig>;
   payloadSchema?: ZodType<unknown>;
   payloadValidationPolicy?: "report-error" | "fail-submit";
-  partialUpdatePolicy?: "trust" | "validate" | "defer";
   clonePayload?: (payload: TPayload, config: TConfig) => TPayload;
   fetch?: ReportFetchFactory<TConfig>;
   resolve: (context: ReportResolveContext<TConfig>) => unknown;
@@ -68,7 +67,6 @@ export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
   schema: import("zod").ZodType<TConfig>;
   payloadSchema?: ReportDefinition<TConfig>["payloadSchema"];
   payloadValidationPolicy?: ReportDefinition<TConfig>["payloadValidationPolicy"];
-  partialUpdatePolicy?: ReportDefinition<TConfig>["partialUpdatePolicy"];
   clonePayload?: ReportDefinition<TConfig>["clonePayload"];
   fetch?: ReportDefinition<TConfig>["fetch"];
   resolvePayload?: ReportDefinition<TConfig>["resolvePayload"];
@@ -88,7 +86,6 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     schema: kind.schema,
     payloadSchema: kind.payloadSchema,
     payloadValidationPolicy: kind.payloadValidationPolicy,
-    partialUpdatePolicy: kind.partialUpdatePolicy,
     clonePayload: kind.clonePayload as ((payload: unknown, config: TConfig) => unknown) | undefined,
     fetch: kind.fetch,
     resolvePayload: (_config, context) =>
@@ -158,7 +155,6 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     schema: kind.schema,
     payloadSchema: kind.payloadSchema,
     payloadValidationPolicy: kind.payloadValidationPolicy,
-    partialUpdatePolicy: kind.partialUpdatePolicy,
     clonePayload: definition.clonePayload,
     fetch: definition.fetch,
     resolvePayload: definition.resolvePayload,

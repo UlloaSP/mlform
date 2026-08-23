@@ -9,7 +9,6 @@ import type { EngineStore } from "../state";
 import type {
   FormHooks,
   NormalizedReportConfig,
-  PartialReportUpdatePolicy,
   ReportController,
   ReportDefinition,
   ReportFetchRequest,
@@ -122,7 +121,6 @@ export type InternalReportController = ReportController & {
   update(result: SubmitResult): Promise<void>;
   markLoading(): void;
   reset(): void;
-  readonly partialUpdatePolicy: PartialReportUpdatePolicy;
 };
 
 export const createReportController = ({
@@ -145,9 +143,6 @@ export const createReportController = ({
     },
     get config() {
       return readonlyConfig;
-    },
-    get partialUpdatePolicy() {
-      return definition.partialUpdatePolicy ?? "trust";
     },
     get canFetch() {
       return definition.fetch !== undefined;

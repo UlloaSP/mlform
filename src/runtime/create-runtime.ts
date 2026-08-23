@@ -95,7 +95,6 @@ export const createForm = (config: CreateFormConfig): FormController => {
 
         runBehaviorValueChange({
           fieldId,
-          source: "local",
           values: nextValues,
         });
       },
@@ -214,21 +213,6 @@ export const createForm = (config: CreateFormConfig): FormController => {
     resolveInactiveFieldPolicy: (field) =>
       resolveInactiveFieldPolicy(field, config.inactiveFieldPolicy),
     inactiveFieldPolicy: config.inactiveFieldPolicy,
-    onRemoteFieldUpdate: async (fieldId) => {
-      const nextValues = getValues();
-      syncDerivedFieldState({
-        values: nextValues,
-        preserveValidationErrors: true,
-        preserveExternalErrors: true,
-        resetInactiveToInitial: shouldResetInactiveFields(),
-        inactiveFieldPolicy: config.inactiveFieldPolicy,
-      });
-      runBehaviorValueChange({
-        fieldId,
-        source: "remote",
-        values: nextValues,
-      });
-    },
     beforeSubmitRecords: runBeforeSubmitRecords,
   });
 

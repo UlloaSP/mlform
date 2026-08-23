@@ -3,7 +3,6 @@
 
 export const transportErrorCodes = {
   ABORTED: "ABORTED",
-  SESSION_RESULT_MISSING: "SESSION_RESULT_MISSING",
 } as const;
 
 export type TransportErrorCode =

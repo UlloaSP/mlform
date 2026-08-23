@@ -10,7 +10,6 @@ import type { SubmissionInputRecord } from "./submit";
 export type ReportStatus = "idle" | "loading" | "ready" | "error";
 export type ReportFetchStatus = ReportStatus;
 export type ReportPayloadValidationPolicy = "report-error" | "fail-submit";
-export type PartialReportUpdatePolicy = "trust" | "validate" | "defer";
 
 export interface BaseReportConfig {
   id?: string;
@@ -81,7 +80,6 @@ export interface ReportDefinition<TConfig extends ReportConfig = ReportConfig> {
   schema: ZodType<TConfig>;
   payloadSchema?: ZodType<unknown>;
   payloadValidationPolicy?: ReportPayloadValidationPolicy;
-  partialUpdatePolicy?: PartialReportUpdatePolicy;
   clonePayload?: (payload: unknown, config: TConfig) => unknown;
   fetch?: ReportFetchFactory<TConfig>;
   resolvePayload?: (

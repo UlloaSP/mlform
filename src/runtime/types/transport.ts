@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  SubmitRequest as BaseSubmitRequest,
-  Transport as BaseTransport,
-  TransportStreamEvent as BaseTransportStreamEvent,
-} from "@/transport";
+import type { SubmitRequest as BaseSubmitRequest, Transport as BaseTransport } from "@/transport";
 import type { SubmissionInputRecord, SubmitResult as SchemaSubmitResult } from "@/schema";
 import type { NormalizedFieldConfig } from "./field";
 import type { NormalizedReportConfig, ReportStateSnapshot } from "./report";
@@ -18,8 +14,6 @@ export type SubmitRequest = BaseSubmitRequest<NormalizedFieldConfig, NormalizedR
 export type SubmitResult = SchemaSubmitResult<ReportStateSnapshot>;
 
 export type Transport = BaseTransport<NormalizedFieldConfig, NormalizedReportConfig>;
-
-export type TransportStreamEvent = BaseTransportStreamEvent;
 
 export interface SubmitOptions {
   signal?: AbortSignal;

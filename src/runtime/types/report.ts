@@ -3,7 +3,6 @@
 
 export type {
   BaseReportConfig,
-  PartialReportUpdatePolicy,
   ReportConfig,
   ReportFetchContext,
   ReportFetchFactory,

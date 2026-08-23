@@ -12,10 +12,6 @@ export type FormRenderState = {
   submitCount: number;
   hasFormErrors: boolean;
   hasLastResult: boolean;
-  submissionLoaded?: number;
-  submissionTotal?: number;
-  submissionMessage?: string;
-  submissionSessionMessageCount?: number;
   visibleFieldIds: string[];
   visibleReportIds: string[];
   reportStateKeys: string[];
@@ -31,10 +27,6 @@ export const sameFormRenderState = (left: FormRenderState, right: FormRenderStat
     left.submitCount === right.submitCount &&
     left.hasFormErrors === right.hasFormErrors &&
     left.hasLastResult === right.hasLastResult &&
-    left.submissionLoaded === right.submissionLoaded &&
-    left.submissionTotal === right.submissionTotal &&
-    left.submissionMessage === right.submissionMessage &&
-    left.submissionSessionMessageCount === right.submissionSessionMessageCount &&
     sameIds(left.visibleFieldIds, right.visibleFieldIds) &&
     sameIds(left.visibleReportIds, right.visibleReportIds) &&
     sameIds(left.reportStateKeys, right.reportStateKeys)
@@ -49,10 +41,6 @@ export const selectFormRenderState = (form: PrimitiveFormController): FormRender
     submitCount: state.submitCount,
     hasFormErrors: state.errors.form.length > 0,
     hasLastResult: state.lastResult !== null,
-    submissionLoaded: state.submissionProgress?.loaded,
-    submissionTotal: state.submissionProgress?.total,
-    submissionMessage: state.submissionProgress?.message,
-    submissionSessionMessageCount: state.submissionProgress?.sessionMessageCount,
     visibleFieldIds: form.fields.filter((field) => field.state.visible).map((field) => field.id),
     visibleReportIds: form.reports.map((report) => report.id),
     reportStateKeys: form.reports.map(

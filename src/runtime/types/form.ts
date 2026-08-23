@@ -21,7 +21,6 @@ import type {
   SubmitOptions,
   SubmitResult,
   Transport,
-  TransportStreamEvent,
 } from "./transport";
 import type { FieldController } from "./field";
 import type { ReportController } from "./report";
@@ -36,19 +35,6 @@ export interface FormValidationResult {
   formErrors: string[];
 }
 
-export interface SubmissionProgressState {
-  loaded?: number;
-  total?: number;
-  message?: string;
-  meta: Record<string, unknown>;
-  chunkCount: number;
-  sessionState?: "opening" | "open" | "closing" | "closed";
-  bufferedMessages?: number;
-  sessionMessageCount?: number;
-  lastSessionMessageType?: string;
-  lastEventType?: TransportStreamEvent["type"];
-}
-
 export interface FormState {
   status: FormStatus;
   submitCount: number;
@@ -57,7 +43,6 @@ export interface FormState {
   touched: boolean;
   values: Record<string, unknown>;
   reportStates: Record<string, ReportStateSnapshot>;
-  submissionProgress: SubmissionProgressState | null;
   errors: {
     form: string[];
     fields: Record<string, string[]>;

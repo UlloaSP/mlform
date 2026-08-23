@@ -260,3 +260,25 @@ Scope: make MLForm remove MLSuite workarounds. Breaking changes are allowed when
 - Submission emits strict 0/1 encoded columns and rejects duplicate or unresolved resolved targets.
 - Docs added for English/Spanish schema usage; `mapped-category` docs now points strict one-hot users to `onehot-category`.
 - Verification: `vp test run test/unit/runtime.test.ts`, `vp run typecheck`, `vp check --fix`, `vp test run`, `vp build`, source line cap, and `graphify update .` passed.
+## Remove Submission Streaming
+
+### Goal
+
+- [x] Remove unsupported submission streaming end to end.
+- [x] Preserve promise-based submit, aborts, mappedTo routing, report resolution, and multi-backend execution.
+
+### Plan
+
+- [x] Remove `Transport.stream`, `TransportStreamEvent`, stream-only errors, and public aliases.
+- [x] Remove incremental field/report update runtime and partial-update policy.
+- [x] Remove stream progress state and primitive progress UI.
+- [x] Remove stream-only tests while retaining normal mappedTo contract coverage.
+- [x] Update `DEBT.md`, run focused/full verification, build, line-cap scan, and graphify.
+
+### Review
+
+- Removed submission streaming contract, runtime event handling, progress state/UI, partial report policies, and remote-only behavior metadata.
+- Preserved submit, abort lifecycle, mapped payload/report routing, report fetch, snapshots, and multi-backend execution.
+- Removed 1,000+ lines and seven stream-only tests; no stale stream symbols remain outside this task record.
+- Verification passed: `vp install`, `vp run typecheck`, focused mappedTo/snapshot/multi-backend/runtime tests, `vp check`, `vp test` (250 tests), `vp build`, source line-cap scan, `git diff --check`, and `graphify update . --force`.
+- Final review found no critical or important issues.

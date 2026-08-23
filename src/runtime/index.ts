@@ -96,7 +96,6 @@ export type {
   SubmitResult,
   SubmissionInputRecord,
   Transport,
-  TransportStreamEvent,
   TransportResponse,
   NotCondition,
   RuntimeBehavior,

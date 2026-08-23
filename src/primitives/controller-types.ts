@@ -84,12 +84,6 @@ export interface PrimitiveFormState {
   submitCount: number;
   errors: { form: readonly string[] };
   lastResult: PrimitiveSubmitResult | null;
-  submissionProgress?: {
-    loaded?: number;
-    total?: number;
-    message?: string;
-    sessionMessageCount?: number;
-  } | null;
 }
 
 export interface PrimitiveFieldController {

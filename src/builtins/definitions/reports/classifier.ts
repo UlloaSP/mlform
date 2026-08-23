@@ -14,7 +14,6 @@ type ClassifierReportConfig = BaseReportConfig & {
 
 export const classifierReportDefinition: BuiltinReportDefinition<ClassifierReportConfig> = {
   kind: "classifier",
-  partialUpdatePolicy: "validate",
   schema: z.object({
     kind: z.literal("classifier"),
     ...baseReportShape,

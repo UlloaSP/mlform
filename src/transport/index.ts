@@ -3,4 +3,4 @@
 
 export { TransportError, transportErrorCodes } from "./errors";
 export { createTransportRequestRunner, extractErrorMessage } from "./request-runner";
-export type { SubmitRequest, Transport, TransportResponse, TransportStreamEvent } from "./types";
+export type { SubmitRequest, Transport, TransportResponse } from "./types";

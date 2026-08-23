@@ -154,7 +154,6 @@ export const createRuntimeController = ({
         for (const [fieldId] of updates) {
           runBehaviorValueChange({
             fieldId,
-            source: "local",
             values: finalValues,
           });
         }

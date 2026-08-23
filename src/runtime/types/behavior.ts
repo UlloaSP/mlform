@@ -10,7 +10,6 @@ import type { FormStatus } from "./form";
 
 export interface RuntimeBehaviorValueChangeEvent {
   fieldId: string;
-  source: "local" | "remote";
   values: Record<string, unknown>;
 }
 

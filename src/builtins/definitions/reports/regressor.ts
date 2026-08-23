@@ -14,7 +14,6 @@ type RegressorReportConfig = BaseReportConfig & {
 
 export const regressorReportDefinition: BuiltinReportDefinition<RegressorReportConfig> = {
   kind: "regressor",
-  partialUpdatePolicy: "validate",
   schema: z.object({
     kind: z.literal("regressor"),
     ...baseReportShape,

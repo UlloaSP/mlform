@@ -115,10 +115,6 @@ export const renderStackedLayout = (options: {
           .idleLabel=${options.submitLabel}
           .validatingLabel=${options.validatingLabel}
           .submittingLabel=${options.submittingLabel}
-          .loaded=${options.state.submissionLoaded}
-          .total=${options.state.submissionTotal}
-          .progressMessage=${options.state.submissionMessage}
-          .sessionMessageCount=${options.state.submissionSessionMessageCount}
           @mlf-submit-request=${options.onSubmitRequest}
         ></mlf-submit-button>
       </div>
@@ -201,10 +197,6 @@ export const renderSplitLayout = (options: {
             .idleLabel=${options.submitLabel}
             .validatingLabel=${options.validatingLabel}
             .submittingLabel=${options.submittingLabel}
-            .loaded=${options.state.submissionLoaded}
-            .total=${options.state.submissionTotal}
-            .progressMessage=${options.state.submissionMessage}
-            .sessionMessageCount=${options.state.submissionSessionMessageCount}
             @mlf-submit-request=${options.onSubmitRequest}
           ></mlf-submit-button>
         </div>
