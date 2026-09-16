@@ -6,7 +6,7 @@ description: Mount MLForm from an Angular component.
 ```ts
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from "@angular/core";
 import { mountForm, type MountedForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 @Component({
   selector: "app-prediction-form",
@@ -18,7 +18,7 @@ export class PredictionFormComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.mounted = mountForm(this.host.nativeElement, {
-      transport: createJsonTransport({ endpoint: "/api/predict" }),
+      transport: predictionTransport,
       schema: {
         fields: [{ id: "prompt", kind: "text", label: "Prompt", required: true }],
         reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],

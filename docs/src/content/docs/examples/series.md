@@ -6,8 +6,10 @@ description: Collect ordered timestamp and value pairs.
 Use `series` when a model needs a sequence of dated numeric observations.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/forecast" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       {

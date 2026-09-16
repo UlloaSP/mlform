@@ -6,7 +6,7 @@ description: Mount MLForm from React with cleanup.
 ```tsx
 import { useEffect, useMemo, useRef } from "react";
 import { mountForm, type MountedForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 import type { FormSchema } from "mlform/schema";
 
 export function PredictionForm() {
@@ -23,7 +23,7 @@ export function PredictionForm() {
     if (!hostRef.current) return;
 
     const mounted: MountedForm = mountForm(hostRef.current, {
-      transport: createJsonTransport({ endpoint: "/api/predict" }),
+      transport: predictionTransport,
       schema,
     });
 

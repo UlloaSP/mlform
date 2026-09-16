@@ -19,24 +19,25 @@ import { createRuntimeController } from "./runtime-controller";
 import { createRuntimeRefresh } from "./runtime-refresh";
 import { createRuntimeValues } from "./runtime-values";
 import type { CreateFormConfig, FormController, FormState } from "./types";
+import { deepFreeze } from "./utils";
+import { createDefinitionBehaviors } from "./definition-behaviors";
 
 export const createForm = (config: CreateFormConfig): FormController => {
   assertTransport(config.transport);
   const normalizedSchema = normalizeSchema(config.schema, config.registry);
-  const behaviors = config.behaviors ?? [];
   const store = createStore(createInitialEngineState(), {
     listenerErrorPolicy: config.listenerErrorPolicy ?? "ignore",
     onListenerError: config.onListenerError,
   });
 
   let cachedSourceState = store.getState();
-  let cachedFormState = toFormState(cachedSourceState);
+  let cachedFormState = deepFreeze(toFormState(cachedSourceState));
 
   const getPublicState = (): FormState => {
     const nextState = store.getState();
     if (nextState !== cachedSourceState) {
       cachedSourceState = nextState;
-      cachedFormState = toFormState(nextState);
+      cachedFormState = deepFreeze(toFormState(nextState));
     }
 
     return cachedFormState;
@@ -117,6 +118,11 @@ export const createForm = (config: CreateFormConfig): FormController => {
     });
   });
 
+  const behaviors = [
+    ...createDefinitionBehaviors(fields, config.registry),
+    ...(config.behaviors ?? []),
+  ];
+
   const fieldMap = new Map<string, InternalFieldController>(
     fields.map((field) => [field.id, field]),
   );
@@ -143,26 +149,30 @@ export const createForm = (config: CreateFormConfig): FormController => {
     inactiveFieldPolicy: config.inactiveFieldPolicy,
   });
 
-  const { runBehaviorValueChange, runBeforeSubmitRecords, validateBehaviors } =
-    createRuntimeBehaviors({
-      registry: config.registry as Registry,
-      behaviors,
-      fields,
-      getValues,
-      getSubmitCount,
-      getFormStatus,
-      commitDerivedValue,
-      syncDerivedState(values) {
-        syncDerivedFieldState({
-          values,
-          preserveValidationErrors: true,
-          preserveExternalErrors: true,
-          resetInactiveToInitial: shouldResetInactiveFields(),
-          inactiveFieldPolicy: config.inactiveFieldPolicy,
-        });
-      },
-      onListenerError: config.onListenerError,
-    });
+  const {
+    runBehaviorValueChange,
+    runBeforeSubmitRecords,
+    validateBehaviors,
+    abortBehaviorChanges,
+  } = createRuntimeBehaviors({
+    registry: config.registry as Registry,
+    behaviors,
+    fields,
+    getValues,
+    getSubmitCount,
+    getFormStatus,
+    commitDerivedValue,
+    syncDerivedState(values) {
+      syncDerivedFieldState({
+        values,
+        preserveValidationErrors: true,
+        preserveExternalErrors: true,
+        resetInactiveToInitial: shouldResetInactiveFields(),
+        inactiveFieldPolicy: config.inactiveFieldPolicy,
+      });
+    },
+    onListenerError: config.onListenerError,
+  });
 
   const resetReports = (): void => {
     for (const report of reports) {
@@ -233,6 +243,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
     bumpLifecycleVersion,
     resetReports,
     runBehaviorValueChange,
+    abortBehaviorChanges,
+    setRestingStatus,
   });
 
   syncDerivedFieldState({

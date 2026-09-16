@@ -7,6 +7,7 @@ export interface Store<T> {
   update(updater: (current: T) => T): void;
   batch(callback: () => void): void;
   subscribe(listener: (state: T) => void): () => void;
+  destroy(): void;
 }
 
 type StoreOptions<T> = {
@@ -26,6 +27,7 @@ export const createStore = <T>(initialState: T, options: StoreOptions<T> = {}): 
   let state = initialState;
   let batchDepth = 0;
   let hasPendingNotification = false;
+  let destroyed = false;
   const listeners = new Set<(state: T) => void>();
 
   const notify = () => {
@@ -50,6 +52,7 @@ export const createStore = <T>(initialState: T, options: StoreOptions<T> = {}): 
       return state;
     },
     setState(nextState) {
+      if (destroyed) return;
       state = nextState;
       if (batchDepth > 0) {
         hasPendingNotification = true;
@@ -58,9 +61,11 @@ export const createStore = <T>(initialState: T, options: StoreOptions<T> = {}): 
       notify();
     },
     update(updater) {
+      if (destroyed) return;
       this.setState(updater(state));
     },
     batch(callback) {
+      if (destroyed) return;
       batchDepth += 1;
       try {
         callback();
@@ -73,8 +78,14 @@ export const createStore = <T>(initialState: T, options: StoreOptions<T> = {}): 
       }
     },
     subscribe(listener) {
+      if (destroyed) return () => {};
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    destroy() {
+      destroyed = true;
+      hasPendingNotification = false;
+      listeners.clear();
     },
   };
 };

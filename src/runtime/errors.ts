@@ -11,13 +11,6 @@ export class EngineError extends Error {
   }
 }
 
-export class RegistryError extends EngineError {
-  constructor(message: string) {
-    super(message);
-    this.name = "RegistryError";
-  }
-}
-
 export class ValidationError extends EngineError {
   readonly result: FormValidationResult;
 
@@ -69,3 +62,4 @@ export const isAbortLikeError = (error: unknown): boolean => {
 };
 
 export { TransportError, transportErrorCodes } from "@/transport";
+export { RegistryError } from "@/schema";

@@ -21,8 +21,10 @@ Recipes:
 - `contrast`
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   designSystem: {
     mode: "auto",

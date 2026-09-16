@@ -8,8 +8,10 @@ description: Collect ordered points and render a forecast report.
 Collect dated numeric observations for a forecasting backend.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/forecast" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       {

@@ -6,8 +6,10 @@ description: Override MLForm CSS custom properties and component tokens.
 Use design system overrides for runtime configuration:
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   designSystem: {
     overrides: {

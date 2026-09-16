@@ -7,7 +7,7 @@ Use `defineReportKind` for the normal extension path. It lets you resolve payloa
 
 ```ts
 import { z } from "zod";
-import { defineMlformPlugin, defineReportKind, mountForm } from "mlform/kit";
+import { defineMLFormPlugin, defineReportKind, mountForm } from "mlform/kit";
 import { resolveMappedReportPayload } from "mlform/schema";
 
 const riskSummaryReport = defineReportKind({
@@ -36,7 +36,7 @@ const riskSummaryReport = defineReportKind({
   },
 });
 
-const domainPlugin = defineMlformPlugin({ reports: [riskSummaryReport] });
+const domainPlugin = defineMLFormPlugin({ reports: [riskSummaryReport] });
 mountForm(container, { schema, transport, plugins: [domainPlugin] });
 ```
 

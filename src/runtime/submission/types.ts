@@ -42,7 +42,7 @@ export type CreateFormSubmitterOptions = {
   shouldResetInactiveFields: () => boolean;
   resolveInactiveFieldPolicy: (field: SubmissionField) => InactiveFieldPolicy;
   inactiveFieldPolicy?: InactiveFieldPolicy;
-  beforeSubmitRecords?: (records: SubmissionValueRecords) => Promise<void>;
+  beforeSubmitRecords?: (records: SubmissionValueRecords, signal?: AbortSignal) => Promise<void>;
 };
 
 export type FormSubmitter = {

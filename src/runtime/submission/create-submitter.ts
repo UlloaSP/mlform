@@ -12,6 +12,20 @@ import { commitReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";
 import type { CreateFormSubmitterOptions, FormSubmitter } from "./types";
 
+const awaitWithAbort = async <T>(promise: PromiseLike<T>, signal: AbortSignal): Promise<T> => {
+  if (signal.aborted) throw createAbortError(String(signal.reason ?? ""));
+
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(createAbortError(String(signal.reason ?? "")));
+    signal.addEventListener("abort", onAbort, { once: true });
+    void Promise.resolve(promise)
+      .then(resolve, reject)
+      .finally(() => {
+        signal.removeEventListener("abort", onAbort);
+      });
+  });
+};
+
 export const createFormSubmitter = ({
   store,
   transport,
@@ -81,8 +95,6 @@ export const createFormSubmitter = ({
         throw createAbortError(String(options.signal.reason ?? ""));
       }
 
-      const records = buildSubmissionValueRecords(fields, backend, resolveInactiveFieldPolicy);
-      await beforeSubmitRecords?.(records);
       abortManager.setActiveController(
         submissionRequestId,
         typeof AbortController !== "undefined" ? new AbortController() : null,
@@ -97,15 +109,29 @@ export const createFormSubmitter = ({
       const submitCount = getSubmitCount();
       const lifecycleVersion = store.getState().lifecycleVersion;
       const submitSignal = abortManager.createSignal(options);
+      let records = { inputs: [], displayValues: {}, modelValues: {} } as ReturnType<
+        typeof buildSubmissionValueRecords
+      >;
 
       try {
+        records = buildSubmissionValueRecords(fields, backend, resolveInactiveFieldPolicy);
+        if (beforeSubmitRecords) {
+          await awaitWithAbort(beforeSubmitRecords(records, submitSignal), submitSignal);
+        }
         const beforeHookRecords = cloneSubmissionValueRecords(records);
-        await hooks?.beforeSubmit?.({
-          backend,
-          ...beforeHookRecords,
-          submitCount,
-          signal: submitSignal,
-        });
+        if (hooks?.beforeSubmit) {
+          await awaitWithAbort(
+            Promise.resolve(
+              hooks.beforeSubmit({
+                backend,
+                ...beforeHookRecords,
+                submitCount,
+                signal: submitSignal,
+              }),
+            ),
+            submitSignal,
+          );
+        }
 
         if (submitSignal.aborted || abortManager.isAborted(submissionRequestId)) {
           throw createAbortError(abortManager.getAbortReason(submissionRequestId));
@@ -120,7 +146,7 @@ export const createFormSubmitter = ({
           signal: submitSignal,
         };
 
-        const response = await transport.submit(submitRequest);
+        const response = await awaitWithAbort(transport.submit(submitRequest), submitSignal);
 
         const stillCurrent =
           abortManager.getCurrentRequestId() === submissionRequestId &&
@@ -141,11 +167,26 @@ export const createFormSubmitter = ({
             raw: normalizedResponse.raw,
           };
         const reportContexts = createReportContexts(normalizedSchema.reports, baseResult);
-        const nextReportStates = await prepareReportStates(reports, {
-          ...baseResult,
-          reportContexts,
-          reportStates: {},
-        });
+        const nextReportStates = await awaitWithAbort(
+          prepareReportStates(
+            reports,
+            {
+              ...baseResult,
+              reportContexts,
+              reportStates: {},
+            },
+            submitSignal,
+          ),
+          submitSignal,
+        );
+        const reportsStillCurrent =
+          abortManager.getCurrentRequestId() === submissionRequestId &&
+          store.getState().lifecycleVersion === lifecycleVersion &&
+          !submitSignal.aborted &&
+          !abortManager.isAborted(submissionRequestId);
+        if (!reportsStillCurrent) {
+          throw createAbortError(abortManager.getAbortReason(submissionRequestId));
+        }
         const result = createSubmissionResult(
           reports,
           { ...baseResult, reportContexts },

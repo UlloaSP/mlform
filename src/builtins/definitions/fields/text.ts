@@ -36,7 +36,7 @@ export const textFieldDefinition: BuiltinFieldDefinition<TextFieldConfig, string
     }
     return "";
   },
-  validate(value, config) {
+  validateSync(value, config) {
     const errors: string[] = [];
     if (
       config.minLength !== undefined &&

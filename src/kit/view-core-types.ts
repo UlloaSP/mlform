@@ -25,7 +25,7 @@ import type { LayoutReferences } from "./layout-utils";
 import type { FormLayoutConfig, ResolvedFormLayout, ResolvedFormLayoutNode } from "./layout-types";
 import type { PanelState } from "./panel-nav";
 import type { MountedReportFetchMode } from "./mount-types";
-import type { MlformPlugin } from "./plugin";
+import type { MLFormPlugin } from "./plugin";
 
 export interface WizardState {
   stepIndex: number;
@@ -98,7 +98,7 @@ export interface CreateFormViewOptions {
   registry?: Registry;
   descriptorRegistry?: PrimitiveDescriptorRegistry;
   behaviors?: RuntimeBehavior[];
-  plugins?: readonly MlformPlugin[];
+  plugins?: readonly MLFormPlugin[];
   initialValues?: Record<string, unknown>;
   validators?: FormValidator[];
   hooks?: FormHooks;
@@ -129,6 +129,7 @@ export interface FormViewController {
   submit(options?: SubmitOptions): Promise<SubmitResult>;
   submitPipeline(options?: SubmitOptions): Promise<PipelineResult>;
   reset(): void;
+  dispose(): void;
   subscribe(listener: (snapshot: FormViewSnapshot) => void): () => void;
   nextStep(): Promise<boolean>;
   prevStep(): void;

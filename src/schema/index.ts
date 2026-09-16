@@ -4,7 +4,6 @@
 export { normalizeSchemaId } from "./ids";
 export * from "./mapped-to";
 export * from "./normalize";
-export * from "./onehot-display";
 export * from "./report-context";
 export * from "./validation";
 export { createReportFetchRequest } from "./report-fetch-request";

@@ -4,14 +4,12 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { readyReport } from "../report-result";
 import * as z from "zod";
-import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import {
-  defineFieldKind,
-  defineReportKind,
-  mountForm,
+  createBuiltinTestKit,
   registerDefinedFieldKind,
   registerDefinedReportKind,
-} from "@/kit";
+} from "../helpers/builtin-test-kit";
+import { defineFieldKind, defineReportKind, mountForm } from "@/kit";
 import { resolveMappedReportPayload } from "@/schema";
 import {
   flush,
@@ -159,7 +157,7 @@ describe("kit integration", () => {
           normalize: (value) => Number(value ?? 0),
           serialize: (value) => value,
         },
-        validate: ({ value, config }) =>
+        validateSync: ({ value, config }) =>
           value < config.min || value > config.max ? ["Score out of range."] : [],
         render: {
           widget: "number",

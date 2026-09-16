@@ -76,7 +76,7 @@ describe("builtin definitions", () => {
       field2: { kind: "number", label: "field2", required: true, min: 10 },
     });
 
-    const errors = seriesFieldDefinition.validate?.(
+    const errors = seriesFieldDefinition.validateSync?.(
       [
         { field1: null, field2: 5 },
         { field1: new Date("2026-01-01"), field2: 12 },

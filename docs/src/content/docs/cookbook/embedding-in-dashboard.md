@@ -4,10 +4,12 @@ description: Blend MLForm into an existing dashboard shell.
 ---
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
-  layout: "split",
+  layout: { kind: "split" },
   reportPane: "always",
   designSystem: {
     mode: "inherit",

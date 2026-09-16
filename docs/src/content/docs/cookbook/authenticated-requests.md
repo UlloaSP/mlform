@@ -5,18 +5,29 @@ description: Send cookies, bearer tokens, or custom headers with MLForm submissi
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+
+const transport = {
+  async submit(request) {
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-Request-Source": "mlform",
+      },
+      body: JSON.stringify(request.modelValues),
+      signal: request.signal,
+    });
+
+    if (!response.ok) throw new Error(`Prediction request failed (${response.status}).`);
+    return response.json();
+  },
+};
 
 mountForm(container, {
   schema,
-  transport: createJsonTransport({
-    endpoint: "/api/predict",
-    credentials: "include",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-Request-Source": "mlform",
-    },
-  }),
+  transport,
 });
 ```
 

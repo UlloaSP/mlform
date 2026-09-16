@@ -4,8 +4,10 @@ description: Subscribe to form state and render host-side previews.
 ---
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 const mounted = mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
 });
 

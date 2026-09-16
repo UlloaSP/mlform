@@ -14,8 +14,10 @@ A backend can return a non-2xx response with a JSON message.
 Use `hooks.onSubmitError` for host notifications.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   hooks: {
     onSubmitError({ error }) {

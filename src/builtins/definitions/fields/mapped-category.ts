@@ -3,7 +3,7 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig } from "@/schema";
+import { normalizeSchemaId, type BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type MappedCategoryOption = {
@@ -51,7 +51,7 @@ export const mappedCategoryFieldDefinition: BuiltinFieldDefinition<
     }
     return null;
   },
-  validate(value, config) {
+  validateSync(value, config) {
     if (value === null) {
       return [];
     }
@@ -59,5 +59,32 @@ export const mappedCategoryFieldDefinition: BuiltinFieldDefinition<
     const allowedValues = config.options.map((option) => option.value);
 
     return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
+  },
+  validateRuntime(config, context) {
+    for (const option of config.options) {
+      for (const targetId of Object.keys(option.mapping)) {
+        const target = context.getField(targetId) ?? context.getField(normalizeSchemaId(targetId));
+        if (!target) {
+          throw new Error(
+            `mapped-category "${config.id}": mapping references unknown field "${targetId}".`,
+          );
+        }
+      }
+    }
+  },
+  onValueChanged(value, config, context) {
+    const selected = config.options.find((option) => option.value === value);
+    if (!selected) return;
+
+    for (const [targetId, targetValue] of Object.entries(selected.mapping)) {
+      const target = context.getField(targetId) ?? context.getField(normalizeSchemaId(targetId));
+      if (!target) {
+        throw new Error(
+          `mapped-category "${config.id}": target field "${targetId}" not found in schema.`,
+        );
+      }
+      context.commitDerivedValue(target.id, targetValue);
+    }
+    context.syncDerivedState();
   },
 };

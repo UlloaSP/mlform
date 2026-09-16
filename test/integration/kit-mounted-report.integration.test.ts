@@ -4,8 +4,8 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { readyReport } from "../report-result";
 import * as z from "zod";
-import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
-import { defineReportKind, mountForm, registerDefinedReportKind } from "@/kit";
+import { createBuiltinTestKit, registerDefinedReportKind } from "../helpers/builtin-test-kit";
+import { defineReportKind, mountForm } from "@/kit";
 import { resolveMappedReportPayload } from "@/schema";
 
 const flush = async (): Promise<void> => {

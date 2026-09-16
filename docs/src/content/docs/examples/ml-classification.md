@@ -5,10 +5,10 @@ description: Classification flow with fields, a classifier report, and a JSON ba
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 mountForm(document.querySelector("#credit-risk") as HTMLElement, {
-  transport: createJsonTransport({ endpoint: "/api/credit-risk" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "income", kind: "number", label: "Annual income", mappedTo: "income", min: 0, unit: "USD" },
@@ -35,7 +35,7 @@ mountForm(document.querySelector("#credit-risk") as HTMLElement, {
       },
     ],
   },
-  layout: "split",
+  layout: { kind: "split" },
 });
 ```
 

@@ -7,10 +7,10 @@ description: Use the official built-in tabs layout or the same tabs config throu
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/predict" }),
+  transport: predictionTransport,
   schema,
   layout: {
     kind: "tabs",

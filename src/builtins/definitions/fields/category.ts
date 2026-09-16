@@ -37,7 +37,7 @@ export const categoryFieldDefinition: BuiltinFieldDefinition<CategoryFieldConfig
     }
     return null;
   },
-  validate(value, config) {
+  validateSync(value, config) {
     if (value === null) {
       return [];
     }

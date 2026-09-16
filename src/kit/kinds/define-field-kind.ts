@@ -9,15 +9,13 @@ import type {
   NormalizedFieldConfig,
 } from "@/schema";
 import type {
-  FieldDescriptor,
-  FieldDescriptorContext,
   FieldPresenter,
   FieldRenderHints,
   FieldRenderSpec,
   FieldRenderSpecContext,
 } from "@/primitives";
 import type { ZodType } from "zod";
-import type { MlformFieldKind } from "../plugin";
+import type { MLFormFieldKind } from "../plugin";
 
 export interface DeclarativeFieldKind<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
   kind: string;
@@ -26,6 +24,7 @@ export interface DeclarativeFieldKind<TConfig extends FieldConfig = FieldConfig,
   validate?: (
     context: FieldValidationFnContext<TConfig, TValue>,
   ) => string[] | PromiseLike<string[]>;
+  validateSync?: (context: FieldValidationFnContext<TConfig, TValue>) => string[];
   render: FieldRenderSpec<TConfig, TValue>;
 }
 
@@ -43,19 +42,7 @@ const resolveHints = <TConfig extends FieldConfig, TValue>(
   return typeof hints === "function" ? (hints(context) ?? {}) : hints;
 };
 
-export type DefinedFieldKind<TConfig extends FieldConfig, TValue> = MlformFieldKind & {
-  kind: string;
-  schema: import("zod").ZodType<TConfig>;
-  getDefaultValue?: (config: TConfig) => TValue;
-  normalizeValue?: (value: unknown, config: TConfig) => TValue;
-  cloneValue?: (value: TValue, config: TConfig) => TValue;
-  isEqual?: (previous: TValue, next: TValue, config: TConfig) => boolean;
-  serializeValue?: (value: TValue, config: TConfig) => unknown;
-  validate?: FieldDefinition<TConfig, TValue>["validate"];
-  describe?: (
-    config: NormalizedFieldConfig<TConfig>,
-    context: FieldDescriptorContext & { value: TValue },
-  ) => FieldDescriptor;
+export type DefinedFieldKind<TConfig extends FieldConfig, TValue> = MLFormFieldKind & {
   definition: FieldDefinition<TConfig, TValue>;
   presenter: FieldPresenter<NormalizedFieldConfig<TConfig>, TValue>;
 };
@@ -64,6 +51,7 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
   kind: DeclarativeFieldKind<TConfig, TValue>,
 ): DefinedFieldKind<TConfig, TValue> => {
   const validate = kind.validate;
+  const validateSync = kind.validateSync;
   const definition: FieldDefinition<TConfig, TValue> = {
     kind: kind.kind,
     schema: kind.schema,
@@ -72,6 +60,14 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
     cloneValue: kind.value?.clone,
     isEqual: kind.value?.isEqual,
     serializeValue: kind.value?.serialize,
+    validateSync: validateSync
+      ? (value, config, context) =>
+          validateSync({
+            ...context,
+            config,
+            value,
+          })
+      : undefined,
     validate: validate
       ? (value, config, context) =>
           validate({
@@ -117,23 +113,9 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
     },
   };
 
-  const describe = presenter.describe.bind(presenter);
-
-  Object.assign(definition as unknown as Record<string, unknown>, {
-    describe,
-  });
-
   return {
     category: "field",
     kind: kind.kind,
-    schema: kind.schema,
-    getDefaultValue: kind.value?.default,
-    normalizeValue: kind.value?.normalize,
-    cloneValue: kind.value?.clone,
-    isEqual: kind.value?.isEqual,
-    serializeValue: kind.value?.serialize,
-    validate: definition.validate,
-    describe,
     definition,
     presenter,
     register(registry, descriptorRegistry) {

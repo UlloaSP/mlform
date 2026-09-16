@@ -22,14 +22,8 @@ export {
   transportErrorCodes,
   ValidationError,
 } from "./errors";
-export { createForm, createForm as createFormRuntime } from "./form";
-export {
-  defaultEquality,
-  shallowArrayEquality,
-  shallowEquality,
-  shallowObjectEquality,
-} from "./equality";
-export { identity, isPromiseLike } from "./utils";
+export { createForm } from "./form";
+export { shallowEquality } from "./equality";
 export type {
   AllConditions,
   AfterSubmitContext,
@@ -106,7 +100,3 @@ export type {
   RuntimeBehaviorSubmissionRecords,
   RuntimeBehaviorValueChangeEvent,
 } from "./types";
-
-export type FieldHandle = import("./types").FieldController;
-export type ReportHandle = import("./types").ReportController;
-export type FormRuntime = import("./types").FormController;

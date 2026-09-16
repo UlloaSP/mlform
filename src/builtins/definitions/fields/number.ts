@@ -54,7 +54,7 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
   },
-  validate(value, config) {
+  validateSync(value, config) {
     const errors: string[] = [];
     if (config.min !== undefined && config.max !== undefined && config.min > config.max) {
       errors.push(builtinValidationMessages.invalidNumericRange);

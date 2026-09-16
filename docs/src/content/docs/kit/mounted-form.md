@@ -19,8 +19,10 @@ description: The handle returned by mountForm.
 | `unmount()`                     | `void`                 | Abort submit, disconnect styles, and remove the host. |
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 const mounted = mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
 });
 

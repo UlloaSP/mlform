@@ -15,4 +15,3 @@ export {
   type ReportRenderSpec,
   type ReportRenderSpecContext,
 } from "./define-report-kind";
-export { registerDefinedFieldKind, registerDefinedReportKind } from "./register-kind";

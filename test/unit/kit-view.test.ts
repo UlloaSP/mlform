@@ -3,13 +3,12 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
+import { createBuiltinTestKit, registerDefinedReportKind } from "../helpers/builtin-test-kit";
 import {
   collectLayoutReferences,
   createFormView,
   defineReportKind,
   flattenLayoutNodes,
-  registerDefinedReportKind,
 } from "@/kit";
 
 const reportPayload = (reports: readonly unknown[], id: string): unknown => {

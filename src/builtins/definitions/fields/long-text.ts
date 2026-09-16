@@ -36,7 +36,7 @@ export const longTextFieldDefinition: BuiltinFieldDefinition<LongTextFieldConfig
     }
     return "";
   },
-  validate(value, config) {
+  validateSync(value, config) {
     const errors: string[] = [];
     if (
       config.minLength !== undefined &&

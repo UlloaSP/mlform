@@ -10,13 +10,13 @@ MLForm needs browser APIs, so mount it from a client script.
 
 <script>
   import { mountForm } from "mlform/kit";
-  import { createJsonTransport } from "mlform/transport";
+  import { predictionTransport } from "./prediction-transport";
 
   const host = document.querySelector("#prediction-form");
 
   if (host instanceof HTMLElement) {
     mountForm(host, {
-      transport: createJsonTransport({ endpoint: "/api/predict" }),
+      transport: predictionTransport,
       schema: {
         fields: [{ id: "prompt", kind: "text", label: "Prompt", required: true }],
         reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],

@@ -9,10 +9,10 @@ description: A small form that submits to a prediction endpoint.
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 mountForm(document.querySelector("#basic-form") as HTMLElement, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "name", kind: "text", label: "Name", required: true },

@@ -134,7 +134,10 @@ export interface FormController {
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
   abortSubmit(reason?: string): void;
+  setExternalErrors(issue: FormValidationIssue): void;
+  clearExternalErrors(): void;
   reset(): void;
+  dispose(): void;
   subscribe(listener: (state: FormState) => void): () => void;
   subscribeSelector<TSelected>(
     selector: (state: FormState) => TSelected,

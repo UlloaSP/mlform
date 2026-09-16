@@ -9,10 +9,12 @@ description: Primitive layout options for form and report placement.
 | `reportPane` | `auto`, `always`, `hidden` | Controls report pane visibility.  |
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
-  layout: "split",
+  layout: { kind: "split" },
   reportPane: "auto",
 });
 ```

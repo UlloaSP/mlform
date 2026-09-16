@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import {
   createFormView,
   defineFieldKind,
-  defineMlformPlugin,
+  defineMLFormPlugin,
   defineReportKind,
   mountForm,
 } from "@/kit";
@@ -41,7 +41,7 @@ const scoreReport = defineReportKind({
 
 describe("MLForm plugins", () => {
   it("composes built-in and plugin kinds through one kit option", () => {
-    const plugin = defineMlformPlugin({ fields: [scoreField], reports: [scoreReport] });
+    const plugin = defineMLFormPlugin({ fields: [scoreField], reports: [scoreReport] });
     const view = createFormView({
       schema: {
         fields: [
@@ -68,11 +68,11 @@ describe("MLForm plugins", () => {
   });
 
   it("keeps field and report plugin entries distinct at compile time", () => {
-    defineMlformPlugin({
+    defineMLFormPlugin({
       // @ts-expect-error Report kinds cannot be registered as fields.
       fields: [scoreReport],
     });
-    defineMlformPlugin({
+    defineMLFormPlugin({
       // @ts-expect-error Field kinds cannot be registered as reports.
       reports: [scoreField],
     });
@@ -80,7 +80,7 @@ describe("MLForm plugins", () => {
 
   it("applies plugin behaviors through mountForm", async () => {
     let validations = 0;
-    const plugin = defineMlformPlugin({
+    const plugin = defineMLFormPlugin({
       fields: [scoreField],
       behaviors: [{ validate: () => void (validations += 1) }],
     });
@@ -108,7 +108,7 @@ describe("MLForm plugins", () => {
   });
 
   it("rejects duplicate plugin registrations", () => {
-    const plugin = defineMlformPlugin({ fields: [scoreField] });
+    const plugin = defineMLFormPlugin({ fields: [scoreField] });
 
     expect(() =>
       createFormView({

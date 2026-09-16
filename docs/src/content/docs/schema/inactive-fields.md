@@ -6,6 +6,8 @@ description: Submission behavior for hidden, disabled, and read-only fields.
 Fields can be inactive through static flags or dynamic conditions.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 {
   id: "admin_notes",
   kind: "text",
@@ -28,7 +30,7 @@ Use `inactiveFieldPolicy: "include"` when the backend must receive the full stat
 
 ```ts
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   inactiveFieldPolicy: "include",
 });

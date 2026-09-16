@@ -13,6 +13,7 @@ const toolIgnorePatterns = [
   "dist/**",
   "docs/**",
   "coverage/**",
+  "output/**",
   "stats/**",
   "architecture/*.html",
   ".github/**",

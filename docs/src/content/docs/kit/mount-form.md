@@ -7,14 +7,14 @@ description: Mount MLForm into a host element with kit defaults.
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 const mounted = mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   initialValues: { age: 42 },
   labels: { submit: "Predict" },
-  layout: "split",
+  layout: { kind: "split" },
   reportPane: "auto",
   reportFetchMode: "all",
 });

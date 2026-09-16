@@ -1,7 +1,4 @@
 ---
-// oxlint-disable-next-line import/default -- Vite ?url modules expose a generated default URL.
-import showcaseEntryUrl from "../lib/layout-showcase-entry.ts?url";
-
 const copy = {
   routeId: "layout-showcase-live-en",
   intro:
@@ -59,7 +56,9 @@ const copy = {
   </div>
 </div>
 
-<script is:inline type="module" src={showcaseEntryUrl}></script>
+<script>
+  import "../lib/layout-showcase-entry";
+</script>
 
 <h2 id="when-to-use-each">{copy.usageTitle}</h2>
 

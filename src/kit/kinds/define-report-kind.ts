@@ -10,16 +10,10 @@ import type {
   ReportStateSnapshot,
   SubmitResult,
 } from "@/schema";
-import type {
-  ReportDescriptor,
-  ReportDescriptorContext,
-  ReportPresenter,
-  DescriptorContent,
-  DescriptorSummary,
-} from "@/primitives";
+import type { ReportPresenter, DescriptorContent, DescriptorSummary } from "@/primitives";
 import { toDescriptorNodes } from "@/primitives";
 import type { ZodType } from "zod";
-import type { MlformReportKind } from "../plugin";
+import type { MLFormReportKind } from "../plugin";
 
 export interface ReportRenderSpecContext<
   TConfig extends ReportConfig = ReportConfig,
@@ -63,18 +57,7 @@ export interface DeclarativeReportKind<
   render: ReportRenderSpec<TConfig, TPayload>;
 }
 
-export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = MlformReportKind & {
-  kind: string;
-  schema: import("zod").ZodType<TConfig>;
-  payloadSchema?: ReportDefinition<TConfig>["payloadSchema"];
-  payloadValidationPolicy?: ReportDefinition<TConfig>["payloadValidationPolicy"];
-  clonePayload?: ReportDefinition<TConfig>["clonePayload"];
-  fetch?: ReportDefinition<TConfig>["fetch"];
-  resolvePayload?: ReportDefinition<TConfig>["resolvePayload"];
-  describe?: (
-    config: NormalizedReportConfig<TConfig>,
-    context: ReportDescriptorContext,
-  ) => ReportDescriptor | null;
+export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = MLFormReportKind & {
   definition: ReportDefinition<TConfig>;
   presenter: ReportPresenter<NormalizedReportConfig<TConfig>>;
 };
@@ -95,6 +78,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
             config: context.report,
             report: context.report,
             result: context.result,
+            signal: context.signal,
           })
       : undefined,
   };
@@ -131,7 +115,8 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
           payload: context.payload,
           error: context.state.error,
           state: context.state.status,
-          summary: kind.render.summary?.(renderContext) ?? null,
+          summary:
+            context.payload === undefined ? null : (kind.render.summary?.(renderContext) ?? null),
           content:
             !mounted && context.payload !== undefined && kind.render.content
               ? toDescriptorNodes(kind.render.content(renderContext))
@@ -147,22 +132,9 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     },
   };
 
-  const describe = presenter.describe.bind(presenter);
-
-  Object.assign(definition as unknown as Record<string, unknown>, {
-    describe,
-  });
-
   return {
     category: "report",
     kind: kind.kind,
-    schema: kind.schema,
-    payloadSchema: kind.payloadSchema,
-    payloadValidationPolicy: kind.payloadValidationPolicy,
-    clonePayload: definition.clonePayload,
-    fetch: definition.fetch,
-    resolvePayload: definition.resolvePayload,
-    describe,
     definition,
     presenter,
     register(registry, descriptorRegistry) {

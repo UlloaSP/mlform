@@ -3,8 +3,8 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
-import { defineReportKind, mountForm, registerDefinedReportKind } from "@/kit";
+import { createBuiltinTestKit, registerDefinedReportKind } from "../helpers/builtin-test-kit";
+import { defineReportKind, mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();

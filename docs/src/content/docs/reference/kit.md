@@ -8,7 +8,7 @@ Exports:
 - `createFormView(options)`
 - `mountForm(container, options)`
 - `unmountForm(mounted)`
-- `defineMlformPlugin(plugin)`
+- `defineMLFormPlugin(plugin)`
 - `walkLayoutNodes(layout, visitor)`
 - `flattenLayoutNodes(layout)`
 - `collectLayoutReferences(layout)`
@@ -18,7 +18,7 @@ Exports:
 Types:
 
 - `CreateFormViewOptions`
-- `MlformPlugin`
+- `MLFormPlugin`
 - `FormLayoutConfig`
 - `FormLayoutNode`
 - `FormLayoutSectionNode`
@@ -46,7 +46,8 @@ Types:
 
 `mountForm()` renders the built-in stacked, split, wizard, tabs, and disclosure layouts from the same layout contract.
 
-Compose routing, fan-out, fallback, auth, retries, streaming, and transforms through `mlform/transport`, then pass the resulting transport into kit.
+Pass an application-owned transport into kit. `mlform/transport` provides fan-out for independent
+named backends; protocol, authentication, retry, and caching remain application concerns.
 
 Kit also forwards engine-level knobs such as `inactiveFieldPolicy`, `hookFailurePolicy`, `listenerErrorPolicy`, and `onListenerError`.
 

@@ -25,7 +25,7 @@ import type {
 } from "@/primitives";
 import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { FormLayoutConfig } from "./layout-types";
-import type { MlformPlugin } from "./plugin";
+import type { MLFormPlugin } from "./plugin";
 
 export type MountedReportFetchMode = "lazy" | "all" | "none";
 
@@ -52,7 +52,7 @@ export interface MountFormOptions {
   registry?: Registry;
   descriptorRegistry?: PrimitiveDescriptorRegistry;
   behaviors?: RuntimeBehavior[];
-  plugins?: readonly MlformPlugin[];
+  plugins?: readonly MLFormPlugin[];
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
   designSystem?: DesignSystemConfig;

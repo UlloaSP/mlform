@@ -8,19 +8,20 @@ export type SubmissionReport = {
   readonly id: string;
   readonly config: NormalizedReportConfig;
   cloneState(state: ReportStateSnapshot): ReportStateSnapshot;
-  prepareState(result: SubmitResult): Promise<ReportStateSnapshot>;
+  prepareState(result: SubmitResult, signal?: AbortSignal): Promise<ReportStateSnapshot>;
   commitState(state: ReportStateSnapshot): void;
 };
 
 export const prepareReportStates = async (
   reports: readonly SubmissionReport[],
   baseResult: SubmitResult,
+  signal?: AbortSignal,
 ): Promise<Map<string, ReportStateSnapshot>> => {
   const nextReportStates = new Map<string, ReportStateSnapshot>();
 
   await Promise.all(
     reports.map(async (report) => {
-      nextReportStates.set(report.id, await report.prepareState(baseResult));
+      nextReportStates.set(report.id, await report.prepareState(baseResult, signal));
     }),
   );
 

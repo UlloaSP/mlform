@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { createBuiltinMlRegistry, createMappedCategoryBehavior } from "@/builtins";
+import { createBuiltinMlRegistry } from "@/builtins";
 import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { RuntimeBehavior } from "@/runtime";
 import type { Registry } from "@/schema";
 import { createBuiltinDescriptorRegistry } from "./builtin-presenters";
 import { cloneSchemaRegistry } from "./defaults";
-import type { MlformPlugin } from "./plugin";
+import type { MLFormPlugin } from "./plugin";
 
 export interface KitRegistryPack {
   registry: Registry;
@@ -19,10 +19,10 @@ export interface ResolveKitRegistryPackOptions {
   registry?: Registry;
   descriptorRegistry?: PrimitiveDescriptorRegistry;
   behaviors?: RuntimeBehavior[];
-  plugins?: readonly MlformPlugin[];
+  plugins?: readonly MLFormPlugin[];
 }
 
-const applyPlugin = (pack: KitRegistryPack, plugin: MlformPlugin): void => {
+const applyPlugin = (pack: KitRegistryPack, plugin: MLFormPlugin): void => {
   for (const field of plugin.fields ?? []) {
     field.register(pack.registry, pack.descriptorRegistry);
   }
@@ -38,7 +38,7 @@ const createDefaultRegistryPack = (): KitRegistryPack => {
   return {
     registry: createBuiltinMlRegistry(),
     descriptorRegistry: createBuiltinDescriptorRegistry(),
-    behaviors: [createMappedCategoryBehavior()],
+    behaviors: [],
   };
 };
 

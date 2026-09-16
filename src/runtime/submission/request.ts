@@ -2,12 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { normalizeValuePath, setPathValue } from "../paths";
-import {
-  mappedToKey,
-  resolveMappedTargets,
-  type MappedTo,
-  type SubmissionInputRecord,
-} from "@/schema";
+import { mappedToKey, type SubmissionInputRecord } from "@/schema";
 import type { NormalizedFieldConfig } from "../types";
 import { cloneValue } from "../values";
 
@@ -20,6 +15,10 @@ type SubmissionField = {
     disabled: boolean;
   };
   serialize(): unknown;
+  getMappedTargets(backend?: string): readonly (string | number)[];
+  getSubmissionEntries(
+    backend?: string,
+  ): readonly { target: string | number; value: unknown }[] | undefined;
 };
 
 export type SubmissionValueRecords = {
@@ -51,19 +50,6 @@ export const shouldIncludeFieldInSubmission = (
   return !(isInactive && (policy === "omit" || policy === "reset-on-hide"));
 };
 
-type OneHotSubmissionOption = {
-  value: string;
-  mappedTo?: MappedTo;
-};
-
-const isOneHotFieldConfig = (
-  config: NormalizedFieldConfig,
-): config is NormalizedFieldConfig & { options: OneHotSubmissionOption[] } => {
-  return (
-    config.kind === "onehot-category" && Array.isArray((config as { options?: unknown }).options)
-  );
-};
-
 const setSubmissionPath = (
   target: Record<string, unknown>,
   path: string,
@@ -71,55 +57,6 @@ const setSubmissionPath = (
   value: unknown,
 ): void => {
   setPathValue(target, normalizeValuePath(path, fallback), cloneValue(value));
-};
-
-const writeOneHotSubmissionValues = (
-  field: SubmissionField,
-  backend: string | undefined,
-): Record<string, unknown> => {
-  if (!isOneHotFieldConfig(field.config)) {
-    return {};
-  }
-
-  const rawSelected = field.state.value;
-  if (
-    rawSelected !== null &&
-    rawSelected !== undefined &&
-    typeof rawSelected !== "string" &&
-    typeof rawSelected !== "number" &&
-    typeof rawSelected !== "boolean" &&
-    typeof rawSelected !== "bigint"
-  ) {
-    throw new Error(`onehot-category "${field.id}": value is not scalar.`);
-  }
-
-  const selected =
-    rawSelected === null || rawSelected === undefined ? undefined : String(rawSelected);
-  const seen = new Set<string>();
-
-  if (selected !== undefined && !field.config.options.some((option) => option.value === selected)) {
-    throw new Error(`onehot-category "${field.id}": value "${selected}" is not an option.`);
-  }
-
-  const modelValues: Record<string, unknown> = {};
-  for (const option of field.config.options) {
-    const targets = resolveMappedTargets(option.mappedTo, backend);
-    if (targets.length === 0) {
-      throw new Error(`onehot-category "${field.id}": option "${option.value}" has no mappedTo.`);
-    }
-
-    const encoded = selected === option.value ? 1 : 0;
-    for (const target of targets) {
-      const key = mappedToKey(target);
-      if (seen.has(key)) {
-        throw new Error(`onehot-category "${field.id}": duplicate mappedTo "${key}".`);
-      }
-      seen.add(key);
-
-      setSubmissionPath(modelValues, key, field.id, encoded);
-    }
-  }
-  return modelValues;
 };
 
 const explicitDisplayKeyFor = (field: SubmissionField): string | undefined => {
@@ -165,7 +102,7 @@ export const buildSubmissionValueRecords = (
       continue;
     }
 
-    const mappedTargets = resolveMappedTargets(field.config.mappedTo, backend);
+    const mappedTargets = field.getMappedTargets(backend);
     const valuePaths =
       mappedTargets.length > 0
         ? mappedTargets.map(mappedToKey)
@@ -175,10 +112,13 @@ export const buildSubmissionValueRecords = (
     const rawValue = field.state.value;
     const serializedValue = field.serialize();
     const displayKey = explicitDisplayKeyFor(field);
-    let inputModelValues: Record<string, unknown> = {};
+    const inputModelValues: Record<string, unknown> = {};
 
-    if (isOneHotFieldConfig(field.config)) {
-      inputModelValues = writeOneHotSubmissionValues(field, backend);
+    const submissionEntries = field.getSubmissionEntries(backend);
+    if (submissionEntries) {
+      for (const entry of submissionEntries) {
+        setSubmissionPath(inputModelValues, mappedToKey(entry.target), field.id, entry.value);
+      }
       Object.assign(modelValues, cloneValue(inputModelValues));
       writeVisibleDisplayValue(displayValues, seenExplicitDisplayKeys, field, displayKey, rawValue);
       inputs.push({

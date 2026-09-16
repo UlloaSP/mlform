@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { resolveOneHotDisplayValue } from "@/schema";
+import { resolveOneHotDisplayValue } from "@/builtins";
 
 describe("onehot display helper", () => {
   it("resolves selected option value from one-hot model values", () => {

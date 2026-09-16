@@ -32,7 +32,7 @@ import type {
   NormalizedFieldConfig,
 } from "@/schema";
 
-export interface FieldHandle {
+export interface FieldController {
   readonly id: string;
   readonly kind: string;
   readonly config: NormalizedFieldConfig;
@@ -46,10 +46,7 @@ export interface FieldHandle {
   subscribe(listener: (state: FieldStateSnapshot) => void): () => void;
 }
 
-export type FieldController = FieldHandle;
 export type FieldDefinition<
   TConfig extends import("@/schema").FieldConfig = import("@/schema").FieldConfig,
   TValue = unknown,
 > = SchemaFieldDefinition<TConfig, TValue>;
-
-export type RuntimeFieldDefinition = FieldDefinition;

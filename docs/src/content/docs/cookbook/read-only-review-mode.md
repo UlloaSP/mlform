@@ -4,10 +4,12 @@ description: Lock user input while keeping values visible.
 ---
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 const reviewMode = true;
 
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       {

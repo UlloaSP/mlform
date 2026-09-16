@@ -36,12 +36,14 @@ export interface ReportStateSnapshot {
 export interface ReportPayloadContext<TConfig extends ReportConfig = ReportConfig> {
   report: NormalizedReportConfig<TConfig>;
   result: SubmitResult<ReportStateSnapshot>;
+  signal?: AbortSignal;
 }
 
 export interface ReportResolveContext<TConfig extends ReportConfig = ReportConfig> {
   config: NormalizedReportConfig<TConfig>;
   report: NormalizedReportConfig<TConfig>;
   result: SubmitResult<ReportStateSnapshot>;
+  signal?: AbortSignal;
 }
 
 export interface ReportFetchRequest {

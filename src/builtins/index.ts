@@ -31,5 +31,5 @@ export type {
   SeriesPoint,
   SeriesSubFieldConfig,
 } from "./definitions";
-export { createMappedCategoryBehavior } from "./mapped-category-behavior";
 export { createBuiltinMlRegistry } from "./registry";
+export * from "./onehot-display";

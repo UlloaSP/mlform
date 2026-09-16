@@ -122,7 +122,9 @@ export const createFieldValidator = ({
             validationVersion,
             signal: abortController?.signal,
           });
-          if (isPromiseLike(validationResult)) validationErrors = await validationResult;
+          validationErrors = isPromiseLike(validationResult)
+            ? await validationResult
+            : validationResult;
         } catch (error) {
           if (abortController?.signal.aborted || isAbortLikeError(error)) {
             return {

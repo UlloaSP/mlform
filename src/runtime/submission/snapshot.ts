@@ -3,6 +3,7 @@
 
 import { resolveInactiveFieldPolicy } from "../create-runtime-helpers";
 import type { FormController, InactiveFieldPolicy } from "../types";
+import type { InternalFieldController } from "../fields";
 import { buildSubmissionValueRecords, type SubmissionValueRecords } from "./request";
 
 export interface CreateSubmissionSnapshotOptions {
@@ -16,8 +17,10 @@ export const createSubmissionSnapshot = (
   form: Pick<FormController, "fields">,
   options: CreateSubmissionSnapshotOptions = {},
 ): SubmissionSnapshot =>
-  buildSubmissionValueRecords(form.fields, options.backend, (field) =>
-    resolveInactiveFieldPolicy(field, options.inactiveFieldPolicy),
+  buildSubmissionValueRecords(
+    form.fields as readonly InternalFieldController[],
+    options.backend,
+    (field) => resolveInactiveFieldPolicy(field, options.inactiveFieldPolicy),
   );
 
 export interface CreateMultiBackendSubmissionSnapshotOptions extends Omit<

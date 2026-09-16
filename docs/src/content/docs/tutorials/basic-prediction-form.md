@@ -9,10 +9,10 @@ Collect three inputs and render one classifier report.
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 mountForm(document.querySelector("#lead-score") as HTMLElement, {
-  transport: createJsonTransport({ endpoint: "/api/lead-score" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "company", kind: "text", label: "Company", required: true },

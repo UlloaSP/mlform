@@ -7,8 +7,7 @@ export { collectLayoutReferences, flattenLayoutNodes, walkLayoutNodes } from "./
 export { mountForm, unmountForm } from "./mount-form";
 export { createFormView } from "./view";
 export { defineFieldKind, defineReportKind } from "./kinds";
-export { defineMlformPlugin } from "./plugin";
-export { registerDefinedFieldKind, registerDefinedReportKind } from "./kinds";
+export { defineMLFormPlugin } from "./plugin";
 export type {
   DeclarativeFieldKind,
   DeclarativeReportKind,
@@ -19,7 +18,7 @@ export type {
   ReportRenderSpec,
   ReportRenderSpecContext,
 } from "./kinds";
-export type { MlformFieldKind, MlformPlugin, MlformReportKind } from "./plugin";
+export type { MLFormFieldKind, MLFormPlugin, MLFormReportKind } from "./plugin";
 export type {
   CreateFormViewOptions,
   DisclosureState,

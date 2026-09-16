@@ -145,7 +145,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
         delete hostContainer[mountedFormRef];
       }
 
-      view.form.abortSubmit("unmount");
+      view.dispose();
       designSystem.disconnect();
       unmountHost();
     },

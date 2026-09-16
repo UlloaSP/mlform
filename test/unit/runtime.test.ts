@@ -3,7 +3,6 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMappedCategoryBehavior } from "@/builtins";
 import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { defineFieldKind, defineReportKind } from "@/kit";
 import { type FieldPresenter, type ReportPresenter } from "@/primitives";
@@ -3890,7 +3889,6 @@ describe("runtime", () => {
           ],
         },
         registry: createBuiltinTestKit().registry,
-        behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
         },
@@ -3986,7 +3984,6 @@ describe("runtime", () => {
           ],
         },
         registry: createBuiltinTestKit().registry,
-        behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
         },
@@ -4062,7 +4059,6 @@ describe("runtime", () => {
           ],
         },
         registry: createBuiltinTestKit().registry,
-        behaviors: [createMappedCategoryBehavior()],
         transport: { submit: submitMock },
       });
 
@@ -4117,7 +4113,6 @@ describe("runtime", () => {
           ],
         },
         registry: createBuiltinTestKit().registry,
-        behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
         },
@@ -4178,7 +4173,6 @@ describe("runtime", () => {
             ],
           },
           registry: createBuiltinTestKit().registry,
-          behaviors: [createMappedCategoryBehavior()],
           transport: { submit: vi.fn() },
         }),
       ).toThrow(/mapped-category.*nonexistent-field/);

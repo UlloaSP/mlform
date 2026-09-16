@@ -45,18 +45,19 @@ export const findUnknownKinds = (schema: unknown, registry: Registry): UnknownSc
       if (!definition) {
         unknown.push({ section, index, kind: entry.kind, path: [section, index, "kind"] });
       }
-      if (section === "fields" && entry.kind === "series") {
-        for (const name of ["field1", "field2"] as const) {
-          const nested = entry[name];
-          if (!isRecord(nested) || typeof nested.kind !== "string") continue;
-          if (!registry.getField(nested.kind)) {
-            unknown.push({
-              section,
-              index,
-              kind: nested.kind,
-              path: [section, index, name, "kind"],
-            });
-          }
+      if (section === "fields") {
+        const fieldDefinition = registry.getField(entry.kind);
+        if (!fieldDefinition) return;
+        const parsed = fieldDefinition.schema.safeParse(entry);
+        if (!parsed.success) return;
+        for (const reference of fieldDefinition.getNestedFieldReferences?.(parsed.data) ?? []) {
+          if (registry.getField(reference.kind)) continue;
+          unknown.push({
+            section,
+            index,
+            kind: reference.kind,
+            path: [section, index, ...reference.path],
+          });
         }
       }
     });

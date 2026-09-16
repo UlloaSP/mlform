@@ -50,7 +50,7 @@ export const multiChoiceFieldDefinition: BuiltinFieldDefinition<MultiChoiceField
       if (previous.length !== next.length) return false;
       return previous.every((v, i) => v === next[i]);
     },
-    validate(value, config) {
+    validateSync(value, config) {
       if (value.length === 0) {
         return [];
       }

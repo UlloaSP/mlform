@@ -6,8 +6,10 @@ description: Work with mounted forms, hooks, validation, and cleanup.
 Use hooks to observe validation and submit phases:
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   hooks: {
     beforeSubmit({ modelValues }) {
@@ -35,4 +37,6 @@ validators: [
 ];
 ```
 
-Always call `mounted.unmount()` when the host app tears down the view.
+Always call `mounted.unmount()` when the host app tears down the view. Unmounting disposes the
+headless runtime, aborts pending validation, submission, report, and behavior work, and removes
+subscriptions. A directly-created headless form should call `form.dispose()` instead.

@@ -13,8 +13,10 @@ MLForm has two ways to set an initial field value.
 `initialValues` takes precedence over `defaultValue`.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "threshold", kind: "number", label: "Threshold", defaultValue: 0.7 },

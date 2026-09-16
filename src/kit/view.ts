@@ -84,9 +84,10 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     }
   };
 
-  form.subscribe(() => {
+  const unsubscribeForm = form.subscribe(() => {
     notify();
   });
+  let disposed = false;
 
   return Object.freeze({
     form,
@@ -141,6 +142,13 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     },
     reset() {
       form.reset();
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      unsubscribeForm();
+      listeners.clear();
+      form.dispose();
     },
     subscribe(listener) {
       listeners.add(listener);

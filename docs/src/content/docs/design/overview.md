@@ -6,8 +6,10 @@ description: Themes, recipes, modes, and overrides for embedded MLForm UI.
 The kit attaches MLForm's design system automatically. Configure it with `designSystem`.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   designSystem: {
     mode: "auto",

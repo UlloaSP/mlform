@@ -3,34 +3,29 @@ title: Custom Transport
 description: Submit through any async service instead of the default JSON endpoint.
 ---
 
-Provide `transport` when the backend contract does not match the default JSON transport.
+MLForm intentionally exposes a transport contract instead of assuming one HTTP payload. Keep the
+adapter in application code so its request and response mapping stay explicit.
 
 ```ts
-mountForm(container, {
-  schema,
-  transport: {
-    async submit(request) {
-      const result = await modelClient.predict({
-        values: request.modelValues,
-        signal: request.signal,
-      });
+import type { Transport } from "mlform/transport";
 
-      return {
-        reports: [
-          {
-            backend: request.backend ?? "default",
-            mappedTo: "prediction",
-            status: "ready",
-            payload: result.prediction,
-          },
-        ],
-        meta: {
-          requestId: result.requestId,
-        },
-      };
-    },
+export const predictionTransport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request.modelValues),
+      signal: request.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Prediction request failed (${response.status}).`);
+    }
+
+    return response.json();
   },
-});
+};
 ```
 
-Use `createJsonTransport(...)` only when the backend matches MLForm's default JSON contract. Otherwise keep a custom `transport`.
+Pass `predictionTransport` to `mountForm` or `createForm`. The response must match the report
+contract expected by your schema; use a different adapter when the backend shape differs.

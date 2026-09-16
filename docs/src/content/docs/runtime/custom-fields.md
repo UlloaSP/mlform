@@ -7,7 +7,7 @@ Use `defineFieldKind` for the normal extension path. It lets you define parsing,
 
 ```ts
 import { z } from "zod";
-import { defineFieldKind, defineMlformPlugin, mountForm } from "mlform/kit";
+import { defineFieldKind, defineMLFormPlugin, mountForm } from "mlform/kit";
 
 const scoreField = defineFieldKind({
   kind: "score",
@@ -25,7 +25,7 @@ const scoreField = defineFieldKind({
     normalize: (value) => Number(value ?? 0),
     serialize: (value) => value,
   },
-  validate: ({ value, config }) =>
+  validateSync: ({ value, config }) =>
     value < config.min || value > config.max ? ["Score is outside the allowed range."] : [],
   render: {
     widget: "number",
@@ -38,7 +38,7 @@ const scoreField = defineFieldKind({
   },
 });
 
-const domainPlugin = defineMlformPlugin({ fields: [scoreField] });
+const domainPlugin = defineMLFormPlugin({ fields: [scoreField] });
 mountForm(container, { schema, transport, plugins: [domainPlugin] });
 ```
 

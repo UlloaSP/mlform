@@ -144,7 +144,7 @@ export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unkno
       return [];
     }
 
-    const result = booleanFieldDefinition.validate?.(value as never, config as never, {
+    const result = booleanFieldDefinition.validateSync?.(value as never, config as never, {
       field: { ...config, id: config.label } as never,
       values: {},
       submitCount: 0,
@@ -156,11 +156,11 @@ export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unkno
   }
 
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
-  if (!definition?.validate) {
+  if (!definition?.validateSync) {
     return [];
   }
 
-  const result = definition.validate(value as never, config as never, {
+  const result = definition.validateSync(value as never, config as never, {
     field: { ...config, id: config.label } as never,
     values: {},
     submitCount: 0,

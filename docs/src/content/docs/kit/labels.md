@@ -6,8 +6,10 @@ description: User-facing labels available in the kit layer.
 `KitLabels` customizes the copy used by the mounted primitive shell.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   labels: {
     form: "Customer profile",

@@ -5,25 +5,25 @@ import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { RuntimeBehavior } from "@/runtime";
 import type { Registry } from "@/schema";
 
-export interface MlformFieldKind {
+export interface MLFormFieldKind {
   readonly category: "field";
   readonly kind: string;
   register(registry: Registry, descriptorRegistry: PrimitiveDescriptorRegistry): void;
 }
 
-export interface MlformReportKind {
+export interface MLFormReportKind {
   readonly category: "report";
   readonly kind: string;
   register(registry: Registry, descriptorRegistry: PrimitiveDescriptorRegistry): void;
 }
 
-export interface MlformPlugin {
-  readonly fields?: readonly MlformFieldKind[];
-  readonly reports?: readonly MlformReportKind[];
+export interface MLFormPlugin {
+  readonly fields?: readonly MLFormFieldKind[];
+  readonly reports?: readonly MLFormReportKind[];
   readonly behaviors?: readonly RuntimeBehavior[];
 }
 
-export const defineMlformPlugin = (plugin: MlformPlugin): MlformPlugin => {
+export const defineMLFormPlugin = (plugin: MLFormPlugin): MLFormPlugin => {
   const fields = [...(plugin.fields ?? [])];
   const reports = [...(plugin.reports ?? [])];
   const behaviors = [...(plugin.behaviors ?? [])];

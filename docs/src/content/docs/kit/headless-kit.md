@@ -13,10 +13,10 @@ Use it when you want:
 
 ```ts
 import { createFormView } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 const view = createFormView({
-  transport: createJsonTransport({ endpoint: "/predict" }),
+  transport: predictionTransport,
   schema,
   layout: {
     kind: "wizard",

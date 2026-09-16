@@ -30,10 +30,9 @@ const appModule = `
     descriptorRegistry: kit.createBuiltinDescriptorRegistry(),
   };
   const state = { fetchRequest: null };
+  const registerKind = (kind) => kind.register(pack.registry, pack.descriptorRegistry);
 
-  kit.registerDefinedFieldKind(
-    pack.registry,
-    pack.descriptorRegistry,
+  registerKind(
     kit.defineFieldKind({
       kind: "score-slider",
       schema: z.object({
@@ -52,9 +51,7 @@ const appModule = `
     }),
   );
 
-  kit.registerDefinedReportKind(
-    pack.registry,
-    pack.descriptorRegistry,
+  registerKind(
     kit.defineReportKind({
       kind: "risk-summary",
       schema: z.object({
@@ -70,9 +67,7 @@ const appModule = `
     }),
   );
 
-  kit.registerDefinedReportKind(
-    pack.registry,
-    pack.descriptorRegistry,
+  registerKind(
     kit.defineReportKind({
       kind: "context-dump",
       schema: z.object({

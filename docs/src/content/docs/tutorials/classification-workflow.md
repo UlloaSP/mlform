@@ -8,8 +8,10 @@ description: Render classifier labels, confidence, and class probabilities.
 Show a classifier report with class labels and probabilities.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/classify" }),
+  transport: predictionTransport,
   schema: {
     fields: [{ id: "text", kind: "text", label: "Text", mappedTo: "text", required: true }],
     reports: [

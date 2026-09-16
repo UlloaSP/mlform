@@ -3,7 +3,7 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, MappedTo } from "@/schema";
+import { mappedToKey, resolveMappedTargets, type BaseFieldConfig, type MappedTo } from "@/schema";
 import { baseFieldShape, mappedToSchema, type BuiltinFieldDefinition } from "../shared";
 
 export type OneHotCategoryOption = {
@@ -51,7 +51,7 @@ export const oneHotCategoryFieldDefinition: BuiltinFieldDefinition<
     }
     return null;
   },
-  validate(value, config) {
+  validateSync(value, config) {
     if (value === null) {
       return [];
     }
@@ -59,5 +59,33 @@ export const oneHotCategoryFieldDefinition: BuiltinFieldDefinition<
     return config.options.some((option) => option.value === value)
       ? []
       : [builtinValidationMessages.categoryOptionMismatch];
+  },
+  getMappedTargets(config, context) {
+    return config.options.flatMap((option) =>
+      resolveMappedTargets(option.mappedTo, context.backend),
+    );
+  },
+  getSubmissionEntries(value, _serializedValue, config, context) {
+    const seen = new Set<string>();
+    const entries: { target: string | number; value: number }[] = [];
+
+    for (const option of config.options) {
+      const targets = resolveMappedTargets(option.mappedTo, context.backend);
+      if (targets.length === 0) {
+        throw new Error(
+          `onehot-category "${config.id}": option "${option.value}" has no mappedTo.`,
+        );
+      }
+      for (const target of targets) {
+        const key = mappedToKey(target);
+        if (seen.has(key)) {
+          throw new Error(`onehot-category "${config.id}": duplicate mappedTo "${key}".`);
+        }
+        seen.add(key);
+        entries.push({ target, value: value === option.value ? 1 : 0 });
+      }
+    }
+
+    return entries;
   },
 };

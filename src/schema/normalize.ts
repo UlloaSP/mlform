@@ -19,74 +19,6 @@ export class SchemaNormalizationError extends Error {
   }
 }
 
-const validateSeriesSubField = (
-  parentLabel: string,
-  name: "field1" | "field2",
-  field: unknown,
-  registry: Registry,
-  fieldIndex: number,
-): void => {
-  if (typeof field !== "object" || field === null) {
-    throw new SchemaNormalizationError(
-      `Series field "${parentLabel}" requires "${name}" configuration.`,
-      ["fields", fieldIndex, name],
-    );
-  }
-
-  const kind =
-    "kind" in field && typeof (field as { kind?: unknown }).kind === "string"
-      ? (field as { kind: string }).kind
-      : "";
-
-  if (kind.length === 0) {
-    throw new SchemaNormalizationError(`Series field "${parentLabel}" requires "${name}.kind".`, [
-      "fields",
-      fieldIndex,
-      name,
-      "kind",
-    ]);
-  }
-
-  if (kind === "series") {
-    throw new SchemaNormalizationError(
-      `Series field "${parentLabel}" cannot nest series in "${name}".`,
-      ["fields", fieldIndex, name, "kind"],
-    );
-  }
-
-  if (!registry.getField(kind)) {
-    throw new SchemaNormalizationError(
-      `Series field "${parentLabel}" uses unknown sub-field kind "${kind}" in "${name}".`,
-      ["fields", fieldIndex, name, "kind"],
-      "unknown-kind",
-    );
-  }
-};
-
-const validateSeriesFieldConfig = (
-  field: FieldConfig,
-  registry: Registry,
-  fieldIndex: number,
-): void => {
-  if (field.kind !== "series") {
-    return;
-  }
-
-  validateSeriesSubField(field.label, "field1", field.field1, registry, fieldIndex);
-  validateSeriesSubField(field.label, "field2", field.field2, registry, fieldIndex);
-
-  if (
-    typeof field.minPoints === "number" &&
-    typeof field.maxPoints === "number" &&
-    field.minPoints > field.maxPoints
-  ) {
-    throw new SchemaNormalizationError(
-      `Series field "${field.label}" requires minPoints to be less than or equal to maxPoints.`,
-      ["fields", fieldIndex, "minPoints"],
-    );
-  }
-};
-
 const resolveId = (
   explicitId: string | undefined,
   fallbackLabel: string,
@@ -128,7 +60,21 @@ const normalizeField = (
   }
 
   const parsed = definition.schema.parse(field) as FieldConfig;
-  validateSeriesFieldConfig(parsed, registry, index);
+  definition.validateConfig?.(parsed, {
+    fail(message, path = [], code = "invalid-config") {
+      throw new SchemaNormalizationError(message, ["fields", index, ...path], code);
+    },
+  });
+  for (const reference of definition.getNestedFieldReferences?.(parsed) ?? []) {
+    if (!registry.getField(reference.kind)) {
+      throw new SchemaNormalizationError(
+        reference.unknownKindMessage ??
+          `Field "${parsed.label}" uses unknown nested field kind "${reference.kind}".`,
+        ["fields", index, ...reference.path],
+        "unknown-kind",
+      );
+    }
+  }
   return {
     ...parsed,
     id: resolveId(parsed.id, parsed.label, usedIds, `field-${index + 1}`, ["fields", index, "id"]),

@@ -32,7 +32,7 @@ export const ratingFieldDefinition: BuiltinFieldDefinition<RatingFieldConfig, nu
     const parsed = typeof value === "number" ? value : Number(value);
     return Number.isNaN(parsed) ? null : parsed;
   },
-  validate(value, config) {
+  validateSync(value, config) {
     if (value === null) {
       return [];
     }

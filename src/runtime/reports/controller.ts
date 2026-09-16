@@ -4,7 +4,7 @@
 import { defaultEquality } from "../equality";
 import { resolveMappedReportPayload, resolveMappedReportResult } from "@/schema";
 import { createTransportRequestRunner, extractErrorMessage } from "@/transport";
-import { ReportPayloadError } from "../errors";
+import { EngineError, ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
 import type {
   FormHooks,
@@ -116,11 +116,12 @@ const preparePayloadState = (
 
 export type InternalReportController = ReportController & {
   cloneState(state: ReportStateSnapshot): ReportStateSnapshot;
-  prepareState(result: SubmitResult): Promise<ReportStateSnapshot>;
+  prepareState(result: SubmitResult, signal?: AbortSignal): Promise<ReportStateSnapshot>;
   commitState(state: ReportStateSnapshot): void;
   update(result: SubmitResult): Promise<void>;
   markLoading(): void;
   reset(): void;
+  dispose(): void;
 };
 
 export const createReportController = ({
@@ -129,6 +130,10 @@ export const createReportController = ({
   store,
   hooks,
 }: CreateReportControllerOptions): InternalReportController => {
+  let disposed = false;
+  const assertActive = (): void => {
+    if (disposed) throw new EngineError(`Report "${config.id}" has been disposed.`);
+  };
   const readonlyConfig = deepFreeze(cloneValue(config));
   setReportState(store, readonlyConfig.id, idleState);
 
@@ -157,7 +162,7 @@ export const createReportController = ({
     cloneState(state) {
       return cloneReportStateSnapshot(definition, readonlyConfig, state);
     },
-    async prepareState(result) {
+    async prepareState(result, signal) {
       let rawPayload: unknown;
 
       try {
@@ -169,6 +174,7 @@ export const createReportController = ({
           ? await definition.resolvePayload(readonlyConfig, {
               report: readonlyConfig,
               result,
+              signal,
             })
           : definition.fetch && readonlyConfig.mappedTo === undefined
             ? undefined
@@ -199,6 +205,7 @@ export const createReportController = ({
       setReportState(store, readonlyConfig.id, loadingState);
     },
     async fetch(request: ReportFetchRequest): Promise<void> {
+      assertActive();
       const currentState = store.getState().reportStates[readonlyConfig.id] ?? idleState;
       if (!definition.fetch || currentState.status !== "idle") {
         return;
@@ -252,6 +259,11 @@ export const createReportController = ({
         error: outcome.error,
       });
     },
+    async refresh(request) {
+      assertActive();
+      this.abort();
+      await this.fetch(request);
+    },
     abort() {
       fetchRunner.abort();
       setReportState(store, readonlyConfig.id, idleState);
@@ -261,6 +273,7 @@ export const createReportController = ({
       setReportState(store, readonlyConfig.id, idleState);
     },
     subscribe(listener) {
+      assertActive();
       let previousState = store.getState().reportStates[readonlyConfig.id];
       return store.subscribe(() => {
         const nextState = store.getState().reportStates[readonlyConfig.id];
@@ -269,6 +282,11 @@ export const createReportController = ({
           listener(this.cloneState(nextState));
         }
       });
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      fetchRunner.abort("dispose");
     },
   };
 

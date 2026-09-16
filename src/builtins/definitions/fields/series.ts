@@ -40,7 +40,41 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
       field2: serializeSubFieldValue(config.field2, point.field2),
     }));
   },
-  validate(value, config) {
+  getNestedFieldReferences(config) {
+    return [
+      {
+        kind: config.field1.kind,
+        path: ["field1", "kind"],
+        unknownKindMessage: `Series field "${config.label}" uses unknown sub-field kind "${config.field1.kind}" in "field1".`,
+      },
+      {
+        kind: config.field2.kind,
+        path: ["field2", "kind"],
+        unknownKindMessage: `Series field "${config.label}" uses unknown sub-field kind "${config.field2.kind}" in "field2".`,
+      },
+    ];
+  },
+  validateConfig(config, context) {
+    for (const name of ["field1", "field2"] as const) {
+      if (config[name].kind === "series") {
+        context.fail(`Series field "${config.label}" cannot nest series in "${name}".`, [
+          name,
+          "kind",
+        ]);
+      }
+    }
+    if (
+      config.minPoints !== undefined &&
+      config.maxPoints !== undefined &&
+      config.minPoints > config.maxPoints
+    ) {
+      context.fail(
+        `Series field "${config.label}" requires minPoints to be less than or equal to maxPoints.`,
+        ["minPoints"],
+      );
+    }
+  },
+  validateSync(value, config) {
     const errors = validateSeriesPointCount(value, config);
 
     value.forEach((point, index) => {

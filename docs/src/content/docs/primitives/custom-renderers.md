@@ -8,6 +8,8 @@ Use a primitive registry when you intentionally opt into the advanced path and r
 For most custom kinds, prefer `defineFieldKind` or `defineReportKind` from `mlform/kit`. Register those helpers with both the schema registry and descriptor registry; they use built-in declarative renderers and do not require primitive registry wiring.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 import { createBuiltinPrimitiveRegistry } from "mlform/primitives";
 
 customElements.define("risk-band-field", RiskBandFieldElement);
@@ -18,7 +20,7 @@ const primitiveRegistry = createBuiltinPrimitiveRegistry().registerField(
 );
 
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   primitiveRegistry,
 });

@@ -8,8 +8,10 @@ description: Render numeric model output with units and precision.
 Submit structured values and render one numeric score.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/price" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "area", kind: "number", label: "Area", mappedTo: "area", min: 0, unit: "m2" },

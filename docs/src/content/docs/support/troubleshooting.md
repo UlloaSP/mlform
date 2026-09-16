@@ -7,8 +7,8 @@ description: Common MLForm integration problems and fixes.
 | ------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
 | Missing container               | `querySelector` returned `null`.            | Check the selector and mount after the element exists.                   |
 | Missing transport               | `mountForm` needs a submit path.            | Pass `transport`.                                                        |
-| Invalid transport config        | `transport.submit` is missing or invalid.   | Pass an object with `submit(request)` or use `createJsonTransport(...)`. |
-| Backend returned non-JSON       | Default parser expects JSON.                | Return JSON or use `createJsonTransport({ parse })`.                     |
+| Invalid transport config        | `transport.submit` is missing or invalid.   | Pass an object with an async `submit(request)` method.                   |
+| Backend response cannot be read | The application adapter parsed the wrong shape. | Fix the adapter parser and return the expected report contract.      |
 | Unknown field kind              | Registry does not include the field.        | Use built-ins or register a custom field.                                |
 | Unknown report kind             | Registry does not include the report.       | Use `classifier`, `regressor`, or register a custom report.              |
 | Duplicate id                    | Two fields or reports share an explicit id. | Give each item a stable unique id.                                       |

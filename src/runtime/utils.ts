@@ -31,8 +31,6 @@ export const isEmptyValue = (value: unknown): boolean => {
   return false;
 };
 
-export const identity = <T>(value: T): T => value;
-
 export const deepFreeze = <T>(value: T): T => {
   const isTypedView = typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(value);
   const isArrayBufferLike =

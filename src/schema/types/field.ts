@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { ZodType } from "zod";
-import type { MappedTo } from "./mapping";
+import type { MappedTo, MappedToTarget } from "./mapping";
 
 export type MaybePromise<T> = T | PromiseLike<T>;
 export type FormStatus = "idle" | "editing" | "validating" | "submitting" | "success" | "error";
@@ -145,6 +145,45 @@ export interface FieldValueAdapter<TConfig extends FieldConfig = FieldConfig, TV
   serialize?: (value: TValue, config: TConfig) => unknown;
 }
 
+export interface FieldDefinitionRuntimeField {
+  readonly id: string;
+  readonly kind: string;
+  readonly config: NormalizedFieldConfig;
+}
+
+export interface FieldDefinitionRuntimeContext {
+  readonly fields: readonly FieldDefinitionRuntimeField[];
+  readonly signal?: AbortSignal;
+  getField(id: string): FieldDefinitionRuntimeField | undefined;
+  resolveFieldId(id: string): string | undefined;
+  getValues(): Record<string, unknown>;
+  commitDerivedValue(fieldId: string, value: unknown): void;
+  syncDerivedState(values?: Record<string, unknown>): void;
+}
+
+export interface FieldSubmissionEntry {
+  target: MappedToTarget;
+  value: unknown;
+}
+
+export interface FieldSubmissionContext {
+  backend?: string;
+}
+
+export interface NestedFieldReference {
+  kind: string;
+  path: readonly (string | number)[];
+  unknownKindMessage?: string;
+}
+
+export interface FieldConfigValidationContext {
+  fail(
+    message: string,
+    path?: readonly (string | number)[],
+    code?: "invalid-config" | "unknown-kind",
+  ): never;
+}
+
 export interface FieldValidationFnContext<
   TConfig extends FieldConfig = FieldConfig,
   TValue = unknown,
@@ -161,11 +200,37 @@ export interface FieldDefinition<TConfig extends FieldConfig = FieldConfig, TVal
   cloneValue?: (value: TValue, config: TConfig) => TValue;
   isEqual?: (previous: TValue, next: TValue, config: TConfig) => boolean;
   serializeValue?: (value: TValue, config: TConfig) => unknown;
+  validateSync?: (
+    value: TValue,
+    config: TConfig,
+    context: FieldValidationContext<TConfig>,
+  ) => string[];
   validate?: (
     value: TValue,
     config: TConfig,
     context: FieldValidationContext<TConfig>,
   ) => MaybePromise<string[]>;
+  validateRuntime?: (
+    config: NormalizedFieldConfig<TConfig>,
+    context: FieldDefinitionRuntimeContext,
+  ) => void;
+  onValueChanged?: (
+    value: TValue,
+    config: NormalizedFieldConfig<TConfig>,
+    context: FieldDefinitionRuntimeContext,
+  ) => MaybePromise<void>;
+  getMappedTargets?: (
+    config: NormalizedFieldConfig<TConfig>,
+    context: FieldSubmissionContext,
+  ) => readonly MappedToTarget[];
+  getSubmissionEntries?: (
+    value: TValue,
+    serializedValue: unknown,
+    config: NormalizedFieldConfig<TConfig>,
+    context: FieldSubmissionContext,
+  ) => readonly FieldSubmissionEntry[];
+  getNestedFieldReferences?: (config: TConfig) => readonly NestedFieldReference[];
+  validateConfig?: (config: TConfig, context: FieldConfigValidationContext) => void;
 }
 
 export interface SelectorSubscriptionOptions<TSelected> {

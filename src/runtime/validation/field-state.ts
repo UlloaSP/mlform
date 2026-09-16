@@ -3,7 +3,7 @@
 
 import type { InternalFieldState } from "../state";
 import type { FieldDefinition, FormStatus, NormalizedFieldConfig } from "../types";
-import { isEmptyValue, isPromiseLike } from "../utils";
+import { isEmptyValue } from "../utils";
 import { cloneValue, deepValueEquality } from "../values";
 import { resolveDerivedFlags, type DerivedFieldFlags } from "./conditions";
 
@@ -69,22 +69,15 @@ export const runSyncValidation = (
   values: Record<string, unknown>,
   submitCount: number,
 ): string[] => {
-  if (!definition.validate) return [];
-  if (
-    typeof config.asyncValidationDebounceMs === "number" &&
-    config.asyncValidationDebounceMs > 0
-  ) {
-    return [];
-  }
+  if (!definition.validateSync) return [];
 
-  const result = definition.validate(value, config, {
+  return definition.validateSync(value, config, {
     field: config,
     values,
     submitCount,
     validationVersion: 0,
     signal: undefined,
   });
-  return isPromiseLike(result) ? [] : result;
 };
 
 export const computeSyncErrors = (

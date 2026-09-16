@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { defaultEquality } from "../equality";
+import { EngineError } from "../errors";
 import { toFieldStateSnapshot, type EngineStore, type InternalFieldState } from "../state";
 import type {
   FieldController,
@@ -21,6 +22,7 @@ import { deepFreeze } from "../utils";
 import { cloneValue } from "../values";
 import { prepareFieldState, refreshFieldState } from "./state-calculations";
 import { setFieldState } from "./state";
+import { resolveMappedTargets, type FieldSubmissionEntry, type MappedToTarget } from "@/schema";
 
 type CreateFieldControllerOptions = {
   config: NormalizedFieldConfig;
@@ -49,6 +51,10 @@ export type InternalFieldController = FieldController & {
   setExternalErrors(errors: string[]): void;
   coerceValue(value: unknown): unknown;
   validate(validationVersion?: number): Promise<FieldValidationResult>;
+  abortValidation(reason?: string): void;
+  dispose(): void;
+  getMappedTargets(backend?: string): readonly MappedToTarget[];
+  getSubmissionEntries(backend?: string): readonly FieldSubmissionEntry[] | undefined;
 };
 
 export const createFieldController = ({
@@ -60,6 +66,10 @@ export const createFieldController = ({
   getFormStatus,
   onValueChange,
 }: CreateFieldControllerOptions): InternalFieldController => {
+  let disposed = false;
+  const assertActive = (): void => {
+    if (disposed) throw new EngineError(`Field "${config.id}" has been disposed.`);
+  };
   const readonlyConfig = deepFreeze(cloneValue(config));
   const initialValue =
     readonlyConfig.defaultValue !== undefined
@@ -101,6 +111,7 @@ export const createFieldController = ({
       return toFieldStateSnapshot(getInternalState());
     },
     setValue(value) {
+      assertActive();
       const nextValues = {
         ...getValues(),
         [readonlyConfig.id]: this.coerceValue(value),
@@ -139,6 +150,7 @@ export const createFieldController = ({
       setFieldState(store, readonlyConfig.id, state);
     },
     blur() {
+      assertActive();
       const currentState = getInternalState();
       setFieldState(store, readonlyConfig.id, {
         ...currentState,
@@ -151,18 +163,25 @@ export const createFieldController = ({
       }));
     },
     focus() {
+      assertActive();
       // Focus is intentionally a no-op in the headless engine.
     },
     async validate(validationVersion?: number) {
+      assertActive();
       return fieldValidator.validate(getInternalState(), validationVersion);
     },
+    abortValidation(reason) {
+      fieldValidator.abort(reason);
+    },
     reset() {
+      assertActive();
       fieldValidator.abort("field-reset");
       setFieldState(store, readonlyConfig.id, {
         ...initialState,
       });
     },
     subscribe(listener) {
+      assertActive();
       let previousState = getInternalState();
       return store.subscribe(() => {
         const nextState = store.getState().fieldStates[readonlyConfig.id];
@@ -181,6 +200,16 @@ export const createFieldController = ({
     },
     coerceValue(value) {
       return normalizeValue(definition, readonlyConfig, value);
+    },
+    getMappedTargets(backend) {
+      return definition.getMappedTargets
+        ? definition.getMappedTargets(readonlyConfig, { backend })
+        : resolveMappedTargets(readonlyConfig.mappedTo, backend);
+    },
+    getSubmissionEntries(backend) {
+      if (!definition.getSubmissionEntries) return undefined;
+      const value = getInternalState().value;
+      return definition.getSubmissionEntries(value, this.serialize(), readonlyConfig, { backend });
     },
     setExternalErrors(errors) {
       const currentState = getInternalState();
@@ -206,6 +235,11 @@ export const createFieldController = ({
 
       setFieldState(store, readonlyConfig.id, nextState);
       return nextState;
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      fieldValidator.abort("dispose");
     },
   };
 

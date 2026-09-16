@@ -6,8 +6,10 @@ description: Embed MLForm into host applications without visual conflicts.
 For embedded apps, prefer `mode: "inherit"` so MLForm follows host light or dark surfaces.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   designSystem: {
     mode: "inherit",
@@ -21,7 +23,7 @@ Use `onDesignSystemChange` to inspect the resolved system:
 
 ```ts
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema,
   onDesignSystemChange(resolved) {
     console.log(resolved.effectiveScheme, resolved.themeId, resolved.recipeId);

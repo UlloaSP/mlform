@@ -11,13 +11,18 @@ description: State, validation, submission, reset, and subscriptions.
 | `reports`                                         | Ordered report controllers.                          |
 | `state`                                           | Current form state snapshot.                         |
 | `getField(id)`                                    | Find one field.                                      |
+| `getFieldByDisplayKey(key)`                       | Find a field by its UI-facing key.                   |
+| `getFieldByMappedTo(target, options?)`             | Find a field by an explicit backend target.          |
 | `getReport(id)`                                   | Find one report.                                     |
 | `getValues()`                                     | Read current runtime values.                         |
 | `setValues(values)`                               | Patch field values.                                  |
 | `validate()`                                      | Run field and form validators.                       |
 | `submit(options?)`                                | Validate, submit through transport, resolve reports. |
 | `abortSubmit(reason?)`                            | Abort pending submit.                                |
+| `setExternalErrors(issue)`                        | Apply server or host validation errors.              |
+| `clearExternalErrors()`                           | Remove errors supplied by the host.                  |
 | `reset()`                                         | Restore initial values and idle state.               |
+| `dispose()`                                       | Abort pending work and release subscriptions.        |
 | `subscribe(listener)`                             | Listen to complete form state.                       |
 | `subscribeSelector(selector, listener, options?)` | Listen to a derived value.                           |
 
@@ -30,5 +35,8 @@ const unsubscribe = mounted.form.subscribeSelector(
 
 unsubscribe();
 ```
+
+State snapshots are deeply frozen and retain their identity until runtime state changes. Unknown
+field ids passed to `setExternalErrors` fail atomically instead of partially applying errors.
 
 `submit()` throws `ValidationError`, `SubmitError`, or `SubmissionAbortedError` when the operation cannot complete.

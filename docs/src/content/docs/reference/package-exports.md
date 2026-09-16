@@ -10,7 +10,7 @@ description: Public import paths exposed by MLForm.
 | `mlform/runtime`       | Core form controller, validation, hooks, conditions, and submission orchestration.                                      |
 | `mlform/schema`        | Schema types, normalization, registry helpers, and backend request contracts.                                            |
 | `mlform/builtins`   | Headless built-in ML field/report definitions and `createBuiltinMlRegistry`.                                             |
-| `mlform/transport`     | Transport adapters, middleware, resilience policies, and orchestration helpers.                                          |
+| `mlform/transport`     | Transport types, errors, request runner, and named-backend fan-out.                                                        |
 | `mlform/primitives`    | Primitive Web Components and renderer registry.                                                                                        |
 | `mlform/design` | Theme, recipe, token, and runtime design system APIs.                                                                                  |
 

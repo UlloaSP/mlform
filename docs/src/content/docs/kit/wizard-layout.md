@@ -7,10 +7,10 @@ description: Mount the official wizard layout or consume wizard state through cr
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/predict" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "name", kind: "text", label: "Name", required: true },

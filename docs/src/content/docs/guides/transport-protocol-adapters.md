@@ -1,26 +1,15 @@
 ---
 title: Protocol Adapters
-description: Build or extend protocol adapters around MLForm's transport contract.
+description: Adapt an application protocol to MLForm's small transport contract.
 ---
 
-Built-in helpers:
+Implement `Transport.submit` around the client you already use. Map `request.modelValues` to the
+backend payload, forward `request.signal`, check protocol-level failures, and return data in the
+report shape expected by the schema.
 
-- `createJsonTransport`
-- `createGraphqlTransport`
-- `createSseTransport`
-- `createWebSocketSessionTransport`
-- `createGrpcUnaryTransport`
-- `createGrpcStreamTransport`
-- `createGrpcSessionTransport`
-- `createGrpcTransport`
+MLForm does not ship HTTP, GraphQL, SSE, WebSocket, or gRPC adapters. Those protocols have
+application-specific authentication, framing, retry, and response contracts; keeping their
+adapters local avoids hidden guesses.
 
-Adapter guidance:
-
-- set normalized capabilities explicitly
-- preserve `request.signal`
-- use canonical `TransportError` codes
-- publish `stream()` for progressive output
-- publish `openSession()` only for long-lived channels
-- expose session backpressure metadata when relevant
-
-If a protocol does not match a built-in helper, return a plain custom `transport`.
+For an HTTP example, see [Custom Transport](/mlform/examples/custom-transport/). For independent
+named backends, use `createFanoutTransport` from `mlform/transport`.

@@ -50,7 +50,7 @@ try {
     `import { mountForm as mountFormFromRoot } from "mlform";
 import {
   createBuiltinDescriptorRegistry,
-  defineMlformPlugin,
+  defineMLFormPlugin,
   mountForm,
   type MountFormOptions,
 } from "mlform/kit";
@@ -67,7 +67,7 @@ type Options = MountFormOptions;
 void (null as Options | null);
 void [
   createBuiltinDescriptorRegistry,
-  defineMlformPlugin,
+  defineMLFormPlugin,
   mountForm,
   mountFormFromRoot,
   createForm,
@@ -109,14 +109,14 @@ primitives.unmountForm;
 import { mountForm as mountFormFromRoot } from "mlform";
 import { mountForm as mountFormFromKit } from "mlform/kit";
 import { createBuiltinMlRegistry } from "mlform/builtins";
-import { identity } from "mlform/runtime";
+import { createForm } from "mlform/runtime";
 import { createRegistry } from "mlform/schema";
 import { extractErrorMessage } from "mlform/transport";
 
 assert.equal(createBuiltinMlRegistry().getField("text")?.kind, "text");
 assert.equal(mountFormFromRoot, mountFormFromKit);
 assert.equal(createRegistry().listFields().length, 0);
-assert.equal(identity("ready"), "ready");
+assert.equal(typeof createForm, "function");
 assert.equal(extractErrorMessage(new Error("expected")), "expected");
 `,
   );

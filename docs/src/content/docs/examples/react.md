@@ -8,7 +8,7 @@ MLForm renders Web Components, so React integration is a lifecycle wrapper.
 ```tsx
 import { useEffect, useRef } from "react";
 import { mountForm, type MountedForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { predictionTransport } from "./prediction-transport";
 
 export function PredictionForm() {
   const ref = useRef<HTMLDivElement>(null);
@@ -17,7 +17,7 @@ export function PredictionForm() {
     if (!ref.current) return;
 
     const mounted: MountedForm = mountForm(ref.current, {
-      transport: createJsonTransport({ endpoint: "/api/predict" }),
+      transport: predictionTransport,
       schema: {
         fields: [{ id: "prompt", kind: "text", label: "Prompt", required: true }],
         reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],

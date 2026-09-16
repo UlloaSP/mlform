@@ -8,8 +8,10 @@ description: Use hidden, disabled, and read-only conditions.
 Show advanced fields only when the user opts in.
 
 ```ts
+import { predictionTransport } from "./prediction-transport";
+
 mountForm(container, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport: predictionTransport,
   schema: {
     fields: [
       { id: "advanced", kind: "boolean", label: "Use advanced options" },

@@ -5,7 +5,7 @@ type MaybePromise<T> = T | PromiseLike<T>;
 
 import type { Registry } from "@/schema";
 import type { SubmissionInputRecord } from "@/schema";
-import type { FieldHandle } from "./field";
+import type { FieldController } from "./field";
 import type { FormStatus } from "./status";
 
 export interface RuntimeBehaviorValueChangeEvent {
@@ -21,8 +21,10 @@ export interface RuntimeBehaviorSubmissionRecords {
 
 export interface RuntimeBehaviorContext {
   readonly registry: Registry;
-  readonly fields: readonly FieldHandle[];
-  getField(id: string): FieldHandle | undefined;
+  readonly fields: readonly FieldController[];
+  readonly signal?: AbortSignal;
+  readonly changeVersion?: number;
+  getField(id: string): FieldController | undefined;
   resolveFieldId(id: string): string | undefined;
   getValues(): Record<string, unknown>;
   getSubmitCount(): number;

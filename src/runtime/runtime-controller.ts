@@ -3,7 +3,7 @@
 
 import { shallowEquality } from "./equality";
 import { EngineError } from "./errors";
-import { mappedToKey, resolveMappedTo } from "@/schema";
+import { mappedToKey } from "@/schema";
 import { transitionEngineState, type InternalFieldState } from "./state";
 import type {
   FormController,
@@ -36,6 +36,8 @@ type CreateRuntimeControllerOptions = {
   bumpLifecycleVersion: () => number;
   resetReports: () => void;
   runBehaviorValueChange: (event: RuntimeBehaviorValueChangeEvent) => void;
+  abortBehaviorChanges: (reason?: string) => void;
+  setRestingStatus: () => void;
 };
 
 export const createRuntimeController = ({
@@ -55,9 +57,15 @@ export const createRuntimeController = ({
   bumpLifecycleVersion,
   resetReports,
   runBehaviorValueChange,
+  abortBehaviorChanges,
+  setRestingStatus,
 }: CreateRuntimeControllerOptions): FormController => {
   const readonlyFields = Object.freeze([...fields]) as readonly InternalFieldController[];
   const readonlyReports = Object.freeze([...reports]) as readonly InternalReportController[];
+  let disposed = false;
+  const assertActive = (): void => {
+    if (disposed) throw new EngineError("Form runtime has been disposed.");
+  };
 
   return {
     get fields() {
@@ -79,18 +87,9 @@ export const createRuntimeController = ({
     getFieldByMappedTo(target, options) {
       const targetKey = mappedToKey(target);
       return fields.find((field) => {
-        const mappedTo = resolveMappedTo(field.config.mappedTo, options?.backend);
-        if (mappedTo !== undefined && mappedToKey(mappedTo) === targetKey) {
-          return true;
-        }
-
-        const fieldOptions = (field.config as { options?: { mappedTo?: never }[] }).options;
-        return (
-          fieldOptions?.some((option) => {
-            const optionTarget = resolveMappedTo(option.mappedTo, options?.backend);
-            return optionTarget !== undefined && mappedToKey(optionTarget) === targetKey;
-          }) ?? false
-        );
+        return field
+          .getMappedTargets(options?.backend)
+          .some((mappedTo) => mappedToKey(mappedTo) === targetKey);
       });
     },
     getReport(id) {
@@ -100,6 +99,7 @@ export const createRuntimeController = ({
       return getValues();
     },
     setValues(values) {
+      assertActive();
       store.batch(() => {
         const updates = Object.entries(values);
         const finalValues = {
@@ -160,16 +160,51 @@ export const createRuntimeController = ({
       });
     },
     validate() {
+      assertActive();
       return formValidator.validate();
     },
     submit(options) {
+      assertActive();
       return formSubmitter.submit(options);
     },
     abortSubmit(reason) {
       formSubmitter.abort(reason);
     },
-    reset() {
+    setExternalErrors(issue) {
+      assertActive();
+      const unknownFieldIds = Object.keys(issue.fields ?? {}).filter(
+        (fieldId) => !fieldMap.has(fieldId),
+      );
+      if (unknownFieldIds.length > 0) {
+        throw new EngineError(`Unknown field "${unknownFieldIds[0]}" in external errors.`);
+      }
+
       store.batch(() => {
+        for (const field of fields) field.setExternalErrors(issue.fields?.[field.id] ?? []);
+        const formErrors = [...(issue.form ?? [])];
+        store.update((current) => ({
+          ...current,
+          formErrors,
+          status:
+            formErrors.length > 0 ||
+            Object.values(issue.fields ?? {}).some((errors) => errors.length)
+              ? "error"
+              : current.status,
+        }));
+      });
+    },
+    clearExternalErrors() {
+      assertActive();
+      store.batch(() => {
+        for (const field of fields) field.setExternalErrors([]);
+        store.update((current) => ({ ...current, formErrors: [] }));
+        setRestingStatus();
+      });
+    },
+    reset() {
+      assertActive();
+      store.batch(() => {
+        abortBehaviorChanges("reset");
         formSubmitter.abort("reset");
         bumpLifecycleVersion();
 
@@ -188,6 +223,7 @@ export const createRuntimeController = ({
       });
     },
     subscribe(listener) {
+      assertActive();
       return store.subscribe(() => {
         listener(getPublicState());
       });
@@ -197,6 +233,7 @@ export const createRuntimeController = ({
       listener: (selected: TSelected, state: FormState) => void,
       options?: SelectorSubscriptionOptions<TSelected>,
     ) {
+      assertActive();
       const equality = options?.equality ?? shallowEquality<TSelected>;
       let previousSelected = selector(getPublicState());
 
@@ -212,6 +249,16 @@ export const createRuntimeController = ({
           listener(nextSelected, nextState);
         }
       });
+    },
+    dispose() {
+      if (disposed) return;
+      abortBehaviorChanges("dispose");
+      formSubmitter.abort("dispose");
+      bumpLifecycleVersion();
+      for (const field of fields) field.dispose();
+      for (const report of reports) report.dispose();
+      disposed = true;
+      store.destroy();
     },
   };
 };

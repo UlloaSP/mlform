@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { mappedToKey, resolveMappedTo, type MappedTo } from "./mapped-to";
+import { mappedToKey, resolveMappedTo, type MappedTo } from "@/schema";
 
 export type OneHotDisplayOption = {
   label?: string;
@@ -27,9 +27,7 @@ export const resolveOneHotDisplayValue = (
   modelValues: Record<string, unknown>,
   options: ResolveOneHotDisplayValueOptions = {},
 ): string | undefined => {
-  if (field.kind !== "onehot-category" || !Array.isArray(field.options)) {
-    return undefined;
-  }
+  if (field.kind !== "onehot-category" || !Array.isArray(field.options)) return undefined;
 
   const seenTargets = new Set<string>();
   let selected: string | undefined;
@@ -48,10 +46,7 @@ export const resolveOneHotDisplayValue = (
     }
     seenTargets.add(key);
 
-    if (!isSelectedOneHotValue(modelValues[key])) {
-      continue;
-    }
-
+    if (!isSelectedOneHotValue(modelValues[key])) continue;
     if (selected !== undefined) {
       throw new Error(
         `onehot-category "${field.id ?? field.kind}": multiple selected mapped values.`,
