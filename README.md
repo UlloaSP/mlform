@@ -17,7 +17,7 @@ MLForm exists so every screen does not invent that integration again. The schema
 ## Installation
 
 > [!NOTE]
-> MLForm is pre-1.0. Public APIs may change between minor releases. Node-based consumers and tooling require Node.js 20.19 or newer.
+> MLForm is pre-1.0. Public APIs may change between minor releases. Node-based consumers require Node.js 20.19 or newer; contributors need Node.js 24.15 or newer.
 
 ```bash
 npm install mlform
