@@ -4255,26 +4255,26 @@ describe("runtime", () => {
       );
     });
 
-    it("rejects duplicate onehot targets", async () => {
-      const form = createForm({
-        schema: {
-          fields: [
-            {
-              kind: "onehot-category",
-              id: "color",
-              label: "Color",
-              options: [
-                { label: "Red", value: "red", mappedTo: "is_color" },
-                { label: "Green", value: "green", mappedTo: "is_color" },
-              ],
-            },
-          ],
-        },
-        registry: createBuiltinTestKit().registry,
-        transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
-      });
-
-      await expect(form.submit()).rejects.toThrow(/onehot-category.*duplicate mappedTo/);
+    it("rejects duplicate onehot targets during form creation", () => {
+      expect(() =>
+        createForm({
+          schema: {
+            fields: [
+              {
+                kind: "onehot-category",
+                id: "color",
+                label: "Color",
+                options: [
+                  { label: "Red", value: "red", mappedTo: "is_color" },
+                  { label: "Green", value: "green", mappedTo: "is_color" },
+                ],
+              },
+            ],
+          },
+          registry: createBuiltinTestKit().registry,
+          transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
+        }),
+      ).toThrow(/duplicate submission path "is_color"/i);
     });
 
     it("rejects unresolved onehot backend targets", async () => {

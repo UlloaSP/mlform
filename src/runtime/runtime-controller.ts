@@ -27,6 +27,7 @@ type CreateRuntimeControllerOptions = {
   formValidator: { validate(): Promise<import("./types").FormValidationResult> };
   formSubmitter: {
     submit(options?: import("./types").SubmitOptions): Promise<import("./types").SubmitResult>;
+    isActive(): boolean;
     abort(reason?: string): void;
     reset(): void;
   };
@@ -35,7 +36,7 @@ type CreateRuntimeControllerOptions = {
   inactiveFieldPolicy: import("./types").InactiveFieldPolicy | undefined;
   bumpLifecycleVersion: () => number;
   resetReports: () => void;
-  runBehaviorValueChange: (event: RuntimeBehaviorValueChangeEvent) => void;
+  runBehaviorValueChanges: (events: readonly RuntimeBehaviorValueChangeEvent[]) => void;
   abortBehaviorChanges: (reason?: string) => void;
   setRestingStatus: () => void;
 };
@@ -56,13 +57,14 @@ export const createRuntimeController = ({
   inactiveFieldPolicy,
   bumpLifecycleVersion,
   resetReports,
-  runBehaviorValueChange,
+  runBehaviorValueChanges,
   abortBehaviorChanges,
   setRestingStatus,
 }: CreateRuntimeControllerOptions): FormController => {
   const readonlyFields = Object.freeze([...fields]) as readonly InternalFieldController[];
   const readonlyReports = Object.freeze([...reports]) as readonly InternalReportController[];
   let disposed = false;
+  let explicitValidationCount = 0;
   const assertActive = (): void => {
     if (disposed) throw new EngineError("Form runtime has been disposed.");
   };
@@ -151,20 +153,33 @@ export const createRuntimeController = ({
           inactiveFieldPolicy,
         });
 
-        for (const [fieldId] of updates) {
-          runBehaviorValueChange({
+        runBehaviorValueChanges(
+          updates.map(([fieldId]) => ({
             fieldId,
             values: finalValues,
-          });
-        }
+          })),
+        );
       });
     },
-    validate() {
+    async validate() {
       assertActive();
-      return formValidator.validate();
+      if (formSubmitter.isActive()) {
+        throw new EngineError("Cannot validate while a form submission is in progress.");
+      }
+      explicitValidationCount += 1;
+      try {
+        return await formValidator.validate();
+      } finally {
+        explicitValidationCount -= 1;
+      }
     },
     submit(options) {
       assertActive();
+      if (explicitValidationCount > 0) {
+        return Promise.reject(
+          new EngineError("Cannot submit while explicit form validation is in progress."),
+        );
+      }
       return formSubmitter.submit(options);
     },
     abortSubmit(reason) {

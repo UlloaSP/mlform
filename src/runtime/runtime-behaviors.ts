@@ -41,6 +41,7 @@ export const createRuntimeBehaviors = ({
   );
   let changeVersion = 0;
   let activeChangeController: AbortController | null = null;
+  let activeChangeCompletion: Promise<void> | null = null;
 
   const resolveField = (targetId: string): InternalFieldController | undefined => {
     return fieldMap.get(targetId) ?? fieldMap.get(normalizeSchemaId(targetId));
@@ -73,36 +74,66 @@ export const createRuntimeBehaviors = ({
     },
   });
 
-  const runBehaviorValueChange = (event: RuntimeBehaviorValueChangeEvent): void => {
+  const runBehaviorValueChanges = (events: readonly RuntimeBehaviorValueChangeEvent[]): void => {
     activeChangeController?.abort("values-changed");
     const controller = new AbortController();
     activeChangeController = controller;
     const version = ++changeVersion;
     const context = createBehaviorContext(controller.signal, version);
     const pending: Promise<void>[] = [];
-    for (const behavior of behaviors) {
-      const result = behavior.onValuesChanged?.(event, context);
-      if (isPromiseLike(result)) {
-        pending.push(
-          Promise.resolve(result).catch((error: unknown) => {
-            if (!controller.signal.aborted) onListenerError?.(error);
-          }),
-        );
+    for (const event of events) {
+      for (const behavior of behaviors) {
+        const result = behavior.onValuesChanged?.(event, context);
+        if (isPromiseLike(result)) {
+          pending.push(
+            Promise.resolve(result).catch((error: unknown) => {
+              if (!controller.signal.aborted) onListenerError?.(error);
+            }),
+          );
+        }
       }
     }
     if (pending.length === 0) {
       if (activeChangeController === controller) activeChangeController = null;
+      activeChangeCompletion = null;
       return;
     }
-    void Promise.all(pending).finally(() => {
-      if (activeChangeController === controller) activeChangeController = null;
+    const aborted = new Promise<void>((resolve) => {
+      controller.signal.addEventListener("abort", () => resolve(), { once: true });
     });
+    const generation = changeVersion;
+    const completion = Promise.race([Promise.all(pending).then(() => undefined), aborted]).finally(
+      () => {
+        if (activeChangeController === controller) activeChangeController = null;
+        if (changeVersion === generation) activeChangeCompletion = null;
+      },
+    );
+    activeChangeCompletion = completion;
+  };
+
+  const runBehaviorValueChange = (event: RuntimeBehaviorValueChangeEvent): void => {
+    runBehaviorValueChanges([event]);
+  };
+
+  const flushBehaviorChanges = (): Promise<void> | undefined => {
+    if (!activeChangeCompletion) return undefined;
+
+    return (async () => {
+      while (activeChangeCompletion) {
+        const completion: Promise<void> = activeChangeCompletion;
+        await completion;
+        if (activeChangeCompletion === completion) {
+          activeChangeCompletion = null;
+        }
+      }
+    })();
   };
 
   const abortBehaviorChanges = (reason?: string): void => {
     changeVersion += 1;
     activeChangeController?.abort(reason);
     activeChangeController = null;
+    activeChangeCompletion = null;
   };
 
   const validateBehaviors = (): void => {
@@ -125,6 +156,8 @@ export const createRuntimeBehaviors = ({
   return {
     createBehaviorContext,
     runBehaviorValueChange,
+    runBehaviorValueChanges,
+    flushBehaviorChanges,
     runBeforeSubmitRecords,
     validateBehaviors,
     abortBehaviorChanges,

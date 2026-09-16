@@ -102,30 +102,28 @@ describe("display key contract", () => {
     expect(result.displayValues).toEqual({});
   });
 
-  it("rejects duplicate display keys before overwriting display data", async () => {
-    const form = createForm({
-      schema: {
-        fields: [
-          {
-            id: "age",
-            kind: "number",
-            label: "Age",
-            displayKey: "reviewValue",
-          },
-          {
-            id: "score",
-            kind: "number",
-            label: "Score",
-            displayKey: "reviewValue",
-          },
-        ],
-      },
-      registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
-    });
-
-    form.setValues({ age: 42, score: 0.9 });
-
-    await expect(form.submit()).rejects.toThrow(/duplicate displayKey "reviewValue"/);
+  it("rejects duplicate display keys during form creation", () => {
+    expect(() =>
+      createForm({
+        schema: {
+          fields: [
+            {
+              id: "age",
+              kind: "number",
+              label: "Age",
+              displayKey: "reviewValue",
+            },
+            {
+              id: "score",
+              kind: "number",
+              label: "Score",
+              displayKey: "reviewValue",
+            },
+          ],
+        },
+        registry,
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      }),
+    ).toThrow(/duplicate displayKey "reviewValue"/);
   });
 });

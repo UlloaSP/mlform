@@ -49,7 +49,16 @@ mountForm(container, { schema, transport, plugins: [domainPlugin] });
 | `value.normalize` | Convert UI or host values into runtime values.                     |
 | `value.serialize` | Convert runtime values into backend payload values.                |
 | `validate`        | Return field-level error messages. May be async.                   |
+| `definition`      | Add advanced runtime, mapping, or submission behavior.             |
 | `render.widget`   | Pick a built-in renderer shape like `text`, `number`, or `select`. |
 | `render.hints`    | Pass small UI hints to the built-in declarative renderer.          |
 
-Use `defineFieldDefinition` only when you need full control over schema behavior and pair it with an explicit presenter or primitive component.
+The `definition` option exposes the advanced definition hooks without leaving the normal kit
+extension path: `validateConfig`, `getNestedFieldReferences`, `validateRuntime`, `onValueChanged`,
+`getMappedTargets`, and `getSubmissionEntries`. The field kind, schema, value normalization, and
+declarative validators remain owned by `defineFieldKind` and cannot be overridden there. A field
+that implements `getSubmissionEntries` must declare every possible emitted target through
+`getMappedTargets`; emitting an undeclared target fails submission.
+
+Use `defineFieldDefinition` when you need full control over the definition itself, and pair it with
+an explicit presenter or primitive component.

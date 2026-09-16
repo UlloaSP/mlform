@@ -25,6 +25,17 @@ export interface DeclarativeFieldKind<TConfig extends FieldConfig = FieldConfig,
     context: FieldValidationFnContext<TConfig, TValue>,
   ) => string[] | PromiseLike<string[]>;
   validateSync?: (context: FieldValidationFnContext<TConfig, TValue>) => string[];
+  definition?: Partial<
+    Pick<
+      FieldDefinition<TConfig, TValue>,
+      | "validateConfig"
+      | "getNestedFieldReferences"
+      | "validateRuntime"
+      | "onValueChanged"
+      | "getMappedTargets"
+      | "getSubmissionEntries"
+    >
+  >;
   render: FieldRenderSpec<TConfig, TValue>;
 }
 
@@ -53,6 +64,7 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
   const validate = kind.validate;
   const validateSync = kind.validateSync;
   const definition: FieldDefinition<TConfig, TValue> = {
+    ...kind.definition,
     kind: kind.kind,
     schema: kind.schema,
     getDefaultValue: kind.value?.default,

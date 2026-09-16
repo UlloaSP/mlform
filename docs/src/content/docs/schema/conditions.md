@@ -27,3 +27,9 @@ Supported condition kinds:
 | `form-status`       | React to `idle`, `editing`, `validating`, `submitting`, `success`, or `error`. |
 | `submit-count`      | React to submit count.                                                         |
 | `all`, `any`, `not` | Compose other conditions.                                                      |
+
+Declarative field references use the same normalized ids as field definitions. For example,
+`"Include Details"` resolves to `include-details`. Schema normalization rejects a reference that
+does not resolve to a declared field, including references nested inside `all`, `any`, or `not`.
+Function conditions are runtime code and therefore cannot be checked for references during schema
+normalization.

@@ -7,7 +7,7 @@ import { createFieldController, type InternalFieldController } from "./fields";
 import { createReportController, type InternalReportController } from "./reports";
 import { createInitialEngineState, createStore, toFormState, transitionEngineState } from "./state";
 import { createFormSubmitter } from "./submission";
-import { createFormValidator } from "./validation";
+import { createFormValidator, createValidationResult } from "./validation";
 import {
   assertTransport,
   hasInteractiveFieldState,
@@ -21,6 +21,23 @@ import { createRuntimeValues } from "./runtime-values";
 import type { CreateFormConfig, FormController, FormState } from "./types";
 import { deepFreeze } from "./utils";
 import { createDefinitionBehaviors } from "./definition-behaviors";
+import { createAbortError } from "./errors";
+
+const waitForBehaviorChanges = (
+  completion: Promise<void>,
+  signal: AbortSignal | undefined,
+): Promise<void> => {
+  if (!signal) return completion;
+  if (signal.aborted) return Promise.reject(createAbortError(String(signal.reason ?? "")));
+
+  return new Promise<void>((resolve, reject) => {
+    const onAbort = () => reject(createAbortError(String(signal.reason ?? "")));
+    signal.addEventListener("abort", onAbort, { once: true });
+    void completion.then(resolve, reject).finally(() => {
+      signal.removeEventListener("abort", onAbort);
+    });
+  });
+};
 
 export const createForm = (config: CreateFormConfig): FormController => {
   assertTransport(config.transport);
@@ -151,6 +168,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
 
   const {
     runBehaviorValueChange,
+    runBehaviorValueChanges,
+    flushBehaviorChanges,
     runBeforeSubmitRecords,
     validateBehaviors,
     abortBehaviorChanges,
@@ -205,6 +224,17 @@ export const createForm = (config: CreateFormConfig): FormController => {
     shouldResetInactiveFields,
     inactiveFieldPolicy: config.inactiveFieldPolicy,
   });
+  const validateStableState = (signal?: AbortSignal) => {
+    const lifecycleVersion = store.getState().lifecycleVersion;
+    const pendingBehaviorChanges = flushBehaviorChanges();
+    return pendingBehaviorChanges
+      ? waitForBehaviorChanges(pendingBehaviorChanges, signal).then(() =>
+          store.getState().lifecycleVersion === lifecycleVersion
+            ? formValidator.validate()
+            : createValidationResult(store),
+        )
+      : formValidator.validate();
+  };
 
   const formSubmitter = createFormSubmitter({
     store,
@@ -214,7 +244,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
     normalizedSchema,
     fields,
     reports,
-    validate: () => formValidator.validate(),
+    validate: validateStableState,
     getSubmitCount,
     markReportsLoading,
     resetReports,
@@ -235,14 +265,14 @@ export const createForm = (config: CreateFormConfig): FormController => {
     getPublicState,
     getValues,
     getInternalValues,
-    formValidator,
+    formValidator: { validate: validateStableState },
     formSubmitter,
     syncDerivedFieldState,
     shouldResetInactiveFields,
     inactiveFieldPolicy: config.inactiveFieldPolicy,
     bumpLifecycleVersion,
     resetReports,
-    runBehaviorValueChange,
+    runBehaviorValueChanges,
     abortBehaviorChanges,
     setRestingStatus,
   });

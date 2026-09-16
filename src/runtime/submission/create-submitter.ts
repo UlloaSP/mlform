@@ -72,11 +72,18 @@ export const createFormSubmitter = ({
     async submit(options) {
       abortManager.ensureIdle();
       const submissionRequestId = abortManager.begin();
+      const lifecycleVersion = store.getState().lifecycleVersion;
       const backend = options?.backend;
+      abortManager.setActiveController(
+        submissionRequestId,
+        typeof AbortController !== "undefined" ? new AbortController() : null,
+      );
+      abortManager.attachExternalSignal(options, submissionRequestId);
+      const submitSignal = abortManager.createSignal(options);
 
       let validation: import("../types").FormValidationResult;
       try {
-        validation = await validate();
+        validation = await validate(submitSignal);
       } catch (error) {
         abortManager.clear(submissionRequestId);
         throw error;
@@ -85,6 +92,10 @@ export const createFormSubmitter = ({
       if (abortManager.getCurrentRequestId() !== submissionRequestId) {
         abortManager.clear(submissionRequestId);
         throw createAbortError(abortManager.getAbortReason(submissionRequestId) || "superseded");
+      }
+      if (store.getState().lifecycleVersion !== lifecycleVersion) {
+        abortManager.clear(submissionRequestId);
+        throw createAbortError("form state changed during submission validation");
       }
       if (!validation.valid) {
         abortManager.clear(submissionRequestId);
@@ -95,20 +106,12 @@ export const createFormSubmitter = ({
         throw createAbortError(String(options.signal.reason ?? ""));
       }
 
-      abortManager.setActiveController(
-        submissionRequestId,
-        typeof AbortController !== "undefined" ? new AbortController() : null,
-      );
-      abortManager.attachExternalSignal(options, submissionRequestId);
-
       store.batch(() => {
         markReportsLoading();
         lifecycle.start(submissionRequestId);
       });
 
       const submitCount = getSubmitCount();
-      const lifecycleVersion = store.getState().lifecycleVersion;
-      const submitSignal = abortManager.createSignal(options);
       let records = { inputs: [], displayValues: {}, modelValues: {} } as ReturnType<
         typeof buildSubmissionValueRecords
       >;
@@ -243,6 +246,9 @@ export const createFormSubmitter = ({
         abortManager.clear(submissionRequestId);
         lifecycle.clear(submissionRequestId);
       }
+    },
+    isActive() {
+      return abortManager.getCurrentRequestId() !== null;
     },
     abort(reason) {
       abortManager.abort(reason);

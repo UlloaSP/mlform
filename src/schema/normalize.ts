@@ -7,6 +7,7 @@ import type { FieldConfig, NormalizedFieldConfig } from "./types/field";
 import type { FormSchema, NormalizedFormSchema } from "./types/form";
 import type { Registry } from "./types/registry";
 import type { NormalizedReportConfig, ReportConfig } from "./types/report";
+import { normalizeFieldContracts } from "./field-contracts";
 
 export class SchemaNormalizationError extends Error {
   constructor(
@@ -113,13 +114,17 @@ const normalizeReport = (
 export const normalizeSchema = (schema: FormSchema, registry: Registry): NormalizedFormSchema => {
   const usedFieldIds = new Set<string>();
   const usedReportIds = new Set<string>();
+  const parsedFields = schema.fields.map((field, index) =>
+    normalizeField(field, index, registry, usedFieldIds),
+  );
+  const fields = normalizeFieldContracts(parsedFields, registry, (message, path) => {
+    throw new SchemaNormalizationError(message, path);
+  });
   const reports = (schema.reports ?? []).map((report, index) =>
     normalizeReport(report, index, registry, usedReportIds),
   );
   return {
-    fields: schema.fields.map((field, index) =>
-      normalizeField(field, index, registry, usedFieldIds),
-    ),
+    fields,
     reports,
   };
 };

@@ -116,10 +116,24 @@ export const buildSubmissionValueRecords = (
 
     const submissionEntries = field.getSubmissionEntries(backend);
     if (submissionEntries) {
+      const declaredTargets = new Set(mappedTargets.map(mappedToKey));
+      const emittedTargets = new Set<string>();
       for (const entry of submissionEntries) {
-        setSubmissionPath(inputModelValues, mappedToKey(entry.target), field.id, entry.value);
+        const entryTarget = mappedToKey(entry.target);
+        if (!declaredTargets.has(entryTarget)) {
+          throw new Error(
+            `field "${field.id}": submission target "${entryTarget}" was not declared by getMappedTargets.`,
+          );
+        }
+        if (emittedTargets.has(entryTarget)) {
+          throw new Error(
+            `field "${field.id}": duplicate submission target "${entryTarget}" was emitted.`,
+          );
+        }
+        emittedTargets.add(entryTarget);
+        setSubmissionPath(inputModelValues, entryTarget, field.id, entry.value);
+        setSubmissionPath(modelValues, entryTarget, field.id, entry.value);
       }
-      Object.assign(modelValues, cloneValue(inputModelValues));
       writeVisibleDisplayValue(displayValues, seenExplicitDisplayKeys, field, displayKey, rawValue);
       inputs.push({
         fieldId: field.id,

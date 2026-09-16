@@ -34,7 +34,7 @@ export type CreateFormSubmitterOptions = {
   normalizedSchema: NormalizedFormSchema;
   fields: readonly SubmissionField[];
   reports: readonly SubmissionReport[];
-  validate: () => Promise<FormValidationResult>;
+  validate: (signal?: AbortSignal) => Promise<FormValidationResult>;
   getSubmitCount: () => number;
   markReportsLoading: () => void;
   resetReports: () => void;
@@ -47,6 +47,7 @@ export type CreateFormSubmitterOptions = {
 
 export type FormSubmitter = {
   submit(options?: SubmitOptions): Promise<SubmitResult>;
+  isActive(): boolean;
   abort(reason?: string): void;
   reset(): void;
 };

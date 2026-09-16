@@ -39,4 +39,11 @@ unsubscribe();
 State snapshots are deeply frozen and retain their identity until runtime state changes. Unknown
 field ids passed to `setExternalErrors` fail atomically instead of partially applying errors.
 
-`submit()` throws `ValidationError`, `SubmitError`, or `SubmissionAbortedError` when the operation cannot complete.
+Validation and submission wait for pending asynchronous runtime behaviors, so validators and
+transports observe the resulting stable values. A direct `validate()` call while `submit()` is
+active throws `EngineError`, and `submit()` does the same while an explicit validation is active;
+this prevents one operation from overwriting the other's form status.
+
+`submit()` throws `ValidationError`, `SubmitError`, or `SubmissionAbortedError` when the operation
+cannot complete. Resetting the form or changing values while submission is still waiting for
+validation aborts that submission.
