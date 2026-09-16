@@ -10,7 +10,14 @@ Transport unit test pattern:
 ```ts
 const transport = {
   submit: vi.fn().mockResolvedValue({
-    reports: { prediction: { label: "approved" } },
+    reports: [
+      {
+        backend: "default",
+        mappedTo: "prediction",
+        status: "ready",
+        payload: { prediction: "approved" },
+      },
+    ],
   }),
 };
 
@@ -18,7 +25,7 @@ const mounted = mountForm(container, { schema, transport });
 await mounted.form.submit();
 
 expect(transport.submit).toHaveBeenCalledWith(
-  expect.objectContaining({ serializedValues: expect.any(Object) }),
+  expect.objectContaining({ modelValues: expect.any(Object) }),
 );
 ```
 

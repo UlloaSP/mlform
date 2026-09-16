@@ -11,12 +11,13 @@ mountForm(document.querySelector("#credit-risk") as HTMLElement, {
   transport: createJsonTransport({ endpoint: "/api/credit-risk" }),
   schema: {
     fields: [
-      { id: "income", kind: "number", label: "Annual income", min: 0, unit: "USD" },
-      { id: "debt", kind: "number", label: "Total debt", min: 0, unit: "USD" },
+      { id: "income", kind: "number", label: "Annual income", mappedTo: "income", min: 0, unit: "USD" },
+      { id: "debt", kind: "number", label: "Total debt", mappedTo: "debt", min: 0, unit: "USD" },
       {
         id: "employment",
         kind: "category",
         label: "Employment",
+        mappedTo: "employment",
         options: [
           { label: "Full time", value: "full_time" },
           { label: "Contract", value: "contract" },
@@ -29,6 +30,7 @@ mountForm(document.querySelector("#credit-risk") as HTMLElement, {
         id: "risk",
         kind: "classifier",
         label: "Credit risk",
+        mappedTo: "risk",
         labels: ["low", "medium", "high"],
       },
     ],
@@ -41,16 +43,16 @@ Example response:
 
 ```json
 {
-  "reports": {
-    "risk": {
-      "label": "medium",
-      "confidence": 0.82,
-      "probabilities": {
-        "low": 0.11,
-        "medium": 0.82,
-        "high": 0.07
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "risk",
+      "status": "ready",
+      "payload": {
+        "prediction": "medium",
+        "probabilities": [0.11, 0.82, 0.07]
       }
     }
-  }
+  ]
 }
 ```

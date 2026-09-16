@@ -55,6 +55,7 @@ const createView = (options: MountFormOptions) =>
     listenerErrorPolicy: options.listenerErrorPolicy,
     onListenerError: options.onListenerError,
     layout: options.layout,
+    reportFetchMode: options.reportFetchMode,
   });
 
 export const mountForm = (container: HTMLElement, options: MountFormOptions): MountedForm => {
@@ -89,6 +90,17 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
           reportPane: options.reportPane,
           text: options.primitiveText,
           reportTransport: options.reportTransport,
+          reportFetchMode: options.reportFetchMode,
+          submitHandler:
+            options.reportFetchMode && options.reportFetchMode !== "lazy"
+              ? async () => {
+                  const pipelineResult = await view.submitPipeline();
+                  return {
+                    result: pipelineResult.submitResult,
+                    pipelineResult,
+                  };
+                }
+              : undefined,
         });
         unmountHost = () => mountedPrimitive.unmount();
         return mountedPrimitive.host;

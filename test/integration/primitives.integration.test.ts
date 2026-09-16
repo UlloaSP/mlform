@@ -3,6 +3,7 @@
 
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
+import { readyReport } from "../report-result";
 import { createMlRegistryPack } from "@/builtins";
 import type { FieldPresenter, ReportPresenter } from "@/primitives";
 import {
@@ -39,6 +40,18 @@ const getShadow = (element: Element | null): ShadowRoot => {
   }
 
   return element.shadowRoot;
+};
+
+const reportPayload = (reports: readonly unknown[], id: string): unknown => {
+  const item = reports.find(
+    (report): report is Record<string, unknown> =>
+      typeof report === "object" &&
+      report !== null &&
+      !Array.isArray(report) &&
+      ((report as Record<string, unknown>).id === id ||
+        (report as Record<string, unknown>).mappedTo === id),
+  );
+  return item && "payload" in item ? item.payload : item;
 };
 
 const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
@@ -992,13 +1005,13 @@ describe("primitives", () => {
 
   it("binds built-in controls to the engine, emits success events, and renders reports after submit", async () => {
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        readyReport("risk", {
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
-        },
-      },
+        }),
+      ],
     });
 
     const form = createForm({
@@ -1165,9 +1178,7 @@ describe("primitives", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            score: 0,
-          },
+          reports: [readyReport("score", { value: 0 })],
         }),
       },
     });
@@ -1226,12 +1237,7 @@ describe("primitives", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              prediction: "approve",
-              probabilities: [0.85, 0.15],
-            },
-          },
+          reports: [readyReport("risk", { prediction: "approve", probabilities: [0.85, 0.15] })],
         }),
       },
     });
@@ -1262,7 +1268,7 @@ describe("primitives", () => {
     expect(explainTransport.submit).toHaveBeenCalledTimes(1);
     const callArg = explainTransport.submit.mock.calls[0]?.[0] as Record<string, unknown>;
     expect(callArg.reportId).toBe("risk");
-    expect(callArg.values).toBeDefined();
+    expect(callArg.modelValues).toBeDefined();
 
     const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame");
     const renderer = getShadow(reportFrame).querySelector("mlf-classifier-report");
@@ -1293,7 +1299,7 @@ describe("primitives", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: { score: 0.9 } }),
+        submit: vi.fn().mockResolvedValue({ reports: [readyReport("score", { value: 0.9 })] }),
       },
     });
 
@@ -1652,7 +1658,7 @@ describe("primitives", () => {
         },
       } as never,
       resolvePayload(_config, context) {
-        return context.result.reports.probe;
+        return reportPayload(context.result.reports, "probe");
       },
       describe(config, context) {
         return {
@@ -1675,8 +1681,8 @@ describe("primitives", () => {
       submit: vi
         .fn()
         .mockImplementation(
-          async (request: { reportId: string; values: Record<string, unknown> }) => ({
-            label: request.values.name,
+          async (request: { reportId: string; modelValues: Record<string, unknown> }) => ({
+            label: request.modelValues.name,
             reportId: request.reportId,
           }),
         ),
@@ -1690,11 +1696,7 @@ describe("primitives", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            probe: {
-              ok: true,
-            },
-          },
+          reports: [readyReport("probe", { ok: true })],
         }),
       },
     });
@@ -1733,7 +1735,7 @@ describe("primitives", () => {
     expect(firstCallCount).toBeGreaterThan(0);
     expect(reportTransport.submit.mock.calls[firstCallCount - 1]?.[0]).toMatchObject({
       reportId: "probe",
-      values: { name: "Alice" },
+      modelValues: { name: "Alice" },
     });
     expect(getShadow(reportRenderer).textContent).toContain("done");
     expect(getShadow(reportRenderer).textContent).toContain("Alice");
@@ -1758,7 +1760,7 @@ describe("primitives", () => {
     expect(secondCallCount).toBeGreaterThan(firstCallCount);
     expect(reportTransport.submit.mock.calls[secondCallCount - 1]?.[0]).toMatchObject({
       reportId: "probe",
-      values: { name: "Bob" },
+      modelValues: { name: "Bob" },
     });
     expect(getShadow(reportRenderer).textContent).toContain("Bob");
 
@@ -1772,7 +1774,7 @@ describe("primitives", () => {
         #request:
           | {
               reportId?: string;
-              values?: Record<string, unknown>;
+              modelValues?: Record<string, unknown>;
             }
           | null
           | undefined;
@@ -1788,7 +1790,7 @@ describe("primitives", () => {
           value:
             | {
                 reportId?: string;
-                values?: Record<string, unknown>;
+                modelValues?: Record<string, unknown>;
               }
             | null
             | undefined,
@@ -1824,7 +1826,9 @@ describe("primitives", () => {
         render() {
           const reportId = this.request?.reportId ?? "";
           const name =
-            typeof this.request?.values?.name === "string" ? this.request.values.name : "";
+            typeof this.request?.modelValues?.name === "string"
+              ? this.request.modelValues.name
+              : "";
           const enabled = this.descriptor?.props?.details === true ? "yes" : "no";
           this.textContent = `${reportId}|${name}|${enabled}`;
         }
@@ -1849,7 +1853,7 @@ describe("primitives", () => {
         },
       } as never,
       resolvePayload(_config, context) {
-        return context.result.reports.probe;
+        return reportPayload(context.result.reports, "probe");
       },
       describe(config, context) {
         return {
@@ -1885,11 +1889,7 @@ describe("primitives", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            probe: {
-              ok: true,
-            },
-          },
+          reports: [readyReport("probe", { ok: true })],
         }),
       },
     });

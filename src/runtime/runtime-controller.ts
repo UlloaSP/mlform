@@ -3,6 +3,7 @@
 
 import { shallowEquality } from "./equality";
 import { EngineError } from "./errors";
+import { mappedToKey, resolveMappedTo } from "@/schema";
 import { transitionEngineState, type InternalFieldState } from "./state";
 import type {
   FormController,
@@ -71,6 +72,27 @@ export const createRuntimeController = ({
     getField(id) {
       return fieldMap.get(id);
     },
+    getFieldByDisplayKey(displayKey) {
+      const target = displayKey.trim();
+      return fields.find((field) => field.config.displayKey?.trim() === target);
+    },
+    getFieldByMappedTo(target, options) {
+      const targetKey = mappedToKey(target);
+      return fields.find((field) => {
+        const mappedTo = resolveMappedTo(field.config.mappedTo, options?.backend);
+        if (mappedTo !== undefined && mappedToKey(mappedTo) === targetKey) {
+          return true;
+        }
+
+        const fieldOptions = (field.config as { options?: { mappedTo?: never }[] }).options;
+        return (
+          fieldOptions?.some((option) => {
+            const optionTarget = resolveMappedTo(option.mappedTo, options?.backend);
+            return optionTarget !== undefined && mappedToKey(optionTarget) === targetKey;
+          }) ?? false
+        );
+      });
+    },
     getReport(id) {
       return reportMap.get(id);
     },
@@ -132,7 +154,6 @@ export const createRuntimeController = ({
         for (const [fieldId] of updates) {
           runBehaviorValueChange({
             fieldId,
-            source: "local",
             values: finalValues,
           });
         }

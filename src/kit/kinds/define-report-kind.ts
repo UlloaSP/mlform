@@ -32,9 +32,20 @@ export interface ReportRenderSpecContext<
   result: SubmitResult | null;
 }
 
+export type ReportMountCleanup = () => void;
+
+export type ReportMountContext<
+  TConfig extends ReportConfig = ReportConfig,
+  TPayload = unknown,
+> = ReportRenderSpecContext<TConfig, TPayload> & {
+  element: HTMLElement;
+  signal: AbortSignal;
+};
+
 export interface ReportRenderSpec<TConfig extends ReportConfig = ReportConfig, TPayload = unknown> {
   summary?: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorSummary | undefined;
-  content: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorContent;
+  content?: (context: ReportRenderSpecContext<TConfig, TPayload>) => DescriptorContent;
+  mount?: (context: ReportMountContext<TConfig, TPayload>) => ReportMountCleanup | void;
 }
 
 export interface DeclarativeReportKind<
@@ -45,10 +56,9 @@ export interface DeclarativeReportKind<
   schema: ZodType<TConfig>;
   payloadSchema?: ZodType<unknown>;
   payloadValidationPolicy?: "report-error" | "fail-submit";
-  partialUpdatePolicy?: "trust" | "validate" | "defer";
   clonePayload?: (payload: TPayload, config: TConfig) => TPayload;
   fetch?: ReportFetchFactory<TConfig>;
-  resolve: (context: ReportResolveContext<TConfig>) => unknown;
+  resolve?: (context: ReportResolveContext<TConfig>) => unknown;
   render: ReportRenderSpec<TConfig, TPayload>;
 }
 
@@ -57,7 +67,6 @@ export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
   schema: import("zod").ZodType<TConfig>;
   payloadSchema?: ReportDefinition<TConfig>["payloadSchema"];
   payloadValidationPolicy?: ReportDefinition<TConfig>["payloadValidationPolicy"];
-  partialUpdatePolicy?: ReportDefinition<TConfig>["partialUpdatePolicy"];
   clonePayload?: ReportDefinition<TConfig>["clonePayload"];
   fetch?: ReportDefinition<TConfig>["fetch"];
   resolvePayload?: ReportDefinition<TConfig>["resolvePayload"];
@@ -77,15 +86,16 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     schema: kind.schema,
     payloadSchema: kind.payloadSchema,
     payloadValidationPolicy: kind.payloadValidationPolicy,
-    partialUpdatePolicy: kind.partialUpdatePolicy,
     clonePayload: kind.clonePayload as ((payload: unknown, config: TConfig) => unknown) | undefined,
     fetch: kind.fetch,
-    resolvePayload: (_config, context) =>
-      kind.resolve({
-        config: context.report,
-        report: context.report,
-        result: context.result,
-      }),
+    resolvePayload: kind.resolve
+      ? (_config, context) =>
+          kind.resolve?.({
+            config: context.report,
+            report: context.report,
+            result: context.result,
+          })
+      : undefined,
   };
 
   const presenter: ReportPresenter<NormalizedReportConfig<TConfig>> = {
@@ -108,8 +118,10 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
         result: context.result as SubmitResult | null,
       };
 
+      const mounted = typeof kind.render.mount === "function";
+
       return {
-        component: "declarative-report",
+        component: mounted ? "mounted-report" : "declarative-report",
         props: {
           id: config.id,
           kind: config.kind,
@@ -120,9 +132,11 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
           state: context.state.status,
           summary: kind.render.summary?.(renderContext) ?? null,
           content:
-            context.payload === undefined
-              ? []
-              : toDescriptorNodes(kind.render.content(renderContext)),
+            !mounted && context.payload !== undefined && kind.render.content
+              ? toDescriptorNodes(kind.render.content(renderContext))
+              : [],
+          mount: mounted ? kind.render.mount : null,
+          mountContext: mounted ? renderContext : null,
           ...config.ui,
         },
         meta: {
@@ -143,7 +157,6 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     schema: kind.schema,
     payloadSchema: kind.payloadSchema,
     payloadValidationPolicy: kind.payloadValidationPolicy,
-    partialUpdatePolicy: kind.partialUpdatePolicy,
     clonePayload: definition.clonePayload,
     fetch: definition.fetch,
     resolvePayload: definition.resolvePayload,

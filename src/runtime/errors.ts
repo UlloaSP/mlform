@@ -69,4 +69,3 @@ export const isAbortLikeError = (error: unknown): boolean => {
 };
 
 export { TransportError, transportErrorCodes } from "@/transport";
-export type { TransportErrorCode } from "@/transport";

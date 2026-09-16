@@ -27,9 +27,14 @@ def predict(request: PredictRequest):
         raise HTTPException(status_code=400, detail="Prompt is required.")
 
     return {
-        "reports": {
-            "prediction": {"label": "approved", "confidence": 0.91}
-        }
+        "reports": [
+            {
+                "backend": "default",
+                "mappedTo": "prediction",
+                "status": "ready",
+                "payload": {"prediction": "approved", "probabilities": [0.91, 0.09]},
+            }
+        ]
     }
 ```
 

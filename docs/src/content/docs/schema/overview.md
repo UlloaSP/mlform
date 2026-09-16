@@ -35,22 +35,25 @@ MLForm normalizes every field and report before rendering:
 - missing report ids are generated from the report label or kind
 - duplicate explicit ids throw a registry/schema error
 
-Use explicit ids in production. Generated ids are useful for demos, but stable ids make UI state, tests, and analytics predictable. Backend payload keys belong in `mappedTo`.
+Use explicit ids in production. Generated ids are useful for demos, but stable ids make UI state, layout refs, focus, validation, tests, and analytics predictable. Backend payload keys belong in `mappedTo`. User-facing persistence, review, and export keys belong in `displayKey`; labels are copy and may change. Fields without `displayKey` are omitted from `displayValues`.
+
+`getField(id)`, `getReport(id)`, layout refs, validation errors, and report states stay id-keyed because they are runtime APIs. For external contracts, use `getFieldByDisplayKey(key)`, `getFieldByMappedTo(target, { backend })`, submission `displayValues`, and submission `modelValues`.
 
 ## Shared Field Options
 
-| Option                                       | Type                      | Notes                                            |
-| -------------------------------------------- | ------------------------- | ------------------------------------------------ |
-| `id`                                         | `string`                  | Stable UI/schema identity. Recommended.          |
-| `kind`                                       | `string`                  | Field kind resolved through the engine registry. |
-| `label`                                      | `string`                  | User-facing label.                               |
-| `description`                                | `string`                  | Help text rendered near the control.             |
-| `required`                                   | `boolean`                 | Built-in validation.                             |
-| `defaultValue`                               | `unknown`                 | Schema-level initial value.                      |
-| `hidden`, `disabled`, `readOnly`             | `boolean`                 | Static inactive states.                          |
-| `hiddenWhen`, `disabledWhen`, `readOnlyWhen` | `FieldCondition`          | Dynamic inactive states.                         |
-| `mappedTo`                                  | `string \| number \| record` | Backend input key, position, or backend map.  |
-| `ui`                                         | `Record<string, unknown>` | Renderer-specific metadata.                      |
+| Option                                       | Type                         | Notes                                            |
+| -------------------------------------------- | ---------------------------- | ------------------------------------------------ |
+| `id`                                         | `string`                     | Stable UI/schema identity. Recommended.          |
+| `kind`                                       | `string`                     | Field kind resolved through the engine registry. |
+| `label`                                      | `string`                     | User-facing label copy.                          |
+| `displayKey`                                 | `string`                     | Stable display/review/export key.                |
+| `description`                                | `string`                     | Help text rendered near the control.             |
+| `required`                                   | `boolean`                    | Built-in validation.                             |
+| `defaultValue`                               | `unknown`                    | Schema-level initial value.                      |
+| `hidden`, `disabled`, `readOnly`             | `boolean`                    | Static inactive states.                          |
+| `hiddenWhen`, `disabledWhen`, `readOnlyWhen` | `FieldCondition`             | Dynamic inactive states.                         |
+| `mappedTo`                                   | `string \| number \| record` | Backend input key, position, or backend map.     |
+| `ui`                                         | `Record<string, unknown>`    | Renderer-specific metadata.                      |
 
 ## Shared Report Options
 

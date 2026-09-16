@@ -97,6 +97,7 @@ export const createBuiltinPrimitiveRegistry = (): PrimitiveRegistry => {
     .registerField("multi-choice-field", primitiveTagNames.multiChoiceField)
     .registerField("rating-field", primitiveTagNames.ratingField)
     .registerReport("declarative-report", primitiveTagNames.declarativeReport)
+    .registerReport("mounted-report", primitiveTagNames.mountedReport)
     .registerReport("classifier-report", primitiveTagNames.classifierReport)
     .registerReport("regressor-report", primitiveTagNames.regressorReport);
 };

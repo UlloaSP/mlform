@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export { executeFormPipeline, executeReportFetches } from "./submission";
+export { createSubmissionSnapshot, executeFormPipeline, executeReportFetches } from "./submission";
+export { createMultiBackendSubmissionSnapshot, executeMultiBackendPipeline } from "./submission";
+export type {
+  CreateMultiBackendSubmissionSnapshotOptions,
+  CreateSubmissionSnapshotOptions,
+  ExecuteMultiBackendPipelineOptions,
+  MultiBackendPipelineResult,
+  MultiBackendRunResult,
+  MultiBackendSubmit,
+  SubmissionSnapshot,
+} from "./submission";
 export {
   EngineError,
   ReportPayloadError,
@@ -12,7 +22,6 @@ export {
   transportErrorCodes,
   ValidationError,
 } from "./errors";
-export type { TransportErrorCode } from "./errors";
 export { createForm, createForm as createFormRuntime } from "./form";
 export {
   defaultEquality,
@@ -72,6 +81,9 @@ export type {
   ReportFetchRequest,
   ReportFetchStatus,
   ReportFetchTransport,
+  ReportContext,
+  ReportResult,
+  ReportResultContext,
   ReportResolveContext,
   ReportStateSnapshot,
   ReportStatus,
@@ -84,19 +96,9 @@ export type {
   SubmitErrorContext,
   SubmitOptions,
   SubmitRequest,
-  SubmitRequestTransportContext,
   SubmitResult,
+  SubmissionInputRecord,
   Transport,
-  TransportAuthKind,
-  TransportBackpressureMode,
-  TransportCapabilities,
-  TransportConsistency,
-  TransportDeliveryMode,
-  TransportPolicyContext,
-  TransportSession,
-  TransportSessionEvent,
-  TransportSessionMessage,
-  TransportStreamEvent,
   TransportResponse,
   NotCondition,
   RuntimeBehavior,

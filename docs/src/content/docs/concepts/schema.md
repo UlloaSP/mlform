@@ -16,7 +16,9 @@ const schema: FormSchema = {
 };
 ```
 
-Use stable `id` values in production. MLForm can derive ids from labels, but explicit ids keep backend payloads, tests, analytics, and saved data predictable.
+Use stable `id` values in production. MLForm can derive ids from labels, but explicit ids are runtime handles for UI state, layout refs, validation, focus, tests, and analytics. Backend keys belong in `mappedTo`. Review, persistence, and export keys belong in `displayKey`; fields without one are omitted from `displayValues`. Labels are user-facing copy, not stable data keys.
+
+Use `form.getField(id)` and `form.getReport(id)` only for runtime handles. Use `form.getFieldByDisplayKey(key)` for review/export fields and `form.getFieldByMappedTo(target, { backend })` for model-bound fields.
 
 Core terms:
 
@@ -30,3 +32,17 @@ Core terms:
 | inactive field | Hidden, disabled, or read-only field. Submit behavior depends on policy. |
 
 Schema should describe meaning, not screen placement. Put grouping, steps, tabs, and review screens in layout.
+
+## Registry-driven tooling
+
+Use the same registry for runtime, diagnostics, and editor completion:
+
+```ts
+import { findUnknownKinds, toSchemaJsonSchema, validateSchema } from "mlform/schema";
+
+const validation = validateSchema(input, registry);
+const jsonSchema = toSchemaJsonSchema(registry);
+const unknownKinds = findUnknownKinds(input, registry);
+```
+
+`validateSchema` returns normalized data or path-based issues. JSON Schema includes every field and report definition currently registered, including application plugins.

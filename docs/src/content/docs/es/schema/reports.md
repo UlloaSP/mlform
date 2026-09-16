@@ -4,6 +4,7 @@ description: Informes integrados classifier y regressor.
 ---
 
 Los informes renderizan la salida del modelo despues del envio. Usa `mappedTo` para la clave de respuesta del backend.
+Los payloads backend `reports` keyed y los updates streamed validados requieren `mappedTo`; MLForm falla el submit en vez de adivinar desde report `id`.
 
 ```ts
 const schema = {
@@ -23,3 +24,5 @@ const schema = {
 { id: "visible-score", kind: "regressor", mappedTo: "model_score" }
 { id: "first-output", kind: "regressor", mappedTo: 0 }
 ```
+
+Dos informes no pueden resolver al mismo target `mappedTo` para el mismo backend.

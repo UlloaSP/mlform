@@ -65,7 +65,7 @@ describe("error navigation", () => {
     document.body.append(container);
 
     const mounted = mountKitForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [
           { id: "name", kind: "text", label: "Name", required: true },
@@ -112,7 +112,7 @@ describe("error navigation", () => {
     document.body.append(container);
 
     const mounted = mountKitForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [
           { id: "name", kind: "text", label: "Name", required: true },
@@ -153,7 +153,7 @@ describe("error navigation", () => {
     document.body.append(container);
 
     const mounted = mountKitForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [
           { id: "name", kind: "text", label: "Name", required: true },

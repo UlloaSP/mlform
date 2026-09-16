@@ -6,24 +6,25 @@ description: Renderiza etiquetas, confianza y probabilidades.
 Usa un informe `classifier` cuando el modelo elige una etiqueta o clase.
 
 ```ts
-reports: [{ id: "decision", kind: "classifier", label: "Decision" }];
+reports: [{ id: "decision", kind: "classifier", label: "Decision", mappedTo: "decision" }];
 ```
 
 Respuesta recomendada:
 
 ```json
 {
-  "reports": {
-    "decision": {
-      "label": "Approved",
-      "confidence": 0.91,
-      "probabilities": {
-        "Approved": 0.91,
-        "Rejected": 0.09
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "decision",
+      "status": "ready",
+      "payload": {
+        "prediction": "Approved",
+        "probabilities": [0.91, 0.09]
       }
     }
-  }
+  ]
 }
 ```
 
-Mantén las claves de `probabilities` alineadas con las etiquetas visibles del modelo.
+Mantén el orden de `probabilities` alineado con las etiquetas visibles del modelo.

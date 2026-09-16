@@ -15,15 +15,28 @@ This file is the required ledger for active technical debt, known bugs, architec
 
 ## Status
 
-- Last reviewed: `2026-06-17`
-- Current focus: no active debt recorded
+- Last reviewed: `2026-08-23`
+- Current focus: self-contained JSON Schema export
 
 ## Active Debt
 
-None.
+- Scope: JSON Schema export of schemas containing functions, transforms, or other non-JSON constructs.
+  - Reason: `unrepresentable: "any"` preserves compatibility with programmatic field conditions and existing plugins.
+  - User impact: generated JSON Schema may accept values that runtime Zod validation rejects.
+  - Exit condition: definitions expose a serializable documentation schema, allowing export with `unrepresentable: "throw"`.
 
 ## Recent Progress
 
+- Registry JSON Schema now converts one root Zod graph, so recursive built-ins and plugins emit resolvable root `$defs`.
+- Docs demo transport and contract examples now use `modelValues`, explicit `mappedTo`, and strict report envelopes; removed submission aliases and keyed report responses no longer remain in docs code or copy.
+- Submission and report-fetch APIs now expose only `inputs`, `displayValues`, and `modelValues`; migration-only value aliases were removed.
+- Schema diagnostics now preserve exact normalization paths, include nested series kinds, and generate JSON Schema from the active registry.
+- Public mapped-target routing preserves backend identity through `resolveMappedRoutes`.
+- Spanish and unverifiable legacy documentation was removed; the English documentation now covers only current exports and contracts.
+
+- Registry-driven schema diagnostics and JSON Schema generation now live in MLForm; MLSuite's handwritten Zod/JSON Schema mirrors were removed.
+- Report results now use one strict backend-scoped 0.1.23 envelope with exact `mappedTo` routing, embedded context, and terminal `skipped` state; legacy payload inference and consumer-side context maps were removed.
+- Multi-target submit composition now uses the public `createFanoutTransport`; MLSuite consumes it instead of owning `Promise.all` fanout.
 - `src/runtime/form.ts` split
 - `src/runtime/submission/submitter.ts` split
 - `src/runtime/validation/field.ts` split
@@ -37,10 +50,7 @@ None.
 - `src/kit/types.ts` split
 - `src/kit/layout.ts` split
 - `src/primitives/fields/series-field.ts` split
-- `src/transport/types/options.ts` split
-- `src/transport/composition/fanout.ts` split
 - `src/design/runtime/design-controller.ts` split
-- `src/transport/internal.ts` split
 - `createBuiltinRegistry` removed
 - public `EngineRegistry` name removed
 - primitive form root now refreshes report/explanation descriptors when their live state changes
@@ -54,7 +64,6 @@ None.
   - `src/primitives/fields/series-field.ts`
   - `src/runtime/submission/create-submitter.ts`
   - `src/runtime/create-runtime.ts`
-  - `src/transport/composition/fanout.ts`
 - Runtime definition aliases no longer accept presentation `describe` functions.
 - Runtime-owned builtins moved under `src/builtins/definitions`; packs and tests import them from the builtins package boundary.
 - Docs/tests old `engine` section paths moved to `runtime`.
@@ -101,7 +110,29 @@ None.
 - Primitive field frames now refresh descriptors from the descriptor registry when field state changes, preventing valid number values from rendering as blank after blur.
 - Boolean fields now distinguish unset (`null`) from explicit `false`; no default value leaves both primitive radio options unselected.
 - Field/report backend mapping now uses explicit `mappedTo`; report `source` and report-id backend fallback were removed from active schema contracts.
+- Report results now use one strict `(backend, mappedTo)` envelope with explicit `pending`, `ready`, or terminal `skipped` status; parallel context maps and payload-shape inference are unnecessary.
 - `onehot-category` now covers strict 0/1 encoded inputs without hidden subordinate schema fields.
+- Package export type paths now point at emitted `dist/types/src/*` declarations.
+- Submission results and requests now expose `inputs`, `displayValues`, and `modelValues` so consumers can use `mappedTo`/`displayKey` contracts instead of field ids for external data.
+- Runtime id boundary now has regression coverage: changing field/report ids changes runtime handles only, not `displayKey`/`mappedTo` external contracts.
+- Explicit `displayKey` values are now normalized and duplicate explicit display keys fail before display data can be overwritten; docs now distinguish `id`, `mappedTo`, `displayKey`, and `label`.
+- Display values no longer use labels as fallback data keys; fields without `displayKey` are omitted from `displayValues`.
+- Public `createSubmissionSnapshot(form, options)` exposes the same submission records before submit so consumers no longer need a transport call to inspect review/export/model payloads.
+- Public `resolveOneHotDisplayValue(field, modelValues, options)` restores selected one-hot UI values from saved model columns, including backend-specific targets.
+- Submission snapshot coverage now proves backend-specific and numeric `mappedTo` targets produce stable display/model records without consumer-side reconstruction.
+- One-hot inactive policy coverage now proves hidden `onehot-category` fields follow `include`, `omit`, and `reset-on-hide` submission behavior without parent field `mappedTo`.
+- Mounted kit submit now supports `reportFetchMode: "lazy" | "all" | "none"`; `"all"` exposes full pipeline report fetch results in success events and `"none"` prevents renderer-driven async report fetches.
+- Submit results and report fetch requests now expose official report context keyed by runtime report id, with helper lookup by id or resolved `mappedTo` target, removing consumer-side normalized-id report context lookups.
+- Report payload lookup now uses only `reports[]` items matched by explicit `mappedTo`, rejects duplicate resolved report targets, strips envelope metadata from payloads, and no longer supports keyed reports, report-id fallback, or alias migration.
+- Runtime now exposes schema-aware multi-backend snapshots and pipeline execution; multi-model form runs use `executeMultiBackendPipeline` to preserve per-backend mappings, results, errors, skipped reports, and report contexts.
+- Runtime id boundaries are explicit: `getField(id)`/`getReport(id)` remain runtime-handle lookups, while `getFieldByDisplayKey` and `getFieldByMappedTo` support external-contract field lookup without label or id fallback.
+- Exact report-id payload fallback, keyed report payload maps, and legacy `outputs` fallbacks removed from `resolveMappedReportPayload` and built-in report definitions.
+- Submission snapshots without an explicit backend now emit every target in a backend map, so multi-model consumers can use `modelValues` directly without reconstructing from field ids.
+- MLSuite local integration now renders, saves, and prefills schema-run visible inputs from MLForm `displayValues`/`displayKey` data instead of reconstructing from field ids, labels, `mappedTo`, or model columns.
+- Playwright is now a dev dependency and browser render coverage exercises real mounted UI with custom field/report plugins, `onehot-category`, backend-map `mappedTo`, mapped report payload lookup, and multi-backend report context targets.
+- Report payload lookup now resolves backend-map `mappedTo` targets when no single backend is selected, so mounted/fanout-like report arrays bind by external report target without report-id fallback.
+- Trusted report plugins can now render custom DOM through `render.mount` while declarative report descriptors remain the default.
+- Submission streaming removed because no production transport produced events; transport now contains only promise-based submit contracts, request lifecycle handling, and runtime errors.
 
 ## Notes
 

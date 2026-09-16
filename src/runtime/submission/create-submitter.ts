@@ -1,29 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import {
-  createAbortError,
-  isAbortLikeError,
-  TransportError,
-  transportErrorCodes,
-  ValidationError,
-} from "../errors";
+import { createAbortError, isAbortLikeError, ValidationError } from "../errors";
+import { createReportContexts } from "@/schema";
 import { createSubmissionAbortManager } from "./abort";
 import { createSubmissionLifecycle } from "./lifecycle";
-import {
-  buildSubmissionValueRecords,
-  cloneSubmissionValueRecords,
-  estimatePayloadBytes,
-  normalizeTransportResponse,
-} from "./request";
+import { buildSubmissionValueRecords, cloneSubmissionValueRecords } from "./request";
+import { normalizeTransportResponse } from "./transport-response";
 import { cloneSubmissionResult, createSubmissionResult } from "./result";
 import { commitReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";
-import { storePendingReportPatch } from "./pending-patches";
-import { createReportUpdates } from "./report-updates";
-import { createFieldUpdates } from "./field-updates";
-import { applySubmissionStreamEvent } from "./stream-events";
-import { toSubmissionProgress, updateStreamProgress } from "./stream-progress";
 import type { CreateFormSubmitterOptions, FormSubmitter } from "./types";
 
 export const createFormSubmitter = ({
@@ -42,7 +28,6 @@ export const createFormSubmitter = ({
   shouldResetInactiveFields,
   resolveInactiveFieldPolicy,
   inactiveFieldPolicy,
-  onRemoteFieldUpdate,
   beforeSubmitRecords,
 }: CreateFormSubmitterOptions): FormSubmitter => {
   const abortManager = createSubmissionAbortManager();
@@ -61,46 +46,12 @@ export const createFormSubmitter = ({
     resetReports,
     syncAfterSubmissionTransition,
   });
-  const fieldMap = new Map(
-    fields.map((field) => [field.id, field as import("./types").LiveSubmissionField]),
-  );
-  const reportMap = new Map(
-    reports.map((report) => [report.id, report as import("./types").LiveSubmissionReport]),
-  );
-
   const { notifySubmitError, handleSubmissionAbort, handleSubmissionError } =
     createSubmissionErrorFlow({
       hooks,
       abortManager,
       lifecycle,
       store,
-    });
-
-  const { applyValidatedReportReplace, applyValidatedReportPatch } = createReportUpdates({
-    reportMap,
-    getReportState: (reportId) => store.getState().reportStates[reportId],
-    getReportStates: () => store.getState().reportStates,
-    getSubmissionMeta: () => store.getState().submissionProgress?.meta ?? {},
-    storePendingPatch: (reportId, patch) => storePendingReportPatch(store, reportId, patch),
-  });
-
-  const { applyFieldUpdate } = createFieldUpdates({
-    store,
-    fieldMap,
-    onRemoteFieldUpdate,
-  });
-  const applyStreamEvent = (
-    event: import("../types").TransportStreamEvent,
-    records: import("./request").SubmissionValueRecords,
-    backend: string | undefined,
-  ) =>
-    applySubmissionStreamEvent({
-      event,
-      records,
-      backend,
-      applyValidatedReportReplace,
-      applyValidatedReportPatch,
-      applyFieldUpdate,
     });
 
   return {
@@ -166,49 +117,10 @@ export const createFormSubmitter = ({
           ...transportRecords,
           fields: normalizedSchema.fields,
           reports: normalizedSchema.reports,
-          metadata: {
-            estimatedPayloadBytes: estimatePayloadBytes({
-              values: transportRecords.serializedValues,
-              fieldValues: transportRecords.serializedFieldValues,
-            }),
-          },
           signal: submitSignal,
         };
 
-        let response: unknown;
-        if (transport.stream) {
-          let streamResultReceived = false;
-          const stream = await transport.stream(submitRequest);
-
-          for await (const event of stream) {
-            const nextProgress = toSubmissionProgress(store.getState().submissionProgress, event);
-            updateStreamProgress(
-              store,
-              () => abortManager.getCurrentRequestId(),
-              nextProgress,
-              submissionRequestId,
-              lifecycleVersion,
-            );
-            await applyStreamEvent(event, records, backend);
-
-            if (event.type === "result") {
-              response = event.result;
-              streamResultReceived = true;
-            } else if (event.type === "error") {
-              throw event.error;
-            }
-          }
-
-          if (!streamResultReceived) {
-            throw new TransportError("Form submission failed: stream completed without a result.", {
-              code: transportErrorCodes.SESSION_RESULT_MISSING,
-              retryable: false,
-              details: { backend },
-            });
-          }
-        } else {
-          response = await transport.submit(submitRequest);
-        }
+        const response = await transport.submit(submitRequest);
 
         const stillCurrent =
           abortManager.getCurrentRequestId() === submissionRequestId &&
@@ -220,18 +132,25 @@ export const createFormSubmitter = ({
         }
 
         const normalizedResponse = normalizeTransportResponse(response);
-        const baseResult: Omit<import("../types").SubmitResult, "reportStates"> = {
-          backend,
-          ...records,
-          reports: normalizedResponse.reports ?? {},
-          meta: normalizedResponse.meta ?? {},
-          raw: normalizedResponse.raw,
-        };
+        const baseResult: Omit<import("../types").SubmitResult, "reportContexts" | "reportStates"> =
+          {
+            backend,
+            ...records,
+            reports: normalizedResponse.reports ?? [],
+            meta: normalizedResponse.meta ?? {},
+            raw: normalizedResponse.raw,
+          };
+        const reportContexts = createReportContexts(normalizedSchema.reports, baseResult);
         const nextReportStates = await prepareReportStates(reports, {
           ...baseResult,
+          reportContexts,
           reportStates: {},
         });
-        const result = createSubmissionResult(reports, baseResult, nextReportStates);
+        const result = createSubmissionResult(
+          reports,
+          { ...baseResult, reportContexts },
+          nextReportStates,
+        );
 
         const storedResult = cloneSubmissionResult(reports, result);
         store.batch(() => {

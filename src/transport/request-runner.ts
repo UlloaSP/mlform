@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export type TransportRequestOutcome<TResult> =
+type TransportRequestOutcome<TResult> =
   | {
       status: "completed";
       value: TResult;
@@ -15,7 +15,7 @@ export type TransportRequestOutcome<TResult> =
       message: string;
     };
 
-export type TransportRequestRunner = {
+type TransportRequestRunner = {
   run<TResult>(
     submit: (signal: AbortSignal | undefined) => Promise<TResult>,
     signals?: readonly (AbortSignal | undefined)[],

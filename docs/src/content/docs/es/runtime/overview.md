@@ -15,9 +15,14 @@ const form = createForm({
   transport: {
     async submit(request) {
       return {
-        reports: {
-          prediction: { label: request.values.prompt ? "Ready" : "Empty" },
-        },
+        reports: [
+          {
+            backend: request.backend ?? "default",
+            mappedTo: "prediction",
+            status: "ready",
+            payload: { prediction: request.modelValues.prompt ? "Ready" : "Empty" },
+          },
+        ],
       };
     },
   },

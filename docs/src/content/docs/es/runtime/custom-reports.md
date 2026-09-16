@@ -19,7 +19,11 @@ const riskSummaryReport = defineReportKind({
     label: z.string().optional(),
     mappedTo: z.union([z.string(), z.number()]).optional(),
   }),
-  resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
+  resolve: ({ report, result }) =>
+    resolveMappedReportPayload(report, result, {
+      aliases: ["old_risk_summary"],
+      onAlias: (alias, target) => console.warn(`Alias ${alias} usado para ${target}`),
+    }),
   render: {
     summary: ({ payload }) => ({
       title: payload.label ?? "Risk",
@@ -38,3 +42,13 @@ registerDefinedReportKind(pack.registry, pack.descriptorRegistry, riskSummaryRep
 ```
 
 Si `resolve` falla, solo ese informe queda en estado `error`.
+
+Los informes con `fetch` reciben `request.reportContext` con `id`, `mappedTo` resuelto, backend, `modelValues`, `displayValues`, `meta` del submit y salida raw. Usa eso en vez de normalizar ids:
+
+```ts
+fetch: () => ({
+  async submit(request) {
+    return fetchDetails(request.reportContext?.targetKey, request.modelValues);
+  },
+});
+```

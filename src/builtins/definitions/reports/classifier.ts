@@ -2,9 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinLegacyOutputTypes, builtinReportLabels } from "../../constants";
+import { builtinReportLabels } from "../../constants";
 import { resolveMappedReportPayload, type BaseReportConfig } from "@/schema";
-import { baseReportShape, resolveLegacyOutput, type BuiltinReportDefinition } from "../shared";
+import { baseReportShape, type BuiltinReportDefinition } from "../shared";
 
 type ClassifierReportConfig = BaseReportConfig & {
   kind: "classifier";
@@ -14,7 +14,6 @@ type ClassifierReportConfig = BaseReportConfig & {
 
 export const classifierReportDefinition: BuiltinReportDefinition<ClassifierReportConfig> = {
   kind: "classifier",
-  partialUpdatePolicy: "validate",
   schema: z.object({
     kind: z.literal("classifier"),
     ...baseReportShape,
@@ -22,10 +21,7 @@ export const classifierReportDefinition: BuiltinReportDefinition<ClassifierRepor
     showClassProbabilities: z.boolean().optional().default(true),
   }),
   resolvePayload(_config, context) {
-    return (
-      resolveMappedReportPayload(context.report, context.result) ??
-      resolveLegacyOutput(context.result, builtinLegacyOutputTypes.classifier)
-    );
+    return resolveMappedReportPayload(context.report, context.result);
   },
   describe(config, context) {
     if (context.state.status === "idle" && context.payload === undefined) {

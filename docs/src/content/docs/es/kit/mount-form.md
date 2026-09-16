@@ -16,6 +16,7 @@ const mounted = mountForm(container, {
   labels: { submit: "Predict" },
   layout: "split",
   reportPane: "auto",
+  reportFetchMode: "all",
 });
 ```
 
@@ -34,3 +35,4 @@ Notas:
 
 - `mountForm` espera un contenedor vacio por defecto.
 - Usa `containerStrategy: "replace"` solo cuando quieras sustituir contenido existente del host y restaurarlo en `unmount()`.
+- `reportFetchMode` controla informes async tras submit: `"lazy"` mantiene fetch desde renderers, `"all"` espera todos los informes antes del evento success, y `"none"` no hace fetch de informes.

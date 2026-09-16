@@ -40,6 +40,7 @@ export interface FieldHandle {
   setValue(value: unknown): void;
   blur(): void;
   focus(): void;
+  serialize(): unknown;
   validate(): Promise<FieldValidationResult>;
   reset(): void;
   subscribe(listener: (state: FieldStateSnapshot) => void): () => void;

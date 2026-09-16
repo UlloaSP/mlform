@@ -33,7 +33,7 @@ const mountFieldFrame = async (showDescriptionInline?: boolean) => {
         },
       ],
     },
-    transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+    transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
   });
   await flush();
   const frame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;

@@ -7,14 +7,14 @@ description: Submit lifecycle events emitted by primitive form elements.
 | -------------------- | --------------------------------------------------------- |
 | `mlf-submit-request` | User requested submit. Cancelable by the primitive layer. |
 | `mlf-submit-start`   | `{ form, state }` after submission starts.                |
-| `mlf-submit-success` | `{ form, state, result }` after successful submit.        |
+| `mlf-submit-success` | `{ form, state, result, pipelineResult? }` after success. |
 | `mlf-submit-abort`   | Abort notification for a canceled submit.                 |
 | `mlf-submit-error`   | `{ form, state, error, status }` after a failed submit.   |
 
 ```ts
 mounted.host.addEventListener("mlf-submit-success", (event) => {
   const detail = (event as CustomEvent).detail;
-  console.log(detail.result.meta);
+  console.log(detail.pipelineResult?.reportFetchResults ?? detail.result.meta);
 });
 ```
 

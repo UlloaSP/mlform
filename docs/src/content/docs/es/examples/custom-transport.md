@@ -11,14 +11,19 @@ mountForm(container, {
   transport: {
     async submit(request) {
       const result = await modelClient.predict({
-        values: request.serializedValues,
+        values: request.modelValues,
         signal: request.signal,
       });
 
       return {
-        reports: {
-          prediction: result.prediction,
-        },
+        reports: [
+          {
+            backend: request.backend ?? "default",
+            mappedTo: "prediction",
+            status: "ready",
+            payload: result.prediction,
+          },
+        ],
         meta: {
           requestId: result.requestId,
         },

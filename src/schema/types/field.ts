@@ -25,6 +25,7 @@ export interface BaseFieldConfig {
   asyncValidationDebounceMs?: number;
   inactiveFieldPolicy?: InactiveFieldPolicy;
   includeInSubmission?: boolean;
+  displayKey?: string;
   mappedTo?: MappedTo;
   valuePath?: string | string[];
   defaultValue?: unknown;

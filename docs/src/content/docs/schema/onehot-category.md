@@ -35,6 +35,8 @@ Selecting `green` submits:
 
 No hidden subordinate fields are needed.
 
+Use `resolveOneHotDisplayValue(field, modelValues, options)` to restore the selected UI value from saved one-hot model columns.
+
 ## Options
 
 | Property | Type | Meaning |
@@ -48,4 +50,5 @@ Rules:
 - `onehot-category` is strict 0/1 encoding.
 - Duplicate resolved `mappedTo` targets throw.
 - Missing backend-specific `mappedTo` targets throw.
+- Reverse display throws when multiple options are selected.
 - Use `mapped-category` for arbitrary mappings or multi-column presets.

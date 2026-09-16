@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  FieldStateSnapshot,
-  FormStatus,
-  ReportStateSnapshot,
-  SubmissionProgressState,
-  SubmitResult,
-} from "../types";
+import type { FieldStateSnapshot, FormStatus, ReportStateSnapshot, SubmitResult } from "../types";
 import type { Store } from "./store";
 
 export interface InternalFieldState extends FieldStateSnapshot {
@@ -24,7 +18,6 @@ export interface EngineState {
   formErrors: string[];
   fieldStates: Record<string, InternalFieldState>;
   reportStates: Record<string, ReportStateSnapshot>;
-  submissionProgress: SubmissionProgressState | null;
   lifecycleVersion: number;
   activeValidationVersion: number;
   activeSubmissionVersion: number | null;
@@ -39,7 +32,6 @@ export type EngineTransition =
   | { type: "start-validation"; validationVersion: number }
   | { type: "validation-error"; message: string }
   | { type: "start-submission"; submissionVersion: number }
-  | { type: "submission-stream-update"; progress: SubmissionProgressState }
   | { type: "submission-success"; result: SubmitResult }
   | { type: "submission-aborted"; message: string }
   | { type: "submission-error"; message: string }
@@ -53,7 +45,6 @@ export const createInitialEngineState = (): EngineState => ({
   formErrors: [],
   fieldStates: {},
   reportStates: {},
-  submissionProgress: null,
   lifecycleVersion: 0,
   activeValidationVersion: 0,
   activeSubmissionVersion: null,
@@ -105,13 +96,7 @@ export const transitionEngineState = (
         submitCount: current.submitCount + 1,
         formErrors: [],
         lastResult: null,
-        submissionProgress: null,
         activeSubmissionVersion: transition.submissionVersion,
-      };
-    case "submission-stream-update":
-      return {
-        ...current,
-        submissionProgress: transition.progress,
       };
     case "submission-success":
       return {
@@ -119,7 +104,6 @@ export const transitionEngineState = (
         status: "success",
         formErrors: [],
         lastResult: transition.result,
-        submissionProgress: null,
       };
     case "submission-aborted":
       return {
@@ -127,7 +111,6 @@ export const transitionEngineState = (
         status: "idle",
         formErrors: [transition.message],
         lastResult: null,
-        submissionProgress: null,
       };
     case "submission-error":
       return {
@@ -135,7 +118,6 @@ export const transitionEngineState = (
         status: "error",
         formErrors: [transition.message],
         lastResult: null,
-        submissionProgress: null,
       };
     case "clear-active-submission":
       return {
@@ -152,7 +134,6 @@ export const transitionEngineState = (
         submitCount: 0,
         formErrors: [],
         lastResult: null,
-        submissionProgress: null,
         activeSubmissionVersion: null,
       };
     default:

@@ -4,12 +4,12 @@
 import type { ZodType } from "zod";
 import type { MaybePromise } from "./field";
 import type { MappedTo } from "../mapped-to";
-import type { SubmitResult } from "./submit";
+import type { ReportContext, SubmitResult } from "./submit";
+import type { SubmissionInputRecord } from "./submit";
 
-export type ReportStatus = "idle" | "loading" | "ready" | "error";
+export type ReportStatus = "idle" | "loading" | "ready" | "skipped" | "error";
 export type ReportFetchStatus = ReportStatus;
 export type ReportPayloadValidationPolicy = "report-error" | "fail-submit";
-export type PartialReportUpdatePolicy = "trust" | "validate" | "defer";
 
 export interface BaseReportConfig {
   id?: string;
@@ -47,11 +47,12 @@ export interface ReportResolveContext<TConfig extends ReportConfig = ReportConfi
 export interface ReportFetchRequest {
   reportId: string;
   backend?: string;
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
-  reports: Record<string, unknown>;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
+  reports: readonly unknown[];
+  reportContext?: ReportContext;
+  reportContexts: Record<string, ReportContext>;
   meta: Record<string, unknown>;
   raw: unknown;
   signal?: AbortSignal;
@@ -75,7 +76,6 @@ export interface ReportDefinition<TConfig extends ReportConfig = ReportConfig> {
   schema: ZodType<TConfig>;
   payloadSchema?: ZodType<unknown>;
   payloadValidationPolicy?: ReportPayloadValidationPolicy;
-  partialUpdatePolicy?: PartialReportUpdatePolicy;
   clonePayload?: (payload: unknown, config: TConfig) => unknown;
   fetch?: ReportFetchFactory<TConfig>;
   resolvePayload?: (

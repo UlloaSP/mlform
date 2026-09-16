@@ -12,6 +12,18 @@ import {
   registerDefinedReportKind,
 } from "@/kit";
 
+const reportPayload = (reports: readonly unknown[], id: string): unknown => {
+  const item = reports.find(
+    (report): report is Record<string, unknown> =>
+      typeof report === "object" &&
+      report !== null &&
+      !Array.isArray(report) &&
+      ((report as Record<string, unknown>).id === id ||
+        (report as Record<string, unknown>).mappedTo === id),
+  );
+  return item && "payload" in item ? item.payload : item;
+};
+
 describe("kit view", () => {
   it("builds an automatic stacked layout when layout is omitted", () => {
     const pack = createMlRegistryPack();
@@ -28,7 +40,7 @@ describe("kit view", () => {
         fetch: () => ({
           submit: async () => ({ items: [] }),
         }),
-        resolve: ({ result }) => result.reports["mock-report"],
+        resolve: ({ result }) => reportPayload(result.reports, "mock-report"),
         render: {
           content: () => [],
         },
@@ -37,7 +49,7 @@ describe("kit view", () => {
 
     const view = createFormView({
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
       schema: {
         fields: [
@@ -66,7 +78,7 @@ describe("kit view", () => {
   });
 
   it("creates wizard state, validates only current step, and supports navigation", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const view = createFormView({
       transport: { submit },
       schema: {
@@ -132,7 +144,7 @@ describe("kit view", () => {
         fetch: () => ({
           submit: async () => ({ items: [] }),
         }),
-        resolve: ({ result }) => result.reports["mock-report"],
+        resolve: ({ result }) => reportPayload(result.reports, "mock-report"),
         render: {
           content: () => [],
         },
@@ -140,7 +152,7 @@ describe("kit view", () => {
     );
 
     const view = createFormView({
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [
           { id: "name", kind: "text", label: "Name" },
@@ -207,7 +219,7 @@ describe("kit view", () => {
   it("rejects invalid tabs layouts and tab navigation on non-tabs views", () => {
     expect(() =>
       createFormView({
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
         schema: {
           fields: [{ id: "name", kind: "text", label: "Name" }],
         },
@@ -220,7 +232,7 @@ describe("kit view", () => {
 
     expect(() =>
       createFormView({
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
         schema: {
           fields: [{ id: "name", kind: "text", label: "Name" }],
         },
@@ -233,7 +245,7 @@ describe("kit view", () => {
 
     expect(() =>
       createFormView({
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
         schema: {
           fields: [
             { id: "name", kind: "text", label: "Name" },
@@ -257,7 +269,7 @@ describe("kit view", () => {
 
     expect(() =>
       createFormView({
-        transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
         schema: {
           fields: [
             { id: "name", kind: "text", label: "Name" },
@@ -277,7 +289,7 @@ describe("kit view", () => {
     ).toThrow('Field "email" is missing from layout.');
 
     const singlePageView = createFormView({
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "name", kind: "text", label: "Name" }],
       },
@@ -292,7 +304,7 @@ describe("kit view", () => {
 
   it("exposes headless helper APIs and layout utilities", () => {
     const view = createFormView({
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "name", kind: "text", label: "Name" }],
       },
@@ -329,7 +341,7 @@ describe("kit view", () => {
 
   it("resolves disclosure sections and supports multi-open section controls", () => {
     const view = createFormView({
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [
           { id: "name", kind: "text", label: "Name" },
@@ -384,7 +396,7 @@ describe("kit view", () => {
 
   it("rejects unknown disclosure section controls", () => {
     const singlePageView = createFormView({
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "name", kind: "text", label: "Name" }],
       },
@@ -399,7 +411,7 @@ describe("kit view", () => {
     expect(() =>
       createFormView({
         transport: {
-          submit: vi.fn().mockResolvedValue({ reports: {} }),
+          submit: vi.fn().mockResolvedValue({ reports: [] }),
         },
         schema: {
           fields: [
@@ -425,7 +437,7 @@ describe("kit view", () => {
     expect(() =>
       createFormView({
         transport: {
-          submit: vi.fn().mockResolvedValue({ reports: {} }),
+          submit: vi.fn().mockResolvedValue({ reports: [] }),
         },
         schema: {
           fields: [

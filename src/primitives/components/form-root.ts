@@ -13,6 +13,7 @@ import {
   type PrimitiveText,
 } from "../constants";
 import type { PrimitiveLayout, PrimitiveRegistry, PrimitiveReportTransport } from "../types";
+import type { PrimitiveReportFetchMode, PrimitiveSubmitExecutionResult } from "../types";
 import { findFieldFrame, findFirstInvalidField, scrollFieldFrameIntoView } from "./error-focus";
 import { formRootStyles } from "./form-root-styles";
 import { presentVisibleFields, presentVisibleReports } from "./form-root-presenters";
@@ -49,6 +50,10 @@ export class PrimitiveFormElement extends LitElement {
     | "hidden" = "auto";
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
   @property({ attribute: false }) accessor reportTransport: PrimitiveReportTransport | undefined;
+  @property({ attribute: false }) accessor reportFetchMode: PrimitiveReportFetchMode = "lazy";
+  @property({ attribute: false }) accessor submitHandler:
+    | (() => Promise<PrimitiveSubmitExecutionResult>)
+    | undefined;
 
   @state() private accessor formState: FormRenderState | null = null;
   #unsubscribe: (() => void) | null = null;
@@ -119,6 +124,7 @@ export class PrimitiveFormElement extends LitElement {
         validatingLabel: this.validatingLabel,
         submittingLabel: this.submittingLabel,
         reportTransport: this.reportTransport,
+        reportFetchMode: this.reportFetchMode,
         onSubmitRequest: this.#handleSubmitRequest,
       });
     }
@@ -138,6 +144,7 @@ export class PrimitiveFormElement extends LitElement {
       validatingLabel: this.validatingLabel,
       submittingLabel: this.submittingLabel,
       reportTransport: this.reportTransport,
+      reportFetchMode: this.reportFetchMode,
       onSubmitRequest: this.#handleSubmitRequest,
     });
   }
@@ -159,14 +166,17 @@ export class PrimitiveFormElement extends LitElement {
     );
 
     try {
-      const result = await this.form.submit();
+      const execution = this.submitHandler
+        ? await this.submitHandler()
+        : { result: await this.form.submit() };
 
       this.dispatchEvent(
         new CustomEvent(primitiveEventNames.submitSuccess, {
           detail: {
             form: this.form,
             state: this.form.state,
-            result,
+            result: execution.result,
+            pipelineResult: execution.pipelineResult,
           },
           bubbles: true,
           composed: true,

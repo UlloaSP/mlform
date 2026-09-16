@@ -3,6 +3,7 @@
 
 import type { ReportFetchRequest } from "./types/report";
 import type { SubmitResult } from "./types/submit";
+import { getReportContext } from "./report-context";
 
 export const createReportFetchRequest = (
   submitResult: SubmitResult,
@@ -10,11 +11,13 @@ export const createReportFetchRequest = (
 ): ReportFetchRequest => ({
   reportId: options.reportId ?? "",
   backend: submitResult.backend,
-  values: submitResult.values,
-  fieldValues: submitResult.fieldValues,
-  serializedValues: submitResult.serializedValues,
-  serializedFieldValues: submitResult.serializedFieldValues,
+  inputs: submitResult.inputs,
+  displayValues: submitResult.displayValues,
+  modelValues: submitResult.modelValues,
   reports: submitResult.reports,
+  reportContext:
+    options.reportId === undefined ? undefined : getReportContext(submitResult, options.reportId),
+  reportContexts: submitResult.reportContexts,
   meta: submitResult.meta,
   raw: submitResult.raw,
   signal: options.signal,

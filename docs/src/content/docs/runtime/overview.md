@@ -17,7 +17,7 @@ const form = createForm({
       const response = await fetch("/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries([["inputs", request.serializedValues]])),
+        body: JSON.stringify({ inputs: request.modelValues }),
       });
 
       return response.json();

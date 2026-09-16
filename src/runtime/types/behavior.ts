@@ -4,20 +4,19 @@
 type MaybePromise<T> = T | PromiseLike<T>;
 
 import type { Registry } from "@/schema";
+import type { SubmissionInputRecord } from "@/schema";
 import type { FieldHandle } from "./field";
 import type { FormStatus } from "./form";
 
 export interface RuntimeBehaviorValueChangeEvent {
   fieldId: string;
-  source: "local" | "remote";
   values: Record<string, unknown>;
 }
 
 export interface RuntimeBehaviorSubmissionRecords {
-  values: Record<string, unknown>;
-  fieldValues: Record<string, unknown>;
-  serializedValues: Record<string, unknown>;
-  serializedFieldValues: Record<string, unknown>;
+  inputs: SubmissionInputRecord[];
+  displayValues: Record<string, unknown>;
+  modelValues: Record<string, unknown>;
 }
 
 export interface RuntimeBehaviorContext {

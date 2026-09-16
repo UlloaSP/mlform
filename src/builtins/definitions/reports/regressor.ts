@@ -2,9 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinLegacyOutputTypes, builtinReportLabels } from "../../constants";
+import { builtinReportLabels } from "../../constants";
 import { resolveMappedReportPayload, type BaseReportConfig } from "@/schema";
-import { baseReportShape, resolveLegacyOutput, type BuiltinReportDefinition } from "../shared";
+import { baseReportShape, type BuiltinReportDefinition } from "../shared";
 
 type RegressorReportConfig = BaseReportConfig & {
   kind: "regressor";
@@ -14,7 +14,6 @@ type RegressorReportConfig = BaseReportConfig & {
 
 export const regressorReportDefinition: BuiltinReportDefinition<RegressorReportConfig> = {
   kind: "regressor",
-  partialUpdatePolicy: "validate",
   schema: z.object({
     kind: z.literal("regressor"),
     ...baseReportShape,
@@ -22,10 +21,7 @@ export const regressorReportDefinition: BuiltinReportDefinition<RegressorReportC
     precision: z.number().int().nonnegative().optional().default(2),
   }),
   resolvePayload(_config, context) {
-    return (
-      resolveMappedReportPayload(context.report, context.result) ??
-      resolveLegacyOutput(context.result, builtinLegacyOutputTypes.regressor)
-    );
+    return resolveMappedReportPayload(context.report, context.result);
   },
   describe(config, context) {
     if (context.state.status === "idle" && context.payload === undefined) {

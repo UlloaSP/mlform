@@ -26,6 +26,8 @@ import type {
 import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { FormLayoutConfig } from "./layout-types";
 
+export type MountedReportFetchMode = "lazy" | "all" | "none";
+
 export interface KitDesignSystemSnapshot extends Omit<
   DesignSystemConfig,
   "mode" | "theme" | "recipe"
@@ -64,6 +66,7 @@ export interface MountFormOptions {
   layout?: FormLayoutConfig;
   containerStrategy?: PrimitiveContainerStrategy;
   reportPane?: "auto" | "always" | "hidden";
+  reportFetchMode?: MountedReportFetchMode;
   reportTransport?: PrimitiveReportTransport;
   labels?: KitLabels;
   primitiveText?: PrimitiveTextOverrides;

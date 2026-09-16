@@ -5,9 +5,11 @@ import type {
   PrimitiveFieldController,
   PrimitiveFormController,
   PrimitiveFormStatus,
+  PrimitivePipelineResult,
   PrimitiveReportRequest,
   PrimitiveReportController,
   PrimitiveSubmitResult,
+  PrimitiveSubmitExecutionResult,
   PrimitiveFormState,
 } from "./controller-types";
 import type { PrimitiveText, PrimitiveTextOverrides } from "./constants";
@@ -15,8 +17,9 @@ import type { FieldDescriptor, PrimitiveDescriptorRegistry, ReportDescriptor } f
 
 export type PrimitiveLayout = "stacked" | "split";
 export type PrimitiveContainerStrategy = "error" | "replace";
+export type PrimitiveReportFetchMode = "lazy" | "all" | "none";
 
-export type { PrimitiveReportRequest };
+export type { PrimitivePipelineResult, PrimitiveReportRequest, PrimitiveSubmitExecutionResult };
 
 export interface PrimitiveRegistry {
   // --- Fields ---
@@ -55,6 +58,8 @@ export interface MountFormOptions {
   text?: PrimitiveTextOverrides;
   /** Optional transport for report renderers that fetch extra data after submit. */
   reportTransport?: PrimitiveReportTransport;
+  reportFetchMode?: PrimitiveReportFetchMode;
+  submitHandler?: () => Promise<PrimitiveSubmitExecutionResult>;
 }
 
 export interface MountedForm {
@@ -111,6 +116,7 @@ export interface PrimitiveSubmitSuccessDetail {
   form: PrimitiveFormController;
   state: PrimitiveFormState;
   result: PrimitiveSubmitResult;
+  pipelineResult?: PrimitivePipelineResult;
 }
 
 export interface PrimitiveSubmitErrorDetail {

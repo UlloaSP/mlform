@@ -20,6 +20,7 @@ import {
 } from "../constants";
 import type {
   PrimitiveReportRequest,
+  PrimitiveReportFetchMode,
   PrimitiveReportTransport,
   PrimitiveRegistry,
   PrimitiveReportRenderContext,
@@ -104,6 +105,7 @@ export class PrimitiveReportFrameElement extends LitElement {
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
   @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
+  @property({ attribute: false }) accessor fetchMode: PrimitiveReportFetchMode = "lazy";
   @property({ attribute: false }) accessor lastResult: PrimitiveSubmitResult | null = null;
 
   @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
@@ -252,7 +254,7 @@ export class PrimitiveReportFrameElement extends LitElement {
     const ctrl = this.controller;
     const request = this.#getReportRequest();
 
-    if (!ctrl?.canFetch || !request || ctrl.state.status !== "idle") {
+    if (this.fetchMode !== "lazy" || !ctrl?.canFetch || !request || ctrl.state.status !== "idle") {
       return;
     }
 

@@ -10,8 +10,8 @@ mountForm(container, {
   transport: createJsonTransport({ endpoint: "/api/predict" }),
   schema,
   hooks: {
-    beforeSubmit({ serializedValues }) {
-      console.log("Submitting", serializedValues);
+    beforeSubmit({ modelValues }) {
+      console.log("Submitting", modelValues);
     },
     afterSubmit({ result }) {
       console.log("Reports", result.reports);

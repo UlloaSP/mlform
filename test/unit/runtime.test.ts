@@ -21,8 +21,27 @@ import {
   executeFormPipeline,
   shallowEquality,
 } from "@/runtime";
+import { readyReport } from "../report-result";
 
 const builtinPrimitiveDescriptorRegistry = createMlRegistryPack().descriptorRegistry;
+
+const reportPayload = (reports: readonly unknown[], id: string): unknown => {
+  const item = reports.find(
+    (report): report is Record<string, unknown> =>
+      typeof report === "object" &&
+      report !== null &&
+      !Array.isArray(report) &&
+      ((report as Record<string, unknown>).id === id ||
+        (report as Record<string, unknown>).mappedTo === id),
+  );
+  if (!item) return undefined;
+  if ("payload" in item) return item.payload;
+  const { id: _id, kind: _kind, mappedTo: _mappedTo, ...payload } = item;
+  void _id;
+  void _kind;
+  void _mappedTo;
+  return payload;
+};
 
 const describeField = (
   field: NonNullable<ReturnType<import("@/runtime").FormController["getField"]>>,
@@ -698,7 +717,7 @@ describe("runtime", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
     });
 
@@ -932,7 +951,7 @@ describe("runtime", () => {
   });
 
   it("treats form-level errors as invalid and blocks submit", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -1158,13 +1177,13 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            classifier: {
+          reports: [
+            readyReport("classifier", {
               labels: ["low", "high"],
               probabilities: [0.25, 0.75],
               prediction: "high",
-            },
-          },
+            }),
+          ],
         }),
       },
     });
@@ -1320,7 +1339,7 @@ describe("runtime", () => {
   });
 
   it("recovers cleanly when validation hooks throw during submit", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const beforeValidate = vi
       .fn<() => Promise<void>>()
       .mockRejectedValueOnce(new Error("validation hook failed"))
@@ -1357,7 +1376,7 @@ describe("runtime", () => {
   });
 
   it("surfaces afterValidate failures without masking them as invalid transitions", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const afterValidate = vi
       .fn<() => Promise<void>>()
       .mockRejectedValueOnce(new Error("after validation hook failed"))
@@ -1764,13 +1783,13 @@ describe("runtime", () => {
 
   it("serializes values and updates report controllers after submit", async () => {
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        readyReport("risk", {
           labels: ["low", "high"],
           probabilities: [0.2, 0.8],
           prediction: "high",
-        },
-      },
+        }),
+      ],
       meta: {
         requestId: "abc-123",
       },
@@ -1817,11 +1836,7 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          name: "Alice",
-          birthday: expect.any(Date),
-        },
-        serializedValues: {
+        modelValues: {
           name: "Alice",
           birthday: "2025-01-02T00:00:00.000Z",
         },
@@ -1859,7 +1874,7 @@ describe("runtime", () => {
   });
 
   it("builds nested submission values from field valuePath while keeping flat field values", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -1894,48 +1909,35 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          person: {
-            name: "Alice",
-            birthday: expect.any(Date),
-          },
-          score: 10,
-        },
-        fieldValues: {
-          name: "Alice",
-          birthday: expect.any(Date),
-          score: 10,
-        },
-        serializedValues: {
+        modelValues: {
           person: {
             name: "Alice",
             birthday: "2025-01-02T00:00:00.000Z",
           },
           score: 10,
         },
-        serializedFieldValues: {
-          name: "Alice",
-          birthday: "2025-01-02T00:00:00.000Z",
-          score: 10,
-        },
       }),
     );
-    expect(result.values).toEqual({
+    expect(result.modelValues).toEqual({
       person: {
         name: "Alice",
-        birthday: expect.any(Date),
+        birthday: "2025-01-02T00:00:00.000Z",
       },
       score: 10,
     });
-    expect(result.fieldValues).toEqual({
-      name: "Alice",
-      birthday: expect.any(Date),
-      score: 10,
-    });
+    expect(result.inputs[1]).toEqual(
+      expect.objectContaining({
+        fieldId: "birthday",
+        value: expect.any(Date),
+        serializedValue: "2025-01-02T00:00:00.000Z",
+      }),
+    );
   });
 
   it("uses mappedTo names and positions without id fallback", async () => {
-    const submit = vi.fn().mockResolvedValue([{ ignored: true }, { value: 88 }]);
+    const submit = vi
+      .fn()
+      .mockResolvedValue({ reports: [readyReport(1, { value: 88 }, "remote")] });
     const form = createForm({
       schema: {
         fields: [
@@ -1968,12 +1970,10 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: { actual_age: 42 },
-        fieldValues: { "visible-age": 42, "ui-only": "local" },
-        serializedValues: { actual_age: 42 },
+        modelValues: { actual_age: 42 },
       }),
     );
-    expect(result.values).toEqual({ actual_age: 42 });
+    expect(result.modelValues).toEqual({ actual_age: 42 });
     expect(result.reportStates["visible-score"]?.payload).toEqual({ value: 88 });
   });
 
@@ -2010,12 +2010,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              prediction: "high",
-              probabilities: [0.1, 0.9],
-            },
-          },
+          reports: [readyReport("risk", { prediction: "high", probabilities: [0.1, 0.9] })],
         }),
       },
     });
@@ -2106,7 +2101,7 @@ describe("runtime", () => {
             },
           } as never,
           resolvePayload(_config, context) {
-            return context.result.reports.good;
+            return reportPayload(context.result.reports, "good");
           },
           describe(config, context) {
             return {
@@ -2160,19 +2155,19 @@ describe("runtime", () => {
           {
             kind: "good-report",
             id: "good",
+            mappedTo: "good",
           },
           {
             kind: "bad-report",
             id: "bad",
+            mappedTo: "bad",
           },
         ],
       },
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            good: { score: 1 },
-          },
+          reports: [readyReport("good", { score: 1 })],
         }),
       },
     });
@@ -2249,11 +2244,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            score: {
-              score: "not-a-number",
-            },
-          },
+          reports: [readyReport("score", { score: "not-a-number" })],
         }),
       },
     });
@@ -2314,11 +2305,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            score: {
-              score: "not-a-number",
-            },
-          },
+          reports: [readyReport("score", { score: "not-a-number" })],
         }),
       },
       hooks: {
@@ -2355,7 +2342,7 @@ describe("runtime", () => {
       } as never,
       async resolvePayload(_config, context) {
         await Promise.resolve();
-        return context.result.reports.async;
+        return reportPayload(context.result.reports, "async");
       },
       describe(config, context) {
         return {
@@ -2384,15 +2371,14 @@ describe("runtime", () => {
           {
             kind: "async-report",
             id: "async",
+            mappedTo: "async",
           },
         ],
       },
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            async: { score: 42 },
-          },
+          reports: [readyReport("async", { score: 42 })],
         }),
       },
     });
@@ -2430,9 +2416,7 @@ describe("runtime", () => {
       expect(request.signal).toBeDefined();
       expect(request.signal?.aborted).toBe(false);
       return {
-        reports: {
-          classifier: { prediction: "ok" },
-        },
+        reports: [readyReport("classifier", { prediction: "ok" })],
       };
     });
 
@@ -2466,22 +2450,20 @@ describe("runtime", () => {
 
     const result = await form.submit();
 
-    expect(beforeSubmit).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      signal: expect.any(AbortSignal),
-    });
-    expect(afterSubmit).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      result,
-    });
+    expect(beforeSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelValues: { name: "Alice" },
+        submitCount: 1,
+        signal: expect.any(AbortSignal),
+      }),
+    );
+    expect(afterSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelValues: { name: "Alice" },
+        submitCount: 1,
+        result,
+      }),
+    );
   });
 
   it("can preserve submit success when afterSubmit fails by policy", async () => {
@@ -2508,9 +2490,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            classifier: { prediction: "ok" },
-          },
+          reports: [readyReport("classifier", { prediction: "ok" })],
         }),
       },
       hooks: {
@@ -2528,21 +2508,20 @@ describe("runtime", () => {
     expect(result.reportStates.classifier?.status).toBe("ready");
     expect(form.state.status).toBe("success");
     expect(form.state.lastResult).toEqual(result);
-    expect(onSubmitError).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      error: afterSubmitError,
-    });
+    expect(onSubmitError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelValues: { name: "Alice" },
+        submitCount: 1,
+        error: afterSubmitError,
+      }),
+    );
   });
 
   it("passes optional backend selection through transport requests", async () => {
     const submit = vi.fn().mockImplementation(async ({ backend }: { backend?: string }) => ({
-      reports: {
-        classifier: { prediction: backend ?? "default" },
-      },
+      reports: [
+        readyReport("classifier", { prediction: backend ?? "default" }, backend ?? "default"),
+      ],
     }));
     const form = createForm({
       schema: {
@@ -2573,11 +2552,11 @@ describe("runtime", () => {
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
         backend: "remote",
-        values: { name: "Alice" },
+        modelValues: { name: "Alice" },
       }),
     );
     expect(result.backend).toBe("remote");
-    expect(result.reports.classifier).toEqual({ prediction: "remote" });
+    expect(reportPayload(result.reports, "classifier")).toEqual({ prediction: "remote" });
   });
 
   it("marks reports as loading while submit is in flight", async () => {
@@ -2592,9 +2571,7 @@ describe("runtime", () => {
       expect(activeForm.state.reportStates.classifier?.status).toBe("loading");
     });
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        classifier: { prediction: "ok" },
-      },
+      reports: [readyReport("classifier", { prediction: "ok" })],
     });
 
     const form = createForm({
@@ -2631,7 +2608,7 @@ describe("runtime", () => {
   });
 
   it("omits inactive fields from submission by default", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -2659,21 +2636,18 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          advanced: false,
-        },
-        serializedValues: {
+        modelValues: {
           advanced: false,
         },
       }),
     );
-    expect(result.values).toEqual({
+    expect(result.modelValues).toEqual({
       advanced: false,
     });
   });
 
   it("can reset inactive fields when they become hidden or disabled", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -2722,21 +2696,18 @@ describe("runtime", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        values: {
-          advanced: false,
-        },
-        serializedValues: {
+        modelValues: {
           advanced: false,
         },
       }),
     );
-    expect(result.values).toEqual({
+    expect(result.modelValues).toEqual({
       advanced: false,
     });
   });
 
   it("allows inactive field behavior to be overridden per field", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const form = createForm({
       schema: {
         fields: [
@@ -2783,11 +2754,7 @@ describe("runtime", () => {
 
     const result = await form.submit();
 
-    expect(result.values).toEqual({
-      advanced: false,
-      note: "keep-me",
-    });
-    expect(result.fieldValues).toEqual({
+    expect(result.modelValues).toEqual({
       advanced: false,
       note: "keep-me",
     });
@@ -2808,9 +2775,7 @@ describe("runtime", () => {
 
           setTimeout(() => {
             resolve({
-              reports: {
-                classifier: { prediction: "late" },
-              },
+              reports: [readyReport("classifier", { prediction: "late" })],
             });
           }, 50);
         }),
@@ -2842,18 +2807,17 @@ describe("runtime", () => {
     await expect(pendingSubmit).rejects.toBeInstanceOf(SubmissionAbortedError);
     expect(form.state.status).toBe("idle");
     expect(form.state.errors.form).toEqual(["Form submission was aborted: user-cancelled"]);
-    expect(onSubmitError).toHaveBeenCalledWith({
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      submitCount: 1,
-      error: expect.any(SubmissionAbortedError),
-    });
+    expect(onSubmitError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelValues: { name: "Alice" },
+        submitCount: 1,
+        error: expect.any(SubmissionAbortedError),
+      }),
+    );
   });
 
   it("does not mark reports as loading when submit receives an already aborted signal", async () => {
-    const submit = vi.fn().mockResolvedValue({ reports: {} });
+    const submit = vi.fn().mockResolvedValue({ reports: [] });
     const abortController = new AbortController();
     const form = createForm({
       schema: {
@@ -2891,14 +2855,14 @@ describe("runtime", () => {
   });
 
   it("does not let stale external abort signals cancel later submissions", async () => {
-    let resolveSecondSubmit: ((value: { reports: Record<string, unknown> }) => void) | undefined;
+    let resolveSecondSubmit: ((value: { reports: unknown[] }) => void) | undefined;
     let startSecondSubmit: (() => void) | undefined;
     const secondSubmitStarted = new Promise<void>((resolve) => {
       startSecondSubmit = resolve;
     });
     const submit = vi
       .fn()
-      .mockResolvedValueOnce({ reports: {} })
+      .mockResolvedValueOnce({ reports: [] })
       .mockImplementationOnce(
         ({ signal }: { signal?: AbortSignal }) =>
           new Promise((resolve, reject) => {
@@ -2911,7 +2875,7 @@ describe("runtime", () => {
               { once: true },
             );
 
-            resolveSecondSubmit = resolve as (value: { reports: Record<string, unknown> }) => void;
+            resolveSecondSubmit = resolve as (value: { reports: unknown[] }) => void;
           }),
       );
     const staleAbortController = new AbortController();
@@ -2936,10 +2900,10 @@ describe("runtime", () => {
     const secondSubmit = form.submit();
     await secondSubmitStarted;
     staleAbortController.abort("late-stale-abort");
-    resolveSecondSubmit?.({ reports: {} });
+    resolveSecondSubmit?.({ reports: [] });
 
     await expect(secondSubmit).resolves.toMatchObject({
-      values: { name: "Alice" },
+      modelValues: { name: "Alice" },
     });
     expect(form.state.status).toBe("success");
     expect(submit).toHaveBeenCalledTimes(2);
@@ -2949,32 +2913,24 @@ describe("runtime", () => {
     const inputSeries = [{ field1: "2026-01-01", field2: 10 }];
     const normalizedSeries = [{ field1: new Date("2026-01-01"), field2: 10 }];
     const serializedSeries = [{ field1: "2026-01-01", field2: 10 }];
-    const beforeSubmit = vi.fn(({ values }: { values: Record<string, unknown> }) => {
-      expect(values).toEqual({ series: normalizedSeries });
-      (values.series as { field1: Date; field2: number }[])[0]!.field2 = 20;
+    const beforeSubmit = vi.fn(({ modelValues }: { modelValues: Record<string, unknown> }) => {
+      expect(modelValues).toEqual({ series: serializedSeries });
+      (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 20;
     });
     const submit = vi
       .fn()
-      .mockImplementation(
-        async ({
-          values,
-          serializedValues,
-        }: {
-          values: Record<string, unknown>;
-          serializedValues: Record<string, unknown>;
-        }) => {
-          expect(values).toEqual({ series: normalizedSeries });
-          expect(serializedValues).toEqual({ series: serializedSeries });
-          (values.series as { field1: Date; field2: number }[])[0]!.field2 = 30;
-          (serializedValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
+      .mockImplementation(async ({ modelValues }: { modelValues: Record<string, unknown> }) => {
+        expect(modelValues).toEqual({ series: serializedSeries });
+        (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
 
-          return { reports: {} };
-        },
-      );
-    const afterSubmit = vi.fn(({ result }: { result: { values: Record<string, unknown> } }) => {
-      expect(result.values).toEqual({ series: normalizedSeries });
-      (result.values.series as { field1: Date; field2: number }[])[0]!.field2 = 50;
-    });
+        return { reports: [] };
+      });
+    const afterSubmit = vi.fn(
+      ({ result }: { result: { modelValues: Record<string, unknown> } }) => {
+        expect(result.modelValues).toEqual({ series: serializedSeries });
+        (result.modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 50;
+      },
+    );
 
     const form = createForm({
       schema: {
@@ -3005,13 +2961,13 @@ describe("runtime", () => {
     expect(afterSubmit).toHaveBeenCalledTimes(1);
     expect(form.getValues()).toEqual({ series: normalizedSeries });
     expect(form.state.values).toEqual({ series: normalizedSeries });
-    expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
-    expect(result.values).toEqual({ series: normalizedSeries });
+    expect(form.state.lastResult?.modelValues).toEqual({ series: serializedSeries });
+    expect(result.modelValues).toEqual({ series: serializedSeries });
 
-    (result.values.series as { field1: Date; field2: number }[])[0]!.field2 = 60;
+    (result.modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 60;
 
     expect(form.getValues()).toEqual({ series: normalizedSeries });
-    expect(form.state.lastResult?.values).toEqual({ series: normalizedSeries });
+    expect(form.state.lastResult?.modelValues).toEqual({ series: serializedSeries });
   });
 
   it("resets field and report state back to initial values", async () => {
@@ -3036,9 +2992,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: { prediction: "low" },
-          },
+          reports: [readyReport("risk", { prediction: "low" })],
         }),
       },
     });
@@ -3076,7 +3030,7 @@ describe("runtime", () => {
       },
       registry: createMlRegistryPack().registry,
       transport: {
-        submit: vi.fn().mockResolvedValue({ reports: {} }),
+        submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
     });
 
@@ -3095,7 +3049,7 @@ describe("runtime", () => {
   });
 
   it("does not let a stale submit overwrite state after reset", async () => {
-    let resolveSubmit: ((value: { reports: Record<string, unknown> }) => void) | undefined;
+    let resolveSubmit: ((value: { reports: unknown[] }) => void) | undefined;
 
     const form = createForm({
       schema: {
@@ -3113,7 +3067,7 @@ describe("runtime", () => {
         submit: vi.fn().mockImplementation(
           () =>
             new Promise((resolve) => {
-              resolveSubmit = resolve as (value: { reports: Record<string, unknown> }) => void;
+              resolveSubmit = resolve as (value: { reports: unknown[] }) => void;
             }),
         ),
       },
@@ -3122,88 +3076,12 @@ describe("runtime", () => {
     form.setValues({ name: "Changed" });
     const pending = form.submit();
     form.reset();
-    resolveSubmit?.({ reports: {} });
+    resolveSubmit?.({ reports: [] });
 
     await expect(pending).rejects.toBeInstanceOf(SubmissionAbortedError);
     expect(form.state.status).toBe("idle");
     expect(form.state.lastResult).toBeNull();
     expect(form.getValues()).toEqual({ name: "Initial" });
-  });
-
-  it("applies incremental field and report stream updates before final result", async () => {
-    let releaseStream: (() => void) | undefined;
-
-    const form = createForm({
-      schema: {
-        fields: [
-          {
-            kind: "text",
-            label: "Name",
-            required: true,
-          },
-        ],
-        reports: [
-          {
-            kind: "classifier",
-            id: "risk",
-            mappedTo: "risk",
-          },
-        ],
-      },
-      registry: createMlRegistryPack().registry,
-      transport: {
-        submit: vi.fn(),
-        async *stream() {
-          yield {
-            type: "field-update",
-            fieldId: "name",
-            value: "Bob",
-          } as const;
-          yield {
-            type: "report-replace",
-            reportId: "risk",
-            payload: {
-              prediction: "streaming",
-            },
-          } as const;
-          await new Promise<void>((resolve) => {
-            releaseStream = resolve;
-          });
-          yield {
-            type: "result",
-            result: {
-              reports: {
-                risk: {
-                  prediction: "final",
-                },
-              },
-            },
-          } as const;
-        },
-      },
-    });
-
-    form.setValues({ name: "Alice" });
-
-    const pending = form.submit();
-    await Promise.resolve();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(form.getValues()).toEqual({ name: "Bob" });
-    expect(form.state.values).toEqual({ name: "Bob" });
-    expect(form.getReport("risk")?.state).toMatchObject({
-      status: "ready",
-      payload: {
-        prediction: "streaming",
-      },
-    });
-
-    releaseStream?.();
-    await pending;
-
-    expect(form.getReport("risk")?.state.payload).toEqual({
-      prediction: "final",
-    });
   });
 
   it("normalizes fetch-backed reports and assigns auto-generated ids", () => {
@@ -3271,11 +3149,11 @@ describe("runtime", () => {
 
     const fetchPromise = ctrl.fetch({
       reportId: ctrl.id,
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: { name: "Alice" },
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3292,7 +3170,7 @@ describe("runtime", () => {
     expect(transportSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         reportId: ctrl.id,
-        values: { name: "Alice" },
+        modelValues: { name: "Alice" },
         signal: expect.any(AbortSignal),
       }),
     );
@@ -3328,11 +3206,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3369,11 +3247,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     const fetchRequest = {
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     };
@@ -3405,17 +3283,17 @@ describe("runtime", () => {
         reports: [{ kind: "shap", id: "shap" }],
       },
       registry,
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
     const ctrl = form.reports[0]!;
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3426,11 +3304,11 @@ describe("runtime", () => {
 
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -3440,16 +3318,12 @@ describe("runtime", () => {
 
   it("executes pipeline without report fetches when reportFetchMode is none", async () => {
     const submitResult = {
-      reports: {
-        risk: {
-          prediction: "low",
-        },
-      },
+      reports: [readyReport("risk", { prediction: "low" })],
       meta: {
         requestId: "abc",
       },
       raw: {
-        outputs: [{ prediction: "low" }],
+        reports: [readyReport("risk", { prediction: "low" })],
       },
     };
     const form = createForm({
@@ -3516,16 +3390,12 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              prediction: "high",
-            },
-          },
+          reports: [readyReport("risk", { prediction: "high" })],
           meta: {
             mappedTo: "predict",
           },
           raw: {
-            outputs: [{ prediction: "high" }],
+            reports: [readyReport("risk", { prediction: "high" })],
           },
         }),
       },
@@ -3542,7 +3412,7 @@ describe("runtime", () => {
       artifactAdapter: {
         derive({ submitResult, reportFetchResults, reportFetchErrors }) {
           return {
-            outputs: (submitResult.raw as { outputs: unknown[] }).outputs,
+            reports: (submitResult.raw as { reports: unknown[] }).reports,
             fetchErrors: reportFetchErrors,
             fetchedReportIds: Object.keys(reportFetchResults),
           };
@@ -3561,7 +3431,7 @@ describe("runtime", () => {
       "shap-error": "report fetch failed",
     });
     expect(result.artifacts).toEqual({
-      outputs: [{ prediction: "high" }],
+      reports: [readyReport("risk", { prediction: "high" })],
       fetchErrors: {
         "shap-error": "report fetch failed",
       },
@@ -3590,7 +3460,7 @@ describe("runtime", () => {
       registry: createMlRegistryPack().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {},
+          reports: [],
           meta: {},
           raw: {},
         }),
@@ -3661,7 +3531,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {},
+          reports: [],
           meta: {},
           raw: {},
         }),
@@ -3675,11 +3545,11 @@ describe("runtime", () => {
 
     const pending = ctrl.fetch({
       reportId: ctrl.id,
-      values: {},
-      fieldValues: {},
-      serializedValues: {},
-      serializedFieldValues: {},
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
       signal: abortController.signal,
@@ -3839,12 +3709,7 @@ describe("runtime", () => {
       registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
-          reports: {
-            risk: {
-              score: 0.91,
-              drivers: ["income", "savings"],
-            },
-          },
+          reports: [readyReport("risk", { score: 0.91, drivers: ["income", "savings"] })],
         }),
       },
     });
@@ -3936,11 +3801,11 @@ describe("runtime", () => {
     const ctrl = form.reports[0]!;
     await ctrl.fetch({
       reportId: ctrl.id,
-      values: { name: "Alice" },
-      fieldValues: { name: "Alice" },
-      serializedValues: { name: "Alice" },
-      serializedFieldValues: { name: "Alice" },
-      reports: {},
+      inputs: [],
+      displayValues: {},
+      modelValues: { name: "Alice" },
+      reports: [],
+      reportContexts: {},
       meta: {},
       raw: {},
     });
@@ -4144,18 +4009,16 @@ describe("runtime", () => {
 
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          fieldValues: expect.objectContaining({
-            "is-red": 1,
-            "is-green": 0,
-            "is-blue": 0,
-          }),
+          inputs: expect.arrayContaining([
+            expect.objectContaining({ fieldId: "is-red", value: 1 }),
+            expect.objectContaining({ fieldId: "is-green", value: 0 }),
+            expect.objectContaining({ fieldId: "is-blue", value: 0 }),
+          ]),
         }),
       );
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          fieldValues: expect.not.objectContaining({
-            color: "red",
-          }),
+          inputs: expect.not.arrayContaining([expect.objectContaining({ fieldId: "color" })]),
         }),
       );
     });
@@ -4207,12 +4070,12 @@ describe("runtime", () => {
 
       expect(submitMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          fieldValues: expect.objectContaining({
-            color: "red",
-            "is-red": 1,
-            "is-green": 0,
-            "is-blue": 0,
-          }),
+          inputs: expect.arrayContaining([
+            expect.objectContaining({ fieldId: "color", value: "red" }),
+            expect.objectContaining({ fieldId: "is-red", value: 1 }),
+            expect.objectContaining({ fieldId: "is-green", value: 0 }),
+            expect.objectContaining({ fieldId: "is-blue", value: 0 }),
+          ]),
         }),
       );
     });
@@ -4361,9 +4224,8 @@ describe("runtime", () => {
 
       expect(submit).toHaveBeenCalledWith(
         expect.objectContaining({
-          values: { is_red: 0, is_green: 1, is_blue: 0 },
-          serializedValues: { is_red: 0, is_green: 1, is_blue: 0 },
-          fieldValues: { color: "green" },
+          modelValues: { is_red: 0, is_green: 1, is_blue: 0 },
+          inputs: [expect.objectContaining({ fieldId: "color", value: "green" })],
         }),
       );
     });
@@ -4393,7 +4255,7 @@ describe("runtime", () => {
 
       expect(submit).toHaveBeenCalledWith(
         expect.objectContaining({
-          values: { "0": 1, "1": 0 },
+          modelValues: { "0": 1, "1": 0 },
         }),
       );
     });
@@ -4439,7 +4301,9 @@ describe("runtime", () => {
         transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
       });
 
-      await expect(form.submit()).rejects.toThrow(/onehot-category.*has no mappedTo/);
+      await expect(form.submit({ backend: "local" })).rejects.toThrow(
+        /onehot-category.*has no mappedTo/,
+      );
     });
 
     it("describes onehot-category as category UI", () => {

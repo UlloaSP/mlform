@@ -105,6 +105,7 @@ export const baseFieldShape = {
   asyncValidationDebounceMs: z.number().int().nonnegative().optional(),
   inactiveFieldPolicy: z.enum(["include", "omit", "reset-on-hide"]).optional(),
   includeInSubmission: z.boolean().optional(),
+  displayKey: z.string().min(1).optional(),
   mappedTo: mappedToSchema,
   valuePath: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]).optional(),
   defaultValue: z.unknown().optional(),
@@ -126,22 +127,6 @@ export const optionSchema = z.union([
     value: z.string(),
   }),
 ]);
-
-export const resolveLegacyOutput = (result: SubmitResult, kind: string): unknown => {
-  const raw = result.raw;
-  if (
-    typeof raw !== "object" ||
-    raw === null ||
-    !("outputs" in raw) ||
-    !Array.isArray((raw as { outputs?: unknown[] }).outputs)
-  ) {
-    return undefined;
-  }
-
-  return (raw as { outputs: Array<Record<string, unknown>> }).outputs.find(
-    (output) => output.type === kind,
-  );
-};
 
 export const makeFieldDescriptor = (
   component: string,

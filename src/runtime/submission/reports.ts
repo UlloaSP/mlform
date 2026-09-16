@@ -2,17 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { EngineError } from "../errors";
-import type {
-  NormalizedReportConfig,
-  PartialReportUpdatePolicy,
-  ReportStateSnapshot,
-  SubmitResult,
-} from "../types";
+import type { NormalizedReportConfig, ReportStateSnapshot, SubmitResult } from "../types";
 
 export type SubmissionReport = {
   readonly id: string;
   readonly config: NormalizedReportConfig;
-  readonly partialUpdatePolicy: PartialReportUpdatePolicy;
   cloneState(state: ReportStateSnapshot): ReportStateSnapshot;
   prepareState(result: SubmitResult): Promise<ReportStateSnapshot>;
   commitState(state: ReportStateSnapshot): void;

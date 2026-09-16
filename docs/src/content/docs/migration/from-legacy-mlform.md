@@ -75,7 +75,7 @@ Minimal capability migration example:
 ```ts
 const transport = {
   async submit(request) {
-    return callBackend(request.serializedValues);
+    return callBackend(request.modelValues);
   },
   capabilities: {
     modes: { submit: true, stream: false, session: false },

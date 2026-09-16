@@ -2,14 +2,13 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { defaultEquality } from "../equality";
-import { resolveMappedReportPayload } from "@/schema";
+import { resolveMappedReportPayload, resolveMappedReportResult } from "@/schema";
 import { createTransportRequestRunner, extractErrorMessage } from "@/transport";
 import { ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
 import type {
   FormHooks,
   NormalizedReportConfig,
-  PartialReportUpdatePolicy,
   ReportController,
   ReportDefinition,
   ReportFetchRequest,
@@ -122,7 +121,6 @@ export type InternalReportController = ReportController & {
   update(result: SubmitResult): Promise<void>;
   markLoading(): void;
   reset(): void;
-  readonly partialUpdatePolicy: PartialReportUpdatePolicy;
 };
 
 export const createReportController = ({
@@ -146,9 +144,6 @@ export const createReportController = ({
     get config() {
       return readonlyConfig;
     },
-    get partialUpdatePolicy() {
-      return definition.partialUpdatePolicy ?? "trust";
-    },
     get canFetch() {
       return definition.fetch !== undefined;
     },
@@ -166,12 +161,18 @@ export const createReportController = ({
       let rawPayload: unknown;
 
       try {
+        const mappedResult = resolveMappedReportResult(readonlyConfig, result);
+        if (mappedResult?.status === "skipped") {
+          return { payload: undefined, error: null, status: "skipped" };
+        }
         rawPayload = definition.resolvePayload
           ? await definition.resolvePayload(readonlyConfig, {
               report: readonlyConfig,
               result,
             })
-          : resolveMappedReportPayload(readonlyConfig, result);
+          : definition.fetch && readonlyConfig.mappedTo === undefined
+            ? undefined
+            : resolveMappedReportPayload(readonlyConfig, result);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         return {

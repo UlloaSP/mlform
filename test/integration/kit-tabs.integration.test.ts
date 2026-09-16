@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
+import { readyReport } from "../report-result";
 import { mountForm } from "@/kit";
 
 const flush = async (): Promise<void> => {
@@ -30,13 +31,13 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
 describe("kit tabs integration", () => {
   it("mounts tabs, switches active content, submits, and renders reports", async () => {
     const submit = vi.fn().mockResolvedValue({
-      reports: {
-        risk: {
+      reports: [
+        readyReport("risk", {
           prediction: "high",
           labels: ["low", "high"],
           probabilities: [0.1, 0.9],
-        },
-      },
+        }),
+      ],
     });
     const container = document.createElement("div");
     document.body.append(container);
@@ -100,7 +101,7 @@ describe("kit tabs integration", () => {
 
     expect(submit).toHaveBeenCalledWith(
       expect.objectContaining({
-        serializedValues: {
+        modelValues: {
           name: "Alice",
           age: 42,
         },
@@ -121,7 +122,7 @@ describe("kit tabs integration", () => {
     document.body.append(container);
 
     const first = mountForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "first", kind: "text", label: "First" }],
       },
@@ -132,7 +133,7 @@ describe("kit tabs integration", () => {
     });
 
     const second = mountForm(container, {
-      transport: { submit: vi.fn().mockResolvedValue({ reports: {} }) },
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
       schema: {
         fields: [{ id: "second", kind: "text", label: "Second" }],
       },
