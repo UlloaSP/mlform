@@ -112,16 +112,20 @@ export abstract class PrimitiveFieldElement extends LitElement {
     }
 
     return html`
-      ${context.description && context.descriptionId
-        ? html`<span id=${context.descriptionId} class="sr-only">${context.description}</span>`
-        : nothing}
-      ${context.errorId
-        ? html`
-            <span id=${context.errorId} class="sr-only" aria-live="polite">
-              ${context.errors.join(" ")}
-            </span>
-          `
-        : nothing}
+      ${
+        context.description && context.descriptionId
+          ? html`<span id=${context.descriptionId} class="sr-only">${context.description}</span>`
+          : nothing
+      }
+      ${
+        context.errorId
+          ? html`
+              <span id=${context.errorId} class="sr-only" aria-live="polite">
+                ${context.errors.join(" ")}
+              </span>
+            `
+          : nothing
+      }
     `;
   }
 

@@ -56,57 +56,59 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
           </button>
         </div>
 
-        ${this.rows.length > 0
-          ? html`
-              <div class="grid">
-                <div class="header" aria-hidden="true">
-                  <div>${toText(field1.label, "field1")}</div>
-                  <div>${toText(field2.label, "field2")}</div>
-                  <div></div>
-                </div>
-                ${this.rows.map((row, index) => {
-                  const field1Id = `${context?.controlId ?? "mlf-series"}-${row.key}-field1`;
-                  const field2Id = `${context?.controlId ?? "mlf-series"}-${row.key}-field2`;
+        ${
+          this.rows.length > 0
+            ? html`
+                <div class="grid">
+                  <div class="header" aria-hidden="true">
+                    <div>${toText(field1.label, "field1")}</div>
+                    <div>${toText(field2.label, "field2")}</div>
+                    <div></div>
+                  </div>
+                  ${this.rows.map((row, index) => {
+                    const field1Id = `${context?.controlId ?? "mlf-series"}-${row.key}-field1`;
+                    const field2Id = `${context?.controlId ?? "mlf-series"}-${row.key}-field2`;
 
-                  return html`
-                    <div class="row">
-                      <div class="cell">
-                        ${this.#renderCell(
-                          field1,
-                          row.field1,
-                          index,
-                          field1Id,
-                          disabled,
-                          readOnly,
-                          1,
-                        )}
+                    return html`
+                      <div class="row">
+                        <div class="cell">
+                          ${this.#renderCell(
+                            field1,
+                            row.field1,
+                            index,
+                            field1Id,
+                            disabled,
+                            readOnly,
+                            1,
+                          )}
+                        </div>
+                        <div class="cell">
+                          ${this.#renderCell(
+                            field2,
+                            row.field2,
+                            index,
+                            field2Id,
+                            disabled,
+                            readOnly,
+                            2,
+                          )}
+                        </div>
+                        <button
+                          class="remove-btn"
+                          type="button"
+                          aria-label=${`${text.seriesRemoveRow} ${index + 1}`}
+                          ?disabled=${locked}
+                          @click=${() => this.#handleRemoveRow(index)}
+                        >
+                          &times;
+                        </button>
                       </div>
-                      <div class="cell">
-                        ${this.#renderCell(
-                          field2,
-                          row.field2,
-                          index,
-                          field2Id,
-                          disabled,
-                          readOnly,
-                          2,
-                        )}
-                      </div>
-                      <button
-                        class="remove-btn"
-                        type="button"
-                        aria-label=${`${text.seriesRemoveRow} ${index + 1}`}
-                        ?disabled=${locked}
-                        @click=${() => this.#handleRemoveRow(index)}
-                      >
-                        &times;
-                      </button>
-                    </div>
-                  `;
-                })}
-              </div>
-            `
-          : html`<div class="empty">${text.seriesEmpty}</div>`}
+                    `;
+                  })}
+                </div>
+              `
+            : html`<div class="empty">${text.seriesEmpty}</div>`
+        }
       </div>
       ${this.renderAssistiveText()}
     `;

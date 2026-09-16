@@ -84,13 +84,14 @@ export class KitWizardElement extends LitElement {
             <mlf-kit-step-indicator
               .current=${wizard.stepIndex + 1}
               .total=${wizard.stepCount}
-              .label=${this.text.stepLabel(wizard.stepIndex + 1, wizard.stepCount).split(" ")[0] ??
-              "Step"}
+              .label=${
+                this.text.stepLabel(wizard.stepIndex + 1, wizard.stepCount).split(" ")[0] ?? "Step"
+              }
             ></mlf-kit-step-indicator>
             <h1 class="step-title">${step.title}</h1>
-            ${step.description
-              ? html`<p class="step-description">${step.description}</p>`
-              : nothing}
+            ${
+              step.description ? html`<p class="step-description">${step.description}</p>` : nothing
+            }
           </header>
 
           <div class="pane-body">

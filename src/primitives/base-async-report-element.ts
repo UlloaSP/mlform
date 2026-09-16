@@ -178,8 +178,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
           role="region"
           aria-label=${text.detailsAriaLabel}
         >
-${serializeReportTransportResult(this.transportResult)}</pre
-        >`;
+${serializeReportTransportResult(this.transportResult)}</pre>`;
       default:
         return nothing;
     }

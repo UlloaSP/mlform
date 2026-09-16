@@ -38,50 +38,58 @@ export const renderLayoutNode = ({
       const open = snapshot.disclosure?.openSectionIds.includes(node.id) ?? true;
       return html`
         <section class=${sectionClass} data-section-id=${node.id}>
-          ${node.title || node.description
-            ? html`
-                <button
-                  type="button"
-                  class=${sectionCopyClass}
-                  aria-expanded=${String(open)}
-                  @click=${() => view?.toggleSection(node.id)}
-                >
-                  <span class="section-label">
-                    ${node.title
-                      ? html`<span class=${sectionTitleClass}>${node.title}</span>`
-                      : nothing}
-                    ${node.description
-                      ? html`<span class=${sectionDescriptionClass}>${node.description}</span>`
-                      : nothing}
-                  </span>
-                  <span class="section-toggle-icon" aria-hidden="true">${open ? "−" : "+"}</span>
-                </button>
-              `
-            : nothing}
-          ${open
-            ? html`
-                <div class=${childrenClass}>
-                  ${repeat(
-                    node.children,
-                    (_, index) => `${node.id}-${index}`,
-                    (child) =>
-                      renderLayoutNode({
-                        node: child,
-                        view,
-                        snapshot,
-                        registry,
-                        primitiveText,
-                        sectionClass,
-                        sectionCopyClass,
-                        sectionTitleClass,
-                        sectionDescriptionClass,
-                        childrenClass,
-                        groupBaseClass,
-                      }),
-                  )}
-                </div>
-              `
-            : nothing}
+          ${
+            node.title || node.description
+              ? html`
+                  <button
+                    type="button"
+                    class=${sectionCopyClass}
+                    aria-expanded=${String(open)}
+                    @click=${() => view?.toggleSection(node.id)}
+                  >
+                    <span class="section-label">
+                      ${
+                        node.title
+                          ? html`<span class=${sectionTitleClass}>${node.title}</span>`
+                          : nothing
+                      }
+                      ${
+                        node.description
+                          ? html`<span class=${sectionDescriptionClass}>${node.description}</span>`
+                          : nothing
+                      }
+                    </span>
+                    <span class="section-toggle-icon" aria-hidden="true">${open ? "−" : "+"}</span>
+                  </button>
+                `
+              : nothing
+          }
+          ${
+            open
+              ? html`
+                  <div class=${childrenClass}>
+                    ${repeat(
+                      node.children,
+                      (_, index) => `${node.id}-${index}`,
+                      (child) =>
+                        renderLayoutNode({
+                          node: child,
+                          view,
+                          snapshot,
+                          registry,
+                          primitiveText,
+                          sectionClass,
+                          sectionCopyClass,
+                          sectionTitleClass,
+                          sectionDescriptionClass,
+                          childrenClass,
+                          groupBaseClass,
+                        }),
+                    )}
+                  </div>
+                `
+              : nothing
+          }
         </section>
       `;
     }

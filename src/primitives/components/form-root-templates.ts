@@ -120,30 +120,32 @@ export const renderStackedLayout = (options: {
       </div>
     </section>
 
-    ${options.showReports
-      ? html`
-          <aside class="panel report-pane" part="report-pane">
-            <header class="pane-header">
-              <div class="pane-copy">
-                <p class="eyebrow">${options.text.reportEyebrow}</p>
-                <h2 class="pane-title">${options.reportsLabel}</h2>
-              </div>
-              <span class="status">${options.reportsToRender.length}</span>
-            </header>
+    ${
+      options.showReports
+        ? html`
+            <aside class="panel report-pane" part="report-pane">
+              <header class="pane-header">
+                <div class="pane-copy">
+                  <p class="eyebrow">${options.text.reportEyebrow}</p>
+                  <h2 class="pane-title">${options.reportsLabel}</h2>
+                </div>
+                <span class="status">${options.reportsToRender.length}</span>
+              </header>
 
-            <div class="pane-body">
-              ${renderReports(
-                options.reportsToRender,
-                options.registry,
-                options.text,
-                options.reportTransport,
-                options.reportFetchMode,
-                options.form.state.lastResult ?? null,
-              )}
-            </div>
-          </aside>
-        `
-      : nothing}
+              <div class="pane-body">
+                ${renderReports(
+                  options.reportsToRender,
+                  options.registry,
+                  options.text,
+                  options.reportTransport,
+                  options.reportFetchMode,
+                  options.form.state.lastResult ?? null,
+                )}
+              </div>
+            </aside>
+          `
+        : nothing
+    }
   </div>
 `;
 
@@ -202,36 +204,40 @@ export const renderSplitLayout = (options: {
         </div>
       </section>
 
-      ${options.showReports
-        ? html`
-            <section class="right-section" part="report-pane">
-              <div class="results-area scroll-y">
-                <header class="sticky-header">
-                  <h2>${options.reportsLabel}</h2>
-                  <span class="sticky-meta">${options.reportsToRender.length}</span>
-                </header>
+      ${
+        options.showReports
+          ? html`
+              <section class="right-section" part="report-pane">
+                <div class="results-area scroll-y">
+                  <header class="sticky-header">
+                    <h2>${options.reportsLabel}</h2>
+                    <span class="sticky-meta">${options.reportsToRender.length}</span>
+                  </header>
 
-                <div class="split-content">
-                  ${options.reportsToRender.length > 0
-                    ? renderReports(
-                        options.reportsToRender,
-                        options.registry,
-                        options.text,
-                        options.reportTransport,
-                        options.reportFetchMode,
-                        options.form.state.lastResult ?? null,
-                      )
-                    : html`
-                        <div class="empty-report-state">
-                          <p class="empty-report-title">${options.text.reportsEmptyTitle}</p>
-                          <p class="empty-report-copy">${options.text.reportsEmptyBody}</p>
-                        </div>
-                      `}
+                  <div class="split-content">
+                    ${
+                      options.reportsToRender.length > 0
+                        ? renderReports(
+                            options.reportsToRender,
+                            options.registry,
+                            options.text,
+                            options.reportTransport,
+                            options.reportFetchMode,
+                            options.form.state.lastResult ?? null,
+                          )
+                        : html`
+                            <div class="empty-report-state">
+                              <p class="empty-report-title">${options.text.reportsEmptyTitle}</p>
+                              <p class="empty-report-copy">${options.text.reportsEmptyBody}</p>
+                            </div>
+                          `
+                    }
+                  </div>
                 </div>
-              </div>
-            </section>
-          `
-        : nothing}
+              </section>
+            `
+          : nothing
+      }
     </div>
   </div>
 `;

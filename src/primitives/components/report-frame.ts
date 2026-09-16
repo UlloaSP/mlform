@@ -154,22 +154,26 @@ export class PrimitiveReportFrameElement extends LitElement {
         <div class="header">
           <div class="copy">
             <p class="label">${toText(props.label, this.controller?.config.label ?? "")}</p>
-            ${props.description
-              ? html`<p class="description">${toText(props.description)}</p>`
-              : html``}
+            ${
+              props.description
+                ? html`<p class="description">${toText(props.description)}</p>`
+                : html``
+            }
           </div>
           <span class="meta">${this.text.reportStatusLabel(state.status)}</span>
         </div>
 
-        ${component
-          ? this.#renderResolvedRenderer(component)
-          : html`
-              <mlf-unsupported-component
-                role="report"
-                component=${descriptor.component}
-                .text=${this.text}
-              ></mlf-unsupported-component>
-            `}
+        ${
+          component
+            ? this.#renderResolvedRenderer(component)
+            : html`
+                <mlf-unsupported-component
+                  role="report"
+                  component=${descriptor.component}
+                  .text=${this.text}
+                ></mlf-unsupported-component>
+              `
+        }
       </section>
     `;
   }
