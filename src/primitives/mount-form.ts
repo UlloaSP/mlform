@@ -38,7 +38,7 @@ const resolvePrimitiveDescriptorRegistry = (
   return registry?.clone() ?? createPrimitiveDescriptorRegistry();
 };
 
-export const mountForm = (
+export const mountPrimitiveForm = (
   container: HTMLElement,
   form: PrimitiveFormController,
   options: MountFormOptions = {},
@@ -120,6 +120,6 @@ export const mountForm = (
   });
 };
 
-export const unmountForm = (mounted: MountedForm): void => {
+export const unmountPrimitiveForm = (mounted: MountedForm): void => {
   mounted.unmount();
 };

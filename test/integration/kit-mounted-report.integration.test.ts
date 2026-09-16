@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { readyReport } from "../report-result";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { defineReportKind, mountForm, registerDefinedReportKind } from "@/kit";
 import { resolveMappedReportPayload } from "@/schema";
 
@@ -25,7 +25,7 @@ const getShadow = (element: Element | null): ShadowRoot => {
 describe("kit mounted report", () => {
   it("renders trusted DOM reports and cleans them up", async () => {
     const cleanup = vi.fn();
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
 
     registerDefinedReportKind(
       pack.registry,
@@ -94,7 +94,7 @@ describe("kit mounted report", () => {
   });
 
   it("isolates mount render failures", async () => {
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
 
     registerDefinedReportKind(
       pack.registry,

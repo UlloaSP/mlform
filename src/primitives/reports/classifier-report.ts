@@ -141,24 +141,26 @@ export class PrimitiveClassifierReportElement extends PrimitiveAsyncReportElemen
         id=${context?.regionId ?? ""}
         aria-label=${context?.label ?? text.classifierAriaLabel}
       >
-        ${showClassProbabilities && rows.length > 0
-          ? html`
-              <div class="rows">
-                ${rows.map((row) => {
-                  const width = `${Math.max(0, Math.min(row.value, 1)) * 100}%`;
-                  return html`
-                    <div class="item">
-                      <div class="label">${row.label}</div>
-                      <div class="bar" style=${`--w: ${width};`} aria-hidden="true"></div>
-                      <div class="pct">${(row.value * 100).toFixed(1)}%</div>
-                    </div>
-                  `;
-                })}
-              </div>
-            `
-          : html`
-              <div class="compact">${toText(prediction, text.classifierUnknownPrediction)}</div>
-            `}
+        ${
+          showClassProbabilities && rows.length > 0
+            ? html`
+                <div class="rows">
+                  ${rows.map((row) => {
+                    const width = `${Math.max(0, Math.min(row.value, 1)) * 100}%`;
+                    return html`
+                      <div class="item">
+                        <div class="label">${row.label}</div>
+                        <div class="bar" style=${`--w: ${width};`} aria-hidden="true"></div>
+                        <div class="pct">${(row.value * 100).toFixed(1)}%</div>
+                      </div>
+                    `;
+                  })}
+                </div>
+              `
+            : html`
+                <div class="compact">${toText(prediction, text.classifierUnknownPrediction)}</div>
+              `
+        }
         ${this.renderTransportPanel(text)}
       </section>
     `;

@@ -15,7 +15,7 @@ const html = `
 
 const appModule = `
   import * as z from "zod";
-  import { createMlRegistryPack } from "/src/builtins/index.ts";
+  import { createBuiltinMlRegistry } from "/src/builtins/index.ts";
   import * as kit from "/src/kit/index.ts";
   import { executeFormPipeline, executeMultiBackendPipeline } from "/src/runtime/index.ts";
   import { resolveMappedReportPayload } from "/src/schema/index.ts";
@@ -25,7 +25,10 @@ const appModule = `
     z.number(),
     z.record(z.string(), z.union([z.string(), z.number()]).nullish()),
   ]).optional();
-  const pack = createMlRegistryPack();
+  const pack = {
+    registry: createBuiltinMlRegistry(),
+    descriptorRegistry: kit.createBuiltinDescriptorRegistry(),
+  };
   const state = { fetchRequest: null };
 
   kit.registerDefinedFieldKind(

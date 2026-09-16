@@ -24,10 +24,9 @@ import type {
 } from "./transport";
 import type { FieldController } from "./field";
 import type { ReportController } from "./report";
+import type { FormStatus } from "./status";
 
 type MaybePromise<T> = T | PromiseLike<T>;
-
-export type FormStatus = "idle" | "editing" | "validating" | "submitting" | "success" | "error";
 
 export interface FormValidationResult {
   valid: boolean;
@@ -145,3 +144,4 @@ export interface FormController {
 }
 
 export type { FieldConfig, FormSchema, Registry, ReportConfig };
+export type { FormStatus } from "./status";

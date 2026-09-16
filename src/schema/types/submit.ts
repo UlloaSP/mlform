@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { MappedTo } from "../mapped-to";
-import type { MappedToTarget } from "../mapped-to";
+import type { MappedTo, MappedToTarget } from "./mapping";
 
 export interface SubmissionInputRecord {
   fieldId: string;

@@ -6,7 +6,7 @@ type MaybePromise<T> = T | PromiseLike<T>;
 import type { Registry } from "@/schema";
 import type { SubmissionInputRecord } from "@/schema";
 import type { FieldHandle } from "./field";
-import type { FormStatus } from "./form";
+import type { FormStatus } from "./status";
 
 export interface RuntimeBehaviorValueChangeEvent {
   fieldId: string;

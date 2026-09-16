@@ -17,6 +17,7 @@ import type {
   FieldRenderSpecContext,
 } from "@/primitives";
 import type { ZodType } from "zod";
+import type { MlformFieldKind } from "../plugin";
 
 export interface DeclarativeFieldKind<TConfig extends FieldConfig = FieldConfig, TValue = unknown> {
   kind: string;
@@ -42,7 +43,7 @@ const resolveHints = <TConfig extends FieldConfig, TValue>(
   return typeof hints === "function" ? (hints(context) ?? {}) : hints;
 };
 
-export type DefinedFieldKind<TConfig extends FieldConfig, TValue> = {
+export type DefinedFieldKind<TConfig extends FieldConfig, TValue> = MlformFieldKind & {
   kind: string;
   schema: import("zod").ZodType<TConfig>;
   getDefaultValue?: (config: TConfig) => TValue;
@@ -123,6 +124,7 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
   });
 
   return {
+    category: "field",
     kind: kind.kind,
     schema: kind.schema,
     getDefaultValue: kind.value?.default,
@@ -134,5 +136,9 @@ export const defineFieldKind = <TConfig extends FieldConfig, TValue>(
     describe,
     definition,
     presenter,
+    register(registry, descriptorRegistry) {
+      registry.registerField(definition);
+      descriptorRegistry.registerField(presenter);
+    },
   };
 };

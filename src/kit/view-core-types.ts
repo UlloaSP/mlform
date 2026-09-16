@@ -25,6 +25,7 @@ import type { LayoutReferences } from "./layout-utils";
 import type { FormLayoutConfig, ResolvedFormLayout, ResolvedFormLayoutNode } from "./layout-types";
 import type { PanelState } from "./panel-nav";
 import type { MountedReportFetchMode } from "./mount-types";
+import type { MlformPlugin } from "./plugin";
 
 export interface WizardState {
   stepIndex: number;
@@ -97,6 +98,7 @@ export interface CreateFormViewOptions {
   registry?: Registry;
   descriptorRegistry?: PrimitiveDescriptorRegistry;
   behaviors?: RuntimeBehavior[];
+  plugins?: readonly MlformPlugin[];
   initialValues?: Record<string, unknown>;
   validators?: FormValidator[];
   hooks?: FormHooks;

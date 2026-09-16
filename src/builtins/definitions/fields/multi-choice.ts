@@ -3,13 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import {
-  baseFieldShape,
-  makeFieldDescriptor,
-  optionSchema,
-  type BuiltinFieldDefinition,
-} from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, optionSchema, type BuiltinFieldDefinition } from "../shared";
 
 type MultiChoiceOption = string | { label: string; value: string };
 
@@ -66,18 +61,5 @@ export const multiChoiceFieldDefinition: BuiltinFieldDefinition<MultiChoiceField
 
       const invalid = value.filter((v) => !allowedValues.includes(v));
       return invalid.length > 0 ? [builtinValidationMessages.categoryOptionMismatch] : [];
-    },
-    describe(config, context) {
-      return makeFieldDescriptor(
-        "multi-choice-field",
-        config as NormalizedFieldConfig<MultiChoiceFieldConfig>,
-        {
-          value: context.state.value,
-          options: config.options,
-          layout: config.layout ?? "vertical",
-          state: context.state.status,
-          errors: context.state.errors,
-        },
-      );
     },
   };

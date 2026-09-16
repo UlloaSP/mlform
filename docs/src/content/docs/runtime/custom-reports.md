@@ -7,8 +7,7 @@ Use `defineReportKind` for the normal extension path. It lets you resolve payloa
 
 ```ts
 import { z } from "zod";
-import { createMlRegistryPack } from "mlform/builtins";
-import { defineReportKind, registerDefinedReportKind } from "mlform/kit";
+import { defineMlformPlugin, defineReportKind, mountForm } from "mlform/kit";
 import { resolveMappedReportPayload } from "mlform/schema";
 
 const riskSummaryReport = defineReportKind({
@@ -37,8 +36,8 @@ const riskSummaryReport = defineReportKind({
   },
 });
 
-const pack = createMlRegistryPack();
-registerDefinedReportKind(pack.registry, pack.descriptorRegistry, riskSummaryReport);
+const domainPlugin = defineMlformPlugin({ reports: [riskSummaryReport] });
+mountForm(container, { schema, transport, plugins: [domainPlugin] });
 ```
 
 `render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.

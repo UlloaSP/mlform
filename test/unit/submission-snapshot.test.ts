@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm, createSubmissionSnapshot } from "@/runtime";
 import { createReportFetchRequest } from "@/schema";
 
@@ -29,7 +29,7 @@ describe("submission snapshot", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -72,7 +72,7 @@ describe("submission snapshot", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -141,7 +141,7 @@ describe("submission snapshot", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
@@ -196,7 +196,7 @@ describe("submission snapshot", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 

@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import {
   createForm,
   createMultiBackendSubmissionSnapshot,
@@ -21,7 +21,7 @@ const probeReportSchema = z.object({
 });
 
 const createProbePack = (fetchReport = vi.fn()) => {
-  const pack = createMlRegistryPack();
+  const pack = createBuiltinTestKit();
   pack.registry.registerReport({
     kind: "probe",
     schema: probeReportSchema,
@@ -33,7 +33,7 @@ const createProbePack = (fetchReport = vi.fn()) => {
 describe("multi-backend runtime pipeline", () => {
   it("creates per-backend snapshots for fields mapped to different model keys", () => {
     const form = createForm({
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn() },
       schema: {
         fields: [

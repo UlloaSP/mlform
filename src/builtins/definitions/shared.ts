@@ -8,12 +8,9 @@ import type {
   DeclarativeFieldCondition,
   FieldConfig,
   FieldDefinition,
-  NormalizedFieldConfig,
   ReportConfig,
   ReportDefinition,
-  SubmitResult,
 } from "@/schema";
-import type { FieldDescriptor, ReportDescriptor } from "@/primitives";
 
 export const uiSchema = z.record(z.string(), z.unknown()).optional();
 
@@ -128,47 +125,13 @@ export const optionSchema = z.union([
   }),
 ]);
 
-export const makeFieldDescriptor = (
-  component: string,
-  config: NormalizedFieldConfig,
-  valueExtras: Record<string, unknown>,
-) => ({
-  component,
-  props: {
-    id: config.id,
-    kind: config.kind,
-    label: config.label,
-    description: config.description ?? "",
-    showDescriptionInline: Boolean(config.showDescriptionInline),
-    required: Boolean(config.required),
-    disabled: Boolean(config.disabled),
-    ...valueExtras,
-    ...config.ui,
-  },
-});
-
 export type BuiltinFieldConfig = BaseFieldConfig;
 export type BuiltinReportConfig = BaseReportConfig;
 
 export type BuiltinFieldDefinition<
   TConfig extends FieldConfig = FieldConfig,
   TValue = unknown,
-> = FieldDefinition<TConfig, TValue> & {
-  describe: (
-    config: NormalizedFieldConfig<TConfig>,
-    context: { fieldId: string; state: import("@/schema").FieldStateSnapshot },
-  ) => FieldDescriptor;
-};
+> = FieldDefinition<TConfig, TValue>;
 
 export type BuiltinReportDefinition<TConfig extends ReportConfig = ReportConfig> =
-  ReportDefinition<TConfig> & {
-    describe: (
-      config: import("@/schema").NormalizedReportConfig<TConfig>,
-      context: {
-        reportId: string;
-        state: import("@/schema").ReportStateSnapshot;
-        payload: unknown;
-        result: SubmitResult | null;
-      },
-    ) => ReportDescriptor | null;
-  };
+  ReportDefinition<TConfig>;

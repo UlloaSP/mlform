@@ -2,13 +2,13 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
-import { mountForm as mountPrimitiveForm } from "@/primitives";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
+import { mountPrimitiveForm } from "@/primitives";
 import { createForm } from "@/runtime";
 
 const mountForm: typeof mountPrimitiveForm = (container, form, options) =>
   mountPrimitiveForm(container, form, {
-    descriptorRegistry: createMlRegistryPack().descriptorRegistry,
+    descriptorRegistry: createBuiltinTestKit().descriptorRegistry,
     ...options,
   });
 
@@ -32,7 +32,7 @@ describe("number and boolean regressions", () => {
       schema: {
         fields: [{ kind: "number", id: "epochs", label: "Epochs", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       initialValues: { epochs: "42" },
       transport: { submit: vi.fn() },
     });
@@ -58,7 +58,7 @@ describe("number and boolean regressions", () => {
       schema: {
         fields: [{ kind: "number", id: "epochs", label: "Epochs", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn() },
     });
     const container = document.createElement("div");
@@ -94,7 +94,7 @@ describe("number and boolean regressions", () => {
           { kind: "number", id: "second", label: "Second", required: true },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn() },
     });
     const container = document.createElement("div");
@@ -138,7 +138,7 @@ describe("number and boolean regressions", () => {
       schema: {
         fields: [{ kind: "boolean", id: "enabled", label: "Enabled", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       initialValues: { enabled: false },
       transport: { submit: vi.fn() },
     });
@@ -154,7 +154,7 @@ describe("number and boolean regressions", () => {
       schema: {
         fields: [{ kind: "boolean", id: "enabled", label: "Enabled" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn() },
     });
     const container = document.createElement("div");
@@ -180,7 +180,7 @@ describe("number and boolean regressions", () => {
       schema: {
         fields: [{ kind: "boolean", id: "enabled", label: "Enabled", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn() },
     });
     const container = document.createElement("div");

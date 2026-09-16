@@ -126,37 +126,43 @@ export class PrimitiveFieldFrameElement extends LitElement {
           </button>
         </div>
 
-        ${description
-          ? html`
-              <div id=${detailsId} class="description ${descriptionVisible ? "show" : ""}">
-                ${description}
-              </div>
-            `
-          : html``}
+        ${
+          description
+            ? html`
+                <div id=${detailsId} class="description ${descriptionVisible ? "show" : ""}">
+                  ${description}
+                </div>
+              `
+            : html``
+        }
 
         <div class="control-slot">
-          ${component
-            ? this.#renderResolvedRenderer(component, controlId, errorId)
-            : html`
-                <mlf-unsupported-component
-                  role="field"
-                  component=${descriptor.component}
-                  .text=${this.text}
-                ></mlf-unsupported-component>
-              `}
+          ${
+            component
+              ? this.#renderResolvedRenderer(component, controlId, errorId)
+              : html`
+                  <mlf-unsupported-component
+                    role="field"
+                    component=${descriptor.component}
+                    .text=${this.text}
+                  ></mlf-unsupported-component>
+                `
+          }
         </div>
 
-        ${feedback
-          ? html`
-              <div
-                class="feedback ${feedback.tone}"
-                role=${feedback.tone === "error" ? "alert" : "status"}
-                aria-live="polite"
-              >
-                ${feedback.message}
-              </div>
-            `
-          : html``}
+        ${
+          feedback
+            ? html`
+                <div
+                  class="feedback ${feedback.tone}"
+                  role=${feedback.tone === "error" ? "alert" : "status"}
+                  aria-live="polite"
+                >
+                  ${feedback.message}
+                </div>
+              `
+            : html``
+        }
       </section>
     `;
   }

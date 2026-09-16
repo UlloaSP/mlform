@@ -3,8 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type RatingFieldConfig = BaseFieldConfig & {
   kind: "rating";
@@ -54,15 +54,5 @@ export const ratingFieldDefinition: BuiltinFieldDefinition<RatingFieldConfig, nu
     }
 
     return errors;
-  },
-  describe(config, context) {
-    return makeFieldDescriptor("rating-field", config as NormalizedFieldConfig<RatingFieldConfig>, {
-      value: context.state.value,
-      min: config.min ?? 1,
-      max: config.max,
-      step: config.step ?? 1,
-      state: context.state.status,
-      errors: context.state.errors,
-    });
   },
 };

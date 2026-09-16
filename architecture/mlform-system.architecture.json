@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "MLForm — Current Architecture",
+    "locale": "en",
+    "output": "mlform-system.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1390, 758],
+    "views": [
+      {
+        "id": "application-path",
+        "label": "Application path",
+        "focus": ["consumer", "kit", "runtime", "transport", "backend"],
+        "note": "The integrated API composes rendering, runtime state and backend transport."
+      },
+      {
+        "id": "extension-path",
+        "label": "Extension path",
+        "focus": ["domain_plugins", "kit", "builtins", "primitives", "schema"],
+        "note": "MlformPlugin coordinates custom field, report and behavior registration."
+      },
+      {
+        "id": "headless-path",
+        "label": "Headless path",
+        "focus": ["consumer", "runtime", "transport", "schema"],
+        "note": "Consumers can use runtime directly when they own rendering and composition."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "consumer",
+      "type": "external",
+      "label": "Consumer application",
+      "sublabel": "Integrated UI or headless",
+      "pos": [20, 305],
+      "size": [180, 74]
+    },
+    {
+      "id": "kit",
+      "type": "frontend",
+      "label": "mlform = mlform/kit",
+      "sublabel": "Public facade · composition root",
+      "tag": "exact export alias",
+      "pos": [280, 302],
+      "size": [195, 80]
+    },
+    {
+      "id": "runtime",
+      "type": "backend",
+      "label": "mlform/runtime",
+      "sublabel": "State · validation · pipeline",
+      "tag": "headless core",
+      "pos": [560, 302],
+      "size": [195, 80]
+    },
+    {
+      "id": "transport",
+      "type": "backend",
+      "label": "mlform/transport",
+      "sublabel": "Adapters · fanout · errors",
+      "pos": [840, 305],
+      "size": [190, 74]
+    },
+    {
+      "id": "backend",
+      "type": "external",
+      "label": "Model backend",
+      "sublabel": "Prediction · scoring · reports",
+      "pos": [1115, 305],
+      "size": [190, 74]
+    },
+    {
+      "id": "domain_plugins",
+      "type": "external",
+      "label": "Domain plugins",
+      "sublabel": "Fields · reports · behaviors",
+      "pos": [20, 555],
+      "size": [180, 74]
+    },
+    {
+      "id": "builtins",
+      "type": "backend",
+      "label": "mlform/builtins",
+      "sublabel": "Included definitions",
+      "pos": [280, 555],
+      "size": [195, 74]
+    },
+    {
+      "id": "schema",
+      "type": "backend",
+      "label": "mlform/schema",
+      "sublabel": "Canonical contracts · registry",
+      "pos": [560, 555],
+      "size": [195, 74]
+    },
+    {
+      "id": "design",
+      "type": "frontend",
+      "label": "mlform/design",
+      "sublabel": "Themes · recipes · tokens",
+      "pos": [280, 55],
+      "size": [195, 74]
+    },
+    {
+      "id": "primitives",
+      "type": "frontend",
+      "label": "mlform/primitives",
+      "sublabel": "Renderers · Web Components",
+      "pos": [560, 55],
+      "size": [195, 74]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "MLForm package — enforced dependency DAG",
+      "wraps": ["kit", "runtime", "transport", "builtins", "schema", "design", "primitives"],
+      "pad": 20
+    }
+  ],
+  "connections": [
+    {
+      "id": "consumer_to_kit",
+      "from": "consumer",
+      "to": "kit",
+      "label": "integrated API",
+      "variant": "emphasis"
+    },
+    {
+      "id": "kit_to_runtime",
+      "from": "kit",
+      "to": "runtime",
+      "label": "creates controllers",
+      "labelAt": [518, 396],
+      "variant": "emphasis"
+    },
+    {
+      "id": "runtime_to_transport",
+      "from": "runtime",
+      "to": "transport",
+      "label": "Transport port",
+      "variant": "emphasis"
+    },
+    {
+      "id": "transport_to_backend",
+      "from": "transport",
+      "to": "backend",
+      "label": "backend I/O",
+      "variant": "emphasis"
+    },
+    {
+      "id": "plugins_to_kit",
+      "from": "domain_plugins",
+      "to": "kit",
+      "label": "plugins[]",
+      "variant": "dashed"
+    },
+    {
+      "id": "kit_to_builtins",
+      "from": "kit",
+      "to": "builtins",
+      "label": "headless definitions",
+      "labelAt": [378, 396]
+    },
+    { "id": "kit_to_primitives", "from": "kit", "to": "primitives", "label": "mounts renderers" },
+    { "id": "kit_to_design", "from": "kit", "to": "design", "label": "attaches design system" },
+    {
+      "id": "runtime_to_schema",
+      "from": "runtime",
+      "to": "schema",
+      "label": "normalized contracts",
+      "labelAt": [658, 396]
+    },
+    {
+      "id": "transport_to_schema",
+      "from": "transport",
+      "to": "schema",
+      "label": "submission types"
+    },
+    {
+      "id": "builtins_to_schema",
+      "from": "builtins",
+      "to": "schema",
+      "label": "registers definitions",
+      "labelAt": [518, 647]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Public surfaces",
+      "items": [
+        "Root facade plus seven stable layer roots",
+        "mlform and mlform/kit expose the same API",
+        "runtime remains independently usable"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Enforced seams",
+      "items": [
+        "MlformPlugin coordinates extensions",
+        "builtins stays headless; kit owns presenters",
+        "TypeScript tests enforce the dependency DAG",
+        "Packed consumers verify the facade and all seven layer roots"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Compatibility horizon",
+      "items": ["Plugin versioning and compatibility policy are not formalized"]
+    }
+  ]
+}

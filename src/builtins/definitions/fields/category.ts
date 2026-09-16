@@ -3,13 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import {
-  baseFieldShape,
-  makeFieldDescriptor,
-  optionSchema,
-  type BuiltinFieldDefinition,
-} from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, optionSchema, type BuiltinFieldDefinition } from "../shared";
 
 type CategoryOption = string | { label: string; value: string };
 
@@ -52,17 +47,5 @@ export const categoryFieldDefinition: BuiltinFieldDefinition<CategoryFieldConfig
     );
 
     return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
-  },
-  describe(config, context) {
-    return makeFieldDescriptor(
-      "category-field",
-      config as NormalizedFieldConfig<CategoryFieldConfig>,
-      {
-        value: context.state.value,
-        options: config.options,
-        state: context.state.status,
-        errors: context.state.errors,
-      },
-    );
   },
 };

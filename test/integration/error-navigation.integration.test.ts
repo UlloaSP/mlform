@@ -3,9 +3,9 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import { mountForm as mountKitForm } from "@/kit";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm } from "@/runtime";
-import { mountForm } from "@/primitives";
+import { mountPrimitiveForm } from "@/primitives";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -35,12 +35,12 @@ describe("error navigation", () => {
       schema: {
         fields: [{ id: "name", kind: "text", label: "Name", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit: vi.fn() },
     });
     const container = document.createElement("div");
     document.body.append(container);
-    const mounted = mountForm(container, form);
+    const mounted = mountPrimitiveForm(container, form);
 
     await flush();
     const submitHost = getShadow(mounted.host).querySelector("mlf-submit-button");

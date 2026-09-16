@@ -2,10 +2,12 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
+export { createBuiltinDescriptorRegistry } from "./builtin-presenters";
 export { collectLayoutReferences, flattenLayoutNodes, walkLayoutNodes } from "./layout-utils";
 export { mountForm, unmountForm } from "./mount-form";
 export { createFormView } from "./view";
 export { defineFieldKind, defineReportKind } from "./kinds";
+export { defineMlformPlugin } from "./plugin";
 export { registerDefinedFieldKind, registerDefinedReportKind } from "./kinds";
 export type {
   DeclarativeFieldKind,
@@ -17,6 +19,7 @@ export type {
   ReportRenderSpec,
   ReportRenderSpecContext,
 } from "./kinds";
+export type { MlformFieldKind, MlformPlugin, MlformReportKind } from "./plugin";
 export type {
   CreateFormViewOptions,
   DisclosureState,

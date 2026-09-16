@@ -200,52 +200,58 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
         id=${context?.regionId ?? ""}
         aria-label=${context?.label ?? text.regressorAriaLabel}
       >
-        ${values.length > 0
-          ? values.map(
-              (value) => html`
-                <div class="item">
-                  <div class="value">${formatValue(value, precision, unit)}</div>
+        ${
+          values.length > 0
+            ? values.map(
+                (value) => html`
+                  <div class="item">
+                    <div class="value">${formatValue(value, precision, unit)}</div>
 
-                  ${interval
-                    ? html`
-                        <div
-                          class="bar-wrapper"
-                          style=${`background: ${buildGradient(interval[0], interval[1])};`}
-                        >
-                          <div
-                            class="limit-wrapper"
-                            style=${`left: ${clampPercent(interval[0], interval[0], interval[1])}%;`}
-                          >
-                            <div class="limit-line"></div>
-                            <div class="limit-label">
-                              ${formatValue(interval[0], precision, unit)}
+                    ${
+                      interval
+                        ? html`
+                            <div
+                              class="bar-wrapper"
+                              style=${`background: ${buildGradient(interval[0], interval[1])};`}
+                            >
+                              <div
+                                class="limit-wrapper"
+                                style=${`left: ${clampPercent(interval[0], interval[0], interval[1])}%;`}
+                              >
+                                <div class="limit-line"></div>
+                                <div class="limit-label">
+                                  ${formatValue(interval[0], precision, unit)}
+                                </div>
+                              </div>
+
+                              <div
+                                class="limit-wrapper"
+                                style=${`left: ${clampPercent(interval[1], interval[0], interval[1])}%;`}
+                              >
+                                <div class="limit-line"></div>
+                                <div class="limit-label">
+                                  ${formatValue(interval[1], precision, unit)}
+                                </div>
+                              </div>
+
+                              <span
+                                class="value-marker"
+                                style=${`left: ${clampPercent(value, interval[0], interval[1])}%;`}
+                              ></span>
                             </div>
-                          </div>
-
-                          <div
-                            class="limit-wrapper"
-                            style=${`left: ${clampPercent(interval[1], interval[0], interval[1])}%;`}
-                          >
-                            <div class="limit-line"></div>
-                            <div class="limit-label">
-                              ${formatValue(interval[1], precision, unit)}
-                            </div>
-                          </div>
-
-                          <span
-                            class="value-marker"
-                            style=${`left: ${clampPercent(value, interval[0], interval[1])}%;`}
-                          ></span>
-                        </div>
-                      `
-                    : html``}
-                </div>
-              `,
-            )
-          : html`<div class="value">${formatValue(payload, precision, unit)}</div>`}
-        ${executionTime
-          ? html`<div class="meta">${text.regressorExecutionTime(executionTime)}</div>`
-          : html``}
+                          `
+                        : html``
+                    }
+                  </div>
+                `,
+              )
+            : html`<div class="value">${formatValue(payload, precision, unit)}</div>`
+        }
+        ${
+          executionTime
+            ? html`<div class="meta">${text.regressorExecutionTime(executionTime)}</div>`
+            : html``
+        }
         ${this.renderTransportPanel(text)}
       </section>
     `;

@@ -8,6 +8,7 @@ Exports:
 - `createFormView(options)`
 - `mountForm(container, options)`
 - `unmountForm(mounted)`
+- `defineMlformPlugin(plugin)`
 - `walkLayoutNodes(layout, visitor)`
 - `flattenLayoutNodes(layout)`
 - `collectLayoutReferences(layout)`
@@ -17,6 +18,7 @@ Exports:
 Types:
 
 - `CreateFormViewOptions`
+- `MlformPlugin`
 - `FormLayoutConfig`
 - `FormLayoutNode`
 - `FormLayoutSectionNode`

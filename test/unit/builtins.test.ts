@@ -2,43 +2,47 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { booleanFieldDefinition, numberFieldDefinition, seriesFieldDefinition } from "@/builtins";
+import {
+  booleanFieldDefinition,
+  createBuiltinMlRegistry,
+  numberFieldDefinition,
+  seriesFieldDefinition,
+  textFieldDefinition,
+} from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 
 describe("builtin definitions", () => {
+  it("creates a complete headless registry", () => {
+    const registry = createBuiltinMlRegistry();
+
+    expect(registry.getField("text")).toBe(textFieldDefinition);
+    expect(registry.getReport("classifier")?.kind).toBe("classifier");
+  });
   it("keeps number field normalization behavior", () => {
     expect(numberFieldDefinition.normalizeValue?.("42", { kind: "number", label: "Age" })).toBe(42);
     expect(numberFieldDefinition.normalizeValue?.("", { kind: "number", label: "Age" })).toBeNull();
   });
 
-  it("includes custom boolean labels in descriptors", () => {
-    const config = booleanFieldDefinition.schema.parse({
-      kind: "boolean",
-      label: "Enabled",
-      trueLabel: "On",
-      falseLabel: "Off",
-    });
-
-    const descriptor = booleanFieldDefinition.describe!(
-      { ...config, id: "enabled" },
+  it("keeps definitions headless and presentation in the kit", () => {
+    expect("describe" in booleanFieldDefinition).toBe(false);
+    const presenter = createBuiltinTestKit().descriptorRegistry.getField("boolean");
+    const descriptor = presenter?.describe(
+      {
+        kind: "boolean",
+        id: "enabled",
+        label: "Enabled",
+        trueLabel: "On",
+        falseLabel: "Off",
+      },
       {
         fieldId: "enabled",
-        state: {
-          value: true,
-          initialValue: false,
-          touched: true,
-          dirty: true,
-          valid: true,
-          visible: true,
-          disabled: false,
-          readOnly: false,
-          errors: [],
-          status: "valid",
-        },
+        value: true,
+        state: { value: true, errors: [], status: "valid" },
       },
     );
 
-    expect(descriptor.props.trueLabel).toBe("On");
-    expect(descriptor.props.falseLabel).toBe("Off");
+    expect(descriptor?.props.trueLabel).toBe("On");
+    expect(descriptor?.props.falseLabel).toBe("Off");
   });
 
   it("normalizes and serializes series values", () => {

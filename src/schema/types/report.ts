@@ -3,7 +3,7 @@
 
 import type { ZodType } from "zod";
 import type { MaybePromise } from "./field";
-import type { MappedTo } from "../mapped-to";
+import type { MappedTo } from "./mapping";
 import type { ReportContext, SubmitResult } from "./submit";
 import type { SubmissionInputRecord } from "./submit";
 

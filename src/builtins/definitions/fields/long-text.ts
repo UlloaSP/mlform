@@ -3,8 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type LongTextFieldConfig = BaseFieldConfig & {
   kind: "long-text";
@@ -55,20 +55,5 @@ export const longTextFieldDefinition: BuiltinFieldDefinition<LongTextFieldConfig
       errors.push(builtinValidationMessages.maxLength(config.maxLength));
     }
     return errors;
-  },
-  describe(config, context) {
-    return makeFieldDescriptor(
-      "long-text-field",
-      config as NormalizedFieldConfig<LongTextFieldConfig>,
-      {
-        value: context.state.value,
-        placeholder: config.placeholder ?? "",
-        minLength: config.minLength,
-        maxLength: config.maxLength,
-        rows: config.rows,
-        state: context.state.status,
-        errors: context.state.errors,
-      },
-    );
   },
 };

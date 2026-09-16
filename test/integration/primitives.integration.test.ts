@@ -4,7 +4,7 @@
 import { html } from "lit";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { readyReport } from "../report-result";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import type { FieldPresenter, ReportPresenter } from "@/primitives";
 import {
   ValidationError,
@@ -19,12 +19,12 @@ import {
   PrimitiveFormElement,
   createBuiltinPrimitiveRegistry,
   createPrimitiveRegistry,
-  mountForm as mountPrimitiveForm,
+  mountPrimitiveForm,
 } from "@/primitives";
 
 const mountForm: typeof mountPrimitiveForm = (container, form, options) =>
   mountPrimitiveForm(container, form, {
-    descriptorRegistry: createMlRegistryPack().descriptorRegistry,
+    descriptorRegistry: createBuiltinTestKit().descriptorRegistry,
     ...options,
   });
 
@@ -85,7 +85,7 @@ describe("primitives", () => {
       schema: {
         fields: [{ kind: "text", label: "Name" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -104,7 +104,7 @@ describe("primitives", () => {
       schema: {
         fields: [{ kind: "text", label: "Name" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -139,7 +139,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -197,7 +197,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -267,7 +267,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       initialValues: {
         name: "Alice",
         age: 24,
@@ -339,7 +339,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -392,7 +392,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -444,7 +444,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -521,7 +521,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -608,7 +608,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -639,7 +639,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -675,7 +675,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -710,7 +710,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -745,7 +745,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -786,7 +786,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -825,7 +825,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -857,7 +857,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -897,7 +897,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -966,7 +966,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1039,7 +1039,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -1128,7 +1128,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1175,7 +1175,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [readyReport("score", { value: 0 })],
@@ -1234,7 +1234,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [readyReport("risk", { prediction: "approve", probabilities: [0.85, 0.15] })],
@@ -1297,7 +1297,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({ reports: [readyReport("score", { value: 0.9 })] }),
       },
@@ -1344,7 +1344,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1396,7 +1396,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1443,7 +1443,7 @@ describe("primitives", () => {
       customElements.define("test-context-probe-field", TestContextProbeFieldElement);
     }
 
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     const registry = pack.registry;
 
     const contextProbeDefinition = withFieldPresenter({
@@ -1543,7 +1543,7 @@ describe("primitives", () => {
       customElements.define("test-probe-field", TestProbeFieldElement);
     }
 
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     const registry = pack.registry;
 
     const probeDefinition = withFieldPresenter({
@@ -1643,7 +1643,7 @@ describe("primitives", () => {
       customElements.define("test-probe-report", TestProbeReportElement);
     }
 
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     const registry = pack.registry;
 
     const probeReportDefinition = withReportPresenter({
@@ -1837,7 +1837,7 @@ describe("primitives", () => {
       customElements.define("test-request-only-report", TestRequestOnlyReportElement);
     }
 
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     const registry = pack.registry;
 
     const requestReportDefinition = withReportPresenter({
@@ -1955,7 +1955,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -2007,7 +2007,7 @@ describe("primitives", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       initialValues: {
         mode: "lock",
         kind: "alpha",

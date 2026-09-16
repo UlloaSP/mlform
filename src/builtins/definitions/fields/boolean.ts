@@ -2,8 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type BooleanFieldConfig = BaseFieldConfig & {
   kind: "boolean";
@@ -33,18 +33,5 @@ export const booleanFieldDefinition: BuiltinFieldDefinition<BooleanFieldConfig, 
       return false;
     }
     return Boolean(value);
-  },
-  describe(config, context) {
-    return makeFieldDescriptor(
-      "boolean-field",
-      config as NormalizedFieldConfig<BooleanFieldConfig>,
-      {
-        checked: context.state.value,
-        trueLabel: config.trueLabel,
-        falseLabel: config.falseLabel,
-        state: context.state.status,
-        errors: context.state.errors,
-      },
-    );
   },
 };

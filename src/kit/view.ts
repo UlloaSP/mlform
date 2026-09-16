@@ -2,11 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createForm, executeFormPipeline } from "@/runtime";
-import { createMlRegistryPack } from "@/builtins";
 import { kitErrorMessages } from "./constants";
-import { cloneSchemaRegistry } from "./defaults";
 import { resolveFormLayout } from "./layout";
 import { collectLayoutReferences, flattenLayoutNodes } from "./layout-utils";
+import { resolveKitRegistryPack } from "./registry-pack";
 import type {
   CreateFormViewOptions,
   FormViewController,
@@ -24,18 +23,13 @@ import {
 import { collectDisclosureSections } from "./view-layout-state";
 
 export const createFormView = (options: CreateFormViewOptions): FormViewController => {
-  const defaultPack =
-    !options.registry || !options.descriptorRegistry || !options.behaviors
-      ? createMlRegistryPack()
-      : null;
-  const engineRegistry = options.registry
-    ? cloneSchemaRegistry(options.registry)
-    : defaultPack!.registry;
-  const descriptorRegistry = options.descriptorRegistry?.clone() ?? defaultPack!.descriptorRegistry;
+  const registryPack = resolveKitRegistryPack(options);
+  const engineRegistry = registryPack.registry;
+  const descriptorRegistry = registryPack.descriptorRegistry;
   const form = createForm({
     schema: options.schema,
     registry: engineRegistry,
-    behaviors: options.behaviors ?? defaultPack?.behaviors,
+    behaviors: registryPack.behaviors,
     transport: options.transport,
     initialValues: options.initialValues,
     validators: options.validators,

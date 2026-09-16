@@ -91,13 +91,15 @@ const renderNode = (node: DescriptorNode, index: number): TemplateResult => {
       return html`
         <section class="node list" data-node-index=${index}>
           ${node.label ? html`<p class="node-label">${node.label}</p>` : nothing}
-          ${tag === "ol"
-            ? html`<ol class="node-list">
-                ${node.items.map((item) => html`<li>${renderValue(item)}</li>`)}
-              </ol>`
-            : html`<ul class="node-list">
-                ${node.items.map((item) => html`<li>${renderValue(item)}</li>`)}
-              </ul>`}
+          ${
+            tag === "ol"
+              ? html`<ol class="node-list">
+                  ${node.items.map((item) => html`<li>${renderValue(item)}</li>`)}
+                </ol>`
+              : html`<ul class="node-list">
+                  ${node.items.map((item) => html`<li>${renderValue(item)}</li>`)}
+                </ul>`
+          }
         </section>
       `;
     }
@@ -171,9 +173,11 @@ export const renderDescriptorSummary = (
         ${description ? html`<p class="summary-description">${description}</p>` : nothing}
       </div>
       <div class="summary-meta">
-        ${value !== undefined && value !== null && renderValue(value).length > 0
-          ? html`<strong class="summary-value">${renderValue(value)}</strong>`
-          : nothing}
+        ${
+          value !== undefined && value !== null && renderValue(value).length > 0
+            ? html`<strong class="summary-value">${renderValue(value)}</strong>`
+            : nothing
+        }
         ${badge ? html`<span class="badge ${toneClass(summary?.tone)}">${badge}</span>` : nothing}
       </div>
     </section>

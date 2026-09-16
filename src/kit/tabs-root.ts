@@ -102,16 +102,20 @@ export class KitTabsElement extends LitElement {
           id=${`panel-${activeTab.id}`}
           aria-labelledby=${`tab-${activeTab.id}`}
         >
-          ${activeTab.title || activeTab.description
-            ? html`
-                <header class="tab-header">
-                  <h1 class="tab-title">${activeTab.title}</h1>
-                  ${activeTab.description
-                    ? html`<p class="tab-description">${activeTab.description}</p>`
-                    : nothing}
-                </header>
-              `
-            : nothing}
+          ${
+            activeTab.title || activeTab.description
+              ? html`
+                  <header class="tab-header">
+                    <h1 class="tab-title">${activeTab.title}</h1>
+                    ${
+                      activeTab.description
+                        ? html`<p class="tab-description">${activeTab.description}</p>`
+                        : nothing
+                    }
+                  </header>
+                `
+              : nothing
+          }
 
           <div class="body">
             <div class="collection">

@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -51,32 +51,36 @@
   ],
   "type": "module",
   "exports": {
+    ".": {
+      "types": "./dist/types/kit/index.d.ts",
+      "import": "./dist/mlform/kit.mjs"
+    },
     "./kit": {
-      "types": "./dist/types/src/kit/index.d.ts",
+      "types": "./dist/types/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
     },
     "./runtime": {
-      "types": "./dist/types/src/runtime/index.d.ts",
+      "types": "./dist/types/runtime/index.d.ts",
       "import": "./dist/mlform/runtime.mjs"
     },
     "./schema": {
-      "types": "./dist/types/src/schema/index.d.ts",
+      "types": "./dist/types/schema/index.d.ts",
       "import": "./dist/mlform/schema.mjs"
     },
     "./builtins": {
-      "types": "./dist/types/src/builtins/index.d.ts",
+      "types": "./dist/types/builtins/index.d.ts",
       "import": "./dist/mlform/builtins.mjs"
     },
     "./transport": {
-      "types": "./dist/types/src/transport/index.d.ts",
+      "types": "./dist/types/transport/index.d.ts",
       "import": "./dist/mlform/transport.mjs"
     },
     "./primitives": {
-      "types": "./dist/types/src/primitives/index.d.ts",
+      "types": "./dist/types/primitives/index.d.ts",
       "import": "./dist/mlform/primitives.mjs"
     },
     "./design": {
-      "types": "./dist/types/src/design/index.d.ts",
+      "types": "./dist/types/design/index.d.ts",
       "import": "./dist/mlform/design.mjs"
     }
   },
@@ -85,31 +89,34 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "typecheck": "vp exec tsc -p tsconfig.json --noEmit",
+    "typecheck": "vp exec tsc -p tsconfig.json --noEmit && vp exec tsc -p tsconfig.scripts.json",
     "coverage": "vp test run --coverage",
-    "ci": "vp check && vp run typecheck && vp test run && vp build",
+    "ci": "vp check && vp run typecheck && vp test run && vp build && vp run check:bundle && vp run test:package",
+    "check:bundle": "tsx scripts/check-bundle-size.ts",
+    "test:package": "tsx scripts/test-package-consumer.ts",
     "prepare": "vp config"
   },
   "dependencies": {
     "lit": "3.3.3",
-    "zod": "4.4.3"
+    "zod": "4.6.5"
   },
   "devDependencies": {
-    "@types/node": "^26.0.0",
-    "jsdom": "^29.1.1",
-    "playwright": "^1.61.0",
-    "typescript": "~6.0.3",
+    "@types/node": "^26.5.1",
+    "@typescript/typescript6": "^6.0.2",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.63.0",
+    "tsx": "^4.23.13",
+    "typescript": "~7.0.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vite-plugin-dts": "^5.0.2",
+    "vite-plugin-dts": "^5.1.0",
     "vite-plus": "latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    "vitest": "^4.1.11"
   },
   "overrides": {
-    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest"
   },
   "engines": {
-    "node": ">=24.9.0"
+    "node": ">=20.19.0"
   },
-  "packageManager": "pnpm@11.8.0"
+  "packageManager": "pnpm@12.4.2"
 }

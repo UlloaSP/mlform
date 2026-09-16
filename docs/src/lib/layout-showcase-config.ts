@@ -2,7 +2,6 @@ import type { FormLayoutConfig, TabsLayoutConfig, WizardLayoutConfig } from "@/k
 import type { SubmitRequest, TransportResponse } from "@/runtime";
 import type { FormSchema } from "@/schema";
 
-export type ShowcaseLocale = "en" | "es";
 export type Cleanup = () => void;
 
 export type ShowcaseCopy = {
@@ -19,29 +18,16 @@ export type ShowcaseCopy = {
 
 export const cleanupSymbol = Symbol("mlform.docs.layoutShowcase.cleanup");
 
-export const copyByLocale: Record<ShowcaseLocale, ShowcaseCopy> = {
-  en: {
-    customTitle: "Custom headless shell",
-    customBody: "Same tabs layout, host-owned sidebar and footer.",
-    customSubmit: "Submit",
-    customNavLabel: "Sections",
-    customHint: "Built with createFormView() and primitive frames.",
-    statusIdle: "Ready",
-    statusValidating: "Validating...",
-    statusSubmitting: "Submitting...",
-    open: "Open",
-  },
-  es: {
-    customTitle: "Shell headless personalizada",
-    customBody: "Mismo layout de tabs, con sidebar y footer propios del host.",
-    customSubmit: "Enviar",
-    customNavLabel: "Secciones",
-    customHint: "Construido con createFormView() y primitive frames.",
-    statusIdle: "Listo",
-    statusValidating: "Validando...",
-    statusSubmitting: "Enviando...",
-    open: "Abierta",
-  },
+export const showcaseCopy: ShowcaseCopy = {
+  customTitle: "Custom headless shell",
+  customBody: "Same tabs layout, host-owned sidebar and footer.",
+  customSubmit: "Submit",
+  customNavLabel: "Sections",
+  customHint: "Built with createFormView() and primitive frames.",
+  statusIdle: "Ready",
+  statusValidating: "Validating...",
+  statusSubmitting: "Submitting...",
+  open: "Open",
 };
 
 const delay = (ms: number): Promise<void> =>

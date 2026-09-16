@@ -37,3 +37,4 @@ Notes:
 - `mountForm` expects an empty container by default.
 - Pass `containerStrategy: "replace"` only when you want MLForm to replace existing host content and restore it on `unmount()`.
 - `reportFetchMode` controls async reports after submit: `"lazy"` keeps renderer-driven fetches, `"all"` waits for all fetch-backed reports before success events, and `"none"` skips report fetches.
+- Pass custom field and report kinds through `plugins`; kit registers their definitions, presenters, and behaviors together.

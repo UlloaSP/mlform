@@ -8,14 +8,31 @@ MLForm mounts validated, schema-driven forms that submit structured values to a 
 Use it when a product needs a predictable input layer for models: prediction forms, scoring dashboards, review tools, forecasting panels, internal ML consoles, or any workflow where UI state and backend payloads must stay aligned.
 
 ```ts
-import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { mountForm } from "mlform";
+import type { Transport } from "mlform/transport";
+
+const transport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ inputs: request.modelValues, reports: request.reports }),
+      signal: request.signal,
+    });
+    if (!response.ok) throw new Error(`Prediction failed: ${response.status}`);
+    return response.json();
+  },
+};
 
 mountForm(document.querySelector("#prediction-form") as HTMLElement, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+  transport,
   schema: {
-    fields: [{ id: "prompt", kind: "text", label: "Prompt", required: true }],
-    reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+    fields: [
+      { id: "prompt", kind: "text", label: "Prompt", required: true, mappedTo: "prompt" },
+    ],
+    reports: [
+      { id: "prediction", kind: "classifier", label: "Prediction", mappedTo: "prediction" },
+    ],
   },
 });
 ```

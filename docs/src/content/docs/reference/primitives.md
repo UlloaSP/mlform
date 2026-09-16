@@ -5,8 +5,8 @@ description: Built-in Web Components and primitive renderer APIs.
 
 Exports from `mlform/primitives` include:
 
-- `mountForm`
-- `unmountForm`
+- `mountPrimitiveForm`
+- `unmountPrimitiveForm`
 - `createPrimitiveRegistry`
 - `createBuiltinPrimitiveRegistry`
 - `PrimitiveFieldElement`
@@ -24,6 +24,8 @@ Events emitted by primitive hosts:
 
 Layouts are `stacked` and `split`.
 
-`mountForm(container, form)` expects an empty container by default.
+`mountPrimitiveForm(container, form)` is the low-level renderer and expects an empty container by default. Most applications should use `mountForm` from `mlform/kit`.
+
+Built-in ML kinds require `createBuiltinDescriptorRegistry()` from `mlform/kit` in the mount options. The matching headless definitions come from `createBuiltinMlRegistry()` in `mlform/builtins`.
 
 Use `containerStrategy: "replace"` when you need to replace existing children and restore them on `unmount()`.
