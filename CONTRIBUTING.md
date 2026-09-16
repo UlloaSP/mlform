@@ -108,6 +108,8 @@ Opening a PR does not guarantee acceptance or immediate review. Maintainers may 
 
 Respectful, technically specific disagreement is welcome. Scope and architectural consistency still decide what lands.
 
+Participation in this project is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+
 ## License
 
 By contributing, you agree that your contribution will be licensed under the [MIT License](./LICENSE).
