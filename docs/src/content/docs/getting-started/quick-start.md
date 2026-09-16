@@ -3,47 +3,51 @@ title: Quick Start
 description: Mount a working MLForm instance with the current public API.
 ---
 
-This is the canonical minimal setup for MLForm.
-
 Create a host element:
 
 ```html
 <div id="prediction-form"></div>
 ```
 
-Mount MLForm:
+Mount MLForm with a schema and a transport:
 
 ```ts
-import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { mountForm } from "mlform";
+import type { Transport } from "mlform/transport";
 
-const container = document.querySelector("#prediction-form");
+const transport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        inputs: request.modelValues,
+        reports: request.reports,
+      }),
+      signal: request.signal,
+    });
 
-if (!container) {
-  throw new Error("Missing #prediction-form container.");
-}
+    if (!response.ok) throw new Error(`Prediction failed: ${response.status}`);
+    return response.json();
+  },
+};
 
-const mounted = mountForm(container as HTMLElement, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+const container = document.querySelector<HTMLElement>("#prediction-form");
+if (!container) throw new Error("Missing #prediction-form container.");
+
+const mounted = mountForm(container, {
+  transport,
   schema: {
     fields: [
-      {
-        id: "prompt",
-        kind: "text",
-        label: "Prompt",
-        mappedTo: "prompt",
-        required: true,
-        minLength: 3,
-      },
+      { id: "prompt", kind: "text", label: "Prompt", required: true, mappedTo: "prompt" },
       {
         id: "threshold",
         kind: "number",
         label: "Confidence threshold",
-        mappedTo: "threshold",
         min: 0,
         max: 1,
-        step: 0.05,
         defaultValue: 0.75,
+        mappedTo: "threshold",
       },
     ],
     reports: [
@@ -55,33 +59,14 @@ const mounted = mountForm(container as HTMLElement, {
       },
     ],
   },
-  labels: {
-    submit: "Run prediction",
-    submitting: "Running...",
-  },
-  layout: "split",
-  designSystem: {
-    mode: "auto",
-    theme: "cobalt",
-    recipe: "soft",
-  },
+  labels: { submit: "Run prediction" },
+  designSystem: { mode: "auto", theme: "cobalt", recipe: "soft" },
 });
 
 window.addEventListener("beforeunload", () => mounted.unmount());
 ```
 
-The default JSON transport sends serialized values under the `inputs` key:
-
-```json
-{
-  "inputs": {
-    "prompt": "Example text",
-    "threshold": 0.75
-  }
-}
-```
-
-Next, build the endpoint in [First Backend](./first-backend/).
+The example transport sends `request.modelValues` under `inputs`. Build the endpoint in [First Backend](./first-backend/).
 
 Return explicit report envelopes:
 
@@ -94,12 +79,11 @@ Return explicit report envelopes:
       "status": "ready",
       "payload": {
         "prediction": "Approved",
+        "labels": ["Approved", "Rejected"],
         "probabilities": [0.91, 0.09]
       }
     }
   ],
-  "meta": {
-    "model": "credit-risk-v2"
-  }
+  "meta": { "model": "credit-risk-v2" }
 }
 ```

@@ -18,6 +18,7 @@ on:
 
 env:
   NODE_VERSION: "20.19.0"
+  DOCS_NODE_VERSION: "22.18.0"
 
 jobs:
   lint-and-format:
@@ -90,7 +91,7 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ env.DOCS_NODE_VERSION }}
           cache: true
 
       - name: Install docs dependencies

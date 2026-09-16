@@ -1,5 +1,7 @@
+/// <reference types="node" />
+
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, type ExecFileSyncOptions } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -11,7 +13,7 @@ assert.ok(existsSync(bundle), "Run `vp build` before the package consumer test."
 
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "mlform-consumer-"));
 const npmCli = join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
-const runNpm = (args, options = {}) =>
+const runNpm = (args: string[], options: ExecFileSyncOptions = {}): string | Buffer =>
   process.platform === "win32"
     ? execFileSync(process.execPath, [npmCli, ...args], options)
     : execFileSync("npm", args, options);
@@ -20,8 +22,8 @@ try {
   const packOutput = runNpm(
     ["pack", root, "--pack-destination", temporaryDirectory, "--ignore-scripts", "--json"],
     { encoding: "utf8" },
-  );
-  const [packed] = JSON.parse(packOutput);
+  ).toString();
+  const [packed] = JSON.parse(packOutput) as [{ filename: string; files: Array<{ path: string }> }];
   const packedPaths = new Set(packed.files.map((file) => file.path));
   assert.ok(packedPaths.has("README.md"), "Published package must include its README.");
   assert.ok(packedPaths.has("LICENSE"), "Published package must include its license.");

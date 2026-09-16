@@ -1,11 +1,26 @@
+/// <reference types="node" />
+
 import { gzipSync } from "node:zlib";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+interface PackageManifest {
+  exports: Record<string, { import: string }>;
+}
+
+interface BundleResult {
+  surface: string;
+  entry: string;
+  files: number;
+  rawBytes: number;
+  gzipBytes: number;
+  budgetBytes: number;
+}
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-const budgets = {
+const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as PackageManifest;
+const budgets: Record<string, number> = {
   ".": 75,
   "./kit": 75,
   "./primitives": 28,
@@ -16,8 +31,8 @@ const budgets = {
   "./transport": 2,
 };
 
-const localImports = (source) => {
-  const specifiers = [];
+const localImports = (source: string): string[] => {
+  const specifiers: string[] = [];
   const patterns = [
     /(?:^|[;\n])\s*(?:import|export)(?:[^"'`]*?\bfrom)?\s*["']([^"']+)["']/gm,
     /\bimport\(\s*["']([^"']+)["']\s*\)/g,
@@ -30,20 +45,20 @@ const localImports = (source) => {
   return specifiers;
 };
 
-const reachableFiles = (entry) => {
-  const files = new Set();
-  const visit = (file) => {
+const reachableFiles = (entry: string): string[] => {
+  const files = new Set<string>();
+  const visit = (file: string): void => {
     if (files.has(file)) return;
     files.add(file);
     const source = readFileSync(file, "utf8");
     for (const specifier of localImports(source)) visit(resolve(dirname(file), specifier));
   };
   visit(entry);
-  return [...files].sort();
+  return [...files].sort((left, right) => left.localeCompare(right));
 };
 
-const results = [];
-const failures = [];
+const results: BundleResult[] = [];
+const failures: string[] = [];
 for (const [surface, config] of Object.entries(packageJson.exports)) {
   const budgetKiB = budgets[surface];
   if (budgetKiB === undefined) {

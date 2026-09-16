@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import ts from "typescript";
+import ts from "@typescript/typescript6";
 import type { BuiltinFieldDefinition, SeriesPoint } from "@/builtins";
 import type { ComponentKey, ThemeManifest } from "@/design";
 import type { DefinedReportKind } from "@/kit";
@@ -119,10 +119,8 @@ describe("module boundaries", () => {
     expect(
       exportPaths.filter((path) => path !== ".").every((path) => /^\.\/[^/]+$/.test(path)),
     ).toBe(true);
-    expect(typePaths).toContain("./dist/types/src/kit/index.d.ts");
-    expect(typePaths.filter(Boolean).every((path) => path?.startsWith("./dist/types/src/"))).toBe(
-      true,
-    );
+    expect(typePaths).toContain("./dist/types/kit/index.d.ts");
+    expect(typePaths.filter(Boolean).every((path) => path?.startsWith("./dist/types/"))).toBe(true);
   });
 
   it("exposes declarative kind types from the kit module source API", () => {

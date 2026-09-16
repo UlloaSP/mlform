@@ -3,7 +3,7 @@ title: First Backend
 description: Implement the smallest backend contract MLForm needs.
 ---
 
-The default kit transport sends a JSON request with serialized field values under `inputs`.
+The transport from the Quick Start sends `request.modelValues` under `inputs` and the requested report definitions under `reports`.
 
 ```json
 {
@@ -101,4 +101,4 @@ def predict(request: PredictRequest):
     }
 ```
 
-For non-2xx responses, `createJsonTransport` reads the response body and uses a `message` property when present.
+Your transport owns authentication, parsing, retries, and non-2xx error handling. Keep that policy close to the application client instead of duplicating it in form configuration.

@@ -1,89 +1,75 @@
 # MLForm
 
-[![CI Pipeline](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml)
-[![Release](https://github.com/UlloaSP/mlform/actions/workflows/release.yml/badge.svg)](https://github.com/UlloaSP/mlform/actions/workflows/release.yml)
-[![npm version](https://img.shields.io/npm/v/mlform.svg)](https://www.npmjs.com/package/mlform)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/mlform.svg)](https://www.npmjs.com/package/mlform)
+[![MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
-Schema-driven forms for machine learning applications.
+MLForm is a schema-driven form runtime and Web Component kit for machine-learning products. Define inputs and reports once; MLForm handles normalization, validation, backend-facing values, submission state, and result rendering.
 
-MLForm gives you a predictable UI layer between users and model backends. You describe inputs and reports with a schema, MLForm renders accessible Web Components, validates values, submits structured payloads, and displays model results in the same host container.
+Use the complete UI from `mlform`, build your own UI on the headless runtime, or adopt the layers between those two points.
 
-Version `0.1.24` is the current release in this repository.
+## Why another form library?
 
-## Why MLForm
+Most form libraries stop at collecting values. ML interfaces also need to keep model mappings, validation, asynchronous reports, loading states, and result rendering consistent with the backend contract.
 
-Most ML product forms drift over time:
+MLForm exists so every screen does not invent that integration again. The schema stays the source of truth, transports remain replaceable, and rendering is optional. The project is MIT licensed; if its direction stops fitting your product, you can fork it or use only the lower-level packages.
 
-- the frontend shape stops matching the backend contract
-- validation rules end up duplicated across components
-- model outputs are rendered ad hoc in each screen
-- design and accessibility regress when teams move fast
+## Installation
 
-MLForm solves that by centering everything on an explicit schema and a transport layer.
-
-Use it for:
-
-- prediction forms
-- scoring and approval tools
-- forecasting dashboards
-- internal review consoles
-- embedded model workflows inside larger apps
-
-## Install
-
-For application usage:
+> [!NOTE]
+> MLForm is pre-1.0. Public APIs may change between minor releases. Node-based consumers and tooling require Node.js 20.19 or newer.
 
 ```bash
 npm install mlform
 ```
 
-Import the complete kit from the package root:
+## Quick start
 
-```ts
-import { mountForm } from "mlform";
-import { createJsonTransport } from "mlform/transport";
-```
-
-## Quick Start
-
-Create a host element:
+Add a host element:
 
 ```html
 <div id="prediction-form"></div>
 ```
 
-Mount a form:
+Mount MLForm with a schema and any object implementing the transport contract:
 
 ```ts
-import { mountForm } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
+import { mountForm } from "mlform";
+import type { Transport } from "mlform/transport";
 
-const container = document.querySelector("#prediction-form");
+const transport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/predict", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        inputs: request.modelValues,
+        reports: request.reports,
+      }),
+      signal: request.signal,
+    });
 
-if (!container) {
-  throw new Error("Missing #prediction-form container.");
-}
+    if (!response.ok) throw new Error(`Prediction failed: ${response.status}`);
+    return response.json();
+  },
+};
 
-const mounted = mountForm(container as HTMLElement, {
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
+const container = document.querySelector<HTMLElement>("#prediction-form");
+if (!container) throw new Error("Missing #prediction-form container.");
+
+const mounted = mountForm(container, {
+  transport,
   schema: {
     fields: [
-      {
-        id: "prompt",
-        kind: "text",
-        label: "Prompt",
-        required: true,
-        minLength: 3,
-      },
+      { id: "prompt", kind: "text", label: "Prompt", required: true },
       {
         id: "threshold",
         kind: "number",
         label: "Confidence threshold",
         min: 0,
         max: 1,
-        step: 0.05,
         defaultValue: 0.75,
+        mappedTo: "threshold",
       },
     ],
     reports: [
@@ -91,223 +77,108 @@ const mounted = mountForm(container as HTMLElement, {
         id: "prediction",
         kind: "classifier",
         label: "Prediction",
+        mappedTo: "prediction",
       },
     ],
   },
-  labels: {
-    submit: "Run prediction",
-    submitting: "Running...",
-  },
-  layout: "split",
-  designSystem: {
-    mode: "auto",
-    theme: "cobalt",
-    recipe: "soft",
-  },
+  labels: { submit: "Run prediction" },
+  designSystem: { mode: "auto", theme: "cobalt", recipe: "soft" },
 });
 
 window.addEventListener("beforeunload", () => mounted.unmount());
 ```
 
-The default JSON transport sends:
+The backend returns explicit report results:
 
 ```json
 {
-  "inputs": {
-    "prompt": "Example text",
-    "threshold": 0.75
-  }
-}
-```
-
-Return reports keyed by report id:
-
-```json
-{
-  "reports": {
-    "prediction": {
-      "label": "Approved",
-      "confidence": 0.91,
-      "probabilities": {
-        "Approved": 0.91,
-        "Rejected": 0.09
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "prediction",
+      "status": "ready",
+      "payload": {
+        "prediction": "Approved",
+        "labels": ["Approved", "Rejected"],
+        "probabilities": [0.91, 0.09]
       }
     }
-  },
-  "meta": {
-    "model": "credit-risk-v2"
-  }
+  ],
+  "meta": { "model": "credit-risk-v2" }
 }
 ```
 
-## What You Get
+## Choose your level
 
-- Schema-driven fields, reports, conditions, defaults, and serialization
-- Accessible Web Components for form inputs, submit actions, and result rendering
-- Headless `createFormView()` API for custom layouts and app-owned rendering
-- Official `mountForm()` helper for step-based flows
-- Built-in JSON transport plus composable transport middleware
-- Headless engine APIs for custom orchestration and registries
-- Runtime design system with themes, recipes, density, motion, and token overrides
-- Extension points for custom field and report kinds
+| Package | Purpose |
+| --- | --- |
+| `mlform` | Application-facing alias of `mlform/kit`. |
+| `mlform/kit` | Mounting, layouts, navigation, lifecycle, and declarative extensions. |
+| `mlform/runtime` | Headless state, validation, conditions, hooks, and submission orchestration. |
+| `mlform/schema` | Schema contracts, normalization, mappings, and registries. |
+| `mlform/builtins` | Headless definitions for included field and report kinds. |
+| `mlform/transport` | Transport contracts, request execution, errors, and fanout. |
+| `mlform/primitives` | Web Component renderers and renderer registries. |
+| `mlform/design` | Themes, recipes, tokens, density, motion, and host integration. |
 
-Built-in fields:
+## What is included?
 
-- `text`
-- `number`
-- `boolean`
-- `category`
-- `date`
-- `time-series`
+- Accessible built-in fields and report renderers
+- Headless runtime and form-view APIs
+- Single-page, split, tabs, accordion, and wizard layouts
+- Explicit display-value and model-value boundaries
+- Custom field and report kinds through the normal registration path
+- Themes, recipes, design tokens, forced-colors support, and host integration
+- Replaceable transports for HTTP, local models, workers, or application-owned clients
 
-Built-in reports:
+## Some notes
 
-- `classifier`
-- `regressor`
+MLForm is young. Expect the API to become smaller and more explicit before 1.0.
 
-Built-in themes:
-
-- `neutral`
-- `cobalt`
-- `graphite`
-- `sage`
-- `sunset`
-
-Built-in recipes:
-
-- `default`
-- `minimal`
-- `soft`
-- `contrast`
-
-## Package Surfaces
-
-| Surface                | Use it for                                                                                                                 |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `mlform`               | Application-facing alias of `mlform/kit` for normal mounting and layout use.                                               |
-| `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, labels, layout, and lifecycle utilities.    |
-| `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
-| `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
-| `mlform/design` | Themes, recipes, tokens, mode resolution, and host integration.                                                            |
-| `mlform/transport`     | Transport composition, middleware, resilience policies, and orchestration helpers.                                         |
-
-## Custom Domain Kinds
-
-When built-in kinds are not enough, define your own field and report kinds without rewriting the normal rendering path.
-
-```ts
-import { defineFieldKind, defineMlformPlugin, mountForm } from "mlform/kit";
-import { z } from "zod";
-
-const scoreField = defineFieldKind({
-  kind: "score",
-  schema: z.object({
-    kind: z.literal("score"),
-    id: z.string().optional(),
-    label: z.string(),
-    min: z.number().default(0),
-    max: z.number().default(100),
-  }),
-  value: {
-    default: () => 0,
-    normalize: (value) => Number(value ?? 0),
-    serialize: (value) => value,
-  },
-  validate: ({ value, config }) =>
-    value < config.min || value > config.max ? ["Score out of range."] : [],
-  render: {
-    widget: "number",
-    hints: ({ config }) => ({
-      min: config.min,
-      max: config.max,
-      unit: "%",
-    }),
-  },
-});
-
-const domainPlugin = defineMlformPlugin({ fields: [scoreField] });
-
-mountForm(container, { schema, transport, plugins: [domainPlugin] });
-```
-
-Stay at the declarative `define*Kind` layer unless you truly need fully custom rendering or low-level primitive behavior.
-
-## Typical Flow
-
-1. Define the schema with `fields` and `reports`.
-2. Mount the form with `mountForm`.
-3. Point the transport at your model endpoint or custom backend adapter.
-4. Return normalized reports from the backend.
-5. Customize theme, recipe, labels, or registries only where your product needs it.
-
-## Headless Layouts
-
-Use `createFormView()` when you want MLForm to own state and validation, but your app to own layout:
-
-```ts
-import { createFormView } from "mlform/kit";
-import { createJsonTransport } from "mlform/transport";
-
-const view = createFormView({
-  transport: createJsonTransport({ endpoint: "/api/predict" }),
-  schema,
-  layout: {
-    kind: "wizard",
-    steps: [
-      { title: "Profile", children: [{ kind: "field", field: "name" }] },
-      { title: "Review", children: [{ kind: "field", field: "email" }] },
-    ],
-  },
-});
-```
-
-If you want a built-in step UI, use `mountForm()` with the same layout config.
+MLForm does not host models, prescribe a backend framework, or require its built-in UI. It owns the form contract and lifecycle; your application owns transport, authentication, deployment, and model execution.
 
 ## Documentation
 
-- Docs home: https://ulloasp.github.io/mlform/
-- Quick start: https://ulloasp.github.io/mlform/getting-started/quick-start/
-- Installation: https://ulloasp.github.io/mlform/getting-started/installation/
-- Backend contract: https://ulloasp.github.io/mlform/guides/backend-contract/
-- Transport guide: https://ulloasp.github.io/mlform/kit/transport/
-- Headless kit: https://ulloasp.github.io/mlform/kit/headless-kit/
-- Wizard layout: https://ulloasp.github.io/mlform/kit/wizard-layout/
-- Design system: https://ulloasp.github.io/mlform/design/overview/
-- API reference: https://ulloasp.github.io/mlform/reference/kit/
-- Migration guide: https://ulloasp.github.io/mlform/migration/from-legacy-mlform/
-- Versioning notes: https://ulloasp.github.io/mlform/support/versioning/
+Full documentation lives at [ulloasp.github.io/mlform](https://ulloasp.github.io/mlform/).
 
-## Development
+- [Installation](https://ulloasp.github.io/mlform/getting-started/installation/)
+- [Quick start](https://ulloasp.github.io/mlform/getting-started/quick-start/)
+- [Backend contract](https://ulloasp.github.io/mlform/guides/backend-contract/)
+- [Headless kit](https://ulloasp.github.io/mlform/kit/headless-kit/)
+- [Design system](https://ulloasp.github.io/mlform/design/overview/)
+- [Package exports](https://ulloasp.github.io/mlform/reference/package-exports/)
 
-This repository uses Vite+. Do not use `npm`, `pnpm`, or `yarn` directly for workspace tasks in this repo.
+The current architecture is available as an [interactive diagram](./architecture/mlform-system.architecture.html).
 
-Run the main package checks:
+## Contributing
+
+MLForm uses [Vite+](https://viteplus.dev/guide/) for dependency management, checks, tests, and builds.
+
+Install `vp`:
+
+### macOS / Linux
+
+```bash
+curl -fsSL https://vite.plus | bash
+```
+
+### Windows
+
+```powershell
+irm https://vite.plus/ps1 | iex
+```
+
+Then install and verify the repository:
 
 ```bash
 vp install
 vp check
-vp test
+vp run typecheck
+vp test run
 vp build
 ```
 
-Docs live in `docs/`:
-
-```bash
-cd docs
-vp install
-vp run typecheck
-vp run build
-vp run dev
-```
-
-The published package supports Node.js `>=20.19.0` for Node-based consumers and tooling.
-
-## Release Notes
-
-For `0.1.24`, use the repository release entry and the published docs as the source of truth:
-
-- GitHub releases: https://github.com/UlloaSP/mlform/releases
-- npm package: https://www.npmjs.com/package/mlform
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening an issue or pull request.
 
 ## License
 
