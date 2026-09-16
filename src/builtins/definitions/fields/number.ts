@@ -3,8 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type NumberFieldConfig = BaseFieldConfig & {
   kind: "number";
@@ -82,24 +82,5 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
       }
     }
     return errors;
-  },
-  describe(config, context) {
-    const useRange =
-      config.min !== undefined &&
-      config.max !== undefined &&
-      !config.required &&
-      context.state.value !== null;
-
-    return makeFieldDescriptor("number-field", config as NormalizedFieldConfig<NumberFieldConfig>, {
-      value: context.state.value,
-      min: config.min,
-      max: config.max,
-      step: config.step,
-      unit: config.unit,
-      placeholder: config.placeholder ?? "",
-      input: useRange ? "range" : "text",
-      state: context.state.status,
-      errors: context.state.errors,
-    });
   },
 };

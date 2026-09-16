@@ -1,6 +1,6 @@
 {
   "name": "mlform",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "private": false,
   "description": "Composable form generation utilities for machine learning backend integration",
   "keywords": [
@@ -51,6 +51,10 @@
   ],
   "type": "module",
   "exports": {
+    ".": {
+      "types": "./dist/types/src/kit/index.d.ts",
+      "import": "./dist/mlform/kit.mjs"
+    },
     "./kit": {
       "types": "./dist/types/src/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
@@ -87,7 +91,9 @@
   "scripts": {
     "typecheck": "vp exec tsc -p tsconfig.json --noEmit",
     "coverage": "vp test run --coverage",
-    "ci": "vp check && vp run typecheck && vp test run && vp build",
+    "ci": "vp check && vp run typecheck && vp test run && vp build && vp run check:bundle && vp run test:package",
+    "check:bundle": "node scripts/check-bundle-size.mjs",
+    "test:package": "node scripts/test-package-consumer.mjs",
     "prepare": "vp config"
   },
   "dependencies": {
@@ -109,7 +115,7 @@
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
   "engines": {
-    "node": ">=24.9.0"
+    "node": ">=20.19.0"
   },
   "packageManager": "pnpm@11.8.0"
 }

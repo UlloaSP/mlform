@@ -5,7 +5,7 @@ export { PrimitiveFieldElement } from "./base-field-element";
 export { PrimitiveAsyncReportElement } from "./base-async-report-element";
 export { PrimitiveReportElement } from "./base-report-element";
 export { PrimitiveFormElement } from "./components/form-root";
-export { mountForm, mountPrimitiveForm, unmountForm, unmountPrimitiveForm } from "./mount-form";
+export { mountPrimitiveForm, unmountPrimitiveForm } from "./mount-form";
 export { focusPrimitiveField } from "./components/error-focus";
 export { createBuiltinPrimitiveRegistry, createPrimitiveRegistry } from "./registry";
 export { createPrimitiveDescriptorRegistry, PrimitiveDescriptorRegistry } from "./descriptors";

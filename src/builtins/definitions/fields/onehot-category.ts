@@ -3,13 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, MappedTo, NormalizedFieldConfig } from "@/schema";
-import {
-  baseFieldShape,
-  makeFieldDescriptor,
-  mappedToSchema,
-  type BuiltinFieldDefinition,
-} from "../shared";
+import type { BaseFieldConfig, MappedTo } from "@/schema";
+import { baseFieldShape, mappedToSchema, type BuiltinFieldDefinition } from "../shared";
 
 export type OneHotCategoryOption = {
   label: string;
@@ -64,17 +59,5 @@ export const oneHotCategoryFieldDefinition: BuiltinFieldDefinition<
     return config.options.some((option) => option.value === value)
       ? []
       : [builtinValidationMessages.categoryOptionMismatch];
-  },
-  describe(config, context) {
-    return makeFieldDescriptor(
-      "category-field",
-      config as NormalizedFieldConfig<OneHotCategoryFieldConfig>,
-      {
-        value: context.state.value,
-        options: config.options.map((option) => ({ label: option.label, value: option.value })),
-        state: context.state.status,
-        errors: context.state.errors,
-      },
-    );
   },
 };

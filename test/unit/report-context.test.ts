@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm, executeFormPipeline } from "@/runtime";
 import { createReportFetchRequest, getReportContext } from "@/schema";
 
@@ -21,7 +21,7 @@ const reportSchema = z.object({
 });
 
 const createPack = (fetchReport?: (request: unknown) => Promise<unknown>) => {
-  const pack = createMlRegistryPack();
+  const pack = createBuiltinTestKit();
   pack.registry.registerReport({
     kind: "probe",
     schema: reportSchema,

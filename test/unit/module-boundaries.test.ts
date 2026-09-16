@@ -28,7 +28,7 @@ const allowedDependencies = new Map<string, ReadonlySet<string>>([
   ["primitives", new Set()],
   ["transport", new Set(["schema"])],
   ["runtime", new Set(["schema", "transport"])],
-  ["builtins", new Set(["schema", "runtime", "primitives"])],
+  ["builtins", new Set(["schema", "runtime"])],
   ["kit", new Set(["schema", "runtime", "builtins", "primitives", "design"])],
 ]);
 
@@ -106,16 +106,19 @@ const moduleNameForPath = (filePath: string): string | null => {
 };
 
 describe("module boundaries", () => {
-  it("keeps package exports at existing module roots", () => {
+  it("keeps the package root as a direct alias of the kit module", () => {
     const packageJson = JSON.parse(
       readFileSync(resolve(process.cwd(), "package.json"), "utf8"),
     ) as {
-      exports: Record<string, { types?: string }>;
+      exports: Record<string, { types?: string; import?: string }>;
     };
     const exportPaths = Object.keys(packageJson.exports);
     const typePaths = Object.values(packageJson.exports).map((entry) => entry.types);
 
-    expect(exportPaths.every((path) => /^\.\/[^/]+$/.test(path))).toBe(true);
+    expect(packageJson.exports["."]).toEqual(packageJson.exports["./kit"]);
+    expect(
+      exportPaths.filter((path) => path !== ".").every((path) => /^\.\/[^/]+$/.test(path)),
+    ).toBe(true);
     expect(typePaths).toContain("./dist/types/src/kit/index.d.ts");
     expect(typePaths.filter(Boolean).every((path) => path?.startsWith("./dist/types/src/"))).toBe(
       true,

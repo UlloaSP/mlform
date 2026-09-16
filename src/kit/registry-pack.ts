@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import {
-  builtinFieldDefinitions,
-  builtinReportDefinitions,
-  createMappedCategoryBehavior,
-} from "@/builtins";
-import { createPrimitiveDescriptorRegistry, type PrimitiveDescriptorRegistry } from "@/primitives";
+import { createBuiltinMlRegistry, createMappedCategoryBehavior } from "@/builtins";
+import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { RuntimeBehavior } from "@/runtime";
-import { createRegistry, type Registry } from "@/schema";
+import type { Registry } from "@/schema";
+import { createBuiltinDescriptorRegistry } from "./builtin-presenters";
 import { cloneSchemaRegistry } from "./defaults";
-import { defineMlformPlugin, type MlformPlugin } from "./plugin";
+import type { MlformPlugin } from "./plugin";
 
 export interface KitRegistryPack {
   registry: Registry;
@@ -25,33 +22,6 @@ export interface ResolveKitRegistryPackOptions {
   plugins?: readonly MlformPlugin[];
 }
 
-const createBuiltinPlugin = (): MlformPlugin =>
-  defineMlformPlugin({
-    fields: builtinFieldDefinitions.map((definition) => ({
-      category: "field" as const,
-      kind: definition.kind,
-      register(registry, descriptorRegistry) {
-        registry.registerField(definition as never);
-        descriptorRegistry.registerField({
-          kind: definition.kind,
-          describe: definition.describe as never,
-        });
-      },
-    })),
-    reports: builtinReportDefinitions.map((definition) => ({
-      category: "report" as const,
-      kind: definition.kind,
-      register(registry, descriptorRegistry) {
-        registry.registerReport(definition as never);
-        descriptorRegistry.registerReport({
-          kind: definition.kind,
-          describe: definition.describe as never,
-        });
-      },
-    })),
-    behaviors: [createMappedCategoryBehavior()],
-  });
-
 const applyPlugin = (pack: KitRegistryPack, plugin: MlformPlugin): void => {
   for (const field of plugin.fields ?? []) {
     field.register(pack.registry, pack.descriptorRegistry);
@@ -65,13 +35,11 @@ const applyPlugin = (pack: KitRegistryPack, plugin: MlformPlugin): void => {
 };
 
 const createDefaultRegistryPack = (): KitRegistryPack => {
-  const pack: KitRegistryPack = {
-    registry: createRegistry(),
-    descriptorRegistry: createPrimitiveDescriptorRegistry(),
-    behaviors: [],
+  return {
+    registry: createBuiltinMlRegistry(),
+    descriptorRegistry: createBuiltinDescriptorRegistry(),
+    behaviors: [createMappedCategoryBehavior()],
   };
-  applyPlugin(pack, createBuiltinPlugin());
-  return pack;
 };
 
 export const resolveKitRegistryPack = (options: ResolveKitRegistryPackOptions): KitRegistryPack => {

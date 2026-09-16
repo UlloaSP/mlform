@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { defineReportKind, mountForm, registerDefinedReportKind } from "@/kit";
 
 const flush = async (): Promise<void> => {
@@ -21,7 +21,7 @@ const getShadow = (element: Element | null): ShadowRoot => {
 };
 
 const createPack = (fetchReport: () => Promise<unknown>) => {
-  const pack = createMlRegistryPack();
+  const pack = createBuiltinTestKit();
 
   registerDefinedReportKind(
     pack.registry,

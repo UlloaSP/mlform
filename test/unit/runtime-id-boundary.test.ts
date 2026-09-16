@@ -2,11 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm } from "@/runtime";
 import { readyReport } from "../report-result";
 
-const registry = createMlRegistryPack().registry;
+const registry = createBuiltinTestKit().registry;
 
 describe("runtime id boundary", () => {
   it("keeps field ids as runtime handles, not external payload keys", async () => {

@@ -55,3 +55,4 @@ docs/build/
 # Temporary files
 *.tmp
 *.temp
+architecture/*.visual-check.*

@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import {
   collectLayoutReferences,
   createFormView,
@@ -26,7 +26,7 @@ const reportPayload = (reports: readonly unknown[], id: string): unknown => {
 
 describe("kit view", () => {
   it("builds an automatic stacked layout when layout is omitted", () => {
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     registerDefinedReportKind(
       pack.registry,
       pack.descriptorRegistry,
@@ -130,7 +130,7 @@ describe("kit view", () => {
   });
 
   it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", () => {
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     registerDefinedReportKind(
       pack.registry,
       pack.descriptorRegistry,

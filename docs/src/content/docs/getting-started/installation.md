@@ -9,16 +9,16 @@ Install the runtime package in an application:
 npm install mlform
 ```
 
-If you want the exact release documented here, install `0.1.23` explicitly:
+If you want the exact release documented here, install `0.1.24` explicitly:
 
 ```bash
-npm install mlform@0.1.23
+npm install mlform@0.1.24
 ```
 
 Import from the kit for normal application use:
 
 ```ts
-import { mountForm } from "mlform/kit";
+import { mountForm } from "mlform";
 ```
 
 Use subpath imports only when you need a specific layer:
@@ -38,7 +38,7 @@ vp test
 vp build
 ```
 
-The package declares Node.js `>=24.9.0` for local development and CI. The docs workspace is an Astro Starlight app under `docs/` and uses the same `vp` workflow:
+The package supports Node.js `>=20.19.0` for Node-based consumers and tooling. The docs workspace is an Astro Starlight app under `docs/` and uses the same `vp` workflow:
 
 ```bash
 cd docs

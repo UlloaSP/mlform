@@ -13,4 +13,18 @@ Use primitives directly when:
 
 Most applications should use `mountForm` from `mlform/kit`.
 
-`mountForm` expects an empty container by default. Pass `containerStrategy: "replace"` only when you explicitly want to replace existing host content and restore it on `unmount()`.
+When rendering built-in ML field and report kinds directly, pair the headless registry from `mlform/builtins` with the presenter registry owned by `mlform/kit`:
+
+```ts
+import { createBuiltinMlRegistry } from "mlform/builtins";
+import { createBuiltinDescriptorRegistry } from "mlform/kit";
+import { mountPrimitiveForm } from "mlform/primitives";
+import { createForm } from "mlform/runtime";
+
+const form = createForm({ schema, transport, registry: createBuiltinMlRegistry() });
+mountPrimitiveForm(container, form, {
+  descriptorRegistry: createBuiltinDescriptorRegistry(),
+});
+```
+
+`mountPrimitiveForm` expects an empty container by default. Pass `containerStrategy: "replace"` only when you explicitly want to replace existing host content and restore it on `unmount()`.

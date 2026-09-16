@@ -3,13 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import {
-  baseFieldShape,
-  makeFieldDescriptor,
-  optionSchema,
-  type BuiltinFieldDefinition,
-} from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, optionSchema, type BuiltinFieldDefinition } from "../shared";
 
 type SingleChoiceOption = string | { label: string; value: string };
 
@@ -57,18 +52,5 @@ export const singleChoiceFieldDefinition: BuiltinFieldDefinition<
     );
 
     return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
-  },
-  describe(config, context) {
-    return makeFieldDescriptor(
-      "single-choice-field",
-      config as NormalizedFieldConfig<SingleChoiceFieldConfig>,
-      {
-        value: context.state.value,
-        options: config.options,
-        layout: config.layout ?? "vertical",
-        state: context.state.status,
-        errors: context.state.errors,
-      },
-    );
   },
 };

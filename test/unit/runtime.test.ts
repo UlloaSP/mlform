@@ -3,7 +3,8 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { createMappedCategoryBehavior, createMlRegistryPack } from "@/builtins";
+import { createMappedCategoryBehavior } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { defineFieldKind, defineReportKind } from "@/kit";
 import { type FieldPresenter, type ReportPresenter } from "@/primitives";
 import { resolveMappedReportPayload } from "@/schema";
@@ -23,7 +24,7 @@ import {
 } from "@/runtime";
 import { readyReport } from "../report-result";
 
-const builtinPrimitiveDescriptorRegistry = createMlRegistryPack().descriptorRegistry;
+const builtinPrimitiveDescriptorRegistry = createBuiltinTestKit().descriptorRegistry;
 
 const reportPayload = (reports: readonly unknown[], id: string): unknown => {
   const item = reports.find(
@@ -109,7 +110,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -170,7 +171,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -236,7 +237,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -294,7 +295,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -326,7 +327,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: {
           submit: vi.fn(),
         },
@@ -347,7 +348,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: {
           submit: vi.fn(),
         },
@@ -368,7 +369,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: {
           submit: vi.fn(),
         },
@@ -386,7 +387,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -429,7 +430,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -459,7 +460,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -493,7 +494,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -528,7 +529,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -561,7 +562,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -598,7 +599,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -643,7 +644,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -715,7 +716,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
@@ -770,7 +771,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -796,7 +797,7 @@ describe("runtime", () => {
   });
 
   it("supports bigint declarative comparisons without losing precision", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerField(
       withFieldPresenter({
@@ -894,7 +895,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -963,7 +964,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       validators: [
         () => ({
@@ -995,7 +996,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1030,7 +1031,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1075,7 +1076,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1092,7 +1093,7 @@ describe("runtime", () => {
   });
 
   it("protects public value snapshots from external mutation", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     registry.registerField(
       withFieldPresenter({
         kind: "object-value",
@@ -1174,7 +1175,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [
@@ -1222,7 +1223,7 @@ describe("runtime", () => {
   });
 
   it("uses semantic field equality for dirty tracking", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     registry.registerField(
       withFieldPresenter({
         kind: "case-insensitive-text",
@@ -1276,7 +1277,7 @@ describe("runtime", () => {
   });
 
   it("supports semantic cloning and equality for typed array field values", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     registry.registerField(
       withFieldPresenter({
         kind: "tensor-value",
@@ -1356,7 +1357,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       hooks: {
         beforeValidate,
@@ -1393,7 +1394,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       hooks: {
         afterValidate,
@@ -1414,7 +1415,7 @@ describe("runtime", () => {
   });
 
   it("preserves async field validation results during form validation", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerField(
       withFieldPresenter({
@@ -1471,7 +1472,7 @@ describe("runtime", () => {
   });
 
   it("exposes a field validating status while async field validation is pending", async () => {
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
     const registry = pack.registry;
     let resolveValidation: ((errors: string[]) => void) | undefined;
 
@@ -1541,7 +1542,7 @@ describe("runtime", () => {
   });
 
   it("supports thenable field validators", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     class ThenableValidationResult implements PromiseLike<string[]> {
       constructor(private readonly errors: string[]) {}
 
@@ -1606,7 +1607,7 @@ describe("runtime", () => {
   });
 
   it("debounces and cancels stale async field validation runs", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     const validate = vi.fn(async (value: string) => {
       await Promise.resolve();
       return value === "taken" ? ["Already taken."] : [];
@@ -1695,7 +1696,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1730,7 +1731,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1762,7 +1763,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -1821,7 +1822,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit,
       },
@@ -1895,7 +1896,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -1961,7 +1962,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -1983,7 +1984,7 @@ describe("runtime", () => {
         schema: {
           fields: [{ kind: "number", label: "Age", mappedTo: -1 }],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: { submit: vi.fn() },
       }),
     ).toThrow();
@@ -2007,7 +2008,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [readyReport("risk", { prediction: "high", probabilities: [0.1, 0.9] })],
@@ -2035,7 +2036,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -2068,7 +2069,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockRejectedValue(new Error("backend offline")),
       },
@@ -2085,7 +2086,7 @@ describe("runtime", () => {
   });
 
   it("surfaces report payload failures as report-local error state without failing submit", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry
       .registerReport(
@@ -2198,7 +2199,7 @@ describe("runtime", () => {
   });
 
   it("validates report payloads with report payload schemas", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport(
       withReportPresenter({
@@ -2257,7 +2258,7 @@ describe("runtime", () => {
   });
 
   it("can fail the full submission when a report payload is invalid", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     const onSubmitError = vi.fn();
 
     registry.registerReport(
@@ -2327,7 +2328,7 @@ describe("runtime", () => {
   });
 
   it("supports async report payload resolvers", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     const asyncReport = withReportPresenter({
       kind: "async-report",
@@ -2438,7 +2439,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       hooks: {
         beforeSubmit,
@@ -2487,7 +2488,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [readyReport("classifier", { prediction: "ok" })],
@@ -2541,7 +2542,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -2592,7 +2593,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       hooks: {
         beforeSubmit,
@@ -2625,7 +2626,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -2673,7 +2674,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       inactiveFieldPolicy: "reset-on-hide",
     });
@@ -2734,7 +2735,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       inactiveFieldPolicy: "omit",
     });
@@ -2792,7 +2793,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       hooks: {
         onSubmitError,
@@ -2835,7 +2836,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -2890,7 +2891,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
     });
 
@@ -2944,7 +2945,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: { submit },
       hooks: {
         beforeSubmit,
@@ -2989,7 +2990,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [readyReport("risk", { prediction: "low" })],
@@ -3028,7 +3029,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({ reports: [] }),
       },
@@ -3062,7 +3063,7 @@ describe("runtime", () => {
           },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockImplementation(
           () =>
@@ -3085,7 +3086,7 @@ describe("runtime", () => {
   });
 
   it("normalizes fetch-backed reports and assigns auto-generated ids", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport({
       kind: "shap",
@@ -3122,7 +3123,7 @@ describe("runtime", () => {
     const afterReportFetch = vi.fn();
     const fetchPayload = { importances: { name: 0.9 } };
     const transportSubmit = vi.fn().mockResolvedValue(fetchPayload);
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport({
       kind: "shap",
@@ -3185,7 +3186,7 @@ describe("runtime", () => {
   it("surfaces report fetch errors and fires onReportFetchError hook", async () => {
     const onReportFetchError = vi.fn();
     const fetchError = new Error("report fetch unavailable");
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport({
       kind: "shap",
@@ -3227,7 +3228,7 @@ describe("runtime", () => {
 
   it("skips report fetch when state is not idle", async () => {
     const transportSubmit = vi.fn().mockResolvedValue({ data: 1 });
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport({
       kind: "shap",
@@ -3269,7 +3270,7 @@ describe("runtime", () => {
   });
 
   it("resets fetched reports on form reset and next submit", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport({
       kind: "shap",
@@ -3330,7 +3331,7 @@ describe("runtime", () => {
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue(submitResult),
       },
@@ -3364,7 +3365,7 @@ describe("runtime", () => {
         score: 0.9,
       };
     });
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     registry.registerReport({
       kind: "shap",
@@ -3457,7 +3458,7 @@ describe("runtime", () => {
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [],
@@ -3486,7 +3487,7 @@ describe("runtime", () => {
       schema: {
         fields: [{ kind: "text", label: "Name", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockRejectedValue(new Error("submit failed")),
       },
@@ -3498,7 +3499,7 @@ describe("runtime", () => {
   });
 
   it("forwards external abort signals into report fetches", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     let capturedSignal: AbortSignal | undefined;
     let resolveReady: (() => void) | undefined;
 
@@ -3567,7 +3568,7 @@ describe("runtime", () => {
   });
 
   it("supports unregisterField and unregisterReport", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     // Field unregister.
     expect(registry.getField("text")).toBeDefined();
@@ -3583,7 +3584,7 @@ describe("runtime", () => {
   });
 
   it("creates declarative custom fields with generated descriptors", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     const kind = defineFieldKind({
       kind: "score",
       schema: z.object({
@@ -3668,7 +3669,7 @@ describe("runtime", () => {
   });
 
   it("creates declarative custom reports with summary and descriptor content", async () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     const kind = defineReportKind({
       kind: "risk-summary",
       schema: z.object({
@@ -3759,7 +3760,7 @@ describe("runtime", () => {
         { feature: "debt", score: -0.4 },
       ],
     });
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
     const kind = defineReportKind({
       kind: "shap",
       schema: z.object({
@@ -3888,7 +3889,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
@@ -3984,7 +3985,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
@@ -4060,7 +4061,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         behaviors: [createMappedCategoryBehavior()],
         transport: { submit: submitMock },
       });
@@ -4115,7 +4116,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         behaviors: [createMappedCategoryBehavior()],
         transport: {
           submit: vi.fn().mockResolvedValue({ raw: {} }),
@@ -4176,7 +4177,7 @@ describe("runtime", () => {
               },
             ],
           },
-          registry: createMlRegistryPack().registry,
+          registry: createBuiltinTestKit().registry,
           behaviors: [createMappedCategoryBehavior()],
           transport: { submit: vi.fn() },
         }),
@@ -4211,7 +4212,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: { submit },
       });
 
@@ -4246,7 +4247,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: { submit },
       });
 
@@ -4275,7 +4276,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
       });
 
@@ -4297,7 +4298,7 @@ describe("runtime", () => {
             },
           ],
         },
-        registry: createMlRegistryPack().registry,
+        registry: createBuiltinTestKit().registry,
         transport: { submit: vi.fn().mockResolvedValue({ raw: {} }) },
       });
 

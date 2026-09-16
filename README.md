@@ -9,7 +9,7 @@ Schema-driven forms for machine learning applications.
 
 MLForm gives you a predictable UI layer between users and model backends. You describe inputs and reports with a schema, MLForm renders accessible Web Components, validates values, submits structured payloads, and displays model results in the same host container.
 
-Version `0.1.23` is the current release in this repository.
+Version `0.1.24` is the current release in this repository.
 
 ## Why MLForm
 
@@ -38,10 +38,10 @@ For application usage:
 npm install mlform
 ```
 
-Import from the explicit package subpath you need:
+Import the complete kit from the package root:
 
 ```ts
-import { mountForm } from "mlform/kit";
+import { mountForm } from "mlform";
 import { createJsonTransport } from "mlform/transport";
 ```
 
@@ -184,6 +184,7 @@ Built-in recipes:
 
 | Surface                | Use it for                                                                                                                 |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `mlform`               | Application-facing alias of `mlform/kit` for normal mounting and layout use.                                               |
 | `mlform/kit`           | Explicit kit entrypoint with `mountForm`, `createFormView`, labels, layout, and lifecycle utilities.    |
 | `mlform/runtime`       | Headless state, validation, registries, hooks, conditions, and submission orchestration.                                   |
 | `mlform/primitives`    | Web Component renderers and custom renderer registries.                                                                    |
@@ -299,11 +300,11 @@ vp run build
 vp run dev
 ```
 
-The main package targets Node.js `>=24.9.0`.
+The published package supports Node.js `>=20.19.0` for Node-based consumers and tooling.
 
 ## Release Notes
 
-For `0.1.23`, use the repository release entry and the published docs as the source of truth:
+For `0.1.24`, use the repository release entry and the published docs as the source of truth:
 
 - GitHub releases: https://github.com/UlloaSP/mlform/releases
 - npm package: https://www.npmjs.com/package/mlform

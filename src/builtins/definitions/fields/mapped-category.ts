@@ -3,8 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type MappedCategoryOption = {
   label: string;
@@ -59,17 +59,5 @@ export const mappedCategoryFieldDefinition: BuiltinFieldDefinition<
     const allowedValues = config.options.map((option) => option.value);
 
     return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
-  },
-  describe(config, context) {
-    return makeFieldDescriptor(
-      "category-field",
-      config as NormalizedFieldConfig<MappedCategoryFieldConfig>,
-      {
-        value: context.state.value,
-        options: config.options.map((opt) => ({ label: opt.label, value: opt.value })),
-        state: context.state.status,
-        errors: context.state.errors,
-      },
-    );
   },
 };

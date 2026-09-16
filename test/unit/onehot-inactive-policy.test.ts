@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm, createSubmissionSnapshot } from "@/runtime";
 import type { InactiveFieldPolicy } from "@/schema";
 
@@ -24,7 +24,7 @@ const createHiddenOneHotForm = () =>
         },
       ],
     },
-    registry: createMlRegistryPack().registry,
+    registry: createBuiltinTestKit().registry,
     transport: { submit: async () => ({ reports: [] }) },
   });
 

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
+export { createBuiltinDescriptorRegistry } from "./builtin-presenters";
 export { collectLayoutReferences, flattenLayoutNodes, walkLayoutNodes } from "./layout-utils";
 export { mountForm, unmountForm } from "./mount-form";
 export { createFormView } from "./view";

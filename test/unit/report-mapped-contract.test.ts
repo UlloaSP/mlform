@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm } from "@/runtime";
 import { resolveMappedReportPayload, resolveMappedRoutes } from "@/schema";
 
@@ -20,7 +20,7 @@ describe("report mapped contract", () => {
         fields: [{ kind: "text", label: "Name" }],
         reports: [{ kind: "classifier", id: "ui-risk" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [],
@@ -42,7 +42,7 @@ describe("report mapped contract", () => {
           { kind: "classifier", id: "risk-b", mappedTo: "risk_score" },
         ],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [
@@ -87,7 +87,7 @@ describe("report mapped contract", () => {
         fields: [{ kind: "text", label: "Name" }],
         reports: [{ kind: "classifier", id: "risk", mappedTo: "risk_score" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn().mockResolvedValue({
           reports: [{ mappedTo: "risk_score", prediction: "high" }],
@@ -99,7 +99,7 @@ describe("report mapped contract", () => {
   });
 
   it("commits skipped as a terminal report state", async () => {
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
 
     const form = createForm({
       schema: {

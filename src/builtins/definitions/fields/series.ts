@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { NormalizedFieldConfig } from "@/schema";
-import { makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
-import { isRecord } from "./value-helpers";
+import type { BuiltinFieldDefinition } from "../shared";
 import {
   normalizeSeriesPoint,
   prefixRowErrors,
@@ -64,25 +62,5 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
     });
 
     return [...errors];
-  },
-  describe(config, context) {
-    return makeFieldDescriptor("series-field", config as NormalizedFieldConfig<SeriesFieldConfig>, {
-      value: Array.isArray(context.state.value)
-        ? context.state.value.map((point) =>
-            isRecord(point)
-              ? {
-                  field1: serializeSubFieldValue(config.field1, point.field1),
-                  field2: serializeSubFieldValue(config.field2, point.field2),
-                }
-              : point,
-          )
-        : [],
-      field1: config.field1,
-      field2: config.field2,
-      minPoints: config.minPoints,
-      maxPoints: config.maxPoints,
-      state: context.state.status,
-      errors: context.state.errors,
-    });
   },
 };

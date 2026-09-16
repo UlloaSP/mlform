@@ -2,10 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createForm } from "@/runtime";
 
-const registry = createMlRegistryPack().registry;
+const registry = createBuiltinTestKit().registry;
 
 describe("display key contract", () => {
   it("keeps display keys stable when labels change", async () => {

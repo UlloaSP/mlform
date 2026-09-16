@@ -14,6 +14,7 @@ const toolIgnorePatterns = [
   "docs/**",
   "coverage/**",
   "stats/**",
+  "architecture/*.html",
   ".github/**",
   ".claude/**",
   ".codex/**",
@@ -153,6 +154,14 @@ export default defineConfig({
       include: ["src/**/*.ts"],
       outDirs: "dist/types",
       tsconfigPath: "./tsconfig.build.json",
+      beforeWriteFile(_filePath, content) {
+        return {
+          content: content.replace(
+            /(["'])(?:\.\.\/)+(builtins|design|kit|primitives|runtime|schema|transport)\1/g,
+            "$1mlform/$2$1",
+          ),
+        };
+      },
     }),
   ],
   resolve: {

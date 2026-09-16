@@ -2,10 +2,10 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it, vi } from "vite-plus/test";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { attachDesignSystem } from "@/design";
 import { createForm } from "@/runtime";
-import { mountForm } from "@/primitives";
+import { mountPrimitiveForm } from "@/primitives";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -19,7 +19,7 @@ describe("design integration", () => {
       schema: {
         fields: [{ kind: "text", label: "Prompt", required: true }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -27,7 +27,7 @@ describe("design integration", () => {
 
     const container = document.createElement("div");
     document.body.append(container);
-    const mounted = mountForm(container, form);
+    const mounted = mountPrimitiveForm(container, form);
     mounted.host.setAttribute("data-mlf-theme-id", "manual");
     mounted.host.style.setProperty("--mlf-color-accent", "#101010");
     mounted.host.style.setProperty("--mlf-custom-surface-glow", "initial-glow");
@@ -102,7 +102,7 @@ describe("design integration", () => {
       schema: {
         fields: [{ kind: "text", label: "Prompt" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -111,7 +111,7 @@ describe("design integration", () => {
     const container = document.createElement("div");
     container.setAttribute("data-color-scheme", "light");
     document.body.append(container);
-    const mounted = mountForm(container, form);
+    const mounted = mountPrimitiveForm(container, form);
 
     const inherited = attachDesignSystem(mounted.host, {
       config: {
@@ -158,7 +158,7 @@ describe("design integration", () => {
       schema: {
         fields: [{ kind: "text", label: "Prompt" }],
       },
-      registry: createMlRegistryPack().registry,
+      registry: createBuiltinTestKit().registry,
       transport: {
         submit: vi.fn(),
       },
@@ -175,7 +175,7 @@ describe("design integration", () => {
         mode: "dark",
       },
     });
-    const mounted = mountForm(container, form);
+    const mounted = mountPrimitiveForm(container, form);
     const child = attachDesignSystem(mounted.host, {
       config: {
         theme: "cobalt",

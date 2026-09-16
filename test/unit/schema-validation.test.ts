@@ -3,10 +3,10 @@
 
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import { createRegistry, findUnknownKinds, toSchemaJsonSchema, validateSchema } from "@/schema";
 
-const registry = createMlRegistryPack().registry;
+const registry = createBuiltinTestKit().registry;
 
 const unresolvedLocalRefs = (schema: Record<string, unknown>): string[] => {
   const refs: string[] = [];

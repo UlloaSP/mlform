@@ -69,7 +69,8 @@ Use these terms consistently:
 ## Invariants
 
 - Source files stay at or below 300 lines. Split by responsibility before crossing the limit.
-- Public package surfaces remain rooted at:
+- `mlform` is the application-facing alias of `mlform/kit`; both resolve to the same files.
+- Layer-specific public package surfaces remain rooted at:
   - `mlform/schema`
   - `mlform/runtime`
   - `mlform/builtins`

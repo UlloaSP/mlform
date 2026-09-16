@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { readyReport } from "../report-result";
 import * as z from "zod";
-import { createMlRegistryPack } from "@/builtins";
+import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
 import {
   defineFieldKind,
   defineReportKind,
@@ -24,7 +24,7 @@ describe("kit integration", () => {
   it("mounts fetch-backed reports, renders report frames only after submit, and triggers fetch after submit", async () => {
     const fetchResult = { feature_importance: { name: 0.9 } };
     const transportSubmit = vi.fn().mockResolvedValue(fetchResult);
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
 
     registerDefinedReportKind(
       pack.registry,
@@ -109,7 +109,7 @@ describe("kit integration", () => {
   });
 
   it("supports unregisterReport on the engine registry", () => {
-    const registry = createMlRegistryPack().registry;
+    const registry = createBuiltinTestKit().registry;
 
     const def = {
       kind: "shap",
@@ -137,7 +137,7 @@ describe("kit integration", () => {
         { feature: "savings", score: 0.31 },
       ],
     });
-    const pack = createMlRegistryPack();
+    const pack = createBuiltinTestKit();
 
     registerDefinedFieldKind(
       pack.registry,

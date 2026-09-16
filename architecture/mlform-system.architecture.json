@@ -6,7 +6,7 @@
     "locale": "en",
     "output": "mlform-system.architecture.html",
     "quality_profile": "showcase",
-    "viewBox": [1390, 760],
+    "viewBox": [1390, 758],
     "views": [
       {
         "id": "application-path",
@@ -40,9 +40,9 @@
     {
       "id": "kit",
       "type": "frontend",
-      "label": "mlform/kit",
-      "sublabel": "Composition root",
-      "tag": "mountForm · createFormView",
+      "label": "mlform = mlform/kit",
+      "sublabel": "Public facade · composition root",
+      "tag": "exact export alias",
       "pos": [280, 302],
       "size": [195, 80]
     },
@@ -161,7 +161,7 @@
       "id": "kit_to_builtins",
       "from": "kit",
       "to": "builtins",
-      "label": "default definitions",
+      "label": "headless definitions",
       "labelAt": [378, 396]
     },
     { "id": "kit_to_primitives", "from": "kit", "to": "primitives", "label": "mounts renderers" },
@@ -192,28 +192,25 @@
       "dot": "cyan",
       "title": "Public surfaces",
       "items": [
-        "Seven stable package roots",
-        "kit is the integrated entry point",
+        "Root facade plus seven stable layer roots",
+        "mlform and mlform/kit expose the same API",
         "runtime remains independently usable"
       ]
     },
     {
       "dot": "emerald",
-      "title": "Implemented seams",
+      "title": "Enforced seams",
       "items": [
         "MlformPlugin coordinates extensions",
+        "builtins stays headless; kit owns presenters",
         "TypeScript tests enforce the dependency DAG",
-        "No source import cycles"
+        "Packed consumers verify the facade and all seven layer roots"
       ]
     },
     {
       "dot": "amber",
-      "title": "Remaining pressure",
-      "items": [
-        "builtins still imports primitive presenter contracts",
-        "Deprecated registry and primitive mount aliases remain",
-        "Plugin versioning and compatibility policy are not formalized"
-      ]
+      "title": "Compatibility horizon",
+      "items": ["Plugin versioning and compatibility policy are not formalized"]
     }
   ]
 }

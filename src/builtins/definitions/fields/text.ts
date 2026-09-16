@@ -3,8 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type TextFieldConfig = BaseFieldConfig & {
   kind: "text";
@@ -58,16 +58,5 @@ export const textFieldDefinition: BuiltinFieldDefinition<TextFieldConfig, string
       errors.push(builtinValidationMessages.textPatternMismatch);
     }
     return errors;
-  },
-  describe(config, context) {
-    return makeFieldDescriptor("text-field", config as NormalizedFieldConfig<TextFieldConfig>, {
-      value: context.state.value,
-      placeholder: config.placeholder ?? "",
-      minLength: config.minLength,
-      maxLength: config.maxLength,
-      pattern: config.pattern,
-      state: context.state.status,
-      errors: context.state.errors,
-    });
   },
 };

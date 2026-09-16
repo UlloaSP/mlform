@@ -3,8 +3,8 @@
 
 import * as z from "zod";
 import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, NormalizedFieldConfig } from "@/schema";
-import { baseFieldShape, makeFieldDescriptor, type BuiltinFieldDefinition } from "../shared";
+import type { BaseFieldConfig } from "@/schema";
+import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 import { toDate } from "./value-helpers";
 
 type DateFieldConfig = BaseFieldConfig & {
@@ -60,18 +60,5 @@ export const dateFieldDefinition: BuiltinFieldDefinition<DateFieldConfig, Date |
     }
 
     return errors;
-  },
-  describe(config, context) {
-    return makeFieldDescriptor("date-field", config as NormalizedFieldConfig<DateFieldConfig>, {
-      value:
-        context.state.value instanceof Date
-          ? context.state.value.toISOString().slice(0, 10)
-          : context.state.value,
-      min: config.min,
-      max: config.max,
-      step: config.step,
-      state: context.state.status,
-      errors: context.state.errors,
-    });
   },
 };
