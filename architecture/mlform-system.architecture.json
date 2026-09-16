@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitectura lógica de MLForm",
+    "output": "mlform-system.architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/UlloaSP/mlform",
+      "revision": "15820eb62fd2fd58186f69f8c86a17f277a175fb"
+    },
+    "viewBox": [1390, 680]
+  },
+  "components": [
+    {
+      "id": "host_app",
+      "type": "external",
+      "label": "Aplicación consumidora",
+      "sublabel": "UI propia o montaje completo",
+      "pos": [40, 285],
+      "size": [190, 76],
+      "sources": [{ "path": "README.md", "label": "Uso público" }]
+    },
+    {
+      "id": "kit",
+      "type": "frontend",
+      "label": "mlform/kit",
+      "sublabel": "Montaje · layout · navegación",
+      "pos": [275, 175],
+      "size": [190, 76],
+      "sources": [
+        { "path": "src/kit/index.ts", "label": "API pública" },
+        { "path": "src/kit/view.ts", "label": "FormView" }
+      ]
+    },
+    {
+      "id": "primitives",
+      "type": "frontend",
+      "label": "mlform/primitives",
+      "sublabel": "Web Components accesibles",
+      "pos": [510, 175],
+      "size": [190, 76],
+      "sources": [
+        { "path": "src/primitives/index.ts", "label": "API pública" },
+        { "path": "src/primitives/types.ts", "label": "Registros UI" }
+      ]
+    },
+    {
+      "id": "design",
+      "type": "frontend",
+      "label": "mlform/design",
+      "sublabel": "Temas · recetas · tokens",
+      "pos": [510, 38],
+      "size": [190, 76],
+      "sources": [
+        { "path": "src/design/index.ts", "label": "API pública" },
+        { "path": "src/design/types.ts", "label": "Contrato visual" }
+      ]
+    },
+    {
+      "id": "runtime",
+      "type": "backend",
+      "label": "mlform/runtime",
+      "sublabel": "Estado · validación · pipelines",
+      "tag": "núcleo headless",
+      "pos": [720, 285],
+      "size": [205, 82],
+      "sources": [
+        { "path": "src/runtime/index.ts", "label": "API pública" },
+        { "path": "src/runtime/form.ts", "label": "Controlador" }
+      ]
+    },
+    {
+      "id": "schema_registry",
+      "type": "backend",
+      "label": "mlform/schema",
+      "sublabel": "Normalización · ids · registros",
+      "pos": [510, 430],
+      "size": [190, 76],
+      "sources": [
+        { "path": "src/schema/index.ts", "label": "API pública" },
+        { "path": "src/schema/normalize.ts", "label": "Normalización" },
+        { "path": "src/schema/registry.ts", "label": "Registry" }
+      ]
+    },
+    {
+      "id": "builtins",
+      "type": "backend",
+      "label": "mlform/builtins",
+      "sublabel": "Campos y reportes incluidos",
+      "pos": [275, 500],
+      "size": [190, 76],
+      "sources": [
+        { "path": "src/builtins/index.ts", "label": "API pública" },
+        { "path": "src/builtins/registry-pack.ts", "label": "Registry pack" }
+      ]
+    },
+    {
+      "id": "extensions",
+      "type": "external",
+      "label": "Extensiones de dominio",
+      "sublabel": "defineFieldKind · defineReportKind",
+      "pos": [750, 500],
+      "size": [205, 76],
+      "sources": [
+        { "path": "src/kit/kinds/define-field-kind.ts", "label": "Campos" },
+        { "path": "src/kit/kinds/define-report-kind.ts", "label": "Reportes" }
+      ]
+    },
+    {
+      "id": "transport",
+      "type": "backend",
+      "label": "mlform/transport",
+      "sublabel": "Ejecución · errores · fanout",
+      "pos": [970, 288],
+      "size": [190, 76],
+      "sources": [
+        { "path": "src/transport/index.ts", "label": "API pública" },
+        { "path": "src/transport/types.ts", "label": "Contrato" }
+      ]
+    },
+    {
+      "id": "model_backend",
+      "type": "external",
+      "label": "Backend de modelos",
+      "sublabel": "Predicción · scoring · informes",
+      "pos": [1190, 288],
+      "size": [190, 76],
+      "sources": [{ "path": "README.md", "label": "Contrato backend" }]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Paquete MLForm",
+      "wraps": [
+        "kit",
+        "primitives",
+        "design",
+        "runtime",
+        "schema_registry",
+        "builtins",
+        "transport"
+      ],
+      "pad": 22
+    }
+  ],
+  "connections": [
+    {
+      "id": "host_to_kit",
+      "from": "host_app",
+      "to": "kit",
+      "label": "mountForm / createFormView",
+      "variant": "emphasis",
+      "labelAt": [253, 265]
+    },
+    {
+      "id": "host_to_runtime",
+      "from": "host_app",
+      "to": "runtime",
+      "label": "createForm (headless)",
+      "variant": "dashed",
+      "labelAt": [254, 375]
+    },
+    {
+      "id": "kit_to_primitives",
+      "from": "kit",
+      "to": "primitives",
+      "label": "compone layouts",
+      "labelAt": [488, 151]
+    },
+    {
+      "id": "runtime_to_primitives",
+      "from": "runtime",
+      "to": "primitives",
+      "label": "estado y eventos",
+      "labelAt": [725, 265]
+    },
+    {
+      "id": "design_to_primitives",
+      "from": "design",
+      "to": "primitives",
+      "label": "tokens y host integration",
+      "labelAt": [605, 128]
+    },
+    {
+      "id": "schema_to_runtime",
+      "from": "schema_registry",
+      "to": "runtime",
+      "label": "config normalizada + definitions"
+    },
+    {
+      "id": "builtins_to_schema",
+      "from": "builtins",
+      "to": "schema_registry",
+      "label": "registra kinds incluidos",
+      "labelAt": [488, 590]
+    },
+    {
+      "id": "extensions_to_schema",
+      "from": "extensions",
+      "to": "schema_registry",
+      "label": "registra kinds propios",
+      "variant": "dashed",
+      "labelAt": [725, 590]
+    },
+    {
+      "id": "runtime_to_transport",
+      "from": "runtime",
+      "to": "transport",
+      "label": "SubmitRequest ↔ TransportResponse",
+      "variant": "emphasis",
+      "route": "orthogonal-h",
+      "labelAt": [948, 381]
+    },
+    {
+      "id": "transport_to_backend",
+      "from": "transport",
+      "to": "model_backend",
+      "label": "JSON o adaptador personalizado",
+      "variant": "emphasis",
+      "labelAt": [1215, 375]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Dos superficies",
+      "items": ["Kit + primitives para UI integrada", "Runtime directo para renderizado propio"]
+    },
+    {
+      "dot": "emerald",
+      "title": "Una fuente de verdad",
+      "items": [
+        "Schema y registros definen comportamiento",
+        "Runtime no reconstruye contratos desde la UI"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Límite externo",
+      "items": ["Transport separa MLForm del backend", "mappedTo conserva identidad del modelo"]
+    }
+  ]
+}
