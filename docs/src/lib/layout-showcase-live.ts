@@ -7,7 +7,6 @@ import {
   schema,
   tabsLayout,
   type Cleanup,
-  type ShowcaseLocale,
   wizardLayout,
 } from "./layout-showcase-config";
 import { mountCustomHeadless } from "./layout-showcase-custom";
@@ -19,7 +18,7 @@ type ShowcaseRoot = HTMLElement & {
 const resolveHost = (root: HTMLElement, id: string): HTMLElement | null =>
   root.querySelector<HTMLElement>(`[data-layout-showcase-host="${id}"]`);
 
-export const mountLayoutShowcase = (root: HTMLElement, locale: ShowcaseLocale = "en"): Cleanup => {
+export const mountLayoutShowcase = (root: HTMLElement): Cleanup => {
   const showcaseRoot = root as ShowcaseRoot;
   showcaseRoot[cleanupSymbol]?.();
 
@@ -66,7 +65,7 @@ export const mountLayoutShowcase = (root: HTMLElement, locale: ShowcaseLocale = 
 
   const customHost = resolveHost(root, "custom");
   if (customHost) {
-    cleanups.push(mountCustomHeadless(customHost, locale));
+    cleanups.push(mountCustomHeadless(customHost));
   }
 
   const cleanup = (): void => {

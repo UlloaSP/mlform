@@ -2,11 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { attachDesignSystem, type DesignSystemConfig } from "@/design";
-import {
-  mountForm as mountPrimitiveForm,
-  resolvePrimitiveText,
-  type PrimitiveRegistry,
-} from "@/primitives";
+import { mountPrimitiveForm, resolvePrimitiveText, type PrimitiveRegistry } from "@/primitives";
 import "./layout-root";
 import "./tabs-root";
 import "./wizard-root";
@@ -47,6 +43,7 @@ const createView = (options: MountFormOptions) =>
     registry: options.registry,
     descriptorRegistry: options.descriptorRegistry,
     behaviors: options.behaviors,
+    plugins: options.plugins,
     initialValues: options.initialValues,
     validators: options.validators,
     hooks: options.hooks,

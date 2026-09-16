@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ResolvedFormLayout, ResolvedFormLayoutNode } from "./types";
+import type { ResolvedFormLayout, ResolvedFormLayoutNode } from "./layout-types";
 
 export interface LayoutReferences {
   fields: string[];

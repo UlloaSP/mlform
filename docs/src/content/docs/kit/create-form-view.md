@@ -21,6 +21,7 @@ Required:
 Common optional inputs:
 
 - `layout`
+- `plugins`
 - `registry`
 - `initialValues`
 - `validators`
@@ -28,6 +29,8 @@ Common optional inputs:
 - `inactiveFieldPolicy`
 - `listenerErrorPolicy`
 - `onListenerError`
+
+Use `plugins` for custom field and report kinds. A plugin carries its schema definition, presenter, and optional runtime behaviors through one interface; direct registry options remain available for low-level integrations.
 
 ## Returned controller
 

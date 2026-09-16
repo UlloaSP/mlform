@@ -2,9 +2,21 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { describe, expect, it } from "vite-plus/test";
-import { booleanFieldDefinition, numberFieldDefinition, seriesFieldDefinition } from "@/builtins";
+import {
+  booleanFieldDefinition,
+  createBuiltinMlRegistry,
+  numberFieldDefinition,
+  seriesFieldDefinition,
+  textFieldDefinition,
+} from "@/builtins";
 
 describe("builtin definitions", () => {
+  it("creates a complete headless registry", () => {
+    const registry = createBuiltinMlRegistry();
+
+    expect(registry.getField("text")).toBe(textFieldDefinition);
+    expect(registry.getReport("classifier")?.kind).toBe("classifier");
+  });
   it("keeps number field normalization behavior", () => {
     expect(numberFieldDefinition.normalizeValue?.("42", { kind: "number", label: "Age" })).toBe(42);
     expect(numberFieldDefinition.normalizeValue?.("", { kind: "number", label: "Age" })).toBeNull();

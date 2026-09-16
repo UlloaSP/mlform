@@ -5,40 +5,8 @@ import { createPrimitiveDescriptorRegistry } from "@/primitives";
 import { createRegistry, type FieldConfig, type Registry, type ReportConfig } from "@/schema";
 import type { FieldPresenter, PrimitiveDescriptorRegistry, ReportPresenter } from "@/primitives";
 import type { RuntimeBehavior } from "@/runtime";
-import {
-  booleanFieldDefinition,
-  categoryFieldDefinition,
-  classifierReportDefinition,
-  dateFieldDefinition,
-  longTextFieldDefinition,
-  mappedCategoryFieldDefinition,
-  multiChoiceFieldDefinition,
-  numberFieldDefinition,
-  oneHotCategoryFieldDefinition,
-  ratingFieldDefinition,
-  regressorReportDefinition,
-  seriesFieldDefinition,
-  singleChoiceFieldDefinition,
-  textFieldDefinition,
-} from "./definitions";
+import { builtinFieldDefinitions, builtinReportDefinitions } from "./definitions";
 import { createMappedCategoryBehavior } from "./mapped-category-behavior";
-
-const fieldDefinitions = [
-  textFieldDefinition,
-  numberFieldDefinition,
-  booleanFieldDefinition,
-  categoryFieldDefinition,
-  mappedCategoryFieldDefinition,
-  oneHotCategoryFieldDefinition,
-  dateFieldDefinition,
-  seriesFieldDefinition,
-  longTextFieldDefinition,
-  singleChoiceFieldDefinition,
-  multiChoiceFieldDefinition,
-  ratingFieldDefinition,
-] as const;
-
-const reportDefinitions = [classifierReportDefinition, regressorReportDefinition] as const;
 
 type DescriptorCapableFieldDefinition = {
   kind: string;
@@ -85,21 +53,23 @@ const registerReportPresenterFromDefinition = (
 };
 
 export const createBuiltinMlRegistry = (): Registry => {
-  return createRegistry()
-    .registerReport(classifierReportDefinition)
-    .registerReport(regressorReportDefinition);
+  const registry = createRegistry();
+  for (const definition of builtinFieldDefinitions) registry.registerField(definition as never);
+  for (const definition of builtinReportDefinitions) registry.registerReport(definition as never);
+  return registry;
 };
 
+/** @deprecated Application composition belongs to `mlform/kit`; use `createBuiltinMlRegistry` for headless runtime setup. */
 export const createMlRegistryPack = (): MlRegistryPack => {
   const registry = createRegistry();
   const descriptorRegistry = createPrimitiveDescriptorRegistry();
 
-  for (const definition of fieldDefinitions) {
+  for (const definition of builtinFieldDefinitions) {
     registry.registerField(definition as never);
     registerFieldPresenterFromDefinition(descriptorRegistry, definition as never);
   }
 
-  for (const definition of reportDefinitions) {
+  for (const definition of builtinReportDefinitions) {
     registry.registerReport(definition as never);
     registerReportPresenterFromDefinition(descriptorRegistry, definition as never);
   }

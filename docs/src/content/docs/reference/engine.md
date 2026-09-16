@@ -12,7 +12,7 @@ Important exports from `mlform/runtime` and related runtime-facing modules:
 - `ValidationError`
 - `SubmitError`
 - `SubmissionAbortedError`
-- `createMlRegistryPack` from `mlform/builtins`
+- `createBuiltinMlRegistry` from `mlform/builtins`
 
 Important types:
 

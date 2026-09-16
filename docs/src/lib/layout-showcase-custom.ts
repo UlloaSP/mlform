@@ -4,12 +4,11 @@ import type { FormViewSnapshot, ResolvedFormLayoutNode } from "@/kit";
 import { createBuiltinPrimitiveRegistry } from "@/primitives";
 
 import {
-  copyByLocale,
   createDemoTransport,
   schema,
+  showcaseCopy,
   tabsLayout,
   type Cleanup,
-  type ShowcaseLocale,
 } from "./layout-showcase-config";
 
 const createFrame = (
@@ -110,8 +109,8 @@ const renderCustomNode = (
   }
 };
 
-export const mountCustomHeadless = (host: HTMLElement, locale: ShowcaseLocale): Cleanup => {
-  const copy = copyByLocale[locale];
+export const mountCustomHeadless = (host: HTMLElement): Cleanup => {
+  const copy = showcaseCopy;
   const view = createFormView({
     schema,
     transport: createDemoTransport(),

@@ -3,7 +3,8 @@
 
 import { array, never, strictObject, toJSONSchema, xor, type ZodType } from "zod";
 import { normalizeSchema, SchemaNormalizationError } from "./normalize";
-import type { FormSchema, NormalizedFormSchema, Registry } from "./index";
+import type { FormSchema, NormalizedFormSchema } from "./types/form";
+import type { Registry } from "./types/registry";
 
 export type SchemaIssuePath = readonly (string | number)[];
 

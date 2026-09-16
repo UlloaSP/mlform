@@ -19,6 +19,7 @@ import type {
 } from "@/primitives";
 import { toDescriptorNodes } from "@/primitives";
 import type { ZodType } from "zod";
+import type { MlformReportKind } from "../plugin";
 
 export interface ReportRenderSpecContext<
   TConfig extends ReportConfig = ReportConfig,
@@ -62,7 +63,7 @@ export interface DeclarativeReportKind<
   render: ReportRenderSpec<TConfig, TPayload>;
 }
 
-export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = {
+export type DefinedReportKind<TConfig extends ReportConfig, _TPayload> = MlformReportKind & {
   kind: string;
   schema: import("zod").ZodType<TConfig>;
   payloadSchema?: ReportDefinition<TConfig>["payloadSchema"];
@@ -153,6 +154,7 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
   });
 
   return {
+    category: "report",
     kind: kind.kind,
     schema: kind.schema,
     payloadSchema: kind.payloadSchema,
@@ -163,5 +165,9 @@ export const defineReportKind = <TConfig extends ReportConfig, TPayload>(
     describe,
     definition,
     presenter,
+    register(registry, descriptorRegistry) {
+      registry.registerReport(definition);
+      descriptorRegistry.registerReport(presenter);
+    },
   };
 };

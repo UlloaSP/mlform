@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { ZodType } from "zod";
-import type { MappedTo } from "../mapped-to";
+import type { MappedTo } from "./mapping";
 
 export type MaybePromise<T> = T | PromiseLike<T>;
 export type FormStatus = "idle" | "editing" | "validating" | "submitting" | "success" | "error";

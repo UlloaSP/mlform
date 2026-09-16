@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { FieldPresenter, ReportPresenter } from "./index";
+import type { FieldPresenter } from "./field";
+import type { ReportPresenter } from "./report";
 
 export class PrimitiveDescriptorRegistry {
   private readonly fieldPresenters = new Map<string, FieldPresenter<unknown, unknown>>();

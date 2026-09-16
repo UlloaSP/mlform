@@ -195,41 +195,38 @@ Built-in recipes:
 When built-in kinds are not enough, define your own field and report kinds without rewriting the normal rendering path.
 
 ```ts
-import { createMlRegistryPack } from "mlform/builtins";
-import { defineFieldKind, registerDefinedFieldKind } from "mlform/kit";
+import { defineFieldKind, defineMlformPlugin, mountForm } from "mlform/kit";
 import { z } from "zod";
 
-const pack = createMlRegistryPack();
-
-registerDefinedFieldKind(
-  pack.registry,
-  pack.descriptorRegistry,
-  defineFieldKind({
-    kind: "score",
-    schema: z.object({
-      kind: z.literal("score"),
-      id: z.string().optional(),
-      label: z.string(),
-      min: z.number().default(0),
-      max: z.number().default(100),
-    }),
-    value: {
-      default: () => 0,
-      normalize: (value) => Number(value ?? 0),
-      serialize: (value) => value,
-    },
-    validate: ({ value, config }) =>
-      value < config.min || value > config.max ? ["Score out of range."] : [],
-    render: {
-      widget: "number",
-      hints: ({ config }) => ({
-        min: config.min,
-        max: config.max,
-        unit: "%",
-      }),
-    },
+const scoreField = defineFieldKind({
+  kind: "score",
+  schema: z.object({
+    kind: z.literal("score"),
+    id: z.string().optional(),
+    label: z.string(),
+    min: z.number().default(0),
+    max: z.number().default(100),
   }),
-);
+  value: {
+    default: () => 0,
+    normalize: (value) => Number(value ?? 0),
+    serialize: (value) => value,
+  },
+  validate: ({ value, config }) =>
+    value < config.min || value > config.max ? ["Score out of range."] : [],
+  render: {
+    widget: "number",
+    hints: ({ config }) => ({
+      min: config.min,
+      max: config.max,
+      unit: "%",
+    }),
+  },
+});
+
+const domainPlugin = defineMlformPlugin({ fields: [scoreField] });
+
+mountForm(container, { schema, transport, plugins: [domainPlugin] });
 ```
 
 Stay at the declarative `define*Kind` layer unless you truly need fully custom rendering or low-level primitive behavior.

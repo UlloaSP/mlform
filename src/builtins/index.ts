@@ -17,6 +17,8 @@ export {
   seriesFieldDefinition,
   singleChoiceFieldDefinition,
   textFieldDefinition,
+  builtinFieldDefinitions,
+  builtinReportDefinitions,
 } from "./definitions";
 export type {
   BuiltinFieldConfig,

@@ -1,10 +1,9 @@
 import { mountLayoutShowcase } from "./layout-showcase-live.ts";
 
-for (const root of document.querySelectorAll("[data-layout-showcase-locale]")) {
+for (const root of document.querySelectorAll("[data-layout-showcase]")) {
   if (!(root instanceof HTMLElement)) {
     continue;
   }
 
-  const locale = root.dataset.layoutShowcaseLocale === "es" ? "es" : "en";
-  mountLayoutShowcase(root, locale);
+  mountLayoutShowcase(root);
 }

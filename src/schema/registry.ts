@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type {
-  FieldConfig,
-  FieldDefinition,
-  Registry,
-  ReportConfig,
-  ReportDefinition,
-} from "./index";
+import type { FieldConfig, FieldDefinition } from "./types/field";
+import type { Registry } from "./types/registry";
+import type { ReportConfig, ReportDefinition } from "./types/report";
 
 export class RegistryError extends Error {
   constructor(message: string) {

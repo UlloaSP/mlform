@@ -3,15 +3,10 @@
 
 import { RegistryError } from "./registry";
 import { normalizeSchemaId } from "./ids";
-import type {
-  FieldConfig,
-  FormSchema,
-  NormalizedFieldConfig,
-  NormalizedFormSchema,
-  NormalizedReportConfig,
-  Registry,
-  ReportConfig,
-} from "./index";
+import type { FieldConfig, NormalizedFieldConfig } from "./types/field";
+import type { FormSchema, NormalizedFormSchema } from "./types/form";
+import type { Registry } from "./types/registry";
+import type { NormalizedReportConfig, ReportConfig } from "./types/report";
 
 export class SchemaNormalizationError extends Error {
   constructor(
