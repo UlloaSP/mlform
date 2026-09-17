@@ -88,7 +88,7 @@ export class KitTabsElement extends LitElement {
                 aria-selected=${String(index === tabsState.activeTabIndex)}
                 aria-controls=${`panel-${tab.id}`}
                 id=${`tab-${tab.id}`}
-                @click=${() => this.view?.setActiveTab(tab.id)}
+                @click=${() => void this.view?.navigation.activate(tab.id)}
               >
                 ${tab.title}
               </button>
@@ -147,7 +147,7 @@ export class KitTabsElement extends LitElement {
               type="button"
               class="btn"
               ?disabled=${!tabsState.canGoPrev}
-              @click=${() => this.view?.prevTab()}
+              @click=${() => this.view?.navigation.previous()}
             >
               Previous
             </button>
@@ -155,7 +155,7 @@ export class KitTabsElement extends LitElement {
               type="button"
               class="btn"
               ?disabled=${!tabsState.canGoNext}
-              @click=${() => this.view?.nextTab()}
+              @click=${() => void this.view?.navigation.next()}
             >
               Next
             </button>

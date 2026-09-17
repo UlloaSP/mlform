@@ -39,6 +39,7 @@ interface FormViewController {
   form: FormController;
   engineRegistry: Registry;
   descriptorRegistry: PrimitiveDescriptorRegistry;
+  navigation: FormViewNavigationController;
   state: FormViewState;
   getSnapshot(): FormViewSnapshot;
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;
@@ -46,22 +47,10 @@ interface FormViewController {
   getReport(id: string): FormViewReportItem | undefined;
   getVisibleFields(): FormViewFieldItem[];
   getVisibleReports(): FormViewReportItem[];
-  getActiveLayoutNodes(): ResolvedFormLayoutNode[];
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
   reset(): void;
   subscribe(listener): () => void;
-  nextStep(): Promise<boolean>;
-  prevStep(): void;
-  goToStep(stepId: string): Promise<boolean>;
-  setActiveTab(tabId: string): void;
-  nextTab(): boolean;
-  prevTab(): boolean;
-  toggleSection(sectionId: string): void;
-  openSection(sectionId: string): void;
-  closeSection(sectionId: string): void;
-  openAllSections(): void;
-  closeAllSections(): void;
 }
 ```
 
@@ -79,7 +68,7 @@ interface FormViewController {
 
 `wizard` is `null` unless `layout.kind === "wizard"`.
 `tabs` is `null` unless `layout.kind === "tabs"`.
-`disclosure` is `null` unless `layout.kind === "disclosure"`.
+`disclosure` is `null` when the active layout contains no disclosure sections.
 
 ## Item collections
 
@@ -99,44 +88,38 @@ The report collection follows the same pattern.
 
 ## Navigation semantics
 
-### `nextStep()`
+### `navigation.next()`
 
-- only meaningful for wizard layouts
-- validates fields in the current step
-- returns `false` on validation failure
-- returns `true` when the current step is valid
-- does not advance past the last step
+- in a wizard, validates the current step before advancing
+- in tabs, advances without validation
+- returns `false` when validation fails or movement is not available
+- a valid final wizard step returns `true` without moving past the end
 
-### `prevStep()`
+### `navigation.previous()`
 
-- only meaningful for wizard layouts
 - never validates
-- moves back one step when possible
+- moves back one wizard step or tab
+- returns whether navigation changed
 
-### `goToStep(stepId)`
+### `navigation.activate(id)`
 
-- allows free backward navigation
-- validates incrementally when moving forward
-- throws if used outside a wizard layout
+- activates a tab directly
+- allows free backward wizard navigation
+- validates wizard steps incrementally when moving forward
+- returns `false` for stacked and split layouts
+- throws when the current wizard or tabs layout does not contain `id`
 
-### `setActiveTab(tabId)`
+### `navigation.getActiveNodes()`
 
-- only meaningful for tabs layouts
-- switches tabs without validation
-- throws if used outside a tabs layout
-
-### `nextTab()` / `prevTab()`
-
-- only meaningful for tabs layouts
-- never validate
-- return `false` when movement is not possible
+- returns the currently active layout nodes after wizard, tab, and disclosure state is applied
 
 ### Disclosure controls
 
-- `toggleSection(sectionId)` opens or closes one disclosure section
-- `openSection(sectionId)` and `closeSection(sectionId)` are explicit variants
-- `openAllSections()` and `closeAllSections()` manage the full disclosure state
-- all disclosure control methods throw outside `layout.kind === "disclosure"`
+- `navigation.disclosure.toggle(sectionId)` opens or closes one section
+- `open(sectionId)` and `close(sectionId)` are explicit variants
+- `openAll()` and `closeAll()` manage every section in the layout
+- section controls work inside stacked, split, wizard, and tabs layouts
+- an unknown section id throws
 
 ## Subscription model
 

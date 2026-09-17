@@ -37,15 +37,15 @@ export const revealFirstInvalidField = async (
   const layoutKind = view.getSnapshot().layout.kind;
 
   if (layoutKind === "wizard" && field.stepId) {
-    await view.goToStep(field.stepId);
+    await view.navigation.activate(field.stepId);
   }
 
   if (layoutKind === "tabs" && field.tabId) {
-    view.setActiveTab(field.tabId);
+    await view.navigation.activate(field.tabId);
   }
 
   if (field.sectionId) {
-    view.openSection(field.sectionId);
+    view.navigation.disclosure.open(field.sectionId);
   }
 
   await waitForRender(host);

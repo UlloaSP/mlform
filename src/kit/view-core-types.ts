@@ -112,10 +112,28 @@ export interface CreateFormViewOptions {
   reportFetchMode?: MountedReportFetchMode;
 }
 
+export interface FormViewDisclosureController {
+  toggle(sectionId: string): void;
+  open(sectionId: string): void;
+  close(sectionId: string): void;
+  openAll(): void;
+  closeAll(): void;
+}
+
+export interface FormViewNavigationController {
+  readonly kind: ResolvedFormLayout["kind"];
+  readonly disclosure: FormViewDisclosureController;
+  getActiveNodes(): ResolvedFormLayoutNode[];
+  next(): Promise<boolean>;
+  previous(): boolean;
+  activate(id: string): Promise<boolean>;
+}
+
 export interface FormViewController {
   readonly form: FormController;
   readonly engineRegistry: Registry;
   readonly descriptorRegistry: PrimitiveDescriptorRegistry;
+  readonly navigation: FormViewNavigationController;
   readonly state: FormViewState;
   getSnapshot(): FormViewSnapshot;
   getNodeById(id: string): ResolvedFormLayoutNode | undefined;
@@ -123,7 +141,6 @@ export interface FormViewController {
   getReport(id: string): FormViewReportItem | undefined;
   getVisibleFields(): FormViewFieldItem[];
   getVisibleReports(): FormViewReportItem[];
-  getActiveLayoutNodes(): ResolvedFormLayoutNode[];
   getLayoutReferences(): LayoutReferences;
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
@@ -131,17 +148,6 @@ export interface FormViewController {
   reset(): void;
   dispose(): void;
   subscribe(listener: (snapshot: FormViewSnapshot) => void): () => void;
-  nextStep(): Promise<boolean>;
-  prevStep(): void;
-  goToStep(stepId: string): Promise<boolean>;
-  setActiveTab(tabId: string): void;
-  nextTab(): boolean;
-  prevTab(): boolean;
-  toggleSection(sectionId: string): void;
-  openSection(sectionId: string): void;
-  closeSection(sectionId: string): void;
-  openAllSections(): void;
-  closeAllSections(): void;
 }
 
 export type { LayoutReferences, PanelState, ResolvedFormLayoutNode };

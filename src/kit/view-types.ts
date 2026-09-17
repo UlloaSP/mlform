@@ -4,11 +4,13 @@
 export type {
   DisclosureState,
   CreateFormViewOptions,
+  FormViewDisclosureController,
   FormViewController,
   FormViewFieldItem,
   FormViewReportItem,
   FormViewSnapshot,
   FormViewState,
+  FormViewNavigationController,
   LayoutReferences,
   PanelState,
   TabsState,

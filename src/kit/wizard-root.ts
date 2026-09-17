@@ -142,11 +142,11 @@ export class KitWizardElement extends LitElement {
   }
 
   #handlePrev = (): void => {
-    this.view?.prevStep();
+    this.view?.navigation.previous();
   };
 
   #handleNext = async (): Promise<void> => {
-    const advanced = await this.view?.nextStep();
+    const advanced = await this.view?.navigation.next();
     if (advanced === false && this.view) {
       await revealFirstInvalidField(this, this.view, focusPrimitiveField);
     }
@@ -157,7 +157,7 @@ export class KitWizardElement extends LitElement {
       return;
     }
 
-    const valid = await this.view.nextStep();
+    const valid = await this.view.navigation.next();
     if (!valid) {
       await revealFirstInvalidField(this, this.view, focusPrimitiveField);
       return;

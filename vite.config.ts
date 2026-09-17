@@ -186,10 +186,28 @@ export default defineConfig({
     setupFiles: ["./test/setup.ts"],
     include: ["test/**/*.test.ts"],
     coverage: {
-      reporter: ["html"],
+      reporter: ["text", "html"],
       exclude: ["node_modules/", "test/", "dist/", "**/*.d.ts", "**/*.config.*", "**/coverage/**"],
       thresholds: {
-        global: {
+        // Browser and platform fallbacks keep the repository-wide branch baseline below the
+        // contract seams, which are held to the stricter target independently.
+        branches: 70,
+        functions: 80,
+        lines: 80,
+        statements: 80,
+        "src/schema/**": {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
+        "src/runtime/{fields,reports,state}/**": {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
+        "src/kit/kinds/**": {
           branches: 80,
           functions: 80,
           lines: 80,

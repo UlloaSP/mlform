@@ -45,7 +45,7 @@ export const renderLayoutNode = ({
                     type="button"
                     class=${sectionCopyClass}
                     aria-expanded=${String(open)}
-                    @click=${() => view?.toggleSection(node.id)}
+                    @click=${() => view?.navigation.disclosure.toggle(node.id)}
                   >
                     <span class="section-label">
                       ${

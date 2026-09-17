@@ -38,6 +38,8 @@ export type {
   TabsState,
   DisclosureState,
   FormViewFieldItem,
+  FormViewDisclosureController,
+  FormViewNavigationController,
   FormViewReportItem,
   FormViewState,
   FormViewSnapshot,

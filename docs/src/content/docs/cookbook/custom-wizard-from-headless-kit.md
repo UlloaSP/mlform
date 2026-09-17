@@ -27,8 +27,8 @@ view.subscribe((snapshot) => render(snapshot));
 
 Host actions:
 
-- previous button -> `view.prevStep()`
-- next button -> `await view.nextStep()`
+- previous button -> `view.navigation.previous()`
+- next button -> `await view.navigation.next()`
 - final submit -> `await view.submit()`
 
 Keep the layout config the same if you later switch to `mountForm()`.

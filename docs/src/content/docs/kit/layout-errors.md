@@ -67,29 +67,13 @@ Errors:
 - `Disclosure layout must define at least one section.`
 - `Disclosure section "profile" must contain at least one layout node.`
 
-## Wrong API on non-wizard layouts
+## Unknown navigation target
 
-Example:
+`view.navigation.activate(id)` throws when a wizard or tabs layout does not contain the requested
+step or tab. On stacked and split layouts it returns `false`, because those layouts have no primary
+navigation target.
 
-```txt
-goToStep() is only available for wizard layouts.
-```
-
-Fix:
-
-- use wizard navigation only when `layout.kind === "wizard"`
-
-Tabs example:
-
-```txt
-setActiveTab() is only available for tabs layouts.
-```
-
-Disclosure example:
-
-```txt
-Disclosure section controls are only available for disclosure layouts.
-```
+Disclosure controls throw when the requested section id does not exist in the resolved layout.
 
 ## Debugging checklist
 

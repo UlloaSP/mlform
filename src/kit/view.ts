@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createForm, executeFormPipeline } from "@/runtime";
-import { kitErrorMessages } from "./constants";
 import { resolveFormLayout } from "./layout";
 import { collectLayoutReferences, flattenLayoutNodes } from "./layout-utils";
 import { resolveKitRegistryPack } from "./registry-pack";
@@ -15,11 +14,7 @@ import type {
 } from "./view-core-types";
 import { createFormViewSnapshotCache } from "./view-snapshot-cache";
 import { createViewState } from "./view-snapshot";
-import {
-  assertDisclosureSection,
-  getActiveLayoutNodes,
-  validateCurrentWizardStep,
-} from "./view-navigation";
+import { createFormViewNavigation } from "./view-navigation";
 import { collectDisclosureSections } from "./view-layout-state";
 
 export const createFormView = (options: CreateFormViewOptions): FormViewController => {
@@ -55,9 +50,6 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
   );
   const listeners = new Set<(snapshot: FormViewSnapshot) => void>();
 
-  const wizardSteps =
-    resolvedLayout.layout.kind === "wizard" ? resolvedLayout.layout.steps : ([] as const);
-  const tabs = resolvedLayout.layout.kind === "tabs" ? resolvedLayout.layout.tabs : ([] as const);
   const layoutReferences = collectLayoutReferences(resolvedLayout.layout);
   const nodeIndex = new Map<string, ResolvedFormLayoutNode>();
   for (const node of flattenLayoutNodes(resolvedLayout.layout)) {
@@ -87,12 +79,31 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
   const unsubscribeForm = form.subscribe(() => {
     notify();
   });
+  const navigation = createFormViewNavigation({
+    form,
+    resolvedLayout,
+    disclosureSections,
+    getStepIndex: () => stepIndex,
+    setStepIndex: (index) => {
+      stepIndex = index;
+    },
+    getActiveTabIndex: () => activeTabIndex,
+    setActiveTabIndex: (index) => {
+      activeTabIndex = index;
+    },
+    getOpenSectionIds: () => openSectionIds,
+    setOpenSectionIds: (sectionIds) => {
+      openSectionIds = sectionIds;
+    },
+    notify,
+  });
   let disposed = false;
 
   return Object.freeze({
     form,
     engineRegistry,
     descriptorRegistry,
+    navigation,
     get state(): FormViewState {
       return getState();
     },
@@ -111,9 +122,6 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     },
     getVisibleReports() {
       return getSnapshot().reports.filter((report) => report.visibleInLayout);
-    },
-    getActiveLayoutNodes() {
-      return getActiveLayoutNodes(resolvedLayout, stepIndex, activeTabIndex, openSectionIds);
     },
     getLayoutReferences() {
       return layoutReferences;
@@ -155,129 +163,6 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
       return () => {
         listeners.delete(listener);
       };
-    },
-    async nextStep() {
-      if (resolvedLayout.layout.kind !== "wizard") {
-        return false;
-      }
-
-      const valid = await validateCurrentWizardStep(form, resolvedLayout, stepIndex);
-      if (!valid) {
-        return false;
-      }
-
-      if (stepIndex < wizardSteps.length - 1) {
-        stepIndex += 1;
-        notify();
-      }
-
-      return true;
-    },
-    prevStep() {
-      if (resolvedLayout.layout.kind !== "wizard") {
-        return;
-      }
-
-      if (stepIndex > 0) {
-        stepIndex -= 1;
-        notify();
-      }
-    },
-    async goToStep(stepId: string) {
-      if (resolvedLayout.layout.kind !== "wizard") {
-        throw new TypeError(kitErrorMessages.nonWizardGoToStep);
-      }
-
-      const targetIndex = wizardSteps.findIndex((step) => step.id === stepId);
-      if (targetIndex < 0) {
-        throw new TypeError(kitErrorMessages.unknownWizardStep(stepId));
-      }
-
-      if (targetIndex <= stepIndex) {
-        stepIndex = targetIndex;
-        notify();
-        return true;
-      }
-
-      while (stepIndex < targetIndex) {
-        const advanced = await this.nextStep();
-        if (!advanced) {
-          return false;
-        }
-      }
-
-      return true;
-    },
-    setActiveTab(tabId: string) {
-      if (resolvedLayout.layout.kind !== "tabs") {
-        throw new TypeError(kitErrorMessages.nonTabsSetActiveTab);
-      }
-
-      const targetIndex = tabs.findIndex((tab) => tab.id === tabId);
-      if (targetIndex < 0) {
-        throw new TypeError(kitErrorMessages.unknownTab(tabId));
-      }
-
-      if (targetIndex !== activeTabIndex) {
-        activeTabIndex = targetIndex;
-        notify();
-      }
-    },
-    nextTab() {
-      if (resolvedLayout.layout.kind !== "tabs") {
-        return false;
-      }
-
-      if (activeTabIndex >= tabs.length - 1) {
-        return false;
-      }
-
-      activeTabIndex += 1;
-      notify();
-      return true;
-    },
-    prevTab() {
-      if (resolvedLayout.layout.kind !== "tabs") {
-        return false;
-      }
-
-      if (activeTabIndex <= 0) {
-        return false;
-      }
-
-      activeTabIndex -= 1;
-      notify();
-      return true;
-    },
-    toggleSection(sectionId: string) {
-      assertDisclosureSection(disclosureSections, sectionId);
-      if (openSectionIds.has(sectionId)) {
-        openSectionIds.delete(sectionId);
-      } else {
-        openSectionIds.add(sectionId);
-      }
-      notify();
-    },
-    openSection(sectionId: string) {
-      assertDisclosureSection(disclosureSections, sectionId);
-      if (!openSectionIds.has(sectionId)) {
-        openSectionIds.add(sectionId);
-        notify();
-      }
-    },
-    closeSection(sectionId: string) {
-      assertDisclosureSection(disclosureSections, sectionId);
-      if (openSectionIds.delete(sectionId)) {
-        notify();
-      }
-    },
-    openAllSections() {
-      openSectionIds = new Set(disclosureSections.map((section) => section.id));
-      notify();
-    },
-    closeAllSections() {
-      openSectionIds = new Set();
-      notify();
     },
   } satisfies FormViewController);
 };

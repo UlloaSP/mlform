@@ -147,7 +147,7 @@ export const mountCustomHeadless = (host: HTMLElement): Cleanup => {
       button.dataset.active = String(index === snapshot.tabs.activeTabIndex);
       button.textContent = tab.title;
       button.addEventListener("click", () => {
-        view.setActiveTab(tab.id);
+        void view.navigation.activate(tab.id);
       });
       nav.append(button);
     }
@@ -166,7 +166,7 @@ export const mountCustomHeadless = (host: HTMLElement): Cleanup => {
 
     const panelBody = document.createElement("div");
     panelBody.className = "layout-showcase-custom-panel";
-    for (const node of view.getActiveLayoutNodes()) {
+    for (const node of view.navigation.getActiveNodes()) {
       const nodeElement = renderCustomNode(node, snapshot, primitiveRegistry);
       if (nodeElement) {
         panelBody.append(nodeElement);

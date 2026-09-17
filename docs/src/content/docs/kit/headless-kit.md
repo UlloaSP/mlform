@@ -46,7 +46,7 @@ const snapshot = view.getSnapshot();
 
 Unlike `mountForm()`, `createFormView()` does not create DOM or attach a design system stylesheet.
 
-Use `subscribe()` to re-render your host UI and `nextStep()`, `prevStep()`, or `goToStep()` to drive wizard flows.
+Use `subscribe()` to re-render your host UI and `navigation.next()`, `navigation.previous()`, or `navigation.activate(stepId)` to drive wizard flows.
 
 Read next:
 

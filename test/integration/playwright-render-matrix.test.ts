@@ -15,66 +15,43 @@ const html = `
 
 const appModule = `
   import * as z from "zod";
-  import { createBuiltinMlRegistry } from "/src/builtins/index.ts";
   import * as kit from "/src/kit/index.ts";
   import { executeFormPipeline, executeMultiBackendPipeline } from "/src/runtime/index.ts";
-  import { resolveMappedReportPayload } from "/src/schema/index.ts";
+  import {
+    baseFieldConfigSchema,
+    baseReportConfigSchema,
+    resolveMappedReportPayload,
+  } from "/src/schema/index.ts";
 
-  const mappedToSchema = z.union([
-    z.string(),
-    z.number(),
-    z.record(z.string(), z.union([z.string(), z.number()]).nullish()),
-  ]).optional();
-  const pack = {
-    registry: createBuiltinMlRegistry(),
-    descriptorRegistry: kit.createBuiltinDescriptorRegistry(),
-  };
   const state = { fetchRequest: null };
-  const registerKind = (kind) => kind.register(pack.registry, pack.descriptorRegistry);
-
-  registerKind(
-    kit.defineFieldKind({
+  const scoreSlider = kit.defineFieldKind({
       kind: "score-slider",
-      schema: z.object({
+      schema: baseFieldConfigSchema.extend({
         kind: z.literal("score-slider"),
-        id: z.string().optional(),
-        label: z.string(),
-        displayKey: z.string().optional(),
-        mappedTo: mappedToSchema,
       }),
       value: {
         default: () => 0,
         normalize: (value) => Number(value ?? 0),
         serialize: (value) => value,
       },
-      render: { widget: "number" },
-    }),
-  );
+      render: { widget: "number", hints: { input: "range", min: 0, max: 100, step: 1 } },
+    });
 
-  registerKind(
-    kit.defineReportKind({
+  const riskSummary = kit.defineReportKind({
       kind: "risk-summary",
-      schema: z.object({
+      schema: baseReportConfigSchema.extend({
         kind: z.literal("risk-summary"),
-        id: z.string().optional(),
-        label: z.string().optional(),
-        mappedTo: mappedToSchema,
       }),
       resolve: ({ report, result }) => resolveMappedReportPayload(report, result),
       render: {
         content: ({ payload }) => ({ type: "json", label: "Risk summary", value: payload }),
       },
-    }),
-  );
+    });
 
-  registerKind(
-    kit.defineReportKind({
+  const contextDump = kit.defineReportKind({
       kind: "context-dump",
-      schema: z.object({
+      schema: baseReportConfigSchema.extend({
         kind: z.literal("context-dump"),
-        id: z.string().optional(),
-        label: z.string().optional(),
-        mappedTo: mappedToSchema,
       }),
       fetch: () => ({
         submit: async (request) => {
@@ -89,8 +66,12 @@ const appModule = `
       render: {
         content: ({ payload }) => ({ type: "json", label: "Context dump", value: payload }),
       },
-    }),
-  );
+    });
+
+  const plugin = kit.defineMLFormPlugin({
+    fields: [scoreSlider],
+    reports: [riskSummary, contextDump],
+  });
 
   const schema = {
     fields: [
@@ -128,8 +109,7 @@ const appModule = `
   };
 
   const mounted = kit.mountForm(document.querySelector("#app"), {
-    registry: pack.registry,
-    descriptorRegistry: pack.descriptorRegistry,
+    plugins: [plugin],
     schema,
     initialValues: { "runtime-score": 7, "runtime-sex": "M" },
     transport: {
@@ -269,16 +249,26 @@ describe("Playwright render matrix", () => {
 
     await page.goto(url);
     await page.waitForSelector("mlf-form");
+    const scoreInput = page.locator('input[type="range"]').first();
+    await scoreInput.waitFor();
+    expect(await scoreInput.getAttribute("min")).toBe("0");
+    expect(await scoreInput.getAttribute("max")).toBe("100");
+    expect(await scoreInput.getAttribute("step")).toBe("1");
+    await scoreInput.evaluate((input) => {
+      const range = input as HTMLInputElement;
+      range.value = "8";
+      range.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    });
     const submitResult = (await page.evaluate(
       "window.__mlformMatrix.submitFromPipeline()",
     )) as MatrixSubmit;
     const fanout = await page.evaluate("window.__mlformMatrix.runFanout()");
 
     expect(failures).toEqual([]);
-    expect(submitResult.displayValues).toEqual({ display_score: 7, display_sex: "M" });
+    expect(submitResult.displayValues).toEqual({ display_score: 8, display_sex: "M" });
     expect(submitResult.modelValues).toEqual({
-      score_a: 7,
-      score_b: 7,
+      score_a: 8,
+      score_b: 8,
       sex_m_a: 1,
       sex_m_b: 1,
       sex_f_a: 0,
@@ -296,8 +286,8 @@ describe("Playwright render matrix", () => {
     expect(submitResult.text).toContain("Risk summary");
     expect(submitResult.text).toContain("Context dump");
     expect(fanout).toEqual({
-      modelA: { snapshot: { score_a: 7, sex_m_a: 1, sex_f_a: 0 }, target: "risk_a" },
-      modelB: { snapshot: { score_b: 7, sex_m_b: 1, sex_f_b: 0 }, target: "risk_b" },
+      modelA: { snapshot: { score_a: 8, sex_m_a: 1, sex_f_a: 0 }, target: "risk_a" },
+      modelB: { snapshot: { score_b: 8, sex_m_b: 1, sex_f_b: 0 }, target: "risk_b" },
     });
   }, 20_000);
 });

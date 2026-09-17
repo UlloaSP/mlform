@@ -108,12 +108,12 @@ describe("kit view", () => {
       isLastStep: false,
     });
 
-    await expect(view.nextStep()).resolves.toBe(false);
+    await expect(view.navigation.next()).resolves.toBe(false);
     expect(view.form.getField("name")?.state.errors).toContain("This field is required.");
 
     view.form.getField("name")?.setValue("Alice");
 
-    await expect(view.nextStep()).resolves.toBe(true);
+    await expect(view.navigation.next()).resolves.toBe(true);
     expect(view.getSnapshot().wizard).toMatchObject({
       stepIndex: 1,
       currentStepId: "contact",
@@ -121,14 +121,19 @@ describe("kit view", () => {
       isLastStep: true,
     });
 
-    await expect(view.goToStep("profile")).resolves.toBe(true);
+    await expect(view.navigation.activate("profile")).resolves.toBe(true);
     expect(view.getSnapshot().wizard?.stepIndex).toBe(0);
 
     view.form.getField("name")?.setValue("Alice");
-    await expect(view.goToStep("contact")).resolves.toBe(true);
+    await expect(view.navigation.activate("contact")).resolves.toBe(true);
+    await expect(view.navigation.activate("missing")).rejects.toThrow(
+      'Unknown wizard step "missing".',
+    );
+    expect(view.navigation.previous()).toBe(true);
+    expect(view.getSnapshot().wizard?.currentStepId).toBe("profile");
   });
 
-  it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", () => {
+  it("resolves tabs layouts, tracks the active tab, and scopes layout visibility", async () => {
     const pack = createBuiltinTestKit();
     registerDefinedReportKind(
       pack.registry,
@@ -198,7 +203,7 @@ describe("kit view", () => {
     expect(view.getReport("why")?.visibleInLayout).toBe(true);
     expect(view.getReport("risk")?.visibleInLayout).toBe(false);
 
-    expect(view.nextTab()).toBe(true);
+    await expect(view.navigation.next()).resolves.toBe(true);
     expect(view.getSnapshot().tabs).toMatchObject({
       activeTabIndex: 1,
       currentTabId: "contact",
@@ -210,12 +215,13 @@ describe("kit view", () => {
     expect(view.getReport("why")?.visibleInLayout).toBe(false);
     expect(view.getReport("risk")?.visibleInLayout).toBe(true);
 
-    view.setActiveTab("profile");
+    await view.navigation.activate("profile");
     expect(view.getSnapshot().tabs?.activeTabIndex).toBe(0);
-    expect(view.prevTab()).toBe(false);
+    expect(view.navigation.previous()).toBe(false);
+    await expect(view.navigation.activate("missing")).rejects.toThrow('Unknown tab "missing".');
   });
 
-  it("rejects invalid tabs layouts and tab navigation on non-tabs views", () => {
+  it("rejects invalid tabs layouts and leaves static navigation inert", async () => {
     expect(() =>
       createFormView({
         transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
@@ -294,11 +300,9 @@ describe("kit view", () => {
       },
     });
 
-    expect(singlePageView.nextTab()).toBe(false);
-    expect(singlePageView.prevTab()).toBe(false);
-    expect(() => singlePageView.setActiveTab("anything")).toThrow(
-      "setActiveTab() is only available for tabs layouts.",
-    );
+    await expect(singlePageView.navigation.next()).resolves.toBe(false);
+    expect(singlePageView.navigation.previous()).toBe(false);
+    await expect(singlePageView.navigation.activate("anything")).resolves.toBe(false);
   });
 
   it("exposes headless helper APIs and layout utilities", () => {
@@ -322,7 +326,7 @@ describe("kit view", () => {
     const snapshot = view.getSnapshot();
     expect(view.getVisibleFields().map((field) => field.id)).toEqual(["name"]);
     expect(view.getVisibleReports()).toEqual([]);
-    expect(view.getActiveLayoutNodes()).toHaveLength(1);
+    expect(view.navigation.getActiveNodes()).toHaveLength(1);
     expect(view.getNodeById("profile")?.kind).toBe("section");
     expect(flattenLayoutNodes(snapshot.layout).map((node) => node.kind)).toEqual([
       "section",
@@ -336,6 +340,10 @@ describe("kit view", () => {
       fields: ["name"],
       reports: [],
     });
+    expect(view.navigation.kind).toBe("stacked");
+    expect(view).not.toHaveProperty("nextStep");
+    expect(view).not.toHaveProperty("setActiveTab");
+    expect(view).not.toHaveProperty("openSection");
   });
 
   it("resolves disclosure sections and supports multi-open section controls", () => {
@@ -376,21 +384,21 @@ describe("kit view", () => {
     expect(view.getField("name")?.visibleInLayout).toBe(true);
     expect(view.getField("email")?.visibleInLayout).toBe(false);
 
-    view.openSection("details");
+    view.navigation.disclosure.open("details");
     expect(view.getSnapshot().disclosure?.openSectionIds).toEqual(["profile", "details"]);
     expect(view.getField("email")?.visibleInLayout).toBe(true);
     expect(view.getReport("risk")?.visibleInLayout).toBe(true);
 
-    view.closeSection("profile");
+    view.navigation.disclosure.close("profile");
     expect(view.getSnapshot().disclosure?.openSectionIds).toEqual(["details"]);
     expect(view.getField("name")?.visibleInLayout).toBe(false);
 
-    view.openAllSections();
+    view.navigation.disclosure.openAll();
     expect(view.getSnapshot().disclosure?.openSectionIds).toEqual(["profile", "details"]);
 
-    view.closeAllSections();
+    view.navigation.disclosure.closeAll();
     expect(view.getSnapshot().disclosure?.openSectionIds).toEqual([]);
-    expect(view.getActiveLayoutNodes()).toEqual([]);
+    expect(view.navigation.getActiveNodes()).toEqual([]);
   });
 
   it("rejects unknown disclosure section controls", () => {
@@ -401,7 +409,7 @@ describe("kit view", () => {
       },
     });
 
-    expect(() => singlePageView.toggleSection("anything")).toThrow(
+    expect(() => singlePageView.navigation.disclosure.toggle("anything")).toThrow(
       'Unknown disclosure section "anything".',
     );
   });
