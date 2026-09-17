@@ -11,6 +11,7 @@ export const builtinFieldKinds = {
   number: "number",
   boolean: "boolean",
   category: "category",
+  mappedCategory: "mapped-category",
   oneHotCategory: "onehot-category",
   date: "date",
   series: "series",
@@ -42,7 +43,10 @@ export const builtinValidationMessages = {
   maxLength: (value: number): string => `Maximum length is ${value} characters.`,
   minValue: (value: number): string => `Minimum value is ${value}.`,
   maxValue: (value: number): string => `Maximum value is ${value}.`,
-  stepValue: (value: number): string => `Value must be a multiple of ${value}.`,
+  stepValue: (value: number, origin = 0): string =>
+    origin === 0
+      ? `Value must be a multiple of ${value}.`
+      : `Value must follow a step of ${value} from ${origin}.`,
   dateOnOrAfter: (value: string): string => `Date must be on or after ${value}.`,
   dateOnOrBefore: (value: string): string => `Date must be on or before ${value}.`,
   stepDate: (value: number): string =>

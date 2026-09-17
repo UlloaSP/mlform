@@ -78,7 +78,7 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
       const remainder = diff % config.step;
       const tolerance = config.step * 1e-9;
       if (remainder > tolerance && Math.abs(remainder - config.step) > tolerance) {
-        errors.push(builtinValidationMessages.stepValue(config.step));
+        errors.push(builtinValidationMessages.stepValue(config.step, origin));
       }
     }
     return errors;

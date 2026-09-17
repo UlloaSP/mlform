@@ -83,29 +83,27 @@ export class PrimitiveRatingFieldElement extends PrimitiveFieldElement {
 
     return html`
       <div
-        role="slider"
+        role="radiogroup"
         aria-label=${groupLabel}
-        aria-valuenow=${ifDefined(selectedValue !== null ? selectedValue : undefined)}
-        aria-valuemin=${min}
-        aria-valuemax=${max}
         aria-invalid=${String(context?.invalid ?? false)}
         aria-required=${String(Boolean(props.required))}
         aria-describedby=${ifDefined(context?.describedBy)}
         aria-disabled=${String(disabled)}
-        tabindex="-1"
       >
         <div class="rating-container">
           ${points.map(
-            (point) => html`
+            (point, index) => html`
               <button
                 type="button"
+                role="radio"
                 class="rating-btn ${selectedValue === point ? "selected" : ""}"
                 aria-label=${`${point}`}
-                aria-pressed=${String(selectedValue === point)}
+                aria-checked=${String(selectedValue === point)}
+                tabindex=${selectedValue === point || (selectedValue === null && index === 0) ? 0 : -1}
                 ?disabled=${disabled}
                 @click=${() => this.#handleClick(point)}
                 @blur=${this.#handleBlur}
-                @keydown=${(e: KeyboardEvent) => this.#handleKeydown(e, point, min, max, step)}
+                @keydown=${(event: KeyboardEvent) => this.#handleKeydown(event, index, points)}
               >
                 ${point}
               </button>
@@ -118,30 +116,29 @@ export class PrimitiveRatingFieldElement extends PrimitiveFieldElement {
   }
 
   #handleClick = (point: number): void => {
-    const current = typeof this.props.value === "number" ? this.props.value : null;
-    // Toggle off if clicking the same value
-    this.commitValue(current === point ? null : point);
+    this.commitValue(point);
   };
 
   #handleBlur = (): void => {
     this.commitBlur();
   };
 
-  #handleKeydown = (
-    event: KeyboardEvent,
-    point: number,
-    min: number,
-    max: number,
-    step: number,
-  ): void => {
-    if (event.key === "ArrowRight" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const next = point + step;
-      if (next <= max) this.commitValue(next);
-    } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
-      event.preventDefault();
-      const prev = point - step;
-      if (prev >= min) this.commitValue(prev);
-    }
+  #handleKeydown = (event: KeyboardEvent, index: number, points: readonly number[]): void => {
+    const lastIndex = points.length - 1;
+    const nextIndex =
+      event.key === "ArrowRight" || event.key === "ArrowDown"
+        ? (index + 1) % points.length
+        : event.key === "ArrowLeft" || event.key === "ArrowUp"
+          ? (index - 1 + points.length) % points.length
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? lastIndex
+              : null;
+
+    if (nextIndex === null) return;
+    event.preventDefault();
+    this.commitValue(points[nextIndex]);
+    this.renderRoot.querySelectorAll<HTMLButtonElement>(".rating-btn").item(nextIndex).focus();
   };
 }

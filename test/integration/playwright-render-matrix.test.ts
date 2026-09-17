@@ -10,7 +10,7 @@ const virtualId = "virtual:mlform-render-matrix";
 const resolvedVirtualId = `\0${virtualId}`;
 
 const html = `
-  <!doctype html><html><body><div id="app"></div><script type="module">import "${virtualId}";</script></body></html>
+  <!doctype html><html><body><div id="app"></div><div id="builtins"></div><script type="module">import "${virtualId}";</script></body></html>
 `;
 
 const appModule = `
@@ -128,6 +128,46 @@ const appModule = `
     },
   });
 
+  const builtinMount = kit.mountForm(document.querySelector("#builtins"), {
+    schema: {
+      fields: [
+        {
+          kind: "long-text",
+          id: "bio",
+          label: "Bio",
+          minLength: 3,
+          maxLength: 5,
+          rows: 6,
+          includeInSubmission: false,
+        },
+        {
+          kind: "single-choice",
+          id: "plan",
+          label: "Plan",
+          options: ["free", { label: "Professional", value: "pro" }],
+          includeInSubmission: false,
+        },
+        {
+          kind: "multi-choice",
+          id: "channels",
+          label: "Channels",
+          options: ["email", "sms"],
+          includeInSubmission: false,
+        },
+        {
+          kind: "rating",
+          id: "rating",
+          label: "Rating",
+          min: 1,
+          max: 5,
+          step: 2,
+          includeInSubmission: false,
+        },
+      ],
+    },
+    transport: { submit: async () => ({ reports: [] }) },
+  });
+
   const textOf = (root) => {
     if (!root) {
       return "";
@@ -160,6 +200,14 @@ const appModule = `
 
   window.__mlformMatrix = {
     submitFromPipeline,
+    builtinValues() {
+      return Object.fromEntries(
+        ["bio", "plan", "channels", "rating"].map((id) => [
+          id,
+          builtinMount.form.getField(id).state.value,
+        ]),
+      );
+    },
     async runFanout() {
       const result = await executeMultiBackendPipeline({
         form: mounted.form,
@@ -288,6 +336,39 @@ describe("Playwright render matrix", () => {
     expect(fanout).toEqual({
       modelA: { snapshot: { score_a: 8, sex_m_a: 1, sex_f_a: 0 }, target: "risk_a" },
       modelB: { snapshot: { score_b: 8, sex_m_b: 1, sex_f_b: 0 }, target: "risk_b" },
+    });
+  }, 20_000);
+
+  it("runs the weak built-in field families in a real browser", async () => {
+    const url = await startServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+
+    await page.goto(url);
+    const textarea = page.locator("mlf-long-text-field textarea");
+    await textarea.fill("hello");
+    expect(await textarea.getAttribute("minlength")).toBe("3");
+    expect(await textarea.getAttribute("maxlength")).toBe("5");
+    expect(await textarea.getAttribute("rows")).toBe("6");
+
+    await page.locator('mlf-single-choice-field input[value="pro"]').check();
+    await page.locator('mlf-multi-choice-field input[value="email"]').check();
+    await page.locator('mlf-multi-choice-field input[value="sms"]').check();
+    const ratingButtons = page.locator("mlf-rating-field button");
+    await ratingButtons.first().focus();
+    await ratingButtons.first().press("ArrowRight");
+    expect(await ratingButtons.nth(1).getAttribute("aria-checked")).toBe("true");
+    expect(
+      await ratingButtons
+        .nth(1)
+        .evaluate((button) => (button.getRootNode() as ShadowRoot).activeElement === button),
+    ).toBe(true);
+
+    expect(await page.evaluate("window.__mlformMatrix.builtinValues()")).toEqual({
+      bio: "hello",
+      plan: "pro",
+      channels: ["email", "sms"],
+      rating: 3,
     });
   }, 20_000);
 });

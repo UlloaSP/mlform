@@ -40,6 +40,12 @@ export class PrimitiveLongTextFieldElement extends PrimitiveFieldElement {
         ?required=${Boolean(props.required)}
         ?disabled=${Boolean(context?.disabled)}
         ?readonly=${Boolean(context?.readOnly)}
+        minlength=${ifDefined(
+          typeof props.minLength === "number" ? String(props.minLength) : undefined,
+        )}
+        maxlength=${ifDefined(
+          typeof props.maxLength === "number" ? String(props.maxLength) : undefined,
+        )}
         @input=${this.#handleInput}
         @blur=${this.#handleBlur}
       ></textarea>

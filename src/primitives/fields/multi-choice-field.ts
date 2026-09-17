@@ -126,7 +126,12 @@ export class PrimitiveMultiChoiceFieldElement extends PrimitiveFieldElement {
 
   #handleChange = (event: Event, value: string): void => {
     const checked = (event.target as HTMLInputElement).checked;
-    const current = Array.isArray(this.props.value) ? (this.props.value as string[]) : [];
+    const controllerValue = this.controller?.state.value;
+    const current = Array.isArray(controllerValue)
+      ? (controllerValue as string[])
+      : Array.isArray(this.props.value)
+        ? (this.props.value as string[])
+        : [];
     const next = checked ? [...current, value] : current.filter((v) => v !== value);
     this.commitValue(next);
   };

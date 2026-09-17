@@ -52,6 +52,14 @@ export const ratingFieldDefinition: BuiltinFieldDefinition<RatingFieldConfig, nu
     if (value > max) {
       errors.push(builtinValidationMessages.maxValue(max));
     }
+    if (config.step !== undefined) {
+      const difference = Math.abs(value - min);
+      const remainder = difference % config.step;
+      const tolerance = config.step * 1e-9;
+      if (remainder > tolerance && Math.abs(remainder - config.step) > tolerance) {
+        errors.push(builtinValidationMessages.stepValue(config.step, min));
+      }
+    }
 
     return errors;
   },

@@ -14,6 +14,26 @@ type MultiChoiceFieldConfig = BaseFieldConfig & {
   layout?: "horizontal" | "vertical";
 };
 
+const normalizeChoices = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return [
+    ...new Set(
+      value
+        .filter(
+          (item) =>
+            typeof item === "string" ||
+            typeof item === "number" ||
+            typeof item === "boolean" ||
+            typeof item === "bigint",
+        )
+        .map(String),
+    ),
+  ];
+};
+
 export const multiChoiceFieldDefinition: BuiltinFieldDefinition<MultiChoiceFieldConfig, string[]> =
   {
     kind: "multi-choice",
@@ -24,24 +44,10 @@ export const multiChoiceFieldDefinition: BuiltinFieldDefinition<MultiChoiceField
       layout: z.enum(["horizontal", "vertical"]).optional(),
     }),
     getDefaultValue(config) {
-      if (Array.isArray(config.defaultValue)) {
-        return (config.defaultValue as unknown[]).filter((v) => typeof v === "string").map(String);
-      }
-      return [];
+      return normalizeChoices(config.defaultValue);
     },
     normalizeValue(value) {
-      if (!Array.isArray(value)) {
-        return [];
-      }
-      return value
-        .filter(
-          (v) =>
-            typeof v === "string" ||
-            typeof v === "number" ||
-            typeof v === "boolean" ||
-            typeof v === "bigint",
-        )
-        .map(String);
+      return normalizeChoices(value);
     },
     cloneValue(value) {
       return [...value];
