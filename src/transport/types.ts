@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { ReportResult, SubmissionInputRecord } from "@/schema";
+import type { ReadonlySubmissionInputRecord, ReportResult } from "@/schema";
 
 export interface SubmitRequest<
   TField extends Record<string, unknown> = Record<string, unknown>,
   TReport extends Record<string, unknown> = Record<string, unknown>,
 > {
-  backend?: string;
-  inputs: SubmissionInputRecord[];
-  displayValues: Record<string, unknown>;
-  modelValues: Record<string, unknown>;
-  fields: readonly TField[];
-  reports: readonly TReport[];
-  signal?: AbortSignal;
+  readonly backend?: string;
+  readonly inputs: readonly ReadonlySubmissionInputRecord[];
+  readonly displayValues: Readonly<Record<string, unknown>>;
+  readonly modelValues: Readonly<Record<string, unknown>>;
+  readonly fields: readonly TField[];
+  readonly reports: readonly TReport[];
+  readonly signal?: AbortSignal;
 }
 
 export interface TransportResponse {

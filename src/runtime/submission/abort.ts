@@ -18,6 +18,21 @@ export type SubmissionAbortManager = {
   reset(): void;
 };
 
+export const awaitWithSubmissionAbort = async <T>(
+  promise: PromiseLike<T>,
+  signal: AbortSignal,
+): Promise<T> => {
+  if (signal.aborted) throw createAbortError(String(signal.reason ?? ""));
+
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(createAbortError(String(signal.reason ?? "")));
+    signal.addEventListener("abort", onAbort, { once: true });
+    void Promise.resolve(promise)
+      .then(resolve, reject)
+      .finally(() => signal.removeEventListener("abort", onAbort));
+  });
+};
+
 export const createSubmissionAbortManager = (): SubmissionAbortManager => {
   let activeAbortController: AbortController | null = null;
   let activeAbortReason = "";

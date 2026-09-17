@@ -23,6 +23,7 @@ Lifecycle rules:
 | Calling `mounted.unmount()`                       | Pending submit is aborted and design system observers disconnect. |
 | Calling `mounted.form.reset()`                    | Values and report state return to initial state.                  |
 | Calling `mounted.form.abortSubmit(reason)`        | In-flight submit receives an abort signal.                        |
+| Aborting while `afterSubmit` is pending           | The completed result is invalidated and state returns to `idle`.  |
 | Resetting or changing values during `afterSubmit` | The obsolete submit rejects with `SubmissionAbortedError`.        |
 | An error-observer hook throws                     | The primary outcome is preserved and `onListenerError` is called. |
 

@@ -2,13 +2,23 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { ReportFetchExecutionContext, ReportFetchExecutionResult } from "../types";
+import { createAbortError } from "../errors";
+import { awaitWithSubmissionAbort } from "./abort";
 
 const unknownReportFetchError = "Unknown report fetch error.";
+
+const throwIfAborted = (signal: AbortSignal | undefined): void => {
+  if (!signal?.aborted) return;
+  const reason =
+    signal.reason instanceof Error ? signal.reason.message : String(signal.reason ?? "");
+  throw createAbortError(reason);
+};
 
 export const executeReportFetches = async ({
   reports,
   request,
 }: ReportFetchExecutionContext): Promise<ReportFetchExecutionResult> => {
+  throwIfAborted(request.signal);
   const fetchableReports = reports.filter(
     (report) => report.canFetch && report.state.status === "idle",
   );
@@ -20,7 +30,7 @@ export const executeReportFetches = async ({
     };
   }
 
-  await Promise.allSettled(
+  const fetches = Promise.allSettled(
     fetchableReports.map((report) =>
       report.fetch({
         ...request,
@@ -29,6 +39,14 @@ export const executeReportFetches = async ({
       }),
     ),
   );
+  try {
+    if (request.signal) await awaitWithSubmissionAbort(fetches, request.signal);
+    else await fetches;
+  } catch (error) {
+    for (const report of fetchableReports) report.abort();
+    throw error;
+  }
+  throwIfAborted(request.signal);
 
   const results: Record<string, unknown> = {};
   const errors: Record<string, string> = {};

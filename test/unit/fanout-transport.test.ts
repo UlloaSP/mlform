@@ -56,4 +56,36 @@ describe("createFanoutTransport", () => {
 
     await expect(transport.submit(request)).rejects.toThrow("offline");
   });
+
+  it("merges successful fail-fast outcomes with an external signal", async () => {
+    const controller = new AbortController();
+    const transport = createFanoutTransport({
+      targets: ["a", "b"],
+      failurePolicy: "fail-fast",
+      submit: async (target, targetRequest) => {
+        expect(targetRequest.signal).toBeDefined();
+        return `${target}-result`;
+      },
+      merge: (outcomes) => outcomes,
+    });
+
+    await expect(transport.submit({ ...request, signal: controller.signal })).resolves.toEqual([
+      { target: "a", status: "fulfilled", value: "a-result" },
+      { target: "b", status: "fulfilled", value: "b-result" },
+    ]);
+  });
+
+  it("rejects a request whose signal is already aborted", async () => {
+    const controller = new AbortController();
+    controller.abort(new Error("already cancelled"));
+    const transport = createFanoutTransport({
+      targets: ["a"],
+      submit: async () => "unused",
+      merge: () => null,
+    });
+
+    await expect(transport.submit({ ...request, signal: controller.signal })).rejects.toMatchObject(
+      { code: "ABORTED", message: "already cancelled" },
+    );
+  });
 });

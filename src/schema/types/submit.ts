@@ -15,6 +15,10 @@ export interface SubmissionInputRecord {
   disabled: boolean;
 }
 
+export type ReadonlySubmissionInputRecord = Omit<Readonly<SubmissionInputRecord>, "modelValues"> & {
+  readonly modelValues: Readonly<Record<string, unknown>>;
+};
+
 export interface ReportContext {
   reportId: string;
   kind: string;

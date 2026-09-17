@@ -2912,7 +2912,11 @@ describe("runtime", () => {
       .fn()
       .mockImplementation(async ({ modelValues }: { modelValues: Record<string, unknown> }) => {
         expect(modelValues).toEqual({ series: serializedSeries });
-        (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
+        expect(Object.isFrozen(modelValues)).toBe(true);
+        expect(Object.isFrozen(modelValues.series)).toBe(true);
+        expect(() => {
+          (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 40;
+        }).toThrow(TypeError);
 
         return { reports: [] };
       });

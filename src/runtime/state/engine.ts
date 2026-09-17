@@ -150,9 +150,9 @@ const assertAllowedTransition = (
   transitionType: EngineTransition["type"],
 ): void => {
   const allowed =
-    transitionType === "submission-success" || transitionType === "submission-aborted"
+    transitionType === "submission-success"
       ? status === "submitting"
-      : transitionType === "submission-error"
+      : transitionType === "submission-aborted" || transitionType === "submission-error"
         ? status === "submitting" || status === "success"
         : transitionType === "validation-error"
           ? status === "validating"

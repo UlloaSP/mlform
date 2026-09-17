@@ -2,9 +2,11 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createReportFetchRequest } from "@/schema";
-import type { FormController, SubmitOptions, SubmitResult } from "../types";
+import { createAbortError, isAbortLikeError } from "../errors";
+import type { FormController, SubmitResult } from "../types";
 import { executeReportFetches } from "./report-fetches";
 import { createSubmissionSnapshot, type SubmissionSnapshot } from "./snapshot";
+import { assertUniqueBackendIdentities } from "./backend";
 
 export interface MultiBackendSubmit {
   backend: string;
@@ -35,6 +37,14 @@ export interface MultiBackendPipelineResult {
 const normalizeSubmit = (entry: string | MultiBackendSubmit): MultiBackendSubmit =>
   typeof entry === "string" ? { backend: entry } : entry;
 
+const normalizeSubmits = (
+  entries: readonly (string | MultiBackendSubmit)[],
+): MultiBackendSubmit[] => {
+  const submits = entries.map(normalizeSubmit);
+  assertUniqueBackendIdentities(submits.map(({ backend }) => backend));
+  return submits;
+};
+
 const skippedReports = (
   reports: readonly FormController["reports"][number][],
   fetched: Record<string, unknown>,
@@ -51,13 +61,10 @@ export const executeMultiBackendPipeline = async ({
   continueOnError = true,
 }: ExecuteMultiBackendPipelineOptions): Promise<MultiBackendPipelineResult> => {
   const runs: Record<string, MultiBackendRunResult> = {};
+  const submits = normalizeSubmits(backends);
 
-  for (const entry of backends) {
-    const submit: SubmitOptions = normalizeSubmit(entry);
+  for (const submit of submits) {
     const backend = submit.backend;
-    if (backend === undefined) {
-      continue;
-    }
 
     const snapshot = createSubmissionSnapshot(form, { backend });
     try {
@@ -79,6 +86,15 @@ export const executeMultiBackendPipeline = async ({
         skippedReportIds: skippedReports(form.reports, fetchState.results, fetchState.errors),
       };
     } catch (error) {
+      if (isAbortLikeError(error) || submit.signal?.aborted) {
+        throw isAbortLikeError(error)
+          ? error
+          : createAbortError(
+              submit.signal?.reason instanceof Error
+                ? submit.signal.reason.message
+                : String(submit.signal?.reason ?? ""),
+            );
+      }
       runs[backend] = {
         backend,
         snapshot,

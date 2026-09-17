@@ -207,6 +207,18 @@ export default defineConfig({
           lines: 80,
           statements: 80,
         },
+        "src/runtime/submission/**": {
+          branches: 75,
+          functions: 90,
+          lines: 90,
+          statements: 90,
+        },
+        "src/transport/**": {
+          branches: 75,
+          functions: 85,
+          lines: 85,
+          statements: 85,
+        },
         "src/kit/kinds/**": {
           branches: 80,
           functions: 80,

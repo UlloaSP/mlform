@@ -4,24 +4,35 @@
 import { resolveInactiveFieldPolicy } from "../create-runtime-helpers";
 import type { FormController, InactiveFieldPolicy } from "../types";
 import type { InternalFieldController } from "../fields";
-import { buildSubmissionValueRecords, type SubmissionValueRecords } from "./request";
+import { deepFreeze } from "../utils";
+import { buildSubmissionValueRecords } from "./request";
+import { assertBackendIdentity, assertUniqueBackendIdentities } from "./backend";
+import type { ReadonlySubmissionInputRecord } from "@/schema";
 
 export interface CreateSubmissionSnapshotOptions {
   backend?: string;
   inactiveFieldPolicy?: InactiveFieldPolicy;
 }
 
-export type SubmissionSnapshot = SubmissionValueRecords;
+export interface SubmissionSnapshot {
+  readonly inputs: readonly ReadonlySubmissionInputRecord[];
+  readonly displayValues: Readonly<Record<string, unknown>>;
+  readonly modelValues: Readonly<Record<string, unknown>>;
+}
 
 export const createSubmissionSnapshot = (
   form: Pick<FormController, "fields">,
   options: CreateSubmissionSnapshotOptions = {},
-): SubmissionSnapshot =>
-  buildSubmissionValueRecords(
-    form.fields as readonly InternalFieldController[],
-    options.backend,
-    (field) => resolveInactiveFieldPolicy(field, options.inactiveFieldPolicy),
+): SubmissionSnapshot => {
+  assertBackendIdentity(options.backend);
+  return deepFreeze(
+    buildSubmissionValueRecords(
+      form.fields as readonly InternalFieldController[],
+      options.backend,
+      (field) => resolveInactiveFieldPolicy(field, options.inactiveFieldPolicy),
+    ),
   );
+};
 
 export interface CreateMultiBackendSubmissionSnapshotOptions extends Omit<
   CreateSubmissionSnapshotOptions,
@@ -33,13 +44,17 @@ export interface CreateMultiBackendSubmissionSnapshotOptions extends Omit<
 export const createMultiBackendSubmissionSnapshot = (
   form: Pick<FormController, "fields">,
   options: CreateMultiBackendSubmissionSnapshotOptions,
-): Record<string, SubmissionSnapshot> =>
-  Object.fromEntries(
-    options.backends.map((backend) => [
-      backend,
-      createSubmissionSnapshot(form, {
+): Readonly<Record<string, SubmissionSnapshot>> => {
+  assertUniqueBackendIdentities(options.backends);
+  return deepFreeze(
+    Object.fromEntries(
+      options.backends.map((backend) => [
         backend,
-        inactiveFieldPolicy: options.inactiveFieldPolicy,
-      }),
-    ]),
+        createSubmissionSnapshot(form, {
+          backend,
+          inactiveFieldPolicy: options.inactiveFieldPolicy,
+        }),
+      ]),
+    ),
   );
+};

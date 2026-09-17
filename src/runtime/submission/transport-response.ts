@@ -4,6 +4,7 @@
 import type { ReportResult } from "@/schema";
 import type { TransportResponse } from "../types";
 import { isRecord } from "../utils";
+import { isBackendIdentity } from "./backend";
 
 const invalidReportResult = (index: number, detail: string): never => {
   throw new Error(`Invalid report result at index ${index}: ${detail}.`);
@@ -11,7 +12,7 @@ const invalidReportResult = (index: number, detail: string): never => {
 
 const normalizeReportResult = (value: unknown, index: number): ReportResult => {
   if (!isRecord(value)) return invalidReportResult(index, "expected an object");
-  if (typeof value.backend !== "string" || value.backend.length === 0) {
+  if (!isBackendIdentity(value.backend)) {
     invalidReportResult(index, '"backend" must be a non-empty string');
   }
   if (typeof value.mappedTo !== "string" && typeof value.mappedTo !== "number") {
@@ -44,9 +45,12 @@ export const normalizeTransportResponse = (response: unknown): TransportResponse
   if (response.reports !== undefined && !Array.isArray(response.reports)) {
     throw new Error('Invalid transport response: "reports" must be an array.');
   }
+  if (response.meta !== undefined && !isRecord(response.meta)) {
+    throw new Error('Invalid transport response: "meta" must be an object.');
+  }
 
   const reports = response.reports?.map(normalizeReportResult);
-  const meta = isRecord(response.meta) ? response.meta : undefined;
+  const meta = response.meta;
   const raw = "raw" in response ? response.raw : response;
   return { reports, meta, raw };
 };

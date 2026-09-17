@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { createAbortError, SubmissionAbortedError, SubmitError } from "../errors";
+import { extractErrorMessage } from "@/transport";
 import type { EngineStore } from "../state";
 import type { FormHooks } from "../types";
 import { notifyListenerError } from "../utils";
@@ -78,7 +79,7 @@ export const createSubmissionErrorFlow = ({
     records: SubmissionValueRecords,
     backend: string | undefined,
   ): Promise<never> => {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = extractErrorMessage(error);
 
     if (
       abortManager.getCurrentRequestId() === submissionRequestId &&

@@ -3,30 +3,16 @@
 
 import { createAbortError, isAbortLikeError, ValidationError } from "../errors";
 import { createReportContexts } from "@/schema";
-import { createSubmissionAbortManager } from "./abort";
+import { awaitWithSubmissionAbort, createSubmissionAbortManager } from "./abort";
+import { assertBackendIdentity } from "./backend";
 import { createSubmissionLifecycle } from "./lifecycle";
 import { buildSubmissionValueRecords, cloneSubmissionValueRecords } from "./request";
 import { normalizeTransportResponse } from "./transport-response";
 import { cloneSubmissionResult, createSubmissionResult } from "./result";
 import { commitReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";
+import { createTransportRequest } from "./transport-request";
 import type { CreateFormSubmitterOptions, FormSubmitter } from "./types";
-import { deepFreeze } from "../utils";
-import { cloneValue } from "../values";
-
-const awaitWithAbort = async <T>(promise: PromiseLike<T>, signal: AbortSignal): Promise<T> => {
-  if (signal.aborted) throw createAbortError(String(signal.reason ?? ""));
-
-  return new Promise<T>((resolve, reject) => {
-    const onAbort = () => reject(createAbortError(String(signal.reason ?? "")));
-    signal.addEventListener("abort", onAbort, { once: true });
-    void Promise.resolve(promise)
-      .then(resolve, reject)
-      .finally(() => {
-        signal.removeEventListener("abort", onAbort);
-      });
-  });
-};
 
 export const createFormSubmitter = ({
   store,
@@ -75,9 +61,10 @@ export const createFormSubmitter = ({
   return {
     async submit(options) {
       abortManager.ensureIdle();
+      const backend = options?.backend;
+      assertBackendIdentity(backend);
       const submissionRequestId = abortManager.begin();
       const lifecycleVersion = store.getState().lifecycleVersion;
-      const backend = options?.backend;
       abortManager.setActiveController(
         submissionRequestId,
         typeof AbortController !== "undefined" ? new AbortController() : null,
@@ -128,11 +115,11 @@ export const createFormSubmitter = ({
       try {
         records = buildSubmissionValueRecords(fields, backend, resolveInactiveFieldPolicy);
         if (beforeSubmitRecords) {
-          await awaitWithAbort(beforeSubmitRecords(records, submitSignal), submitSignal);
+          await awaitWithSubmissionAbort(beforeSubmitRecords(records, submitSignal), submitSignal);
         }
         const beforeHookRecords = cloneSubmissionValueRecords(records);
         if (hooks?.beforeSubmit) {
-          await awaitWithAbort(
+          await awaitWithSubmissionAbort(
             Promise.resolve(
               hooks.beforeSubmit({
                 backend,
@@ -149,16 +136,17 @@ export const createFormSubmitter = ({
           throw createAbortError(abortManager.getAbortReason(submissionRequestId));
         }
 
-        const transportRecords = cloneSubmissionValueRecords(records);
-        const submitRequest = {
+        const submitRequest = createTransportRequest({
           backend,
-          ...transportRecords,
-          fields: deepFreeze(cloneValue(normalizedSchema.fields)),
-          reports: deepFreeze(cloneValue(normalizedSchema.reports)),
+          records,
+          schema: normalizedSchema,
           signal: submitSignal,
-        };
+        });
 
-        const response = await awaitWithAbort(transport.submit(submitRequest), submitSignal);
+        const response = await awaitWithSubmissionAbort(
+          transport.submit(submitRequest),
+          submitSignal,
+        );
 
         if (!isCurrentSubmission()) {
           throw createAbortError(abortManager.getAbortReason(submissionRequestId));
@@ -174,7 +162,7 @@ export const createFormSubmitter = ({
             raw: normalizedResponse.raw,
           };
         const reportContexts = createReportContexts(normalizedSchema.reports, baseResult);
-        const nextReportStates = await awaitWithAbort(
+        const nextReportStates = await awaitWithSubmissionAbort(
           prepareReportStates(
             reports,
             {
@@ -204,7 +192,7 @@ export const createFormSubmitter = ({
         try {
           const afterHookRecords = cloneSubmissionValueRecords(records);
           if (hooks?.afterSubmit) {
-            await awaitWithAbort(
+            await awaitWithSubmissionAbort(
               Promise.resolve(
                 hooks.afterSubmit({
                   backend,
