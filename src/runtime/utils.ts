@@ -31,6 +31,17 @@ export const isEmptyValue = (value: unknown): boolean => {
   return false;
 };
 
+export const notifyListenerError = (
+  listener: ((error: unknown) => void) | undefined,
+  error: unknown,
+): void => {
+  try {
+    listener?.(error);
+  } catch {
+    // Error observers must never replace the operation's primary outcome.
+  }
+};
+
 export const deepFreeze = <T>(value: T): T => {
   const isTypedView = typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(value);
   const isArrayBufferLike =

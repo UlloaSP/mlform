@@ -41,7 +41,7 @@ const waitForBehaviorChanges = (
 
 export const createForm = (config: CreateFormConfig): FormController => {
   assertTransport(config.transport);
-  const normalizedSchema = normalizeSchema(config.schema, config.registry);
+  const normalizedSchema = deepFreeze(normalizeSchema(config.schema, config.registry));
   const store = createStore(createInitialEngineState(), {
     listenerErrorPolicy: config.listenerErrorPolicy ?? "ignore",
     onListenerError: config.onListenerError,
@@ -132,6 +132,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
       definition,
       store,
       hooks: config.hooks,
+      onListenerError: config.onListenerError,
     });
   });
 
@@ -254,6 +255,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
       resolveInactiveFieldPolicy(field, config.inactiveFieldPolicy),
     inactiveFieldPolicy: config.inactiveFieldPolicy,
     beforeSubmitRecords: runBeforeSubmitRecords,
+    onListenerError: config.onListenerError,
   });
 
   const controller = createRuntimeController({

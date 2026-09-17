@@ -5,6 +5,7 @@ export { normalizeSchemaId } from "./ids";
 export * from "./mapped-to";
 export * from "./normalize";
 export * from "./report-context";
+export * from "./submission-path";
 export * from "./validation";
 export { createReportFetchRequest } from "./report-fetch-request";
 export * from "./registry";

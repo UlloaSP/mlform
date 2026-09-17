@@ -38,6 +38,9 @@ unsubscribe();
 
 State snapshots are deeply frozen and retain their identity until runtime state changes. Unknown
 field ids passed to `setExternalErrors` fail atomically instead of partially applying errors.
+Normalized schema snapshots passed to form validators and transports are isolated from the
+runtime and deeply frozen for ordinary schema objects and arrays. Treat them as contract metadata;
+derive a separate object when an integration needs to transform them.
 
 Validation and submission wait for pending asynchronous runtime behaviors, so validators and
 transports observe the resulting stable values. A direct `validate()` call while `submit()` is

@@ -3,15 +3,6 @@
 
 import { isRecord } from "./utils";
 
-export const normalizeValuePath = (
-  path: string | string[] | undefined,
-  fallback: string,
-): string[] => {
-  const segments = Array.isArray(path) ? path : (path ?? fallback).split(".");
-
-  return segments.map((segment) => segment.trim()).filter(Boolean);
-};
-
 export const setPathValue = (
   target: Record<string, unknown>,
   path: readonly string[],

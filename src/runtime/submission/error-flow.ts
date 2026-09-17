@@ -4,6 +4,7 @@
 import { createAbortError, SubmissionAbortedError, SubmitError } from "../errors";
 import type { EngineStore } from "../state";
 import type { FormHooks } from "../types";
+import { notifyListenerError } from "../utils";
 import { cloneSubmissionValueRecords, type SubmissionValueRecords } from "./request";
 import type { createSubmissionAbortManager } from "./abort";
 import type { createSubmissionLifecycle } from "./lifecycle";
@@ -16,6 +17,7 @@ type CreateSubmissionErrorFlowOptions = {
   abortManager: AbortManager;
   lifecycle: Lifecycle;
   store: EngineStore;
+  onListenerError?: (error: unknown) => void;
 };
 
 export const createSubmissionErrorFlow = ({
@@ -23,6 +25,7 @@ export const createSubmissionErrorFlow = ({
   abortManager,
   lifecycle,
   store,
+  onListenerError,
 }: CreateSubmissionErrorFlowOptions) => {
   const notifySubmitError = async (
     backend: string | undefined,
@@ -31,12 +34,16 @@ export const createSubmissionErrorFlow = ({
     error: unknown,
   ): Promise<void> => {
     const publicRecords = cloneSubmissionValueRecords(records);
-    await hooks?.onSubmitError?.({
-      backend,
-      ...publicRecords,
-      submitCount,
-      error,
-    });
+    try {
+      await hooks?.onSubmitError?.({
+        backend,
+        ...publicRecords,
+        submitCount,
+        error,
+      });
+    } catch (hookError) {
+      notifyListenerError(onListenerError, hookError);
+    }
   };
 
   const handleSubmissionAbort = async (

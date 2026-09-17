@@ -3,7 +3,7 @@
 
 import type { Registry } from "@/schema";
 import { normalizeSchemaId } from "@/schema";
-import { isPromiseLike } from "./utils";
+import { isPromiseLike, notifyListenerError } from "./utils";
 import type { InternalFieldController } from "./fields";
 import type {
   CreateFormConfig,
@@ -87,7 +87,7 @@ export const createRuntimeBehaviors = ({
         if (isPromiseLike(result)) {
           pending.push(
             Promise.resolve(result).catch((error: unknown) => {
-              if (!controller.signal.aborted) onListenerError?.(error);
+              if (!controller.signal.aborted) notifyListenerError(onListenerError, error);
             }),
           );
         }

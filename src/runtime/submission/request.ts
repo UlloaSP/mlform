@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { normalizeValuePath, setPathValue } from "../paths";
-import { mappedToKey, type SubmissionInputRecord } from "@/schema";
+import { setPathValue } from "../paths";
+import { mappedToKey, normalizeSubmissionPath, type SubmissionInputRecord } from "@/schema";
 import type { NormalizedFieldConfig } from "../types";
 import { cloneValue } from "../values";
 
@@ -56,7 +56,7 @@ const setSubmissionPath = (
   fallback: string,
   value: unknown,
 ): void => {
-  setPathValue(target, normalizeValuePath(path, fallback), cloneValue(value));
+  setPathValue(target, normalizeSubmissionPath(path, fallback), cloneValue(value));
 };
 
 const explicitDisplayKeyFor = (field: SubmissionField): string | undefined => {
@@ -149,7 +149,7 @@ export const buildSubmissionValueRecords = (
     }
 
     for (const valuePath of valuePaths) {
-      const normalizedValuePath = normalizeValuePath(valuePath, field.id);
+      const normalizedValuePath = normalizeSubmissionPath(valuePath, field.id);
       setPathValue(modelValues, normalizedValuePath, cloneValue(serializedValue));
       setPathValue(inputModelValues, normalizedValuePath, cloneValue(serializedValue));
     }

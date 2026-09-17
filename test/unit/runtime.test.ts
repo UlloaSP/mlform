@@ -373,7 +373,7 @@ describe("runtime", () => {
           submit: vi.fn(),
         },
       }),
-    ).toThrow('unknown sub-field kind "mystery"');
+    ).toThrow('does not support sub-field kind "mystery"');
   });
 
   it("supports selector subscriptions and field-level subscriptions", () => {

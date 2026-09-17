@@ -115,4 +115,29 @@ describe("normalized schema contracts", () => {
       ),
     ).toThrow(/duplicate submission path "is_color"/i);
   });
+
+  it("rejects series sub-field kinds that the series strategy cannot execute", () => {
+    const registry = createBuiltinMlRegistry().registerField({
+      kind: "custom-cell",
+      schema: {
+        parse: (value: unknown) => value,
+      } as never,
+    });
+
+    expect(() =>
+      normalizeSchema(
+        {
+          fields: [
+            {
+              kind: "series",
+              label: "Unsupported series",
+              field1: { kind: "custom-cell", label: "Custom" },
+              field2: { kind: "number", label: "Value" },
+            },
+          ],
+        },
+        registry,
+      ),
+    ).toThrow(/does not support sub-field kind "custom-cell"/i);
+  });
 });

@@ -15,6 +15,8 @@ import type {
   FormValidator,
   InactiveFieldPolicy,
 } from "../types";
+import { deepFreeze } from "../utils";
+import { cloneValue } from "../values";
 
 type FormValidationField = {
   readonly id: string;
@@ -108,18 +110,14 @@ export const createFormValidator = ({
     ) as Record<string, string[]>;
 
     if (validators?.length) {
-      const context: FormValidationContext = {
-        values: getValues(),
-        submitCount: getSubmitCount(),
-        formStatus: getFormStatus(),
-        fields: toFieldStateSnapshots(store.getState().fieldStates),
-        schema: {
-          fields: normalizedSchema.fields,
-          reports: normalizedSchema.reports,
-        },
-      };
-
       for (const validator of validators) {
+        const context: FormValidationContext = {
+          values: getValues(),
+          submitCount: getSubmitCount(),
+          formStatus: getFormStatus(),
+          fields: toFieldStateSnapshots(store.getState().fieldStates),
+          schema: deepFreeze(cloneValue(normalizedSchema)),
+        };
         const issue = await validator(context);
         mergeValidationIssue(fieldErrors, formErrors, issue);
 

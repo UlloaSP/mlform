@@ -11,6 +11,8 @@ import { cloneSubmissionResult, createSubmissionResult } from "./result";
 import { commitReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";
 import type { CreateFormSubmitterOptions, FormSubmitter } from "./types";
+import { deepFreeze } from "../utils";
+import { cloneValue } from "../values";
 
 const awaitWithAbort = async <T>(promise: PromiseLike<T>, signal: AbortSignal): Promise<T> => {
   if (signal.aborted) throw createAbortError(String(signal.reason ?? ""));
@@ -43,6 +45,7 @@ export const createFormSubmitter = ({
   resolveInactiveFieldPolicy,
   inactiveFieldPolicy,
   beforeSubmitRecords,
+  onListenerError,
 }: CreateFormSubmitterOptions): FormSubmitter => {
   const abortManager = createSubmissionAbortManager();
 
@@ -66,6 +69,7 @@ export const createFormSubmitter = ({
       abortManager,
       lifecycle,
       store,
+      onListenerError,
     });
 
   return {
@@ -80,6 +84,11 @@ export const createFormSubmitter = ({
       );
       abortManager.attachExternalSignal(options, submissionRequestId);
       const submitSignal = abortManager.createSignal(options);
+      const isCurrentSubmission = () =>
+        abortManager.getCurrentRequestId() === submissionRequestId &&
+        store.getState().lifecycleVersion === lifecycleVersion &&
+        !submitSignal.aborted &&
+        !abortManager.isAborted(submissionRequestId);
 
       let validation: import("../types").FormValidationResult;
       try {
@@ -144,19 +153,14 @@ export const createFormSubmitter = ({
         const submitRequest = {
           backend,
           ...transportRecords,
-          fields: normalizedSchema.fields,
-          reports: normalizedSchema.reports,
+          fields: deepFreeze(cloneValue(normalizedSchema.fields)),
+          reports: deepFreeze(cloneValue(normalizedSchema.reports)),
           signal: submitSignal,
         };
 
         const response = await awaitWithAbort(transport.submit(submitRequest), submitSignal);
 
-        const stillCurrent =
-          abortManager.getCurrentRequestId() === submissionRequestId &&
-          store.getState().lifecycleVersion === lifecycleVersion &&
-          !submitSignal.aborted &&
-          !abortManager.isAborted(submissionRequestId);
-        if (!stillCurrent) {
+        if (!isCurrentSubmission()) {
           throw createAbortError(abortManager.getAbortReason(submissionRequestId));
         }
 
@@ -182,12 +186,7 @@ export const createFormSubmitter = ({
           ),
           submitSignal,
         );
-        const reportsStillCurrent =
-          abortManager.getCurrentRequestId() === submissionRequestId &&
-          store.getState().lifecycleVersion === lifecycleVersion &&
-          !submitSignal.aborted &&
-          !abortManager.isAborted(submissionRequestId);
-        if (!reportsStillCurrent) {
+        if (!isCurrentSubmission()) {
           throw createAbortError(abortManager.getAbortReason(submissionRequestId));
         }
         const result = createSubmissionResult(
@@ -204,17 +203,38 @@ export const createFormSubmitter = ({
 
         try {
           const afterHookRecords = cloneSubmissionValueRecords(records);
-          await hooks?.afterSubmit?.({
-            backend,
-            ...afterHookRecords,
-            submitCount,
-            result: cloneSubmissionResult(reports, result),
-          });
+          if (hooks?.afterSubmit) {
+            await awaitWithAbort(
+              Promise.resolve(
+                hooks.afterSubmit({
+                  backend,
+                  ...afterHookRecords,
+                  submitCount,
+                  result: cloneSubmissionResult(reports, result),
+                }),
+              ),
+              submitSignal,
+            );
+          }
         } catch (error) {
+          if (
+            isAbortLikeError(error) ||
+            submitSignal.aborted ||
+            abortManager.isAborted(submissionRequestId)
+          ) {
+            throw error;
+          }
           if (hookFailurePolicy?.afterSubmit !== "preserve-success") {
             throw error;
           }
           await notifySubmitError(backend, records, submitCount, error);
+        }
+
+        if (!isCurrentSubmission()) {
+          throw createAbortError(
+            abortManager.getAbortReason(submissionRequestId) ||
+              "form state changed during submission completion",
+          );
         }
 
         return cloneSubmissionResult(reports, result);

@@ -3,6 +3,7 @@
 
 import { normalizeSchemaId } from "./ids";
 import { resolveMappedTargets } from "./mapped-to";
+import { normalizeSubmissionPath } from "./submission-path";
 import type {
   DeclarativeFieldCondition,
   FieldCondition,
@@ -81,11 +82,6 @@ const normalizeCondition = (
     ? condition
     : normalizeDeclarativeCondition(condition, fieldIds, path, fail);
 
-const toPath = (value: string | number | string[]): string[] => {
-  const segments = Array.isArray(value) ? value : String(value).split(".");
-  return segments.map((segment) => segment.trim()).filter(Boolean);
-};
-
 const pathsOverlap = (left: readonly string[], right: readonly string[]): boolean => {
   const sharedLength = Math.min(left.length, right.length);
   return left.slice(0, sharedLength).every((segment, index) => segment === right[index]);
@@ -119,7 +115,7 @@ const validateSubmissionPaths = (
       targets.length > 0 ? targets : field.valuePath === undefined ? [] : [field.valuePath];
 
     for (const candidate of candidates) {
-      const path = toPath(candidate);
+      const path = normalizeSubmissionPath(candidate);
       if (path.length === 0) {
         fail(`Field "${field.id}" resolves to an empty submission path.`, [
           "fields",

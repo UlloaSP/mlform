@@ -15,7 +15,7 @@ import type {
   ReportStateSnapshot,
   SubmitResult,
 } from "../types";
-import { deepFreeze } from "../utils";
+import { deepFreeze, notifyListenerError } from "../utils";
 import { cloneValue } from "../values";
 
 type CreateReportControllerOptions = {
@@ -23,6 +23,7 @@ type CreateReportControllerOptions = {
   definition: ReportDefinition;
   store: EngineStore;
   hooks: FormHooks | undefined;
+  onListenerError?: (error: unknown) => void;
 };
 
 const idleState: ReportStateSnapshot = {
@@ -129,6 +130,7 @@ export const createReportController = ({
   definition,
   store,
   hooks,
+  onListenerError,
 }: CreateReportControllerOptions): InternalReportController => {
   let disposed = false;
   const assertActive = (): void => {
@@ -238,11 +240,15 @@ export const createReportController = ({
         setReportState(store, readonlyConfig.id, nextState);
 
         if (nextState.status === "ready") {
-          await hooks?.afterReportFetch?.({
-            reportId: readonlyConfig.id,
-            kind: readonlyConfig.kind,
-            payload: nextState.payload,
-          });
+          try {
+            await hooks?.afterReportFetch?.({
+              reportId: readonlyConfig.id,
+              kind: readonlyConfig.kind,
+              payload: nextState.payload,
+            });
+          } catch (error) {
+            notifyListenerError(onListenerError, error);
+          }
         }
         return;
       }
@@ -253,11 +259,15 @@ export const createReportController = ({
         status: "error",
       });
 
-      await hooks?.onReportFetchError?.({
-        reportId: readonlyConfig.id,
-        kind: readonlyConfig.kind,
-        error: outcome.error,
-      });
+      try {
+        await hooks?.onReportFetchError?.({
+          reportId: readonlyConfig.id,
+          kind: readonlyConfig.kind,
+          error: outcome.error,
+        });
+      } catch (error) {
+        notifyListenerError(onListenerError, error);
+      }
     },
     async refresh(request) {
       assertActive();

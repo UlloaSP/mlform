@@ -7,6 +7,7 @@ import {
   prefixRowErrors,
   serializeSubFieldValue,
   seriesFieldSchema,
+  supportedSeriesSubFieldKinds,
   type SeriesFieldConfig,
   type SeriesPoint,
   validateSeriesPointCount,
@@ -61,6 +62,12 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
           name,
           "kind",
         ]);
+      }
+      if (!(supportedSeriesSubFieldKinds as readonly string[]).includes(config[name].kind)) {
+        context.fail(
+          `Series field "${config.label}" does not support sub-field kind "${config[name].kind}" in "${name}".`,
+          [name, "kind"],
+        );
       }
     }
     if (

@@ -24,6 +24,14 @@ export type SeriesSubFieldConfig = {
   [key: string]: unknown;
 };
 
+export const supportedSeriesSubFieldKinds = [
+  "text",
+  "number",
+  "date",
+  "category",
+  "boolean",
+] as const;
+
 export type SeriesFieldConfig = BaseFieldConfig & {
   kind: "series";
   field1: SeriesSubFieldConfig;

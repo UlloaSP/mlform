@@ -23,5 +23,11 @@ Lifecycle rules:
 | Calling `mounted.unmount()`                       | Pending submit is aborted and design system observers disconnect. |
 | Calling `mounted.form.reset()`                    | Values and report state return to initial state.                  |
 | Calling `mounted.form.abortSubmit(reason)`        | In-flight submit receives an abort signal.                        |
+| Resetting or changing values during `afterSubmit` | The obsolete submit rejects with `SubmissionAbortedError`.        |
+| An error-observer hook throws                     | The primary outcome is preserved and `onListenerError` is called. |
 
 Use hooks for analytics, logging, custom loading state, and backend tracing. Do not mutate DOM from hooks unless you own the host integration.
+
+`afterReportFetch` and `onReportFetchError` are notifications: their failures do not replace the
+report outcome. Supply `onListenerError` to observe those failures. `onSubmitError` follows the same
+rule so that it cannot hide the transport, validation, or abort error it is reporting.
