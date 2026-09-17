@@ -59,13 +59,12 @@ export const seriesFieldSchema = z.object({
 
 const requiredMessage = "This field is required.";
 
-const formatDateValue = (value: Date): string => value.toISOString().slice(0, 10);
-
 const builtinSeriesSubFieldDefinitions = {
   text: textFieldDefinition,
   number: numberFieldDefinition,
   date: dateFieldDefinition,
   category: categoryFieldDefinition,
+  boolean: booleanFieldDefinition,
 } as const;
 
 const getBuiltinSeriesSubFieldDefinition = (kind: string) => {
@@ -74,33 +73,7 @@ const getBuiltinSeriesSubFieldDefinition = (kind: string) => {
     | undefined;
 };
 
-const normalizeBooleanValue = (value: unknown): boolean | null => {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    if (value === "true") {
-      return true;
-    }
-
-    if (value === "false") {
-      return false;
-    }
-  }
-
-  return Boolean(value);
-};
-
 const normalizeSubFieldValue = (config: SeriesSubFieldConfig, value: unknown): unknown => {
-  if (config.kind === booleanFieldDefinition.kind) {
-    return normalizeBooleanValue(value);
-  }
-
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
   if (!definition?.normalizeValue) {
     return value;
@@ -114,10 +87,6 @@ export const serializeSubFieldValue = (config: SeriesSubFieldConfig, value: unkn
     return null;
   }
 
-  if (config.kind === "date" && value instanceof Date) {
-    return formatDateValue(value);
-  }
-
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
   if (!definition?.serializeValue) {
     return value;
@@ -126,7 +95,7 @@ export const serializeSubFieldValue = (config: SeriesSubFieldConfig, value: unkn
   return definition.serializeValue(value as never, config as never);
 };
 
-const isSubFieldEmpty = (config: SeriesSubFieldConfig, value: unknown): boolean => {
+const isSubFieldEmpty = (value: unknown): boolean => {
   if (value === null || value === undefined) {
     return true;
   }
@@ -135,32 +104,12 @@ const isSubFieldEmpty = (config: SeriesSubFieldConfig, value: unknown): boolean 
     return value.trim().length === 0;
   }
 
-  if (config.kind === booleanFieldDefinition.kind) {
-    return value === null || value === undefined;
-  }
-
   return false;
 };
 
 export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unknown): string[] => {
-  if (config.required && isSubFieldEmpty(config, value)) {
+  if (config.required && isSubFieldEmpty(value)) {
     return [requiredMessage];
-  }
-
-  if (config.kind === booleanFieldDefinition.kind) {
-    if (value === null) {
-      return [];
-    }
-
-    const result = booleanFieldDefinition.validateSync?.(value as never, config as never, {
-      field: { ...config, id: config.label } as never,
-      values: {},
-      submitCount: 0,
-      validationVersion: 0,
-      signal: undefined,
-    });
-
-    return Array.isArray(result) ? result : [];
   }
 
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
@@ -177,6 +126,39 @@ export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unkno
   });
 
   return Array.isArray(result) ? result : [];
+};
+
+export const validateSeriesSubFieldConfig = (
+  config: SeriesSubFieldConfig,
+): { message: string; path: readonly (string | number)[] } | null => {
+  const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
+  if (!definition) return null;
+
+  const result = definition.schema.safeParse(config);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    return {
+      message: issue?.message ?? `Invalid ${config.kind} sub-field configuration.`,
+      path:
+        issue?.path.filter(
+          (segment): segment is string | number =>
+            typeof segment === "string" || typeof segment === "number",
+        ) ?? [],
+    };
+  }
+
+  let invalid: { message: string; path: readonly (string | number)[] } | null = null;
+  try {
+    definition.validateConfig?.(result.data, {
+      fail(message, path = []) {
+        invalid = { message, path };
+        throw invalid;
+      },
+    });
+  } catch (error) {
+    if (error !== invalid) throw error;
+  }
+  return invalid;
 };
 
 export const prefixRowErrors = (index: number, label: string, errors: string[]): string[] => {

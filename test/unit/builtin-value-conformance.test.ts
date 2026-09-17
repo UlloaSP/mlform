@@ -111,7 +111,7 @@ const cases: ValueCase[] = [
     },
     input: [{ field1: "2026-01-02", field2: "4" }],
     normalized: [{ field1: new Date("2026-01-02T00:00:00.000Z"), field2: 4 }],
-    serialized: [{ field1: "2026-01-02", field2: 4 }],
+    serialized: [{ field1: "2026-01-02T00:00:00.000Z", field2: 4 }],
   },
   {
     kind: "long-text",

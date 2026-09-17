@@ -32,14 +32,17 @@ export const dateFieldDefinition: BuiltinFieldDefinition<DateFieldConfig, Date |
   serializeValue(value) {
     return value instanceof Date ? value.toISOString() : value;
   },
+  validateConfig(config, context) {
+    const minDate = toDate(config.min);
+    const maxDate = toDate(config.max);
+    if (minDate && maxDate && minDate.getTime() > maxDate.getTime()) {
+      context.fail(builtinValidationMessages.invalidDateRange, ["min"]);
+    }
+  },
   validateSync(value, config) {
     const errors: string[] = [];
     const minDate = toDate(config.min);
     const maxDate = toDate(config.max);
-
-    if (minDate && maxDate && minDate.getTime() > maxDate.getTime()) {
-      errors.push(builtinValidationMessages.invalidDateRange);
-    }
 
     if (value === null) {
       return errors;

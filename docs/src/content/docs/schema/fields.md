@@ -41,3 +41,20 @@ Shared field options also include:
 - `includeInSubmission`: Set to `false` to keep a field out of `inputs`, `displayValues`, and `modelValues`.
 - `mappedTo`: Writes the field to a backend feature name, numeric position, or backend-specific map.
 - `valuePath`: Writes the field into a nested `modelValues` path.
+
+Incoherent built-in constraints are schema errors, not value errors. Text length ranges and regular
+expressions, numeric ranges, and date ranges are checked during schema normalization so invalid
+forms fail before a runtime is created.
+
+## Series fields
+
+Each `series` point contains `field1` and `field2`. Their nested configurations use the same
+constraints as the corresponding built-in kind: for example, text length and pattern constraints,
+number ranges, date ranges and steps, and category options. Invalid nested configuration fails
+during schema normalization. Nested values also use the built-in serialization contract, so dates
+are emitted as full ISO timestamps just like top-level `date` fields.
+
+`minPoints` and `maxPoints` control validation and the built-in editor. The editor disables row
+removal at the minimum and row creation at the maximum. MLForm preserves the supplied point order
+and duplicate values; sort or de-duplicate them before assigning the series when the backend
+requires that contract.

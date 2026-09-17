@@ -76,6 +76,7 @@ export const renderSeriesCell = ({
           ?readonly=${readOnly}
           min=${ifDefined(typeof config.min === "string" ? config.min : undefined)}
           max=${ifDefined(typeof config.max === "string" ? config.max : undefined)}
+          step=${ifDefined(typeof config.step === "number" ? config.step : undefined)}
           @input=${(event: Event) =>
             onInput(index, field, (event.target as HTMLInputElement).value)}
           @blur=${onBlur}
@@ -136,20 +137,20 @@ export const renderSeriesCell = ({
           <input
             class="control"
             id=${id}
-            type="text"
-            inputmode="decimal"
+            type="number"
             spellcheck="false"
             autocomplete="off"
-            .value=${typeof value === "string" ? value : ""}
+            .value=${renderSeriesTextValue(value)}
             placeholder=${toText(config.placeholder)}
             aria-label=${label}
             aria-describedby=${ifDefined(context?.describedBy)}
             aria-invalid=${String(context?.invalid ?? false)}
-            aria-valuemin=${ifDefined(typeof config.min === "number" ? config.min : undefined)}
-            aria-valuemax=${ifDefined(typeof config.max === "number" ? config.max : undefined)}
             ?required=${required}
             ?disabled=${disabled}
             ?readonly=${readOnly}
+            min=${ifDefined(typeof config.min === "number" ? config.min : undefined)}
+            max=${ifDefined(typeof config.max === "number" ? config.max : undefined)}
+            step=${ifDefined(typeof config.step === "number" ? config.step : undefined)}
             @input=${(event: Event) =>
               onInput(index, field, (event.target as HTMLInputElement).value)}
             @blur=${onBlur}
@@ -172,6 +173,13 @@ export const renderSeriesCell = ({
           ?required=${required}
           ?disabled=${disabled}
           ?readonly=${readOnly}
+          minlength=${ifDefined(
+            typeof config.minLength === "number" ? config.minLength : undefined,
+          )}
+          maxlength=${ifDefined(
+            typeof config.maxLength === "number" ? config.maxLength : undefined,
+          )}
+          pattern=${ifDefined(typeof config.pattern === "string" ? config.pattern : undefined)}
           @input=${(event: Event) =>
             onInput(index, field, (event.target as HTMLInputElement).value)}
           @blur=${onBlur}

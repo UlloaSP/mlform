@@ -54,11 +54,13 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
   },
+  validateConfig(config, context) {
+    if (config.min !== undefined && config.max !== undefined && config.min > config.max) {
+      context.fail(builtinValidationMessages.invalidNumericRange, ["min"]);
+    }
+  },
   validateSync(value, config) {
     const errors: string[] = [];
-    if (config.min !== undefined && config.max !== undefined && config.min > config.max) {
-      errors.push(builtinValidationMessages.invalidNumericRange);
-    }
     if (value === null) {
       return errors;
     }

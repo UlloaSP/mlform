@@ -213,6 +213,18 @@ export default defineConfig({
           lines: 80,
           statements: 80,
         },
+        "src/builtins/definitions/fields/series*.ts": {
+          branches: 75,
+          functions: 80,
+          lines: 85,
+          statements: 85,
+        },
+        "src/primitives/fields/series-field*.ts": {
+          branches: 65,
+          functions: 85,
+          lines: 85,
+          statements: 85,
+        },
       },
     },
     typecheck: {

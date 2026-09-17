@@ -63,8 +63,8 @@ describe("builtin definitions", () => {
     expect(normalized?.[0]?.field2).toBe(10);
     expect(normalized?.[1]?.field1).toBeInstanceOf(Date);
     expect(seriesFieldDefinition.serializeValue?.(normalized ?? [], config)).toEqual([
-      { field1: "2026-01-01", field2: 10 },
-      { field1: "2026-01-02", field2: 12 },
+      { field1: "2026-01-01T00:00:00.000Z", field2: 10 },
+      { field1: "2026-01-02T00:00:00.000Z", field2: 12 },
     ]);
   });
 

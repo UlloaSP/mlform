@@ -14,6 +14,8 @@ type TextFieldConfig = BaseFieldConfig & {
   pattern?: string;
 };
 
+const invalidTextPatternMessage = "Pattern must be a valid regular expression.";
+
 export const textFieldDefinition: BuiltinFieldDefinition<TextFieldConfig, string> = {
   kind: "text",
   schema: z.object({
@@ -36,15 +38,24 @@ export const textFieldDefinition: BuiltinFieldDefinition<TextFieldConfig, string
     }
     return "";
   },
-  validateSync(value, config) {
-    const errors: string[] = [];
+  validateConfig(config, context) {
     if (
       config.minLength !== undefined &&
       config.maxLength !== undefined &&
       config.minLength > config.maxLength
     ) {
-      errors.push(builtinValidationMessages.invalidTextLengthRange);
+      context.fail(builtinValidationMessages.invalidTextLengthRange, ["minLength"]);
     }
+    if (config.pattern !== undefined) {
+      try {
+        new RegExp(config.pattern);
+      } catch {
+        context.fail(invalidTextPatternMessage, ["pattern"]);
+      }
+    }
+  },
+  validateSync(value, config) {
+    const errors: string[] = [];
     if (value.length === 0) {
       return errors;
     }

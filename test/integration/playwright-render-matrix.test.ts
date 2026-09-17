@@ -163,6 +163,17 @@ const appModule = `
           step: 2,
           includeInSubmission: false,
         },
+        {
+          kind: "series",
+          id: "observations",
+          label: "Observations",
+          minPoints: 1,
+          maxPoints: 2,
+          field1: { kind: "text", label: "Code", required: true },
+          field2: { kind: "date", label: "Day", required: true },
+          defaultValue: [{ field1: "AA", field2: "2026-01-01" }],
+          includeInSubmission: false,
+        },
       ],
     },
     transport: { submit: async () => ({ reports: [] }) },
@@ -207,6 +218,12 @@ const appModule = `
           builtinMount.form.getField(id).state.value,
         ]),
       );
+    },
+    seriesValue() {
+      return builtinMount.form.getField("observations").state.value.map((point) => ({
+        field1: point.field1,
+        field2: point.field2 instanceof Date ? point.field2.toISOString().slice(0, 10) : point.field2,
+      }));
     },
     async runFanout() {
       const result = await executeMultiBackendPipeline({
@@ -370,5 +387,40 @@ describe("Playwright render matrix", () => {
       channels: ["email", "sms"],
       rating: 3,
     });
+  }, 20_000);
+
+  it("keeps series limits and focus operable in a real browser", async () => {
+    const url = await startServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+
+    await page.goto(url);
+    const series = page.locator("mlf-series-field");
+    const add = series.locator(".add-btn");
+    await add.focus();
+    await page.keyboard.press("Enter");
+
+    const textInputs = series.locator('input[type="text"]');
+    const dateInputs = series.locator('input[type="date"]');
+    expect(
+      await textInputs
+        .nth(1)
+        .evaluate((input) => (input.getRootNode() as ShadowRoot).activeElement === input),
+    ).toBe(true);
+    expect(await add.isDisabled()).toBe(true);
+
+    await textInputs.nth(1).fill("BB");
+    await dateInputs.nth(1).fill("2026-01-03");
+    const removeButtons = series.locator(".remove-btn");
+    await removeButtons.first().focus();
+    await page.keyboard.press("Space");
+
+    expect(await removeButtons.first().isDisabled()).toBe(true);
+    expect(
+      await add.evaluate((button) => (button.getRootNode() as ShadowRoot).activeElement === button),
+    ).toBe(true);
+    expect(await page.evaluate("window.__mlformMatrix.seriesValue()")).toEqual([
+      { field1: "BB", field2: "2026-01-03" },
+    ]);
   }, 20_000);
 });

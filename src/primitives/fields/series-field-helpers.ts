@@ -11,6 +11,9 @@ export type SeriesSubFieldConfig = {
   step?: unknown;
   unit?: unknown;
   placeholder?: unknown;
+  minLength?: unknown;
+  maxLength?: unknown;
+  pattern?: unknown;
   trueLabel?: unknown;
   falseLabel?: unknown;
 };
@@ -48,7 +51,13 @@ export const normalizeCellValue = (config: SeriesSubFieldConfig, value: unknown)
     case "number":
       return typeof value === "number" ? String(value) : typeof value === "string" ? value : "";
     case "date":
-      return typeof value === "string" ? value : "";
+      return value instanceof Date
+        ? value.toISOString().slice(0, 10)
+        : typeof value === "string"
+          ? /^\d{4}-\d{2}-\d{2}/u.test(value)
+            ? value.slice(0, 10)
+            : value
+          : "";
     case "category":
     case "text":
       return typeof value === "string" ? value : "";
@@ -76,19 +85,6 @@ export const normalizeRows = (
       field2: normalizeCellValue(field2Config, row.field2),
     } satisfies DraftRow;
   });
-};
-
-export const commitSeriesCellValue = (config: SeriesSubFieldConfig, value: unknown): unknown => {
-  switch (config.kind) {
-    case "number":
-    case "date":
-    case "category":
-    case "text":
-    case "boolean":
-      return value === "" ? null : value;
-    default:
-      return value === "" ? null : value;
-  }
 };
 
 export const seriesNumberUnit = (config: SeriesSubFieldConfig): string => {

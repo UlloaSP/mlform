@@ -562,9 +562,7 @@ describe("primitives", () => {
     timestampInput.value = "2026-01-05";
     timestampInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
 
-    const valueInput = timeSeriesShadow.querySelector(
-      'input[inputmode="decimal"]',
-    ) as HTMLInputElement;
+    const valueInput = timeSeriesShadow.querySelector('input[type="number"]') as HTMLInputElement;
     valueInput.value = "50";
     valueInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     valueInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
@@ -915,7 +913,7 @@ describe("primitives", () => {
     const renderer = getShadow(fieldFrame).querySelector("mlf-series-field") as HTMLElement;
     const rendererShadow = getShadow(renderer);
     const valueInputs = rendererShadow.querySelectorAll(
-      'input[inputmode="decimal"]',
+      'input[type="number"]',
     ) as NodeListOf<HTMLInputElement>;
 
     valueInputs[1].value = "14.5";
@@ -987,7 +985,7 @@ describe("primitives", () => {
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
     const renderer = getShadow(fieldFrame).querySelector("mlf-series-field") as HTMLElement;
     const valueInput = getShadow(renderer).querySelector(
-      'input[inputmode="decimal"]',
+      'input[type="number"]',
     ) as HTMLInputElement;
 
     valueInput.value = "12";

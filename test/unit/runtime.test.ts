@@ -200,7 +200,7 @@ describe("runtime", () => {
     unsubscribe();
   });
 
-  it("treats legacy range and option restrictions as field validation instead of schema parse failures", async () => {
+  it("keeps invalid option values as field validation", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -210,29 +210,6 @@ describe("runtime", () => {
             label: "Category",
             options: ["A", "B"],
             defaultValue: "Z",
-          },
-          {
-            id: "text",
-            kind: "text",
-            label: "Text",
-            minLength: 5,
-            maxLength: 3,
-          },
-          {
-            id: "number",
-            kind: "number",
-            label: "Number",
-            min: 10,
-            max: 5,
-            defaultValue: 3,
-          },
-          {
-            id: "date",
-            kind: "date",
-            label: "Date",
-            min: "2026-12-31",
-            max: "2026-01-01",
-            defaultValue: "2025-06-15",
           },
         ],
       },
@@ -245,23 +222,37 @@ describe("runtime", () => {
     expect(form.getField("category")?.state.errors).toContain(
       "Value must match one of the available options.",
     );
-    expect(form.getField("text")?.state.errors).toContain(
-      "Minimum length cannot exceed maximum length.",
-    );
-    expect(form.getField("number")?.state.errors).toContain(
-      "Minimum value cannot exceed maximum value.",
-    );
-    expect(form.getField("date")?.state.errors).toContain(
-      "Minimum date cannot be after maximum date.",
-    );
-
     const validation = await form.validate();
 
     expect(validation.valid).toBe(false);
     expect(validation.fields.category).toContain("Value must match one of the available options.");
-    expect(validation.fields.text).toContain("Minimum length cannot exceed maximum length.");
-    expect(validation.fields.number).toContain("Minimum value cannot exceed maximum value.");
-    expect(validation.fields.date).toContain("Minimum date cannot be after maximum date.");
+  });
+
+  it.each([
+    {
+      field: { kind: "text", label: "Text", minLength: 5, maxLength: 3 },
+      path: ["fields", 0, "minLength"],
+    },
+    {
+      field: { kind: "number", label: "Number", min: 10, max: 5 },
+      path: ["fields", 0, "min"],
+    },
+    {
+      field: { kind: "date", label: "Date", min: "2026-12-31", max: "2026-01-01" },
+      path: ["fields", 0, "min"],
+    },
+    {
+      field: { kind: "text", label: "Text", pattern: "[" },
+      path: ["fields", 0, "pattern"],
+    },
+  ])("rejects invalid built-in configuration during normalization", ({ field, path }) => {
+    expect(() =>
+      createForm({
+        schema: { fields: [field] },
+        registry: createBuiltinTestKit().registry,
+        transport: { submit: vi.fn() },
+      }),
+    ).toThrowError(expect.objectContaining({ name: "SchemaNormalizationError", path }));
   });
 
   it("keeps default values out of bounds as field validation errors", () => {
@@ -2912,7 +2903,7 @@ describe("runtime", () => {
   it("isolates submit hooks, transport payloads, and returned results from engine state", async () => {
     const inputSeries = [{ field1: "2026-01-01", field2: 10 }];
     const normalizedSeries = [{ field1: new Date("2026-01-01"), field2: 10 }];
-    const serializedSeries = [{ field1: "2026-01-01", field2: 10 }];
+    const serializedSeries = [{ field1: "2026-01-01T00:00:00.000Z", field2: 10 }];
     const beforeSubmit = vi.fn(({ modelValues }: { modelValues: Record<string, unknown> }) => {
       expect(modelValues).toEqual({ series: serializedSeries });
       (modelValues.series as { field1: string; field2: number }[])[0]!.field2 = 20;

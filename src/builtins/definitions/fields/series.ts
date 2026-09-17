@@ -11,6 +11,7 @@ import {
   type SeriesFieldConfig,
   type SeriesPoint,
   validateSeriesPointCount,
+  validateSeriesSubFieldConfig,
   validateSubFieldValue,
 } from "./series-helpers";
 
@@ -67,6 +68,14 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
         context.fail(
           `Series field "${config.label}" does not support sub-field kind "${config[name].kind}" in "${name}".`,
           [name, "kind"],
+        );
+      }
+
+      const invalidConfig = validateSeriesSubFieldConfig(config[name]);
+      if (invalidConfig) {
+        context.fail(
+          `Series field "${config.label}" has invalid ${config[name].kind} configuration in "${name}": ${invalidConfig.message}`,
+          [name, ...invalidConfig.path],
         );
       }
     }

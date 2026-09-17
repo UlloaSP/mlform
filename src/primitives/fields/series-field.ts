@@ -3,11 +3,11 @@
 
 import { html } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { PrimitiveFieldElement } from "../base-field-element";
 import { primitiveTagNames } from "../constants";
 import { toText } from "../utils";
 import {
-  commitSeriesCellValue,
   createRowKey,
   normalizeRows,
   seriesNumberUnit,
@@ -17,12 +17,18 @@ import {
 import { renderSeriesCell } from "./series-field-renderers";
 import { seriesFieldStyles } from "./series-field-styles";
 
+const commitCellValue = (value: unknown): unknown => (value === "" ? null : value);
+
 @customElement(primitiveTagNames.seriesField)
 export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
   static styles = [PrimitiveFieldElement.styles, seriesFieldStyles];
 
   @state() private accessor rows: DraftRow[] = [];
   #rowsDirtySinceCommit = false;
+  #pendingFocus:
+    | { kind: "row"; index: number }
+    | { kind: "remove"; index: number; target: "remove" | "add" | "control" }
+    | null = null;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
     super.willUpdate(changedProperties);
@@ -32,6 +38,10 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
     }
   }
 
+  protected updated(): void {
+    this.#applyPendingFocus();
+  }
+
   render() {
     const context = this.fieldContext;
     const disabled = Boolean(this.fieldContext?.disabled);
@@ -39,17 +49,27 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
     const locked = disabled || readOnly;
     const field1 = this.#field1Config;
     const field2 = this.#field2Config;
+    const canAdd = this.#canAddRow;
+    const canRemove = this.#canRemoveRow;
     const unitWidth = `${Math.max(seriesNumberUnit(field2).length * 0.56 + 0.8, 2.3)}rem`;
     const text = this.text;
 
     return html`
-      <div class="series" style=${`--mlf-series-unit-width: ${unitWidth};`}>
+      <div
+        class="series"
+        style=${`--mlf-series-unit-width: ${unitWidth};`}
+        role="group"
+        tabindex="-1"
+        aria-label=${context?.label ?? toText(this.props.label)}
+        aria-describedby=${ifDefined(context?.describedBy)}
+        aria-invalid=${String(context?.invalid ?? false)}
+      >
         <div class="toolbar">
           <button
             class="add-btn"
             type="button"
             aria-label=${text.seriesAddRow}
-            ?disabled=${locked}
+            ?disabled=${locked || !canAdd}
             @click=${this.#handleAddRow}
           >
             ${text.seriesAddRow}
@@ -97,7 +117,7 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
                           class="remove-btn"
                           type="button"
                           aria-label=${`${text.seriesRemoveRow} ${index + 1}`}
-                          ?disabled=${locked}
+                          ?disabled=${locked || !canRemove}
                           @click=${() => this.#handleRemoveRow(index)}
                         >
                           &times;
@@ -122,21 +142,69 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
     return (this.props.field2 as SeriesSubFieldConfig | undefined) ?? {};
   }
 
+  get #canAddRow(): boolean {
+    const maxPoints = this.props.maxPoints;
+    return typeof maxPoints !== "number" || this.rows.length < maxPoints;
+  }
+
+  get #canRemoveRow(): boolean {
+    const minPoints = this.props.minPoints;
+    return typeof minPoints !== "number" || this.rows.length > minPoints;
+  }
+
   #syncRowsFromDescriptor(): void {
     this.rows = normalizeRows(this.props.value, this.#field1Config, this.#field2Config);
     this.#rowsDirtySinceCommit = false;
   }
 
   #handleAddRow = (): void => {
+    if (!this.#canAddRow) return;
+    this.#pendingFocus = { kind: "row", index: this.rows.length };
     this.rows = [...this.rows, { key: createRowKey(), field1: "", field2: "" }];
     this.#rowsDirtySinceCommit = true;
     this.#commitRows();
   };
 
   #handleRemoveRow(index: number): void {
+    if (!this.#canRemoveRow) return;
+    const nextLength = this.rows.length - 1;
+    const minPoints = this.props.minPoints;
+    const maxPoints = this.props.maxPoints;
+    const canRemove = typeof minPoints !== "number" || nextLength > minPoints;
+    const canAdd = typeof maxPoints !== "number" || nextLength < maxPoints;
+    this.#pendingFocus = {
+      kind: "remove",
+      index,
+      target: canRemove ? "remove" : canAdd ? "add" : "control",
+    };
     this.rows = this.rows.filter((_, rowIndex) => rowIndex !== index);
     this.#rowsDirtySinceCommit = true;
     this.#commitRows();
+  }
+
+  #applyPendingFocus(): void {
+    const pending = this.#pendingFocus;
+    if (!pending) return;
+    if (this.fieldContext?.disabled || this.fieldContext?.readOnly) {
+      this.#pendingFocus = null;
+      return;
+    }
+
+    const target =
+      pending.kind === "row"
+        ? this.renderRoot.querySelectorAll<HTMLElement>(".row .control").item(pending.index * 2)
+        : pending.target === "remove"
+          ? this.renderRoot
+              .querySelectorAll<HTMLButtonElement>(".remove-btn:not(:disabled)")
+              .item(Math.min(pending.index, this.rows.length - 1))
+          : pending.target === "add"
+            ? this.renderRoot.querySelector<HTMLButtonElement>(".add-btn:not(:disabled)")
+            : (this.renderRoot.querySelector<HTMLElement>(".row .control:not(:disabled)") ??
+              this.renderRoot.querySelector<HTMLElement>(".series"));
+
+    if (!target) return;
+    target.focus();
+    this.#pendingFocus = null;
   }
 
   #handleCellInput(index: number, field: 1 | 2, value: unknown): void {
@@ -159,8 +227,8 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
 
     this.commitValue(
       this.rows.map((row) => ({
-        field1: commitSeriesCellValue(this.#field1Config, row.field1),
-        field2: commitSeriesCellValue(this.#field2Config, row.field2),
+        field1: commitCellValue(row.field1),
+        field2: commitCellValue(row.field2),
       })),
     );
     this.#rowsDirtySinceCommit = false;
