@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 export { normalizeSchemaId } from "./ids";
+export { baseFieldConfigSchema, baseReportConfigSchema, mappedToSchema } from "./config-schema";
 export * from "./mapped-to";
 export * from "./normalize";
 export * from "./report-context";

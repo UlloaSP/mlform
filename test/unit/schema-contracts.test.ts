@@ -1,6 +1,7 @@
+import { z } from "zod";
 import { describe, expect, it } from "vitest";
 import { createBuiltinMlRegistry } from "@/builtins";
-import { normalizeSchema, validateSchema } from "@/schema";
+import { createRegistry, normalizeSchema, validateSchema } from "@/schema";
 
 describe("normalized schema contracts", () => {
   it("normalizes and validates declarative condition field references", () => {
@@ -139,5 +140,106 @@ describe("normalized schema contracts", () => {
         registry,
       ),
     ).toThrow(/does not support sub-field kind "custom-cell"/i);
+  });
+
+  it("keeps base field properties when a custom definition schema only owns its extension", () => {
+    const registry = createRegistry().registerField({
+      kind: "custom",
+      schema: z.object({
+        kind: z.literal("custom"),
+        label: z.string(),
+        customOption: z.string(),
+      }),
+    });
+
+    const normalized = normalizeSchema(
+      {
+        fields: [
+          {
+            kind: "custom",
+            id: "external-id",
+            label: "Friendly label",
+            mappedTo: "backend_key",
+            customOption: "kept",
+          },
+        ],
+      },
+      registry,
+    );
+
+    expect(normalized.fields[0]).toMatchObject({
+      id: "external-id",
+      mappedTo: "backend_key",
+      customOption: "kept",
+    });
+  });
+
+  it("keeps base properties authoritative across transformed extension schemas", () => {
+    const registry = createRegistry().registerField({
+      kind: "transformed",
+      schema: z
+        .object({
+          kind: z.literal("transformed"),
+          label: z.string(),
+          customOption: z.string(),
+        })
+        .transform(({ kind, label, customOption }) => ({
+          kind,
+          label: label.toUpperCase(),
+          customOption,
+        })),
+    });
+
+    const normalized = normalizeSchema(
+      {
+        fields: [
+          {
+            kind: "transformed",
+            id: "external-id",
+            label: "Friendly label",
+            mappedTo: "backend_key",
+            customOption: "kept",
+          },
+        ],
+      },
+      registry,
+    );
+
+    expect(normalized.fields[0]).toMatchObject({
+      id: "external-id",
+      label: "Friendly label",
+      mappedTo: "backend_key",
+      customOption: "kept",
+    });
+  });
+
+  it("validates base report properties independently of a custom definition schema", () => {
+    const registry = createRegistry().registerReport({
+      kind: "custom-report",
+      schema: z.object({ kind: z.literal("custom-report") }),
+    });
+
+    expect(
+      validateSchema(
+        {
+          fields: [],
+          reports: [{ kind: "custom-report", id: "result", mappedTo: "" }],
+        },
+        registry,
+      ),
+    ).toMatchObject({
+      success: false,
+      issues: [{ path: ["reports", 0, "mappedTo"], code: "invalid-config" }],
+    });
+
+    expect(
+      normalizeSchema(
+        {
+          fields: [],
+          reports: [{ kind: "custom-report", id: "result", mappedTo: "prediction" }],
+        },
+        registry,
+      ).reports[0],
+    ).toMatchObject({ id: "result", mappedTo: "prediction" });
   });
 });

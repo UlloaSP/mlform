@@ -4,7 +4,10 @@ import { createForm, type RuntimeBehavior } from "@/runtime";
 import { createRegistry } from "@/schema";
 import { createBuiltinMlRegistry } from "@/builtins";
 
-const createBehaviorForm = (behavior: RuntimeBehavior) => {
+const createBehaviorForm = (
+  behavior: RuntimeBehavior,
+  onListenerError?: (error: unknown) => void,
+) => {
   const registry = createRegistry().registerField({
     kind: "value",
     schema: z
@@ -28,6 +31,7 @@ const createBehaviorForm = (behavior: RuntimeBehavior) => {
     registry,
     behaviors: [behavior],
     transport: { submit: vi.fn() },
+    onListenerError,
   });
 };
 
@@ -96,5 +100,35 @@ describe("runtime behaviors", () => {
 
     await expect(form.submit()).rejects.toMatchObject({ name: "SubmitError" });
     await expect(form.submit()).resolves.toMatchObject({ modelValues: {} });
+  });
+
+  it("reports synchronous value behavior failures without rejecting the committed edit", () => {
+    const error = new Error("synchronous behavior failed");
+    const onListenerError = vi.fn();
+    const form = createBehaviorForm(
+      {
+        onValuesChanged() {
+          throw error;
+        },
+      },
+      onListenerError,
+    );
+
+    expect(() => form.setValues({ source: 3 })).not.toThrow();
+    expect(form.getValues().source).toBe(3);
+    expect(onListenerError).toHaveBeenCalledWith(error);
+  });
+
+  it("reports asynchronous value behavior failures through the same error hook", async () => {
+    const error = new Error("asynchronous behavior failed");
+    const onListenerError = vi.fn();
+    const form = createBehaviorForm(
+      { onValuesChanged: vi.fn().mockRejectedValue(error) },
+      onListenerError,
+    );
+
+    expect(() => form.setValues({ source: 4 })).not.toThrow();
+    expect(form.getValues().source).toBe(4);
+    await vi.waitFor(() => expect(onListenerError).toHaveBeenCalledWith(error));
   });
 });

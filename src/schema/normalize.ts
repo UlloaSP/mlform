@@ -8,6 +8,7 @@ import type { FormSchema, NormalizedFormSchema } from "./types/form";
 import type { Registry } from "./types/registry";
 import type { NormalizedReportConfig, ReportConfig } from "./types/report";
 import { normalizeFieldContracts } from "./field-contracts";
+import { parseFieldConfig, parseReportConfig } from "./config-schema";
 
 export class SchemaNormalizationError extends Error {
   constructor(
@@ -60,7 +61,7 @@ const normalizeField = (
     throw new RegistryError(`Unknown field kind "${field.kind}".`);
   }
 
-  const parsed = definition.schema.parse(field) as FieldConfig;
+  const parsed = parseFieldConfig(definition.schema, field);
   definition.validateConfig?.(parsed, {
     fail(message, path = [], code = "invalid-config") {
       throw new SchemaNormalizationError(message, ["fields", index, ...path], code);
@@ -93,20 +94,14 @@ const normalizeReport = (
     throw new RegistryError(`Unknown report kind "${report.kind}".`);
   }
 
-  const parsed = definition.schema.parse(report) as ReportConfig;
-  const id = resolveId(
-    report.id ?? parsed.id,
-    report.label ?? parsed.label ?? parsed.kind,
-    usedIds,
-    `report-${index + 1}`,
-    ["reports", index, "id"],
-  );
+  const parsed = parseReportConfig(definition.schema, report);
+  const id = resolveId(parsed.id, parsed.label ?? parsed.kind, usedIds, `report-${index + 1}`, [
+    "reports",
+    index,
+    "id",
+  ]);
   return {
     ...parsed,
-    ...(report.label === undefined ? {} : { label: report.label }),
-    ...(report.description === undefined ? {} : { description: report.description }),
-    ...(report.mappedTo === undefined ? {} : { mappedTo: report.mappedTo }),
-    ...(report.ui === undefined ? {} : { ui: report.ui }),
     id,
   };
 };

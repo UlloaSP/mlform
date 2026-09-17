@@ -3,6 +3,8 @@
 
 import { array, never, strictObject, toJSONSchema, xor, type ZodType } from "zod";
 import { normalizeSchema, SchemaNormalizationError } from "./normalize";
+import { composeFieldConfigSchema, composeReportConfigSchema } from "./config-schema";
+import type { FieldConfig } from "./types/field";
 import type { FormSchema, NormalizedFormSchema } from "./types/form";
 import type { Registry } from "./types/registry";
 
@@ -30,6 +32,37 @@ export type SchemaJsonSchema = Record<string, unknown>;
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+type DefinitionParseResult =
+  | { success: true; data: unknown }
+  | {
+      success: false;
+      error: { issues: readonly { path: readonly PropertyKey[]; message: string }[] };
+    };
+
+const safeParseDefinition = (schema: ZodType, value: unknown): DefinitionParseResult => {
+  const candidate = schema as unknown as {
+    parse(input: unknown): unknown;
+    safeParse?: (input: unknown) => DefinitionParseResult;
+  };
+  if (candidate.safeParse) return candidate.safeParse(value);
+
+  try {
+    return { success: true, data: candidate.parse(value) };
+  } catch (error) {
+    return {
+      success: false,
+      error: {
+        issues: [
+          {
+            path: [],
+            message: error instanceof Error ? error.message : "Definition parser rejected config.",
+          },
+        ],
+      },
+    };
+  }
+};
+
 export const findUnknownKinds = (schema: unknown, registry: Registry): UnknownSchemaKind[] => {
   if (!isRecord(schema)) return [];
 
@@ -48,9 +81,11 @@ export const findUnknownKinds = (schema: unknown, registry: Registry): UnknownSc
       if (section === "fields") {
         const fieldDefinition = registry.getField(entry.kind);
         if (!fieldDefinition) return;
-        const parsed = fieldDefinition.schema.safeParse(entry);
+        const parsed = safeParseDefinition(composeFieldConfigSchema(fieldDefinition.schema), entry);
         if (!parsed.success) return;
-        for (const reference of fieldDefinition.getNestedFieldReferences?.(parsed.data) ?? []) {
+        for (const reference of fieldDefinition.getNestedFieldReferences?.(
+          parsed.data as FieldConfig,
+        ) ?? []) {
           if (registry.getField(reference.kind)) continue;
           unknown.push({
             section,
@@ -105,15 +140,18 @@ const validateSection = (
       section === "fields" ? registry.getField(entry.kind) : registry.getReport(entry.kind);
     if (!definition) return;
 
-    const parsed = definition.schema.safeParse(entry);
+    const schema =
+      section === "fields"
+        ? composeFieldConfigSchema(definition.schema)
+        : composeReportConfigSchema(definition.schema);
+    const parsed = safeParseDefinition(schema, entry);
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
+        const issuePath = issue.path.map((part) =>
+          typeof part === "symbol" ? String(part) : part,
+        );
         issues.push({
-          path: [
-            section,
-            index,
-            ...issue.path.map((part) => (typeof part === "symbol" ? String(part) : part)),
-          ],
+          path: [section, index, ...issuePath],
           message: issue.message,
           code: "invalid-config",
         });
@@ -175,8 +213,19 @@ export const validateSchema = (schema: unknown, registry: Registry): SchemaValid
   }
 };
 
-const registryItemsSchema = (definitions: readonly { schema: ZodType }[]) => {
-  const schemas = definitions.map((definition) => definition.schema);
+const registryItemsSchema = (
+  definitions: readonly { kind: string; schema: ZodType }[],
+  compose: (schema: ZodType) => ZodType,
+) => {
+  const schemas = definitions.map((definition) => {
+    const schema = compose(definition.schema);
+    if (!("_zod" in (schema as unknown as object))) {
+      throw new TypeError(
+        `Definition "${definition.kind}" must use a Zod schema to generate JSON Schema.`,
+      );
+    }
+    return schema;
+  });
   return schemas.length > 0 ? xor(schemas) : never();
 };
 
@@ -184,8 +233,10 @@ const registryItemsSchema = (definitions: readonly { schema: ZodType }[]) => {
 export const toSchemaJsonSchema = (registry: Registry): SchemaJsonSchema =>
   toJSONSchema(
     strictObject({
-      fields: array(registryItemsSchema(registry.listFields())),
-      reports: array(registryItemsSchema(registry.listReports())).optional(),
+      fields: array(registryItemsSchema(registry.listFields(), composeFieldConfigSchema)),
+      reports: array(
+        registryItemsSchema(registry.listReports(), composeReportConfigSchema),
+      ).optional(),
     }),
     { target: "draft-2020-12", io: "input", unrepresentable: "any" },
   ) as SchemaJsonSchema;

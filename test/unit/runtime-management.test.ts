@@ -112,4 +112,94 @@ describe("runtime management", () => {
 
     expect(report.state).toMatchObject({ status: "ready", payload: { value: 42 } });
   });
+
+  it("keeps a refreshed report loading when the replaced request settles", async () => {
+    let resolveFirst = (_value: unknown): void => {};
+    let resolveSecond = (_value: unknown): void => {};
+    const firstResult = new Promise((resolve) => {
+      resolveFirst = resolve;
+    });
+    const secondResult = new Promise((resolve) => {
+      resolveSecond = resolve;
+    });
+    const submit = vi.fn().mockReturnValueOnce(firstResult).mockReturnValueOnce(secondResult);
+    const { registry } = createBuiltinTestKit();
+    registry.registerReport({
+      kind: "refresh-race",
+      schema: z.object({ kind: z.literal("refresh-race") }).passthrough(),
+      fetch: () => ({ submit }),
+    });
+    const form = createForm({
+      schema: { fields: [], reports: [{ id: "details", kind: "refresh-race" }] },
+      registry,
+      transport: { submit: vi.fn() },
+    });
+    const report = form.getReport("details")!;
+    const request = {
+      reportId: report.id,
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
+      meta: {},
+      raw: null,
+    };
+
+    const firstFetch = report.fetch(request);
+    await vi.waitFor(() => expect(report.state.status).toBe("loading"));
+    const refreshedFetch = report.refresh(request);
+    resolveFirst({ stale: true });
+    await firstFetch;
+
+    expect(report.state.status).toBe("loading");
+
+    resolveSecond({ fresh: true });
+    await refreshedFetch;
+    expect(report.state).toMatchObject({ status: "ready", payload: { fresh: true } });
+  });
+
+  it("ignores a completed fetch when refresh starts before the controller resumes", async () => {
+    const firstResult = Promise.withResolvers<unknown>();
+    const secondResult = Promise.withResolvers<unknown>();
+    const submit = vi
+      .fn()
+      .mockReturnValueOnce(firstResult.promise)
+      .mockReturnValueOnce(secondResult.promise);
+    const { registry } = createBuiltinTestKit();
+    registry.registerReport({
+      kind: "completion-race",
+      schema: z.object({ kind: z.literal("completion-race") }).passthrough(),
+      fetch: () => ({ submit }),
+    });
+    const form = createForm({
+      schema: { fields: [], reports: [{ id: "details", kind: "completion-race" }] },
+      registry,
+      transport: { submit: vi.fn() },
+    });
+    const report = form.getReport("details")!;
+    const request = {
+      reportId: report.id,
+      inputs: [],
+      displayValues: {},
+      modelValues: {},
+      reports: [],
+      reportContexts: {},
+      meta: {},
+      raw: null,
+    };
+
+    const firstFetch = report.fetch(request);
+    let refreshedFetch: Promise<void> | undefined;
+    void firstResult.promise.then(() => {
+      refreshedFetch = report.refresh(request);
+    });
+    firstResult.resolve({ obsolete: true });
+    await firstFetch;
+
+    expect(report.state.status).toBe("loading");
+    secondResult.resolve({ fresh: true });
+    await refreshedFetch;
+    expect(report.state).toMatchObject({ status: "ready", payload: { fresh: true } });
+  });
 });

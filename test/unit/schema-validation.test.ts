@@ -136,7 +136,28 @@ describe("schema validation tooling", () => {
       }),
     });
 
-    expect(JSON.stringify(toSchemaJsonSchema(customRegistry))).toContain("tenantOption");
+    const jsonSchema = toSchemaJsonSchema(customRegistry);
+    const validator = z.fromJSONSchema(jsonSchema);
+
+    expect(JSON.stringify(jsonSchema)).toContain("tenantOption");
+    expect(
+      validator.safeParse({
+        fields: [
+          {
+            kind: "tenant-field",
+            id: "tenant",
+            label: "Tenant",
+            mappedTo: "tenant_key",
+            tenantOption: "active",
+          },
+        ],
+      }).success,
+    ).toBe(true);
+    expect(
+      validator.safeParse({
+        fields: [{ kind: "tenant-field", label: "Tenant", mappedTo: "", tenantOption: "active" }],
+      }).success,
+    ).toBe(false);
     expect(
       validateSchema(
         {
@@ -145,6 +166,72 @@ describe("schema validation tooling", () => {
         customRegistry,
       ).success,
     ).toBe(true);
+  });
+
+  it("keeps strict extension schemas aligned between runtime and JSON Schema", () => {
+    const customRegistry = createRegistry().registerField({
+      kind: "strict-field",
+      schema: z.strictObject({
+        kind: z.literal("strict-field"),
+        label: z.string(),
+        mappedTo: z.string().optional(),
+        tenantOption: z.string().min(1),
+      }),
+    });
+    const validator = z.fromJSONSchema(toSchemaJsonSchema(customRegistry));
+    const validSchema = {
+      fields: [
+        {
+          kind: "strict-field",
+          id: "tenant",
+          label: "Tenant",
+          mappedTo: "tenant_key",
+          tenantOption: "active",
+        },
+      ],
+    };
+
+    expect(validateSchema(validSchema, customRegistry).success).toBe(true);
+    expect(validator.safeParse(validSchema).success).toBe(true);
+
+    const invalidSchema = {
+      fields: [{ ...validSchema.fields[0], unexpected: true }],
+    };
+    expect(validateSchema(invalidSchema, customRegistry).success).toBe(false);
+    expect(validator.safeParse(invalidSchema).success).toBe(false);
+
+    for (const invalidBaseValue of [
+      { ...validSchema.fields[0], label: "" },
+      { ...validSchema.fields[0], mappedTo: "" },
+    ]) {
+      const schema = { fields: [invalidBaseValue] };
+      expect(validateSchema(schema, customRegistry).success).toBe(false);
+      expect(validator.safeParse(schema).success).toBe(false);
+    }
+  });
+
+  it("validates legacy parser definitions and rejects only unsupported JSON Schema generation", () => {
+    const parserRegistry = createRegistry().registerField({
+      kind: "parser-field",
+      schema: {
+        parse(input: unknown) {
+          if (typeof input !== "object" || input === null || !("label" in input)) {
+            throw new Error("label is required");
+          }
+          return input;
+        },
+      } as never,
+    });
+
+    expect(
+      validateSchema(
+        { fields: [{ kind: "parser-field", label: "Parser", mappedTo: "value" }] },
+        parserRegistry,
+      ).success,
+    ).toBe(true);
+    expect(() => toSchemaJsonSchema(parserRegistry)).toThrow(
+      'Definition "parser-field" must use a Zod schema to generate JSON Schema.',
+    );
   });
 
   it("resolves every local reference from the generated document root", () => {

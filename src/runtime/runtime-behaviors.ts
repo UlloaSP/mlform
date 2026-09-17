@@ -83,13 +83,17 @@ export const createRuntimeBehaviors = ({
     const pending: Promise<void>[] = [];
     for (const event of events) {
       for (const behavior of behaviors) {
-        const result = behavior.onValuesChanged?.(event, context);
-        if (isPromiseLike(result)) {
-          pending.push(
-            Promise.resolve(result).catch((error: unknown) => {
-              if (!controller.signal.aborted) notifyListenerError(onListenerError, error);
-            }),
-          );
+        try {
+          const result = behavior.onValuesChanged?.(event, context);
+          if (isPromiseLike(result)) {
+            pending.push(
+              Promise.resolve(result).catch((error: unknown) => {
+                if (!controller.signal.aborted) notifyListenerError(onListenerError, error);
+              }),
+            );
+          }
+        } catch (error) {
+          if (!controller.signal.aborted) notifyListenerError(onListenerError, error);
         }
       }
     }

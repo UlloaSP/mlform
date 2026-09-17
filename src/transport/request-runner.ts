@@ -1,19 +1,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-type TransportRequestOutcome<TResult> =
-  | {
-      status: "completed";
-      value: TResult;
-    }
-  | {
-      status: "aborted";
-    }
-  | {
-      status: "failed";
-      error: unknown;
-      message: string;
-    };
+type RequestFreshness = {
+  /** True when a newer request or explicit runner abort invalidated this outcome. */
+  readonly stale: boolean;
+};
+
+type TransportRequestOutcome<TResult> = RequestFreshness &
+  (
+    | {
+        status: "completed";
+        value: TResult;
+      }
+    | {
+        status: "aborted";
+      }
+    | {
+        status: "failed";
+        error: unknown;
+        message: string;
+      }
+  );
 
 type TransportRequestRunner = {
   run<TResult>(
@@ -40,28 +47,50 @@ const composeAbortSignal = (signals: readonly (AbortSignal | undefined)[]) => {
 
 export const createTransportRequestRunner = (): TransportRequestRunner => {
   let activeAbortController: AbortController | null = null;
+  let generation = 0;
 
   return {
     async run(submit, signals = []) {
       activeAbortController?.abort("request-restarted");
       const abortController = new AbortController();
       activeAbortController = abortController;
+      const requestGeneration = ++generation;
       const signal = composeAbortSignal([...signals, abortController.signal]);
+      const isStale = () => generation !== requestGeneration;
 
       try {
         const value = await submit(signal);
         if (abortController.signal.aborted || signal?.aborted) {
-          return { status: "aborted" };
+          return {
+            status: "aborted",
+            get stale() {
+              return isStale();
+            },
+          };
         }
-        return { status: "completed", value };
+        return {
+          status: "completed",
+          value,
+          get stale() {
+            return isStale();
+          },
+        };
       } catch (error: unknown) {
         if (abortController.signal.aborted || signal?.aborted || isAbortLikeError(error)) {
-          return { status: "aborted" };
+          return {
+            status: "aborted",
+            get stale() {
+              return isStale();
+            },
+          };
         }
         return {
           status: "failed",
           error,
           message: extractErrorMessage(error),
+          get stale() {
+            return isStale();
+          },
         };
       } finally {
         if (activeAbortController === abortController) {
@@ -70,6 +99,7 @@ export const createTransportRequestRunner = (): TransportRequestRunner => {
       }
     },
     abort(reason?: unknown) {
+      generation += 1;
       activeAbortController?.abort(reason);
       activeAbortController = null;
     },

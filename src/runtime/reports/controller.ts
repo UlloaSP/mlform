@@ -3,7 +3,7 @@
 
 import { defaultEquality } from "../equality";
 import { resolveMappedReportPayload, resolveMappedReportResult } from "@/schema";
-import { createTransportRequestRunner, extractErrorMessage } from "@/transport";
+import { createTransportRequestRunner } from "@/transport";
 import { EngineError, ReportPayloadError } from "../errors";
 import type { EngineStore } from "../state";
 import type {
@@ -17,6 +17,7 @@ import type {
 } from "../types";
 import { deepFreeze, notifyListenerError } from "../utils";
 import { cloneValue } from "../values";
+import { cloneReportStateSnapshot, preparePayloadState } from "./payload-state";
 
 type CreateReportControllerOptions = {
   config: NormalizedReportConfig;
@@ -38,34 +39,6 @@ const loadingState: ReportStateSnapshot = {
   status: "loading",
 };
 
-const cloneReportPayload = (
-  definition: ReportDefinition,
-  config: NormalizedReportConfig,
-  payload: unknown,
-): unknown => {
-  if (payload === undefined) {
-    return undefined;
-  }
-
-  if (definition.clonePayload) {
-    return definition.clonePayload(payload, config);
-  }
-
-  return cloneValue(payload);
-};
-
-export const cloneReportStateSnapshot = (
-  definition: ReportDefinition,
-  config: NormalizedReportConfig,
-  state: ReportStateSnapshot,
-): ReportStateSnapshot => {
-  return {
-    payload: cloneReportPayload(definition, config, state.payload),
-    error: state.error,
-    status: state.status,
-  };
-};
-
 const setReportState = (
   store: EngineStore,
   reportId: string,
@@ -78,41 +51,6 @@ const setReportState = (
       [reportId]: nextState,
     },
   }));
-};
-
-const preparePayloadState = (
-  definition: ReportDefinition,
-  config: NormalizedReportConfig,
-  rawPayload: unknown,
-  errorFactory: (message: string, error: unknown) => Error,
-): ReportStateSnapshot => {
-  if (rawPayload === undefined || !definition.payloadSchema) {
-    return {
-      payload: cloneReportPayload(definition, config, rawPayload),
-      error: null,
-      status: rawPayload === undefined ? "idle" : "ready",
-    };
-  }
-
-  try {
-    const payload = definition.payloadSchema.parse(rawPayload);
-    return {
-      payload: cloneReportPayload(definition, config, payload),
-      error: null,
-      status: "ready",
-    };
-  } catch (error) {
-    const message = extractErrorMessage(error);
-    if (definition.payloadValidationPolicy === "fail-submit") {
-      throw errorFactory(message, error);
-    }
-
-    return {
-      payload: undefined,
-      error: message,
-      status: "error",
-    };
-  }
 };
 
 export type InternalReportController = ReportController & {
@@ -224,6 +162,8 @@ export const createReportController = ({
         (signal) => transport.submit({ ...request, signal }),
         [request.signal],
       );
+
+      if (outcome.stale) return;
 
       if (outcome.status === "aborted") {
         setReportState(store, readonlyConfig.id, idleState);

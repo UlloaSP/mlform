@@ -8,17 +8,15 @@ Use `defineFieldKind` for the normal extension path. It lets you define parsing,
 ```ts
 import { z } from "zod";
 import { defineFieldKind, defineMLFormPlugin, mountForm } from "mlform/kit";
+import { baseFieldConfigSchema } from "mlform/schema";
 
 const scoreField = defineFieldKind({
   kind: "score",
-  schema: z.object({
-    id: z.string().optional(),
+  schema: baseFieldConfigSchema.extend({
     kind: z.literal("score"),
-    label: z.string(),
     min: z.number().default(0),
     max: z.number().default(100),
     step: z.number().optional(),
-    ui: z.record(z.string(), z.unknown()).optional(),
   }),
   value: {
     default: () => 0,
@@ -41,6 +39,14 @@ const scoreField = defineFieldKind({
 const domainPlugin = defineMLFormPlugin({ fields: [scoreField] });
 mountForm(container, { schema, transport, plugins: [domainPlugin] });
 ```
+
+`baseFieldConfigSchema` is the single source of truth for shared field properties such as `id`,
+`label`, conditions, `displayKey`, `mappedTo`, and `ui`. Extend it with properties owned by the new
+kind instead of repeating the base contract.
+
+For nested configuration that needs the same backend-target syntax, import `mappedToSchema` from
+`mlform/schema`. It is optional for top-level configs; use `mappedToSchema.unwrap()` when the nested
+property must be present.
 
 | Hook              | Purpose                                                            |
 | ----------------- | ------------------------------------------------------------------ |

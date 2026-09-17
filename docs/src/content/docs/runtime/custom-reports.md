@@ -8,15 +8,12 @@ Use `defineReportKind` for the normal extension path. It lets you resolve payloa
 ```ts
 import { z } from "zod";
 import { defineMLFormPlugin, defineReportKind, mountForm } from "mlform/kit";
-import { resolveMappedReportPayload } from "mlform/schema";
+import { baseReportConfigSchema, resolveMappedReportPayload } from "mlform/schema";
 
 const riskSummaryReport = defineReportKind({
   kind: "risk-summary",
-  schema: z.object({
-    id: z.string().optional(),
+  schema: baseReportConfigSchema.extend({
     kind: z.literal("risk-summary"),
-    label: z.string().optional(),
-    mappedTo: z.union([z.string(), z.number()]).optional(),
   }),
   resolve: ({ report, result }) =>
     resolveMappedReportPayload(report, result, {
@@ -39,6 +36,10 @@ const riskSummaryReport = defineReportKind({
 const domainPlugin = defineMLFormPlugin({ reports: [riskSummaryReport] });
 mountForm(container, { schema, transport, plugins: [domainPlugin] });
 ```
+
+`baseReportConfigSchema` owns shared report properties such as `id`, `label`, `mappedTo`, and `ui`.
+Extend it with properties specific to the new kind so normalization, validation, and generated JSON
+Schema use the same contract.
 
 `render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.
 

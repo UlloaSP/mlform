@@ -55,7 +55,12 @@ import {
   type MountFormOptions,
 } from "mlform/kit";
 import { createForm } from "mlform/runtime";
-import { createRegistry } from "mlform/schema";
+import {
+  baseFieldConfigSchema,
+  baseReportConfigSchema,
+  createRegistry,
+  mappedToSchema,
+} from "mlform/schema";
 import { createBuiltinMlRegistry } from "mlform/builtins";
 import { createTransportRequestRunner } from "mlform/transport";
 import { mountPrimitiveForm } from "mlform/primitives";
@@ -71,6 +76,9 @@ void [
   mountForm,
   mountFormFromRoot,
   createForm,
+  baseFieldConfigSchema,
+  baseReportConfigSchema,
+  mappedToSchema,
   createRegistry,
   createBuiltinMlRegistry,
 ];
@@ -110,12 +118,20 @@ import { mountForm as mountFormFromRoot } from "mlform";
 import { mountForm as mountFormFromKit } from "mlform/kit";
 import { createBuiltinMlRegistry } from "mlform/builtins";
 import { createForm } from "mlform/runtime";
-import { createRegistry } from "mlform/schema";
+import {
+  baseFieldConfigSchema,
+  baseReportConfigSchema,
+  createRegistry,
+  mappedToSchema,
+} from "mlform/schema";
 import { extractErrorMessage } from "mlform/transport";
 
 assert.equal(createBuiltinMlRegistry().getField("text")?.kind, "text");
 assert.equal(mountFormFromRoot, mountFormFromKit);
 assert.equal(createRegistry().listFields().length, 0);
+assert.equal(baseFieldConfigSchema.safeParse({ kind: "custom", label: "Custom" }).success, true);
+assert.equal(baseReportConfigSchema.safeParse({ kind: "custom" }).success, true);
+assert.equal(mappedToSchema.safeParse({ primary: "prediction", optional: null }).success, true);
 assert.equal(typeof createForm, "function");
 assert.equal(extractErrorMessage(new Error("expected")), "expected");
 `,

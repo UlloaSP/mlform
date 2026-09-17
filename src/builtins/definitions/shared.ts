@@ -5,117 +5,16 @@ import * as z from "zod";
 import type {
   BaseFieldConfig,
   BaseReportConfig,
-  DeclarativeFieldCondition,
   FieldConfig,
   FieldDefinition,
   ReportConfig,
   ReportDefinition,
 } from "@/schema";
+import { baseFieldConfigSchema, baseReportConfigSchema, mappedToSchema } from "@/schema";
 
-export const uiSchema = z.record(z.string(), z.unknown()).optional();
-
-const mappedToTargetSchema = z.union([z.string().min(1), z.number().int().nonnegative()]);
-
-export const mappedToSchema = z
-  .union([mappedToTargetSchema, z.record(z.string().min(1), mappedToTargetSchema.nullish())])
-  .optional();
-
-const functionFieldConditionSchema = z.custom<(context: unknown) => boolean>(
-  (value) => typeof value === "function",
-);
-
-const formStatusSchema = z.enum([
-  "idle",
-  "editing",
-  "validating",
-  "submitting",
-  "success",
-  "error",
-]);
-
-const declarativeFieldConditionSchema: z.ZodType<DeclarativeFieldCondition> = z.lazy(() =>
-  z.union([
-    z.object({
-      kind: z.literal("field-value"),
-      field: z.string().min(1),
-      equals: z.unknown().optional(),
-      notEquals: z.unknown().optional(),
-      greaterThan: z.unknown().optional(),
-      greaterThanOrEqual: z.unknown().optional(),
-      lessThan: z.unknown().optional(),
-      lessThanOrEqual: z.unknown().optional(),
-      in: z.array(z.unknown()).optional(),
-      notIn: z.array(z.unknown()).optional(),
-      empty: z.boolean().optional(),
-      notEmpty: z.boolean().optional(),
-      truthy: z.boolean().optional(),
-      falsy: z.boolean().optional(),
-    }),
-    z.object({
-      kind: z.literal("field-comparison"),
-      field: z.string().min(1),
-      otherField: z.string().min(1),
-      operator: z.enum(["eq", "neq", "gt", "gte", "lt", "lte"]),
-    }),
-    z.object({
-      kind: z.literal("form-status"),
-      equals: z.union([formStatusSchema, z.array(formStatusSchema).min(1)]),
-    }),
-    z.object({
-      kind: z.literal("submit-count"),
-      eq: z.number().int().nonnegative().optional(),
-      gte: z.number().int().nonnegative().optional(),
-      lte: z.number().int().nonnegative().optional(),
-    }),
-    z.object({
-      kind: z.literal("all"),
-      conditions: z.array(declarativeFieldConditionSchema).min(1),
-    }),
-    z.object({
-      kind: z.literal("any"),
-      conditions: z.array(declarativeFieldConditionSchema).min(1),
-    }),
-    z.object({
-      kind: z.literal("not"),
-      condition: declarativeFieldConditionSchema,
-    }),
-  ]),
-);
-
-const fieldConditionSchema = z.union([
-  functionFieldConditionSchema,
-  declarativeFieldConditionSchema,
-]);
-
-export const baseFieldShape = {
-  id: z.string().optional(),
-  label: z.string().min(1),
-  description: z.string().optional(),
-  showDescriptionInline: z.boolean().optional().default(false),
-  required: z.boolean().optional().default(false),
-  disabled: z.boolean().optional().default(false),
-  hidden: z.boolean().optional().default(false),
-  readOnly: z.boolean().optional().default(false),
-  disabledWhen: fieldConditionSchema.optional(),
-  hiddenWhen: fieldConditionSchema.optional(),
-  readOnlyWhen: fieldConditionSchema.optional(),
-  asyncValidationDebounceMs: z.number().int().nonnegative().optional(),
-  inactiveFieldPolicy: z.enum(["include", "omit", "reset-on-hide"]).optional(),
-  includeInSubmission: z.boolean().optional(),
-  displayKey: z.string().min(1).optional(),
-  mappedTo: mappedToSchema,
-  valuePath: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]).optional(),
-  defaultValue: z.unknown().optional(),
-  ui: uiSchema,
-};
-
-export const baseReportShape = {
-  id: z.string().optional(),
-  label: z.string().optional(),
-  description: z.string().optional(),
-  mappedTo: mappedToSchema,
-  ui: uiSchema,
-};
+export { mappedToSchema };
+export const baseFieldShape = baseFieldConfigSchema.omit({ kind: true }).shape;
+export const baseReportShape = baseReportConfigSchema.omit({ kind: true }).shape;
 
 export const optionSchema = z.union([
   z.string(),

@@ -5,7 +5,6 @@ import { css, html, nothing } from "lit";
 import { state } from "lit/decorators.js";
 import { PrimitiveReportElement } from "./base-report-element";
 import type { PrimitiveText } from "./constants";
-import { createPrimitiveRequestRunner } from "./request-runner";
 import type { PrimitiveReportRequest } from "./types";
 
 export type PrimitiveAsyncReportStatus = "idle" | "loading" | "done" | "error";
@@ -116,7 +115,8 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   @state() private accessor transportResultValue: unknown = undefined;
   @state() private accessor transportErrorValue: string | null = null;
 
-  #transportRunner = createPrimitiveRequestRunner();
+  #transportAbortController: AbortController | null = null;
+  #transportGeneration = 0;
   #lastFetchedRequest: PrimitiveReportRequest | null = null;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
@@ -132,7 +132,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   }
 
   disconnectedCallback(): void {
-    this.#transportRunner.abort();
+    this.#abortTransport();
     super.disconnectedCallback();
   }
 
@@ -189,7 +189,7 @@ ${serializeReportTransportResult(this.transportResult)}</pre>`;
     const request = this.request;
 
     if (!this.shouldFetchTransportResult() || !transport || !request) {
-      this.#transportRunner.abort();
+      this.#abortTransport();
       this.#lastFetchedRequest = null;
       this.transportStatus = "idle";
       this.transportResultValue = undefined;
@@ -207,21 +207,30 @@ ${serializeReportTransportResult(this.transportResult)}</pre>`;
     this.transportResultValue = undefined;
     this.transportErrorValue = null;
 
-    const outcome = await this.#transportRunner.run((signal) =>
-      transport.submit({ ...request, signal }),
-    );
+    this.#transportAbortController?.abort();
+    const controller = new AbortController();
+    this.#transportAbortController = controller;
+    const generation = ++this.#transportGeneration;
 
-    if (outcome.status === "aborted") {
-      return;
-    }
-
-    if (outcome.status === "completed") {
-      this.transportResultValue = outcome.value;
+    try {
+      const value = await transport.submit({ ...request, signal: controller.signal });
+      if (generation !== this.#transportGeneration || controller.signal.aborted) return;
+      this.transportResultValue = value;
       this.transportStatus = "done";
-      return;
+    } catch (error) {
+      if (generation !== this.#transportGeneration || controller.signal.aborted) return;
+      this.transportErrorValue = error instanceof Error ? error.message : String(error);
+      this.transportStatus = "error";
+    } finally {
+      if (this.#transportAbortController === controller) {
+        this.#transportAbortController = null;
+      }
     }
+  }
 
-    this.transportErrorValue = outcome.message;
-    this.transportStatus = "error";
+  #abortTransport(): void {
+    this.#transportGeneration += 1;
+    this.#transportAbortController?.abort();
+    this.#transportAbortController = null;
   }
 }
