@@ -3,6 +3,7 @@
 
 import { css, html, nothing } from "lit";
 import { state } from "lit/decorators.js";
+import { createTransportRequestRunner } from "@/transport";
 import { PrimitiveReportElement } from "./base-report-element";
 import type { PrimitiveText } from "./constants";
 import type { PrimitiveReportRequest } from "./types";
@@ -115,8 +116,7 @@ export abstract class PrimitiveAsyncReportElement extends PrimitiveReportElement
   @state() private accessor transportResultValue: unknown = undefined;
   @state() private accessor transportErrorValue: string | null = null;
 
-  #transportAbortController: AbortController | null = null;
-  #transportGeneration = 0;
+  readonly #transportRunner = createTransportRequestRunner();
   #lastFetchedRequest: PrimitiveReportRequest | null = null;
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
@@ -207,30 +207,28 @@ ${serializeReportTransportResult(this.transportResult)}</pre>`;
     this.transportResultValue = undefined;
     this.transportErrorValue = null;
 
-    this.#transportAbortController?.abort();
-    const controller = new AbortController();
-    this.#transportAbortController = controller;
-    const generation = ++this.#transportGeneration;
+    const outcome = await this.#transportRunner.run(
+      (signal) => transport.submit({ ...request, signal }),
+      [request.signal],
+    );
+    if (outcome.stale) return;
 
-    try {
-      const value = await transport.submit({ ...request, signal: controller.signal });
-      if (generation !== this.#transportGeneration || controller.signal.aborted) return;
-      this.transportResultValue = value;
+    if (outcome.status === "completed") {
+      this.transportResultValue = outcome.value;
       this.transportStatus = "done";
-    } catch (error) {
-      if (generation !== this.#transportGeneration || controller.signal.aborted) return;
-      this.transportErrorValue = error instanceof Error ? error.message : String(error);
-      this.transportStatus = "error";
-    } finally {
-      if (this.#transportAbortController === controller) {
-        this.#transportAbortController = null;
-      }
+      return;
     }
+
+    if (outcome.status === "failed") {
+      this.transportErrorValue = outcome.message;
+      this.transportStatus = "error";
+      return;
+    }
+
+    this.transportStatus = "idle";
   }
 
   #abortTransport(): void {
-    this.#transportGeneration += 1;
-    this.#transportAbortController?.abort();
-    this.#transportAbortController = null;
+    this.#transportRunner.abort();
   }
 }

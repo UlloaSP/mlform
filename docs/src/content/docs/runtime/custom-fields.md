@@ -59,6 +59,10 @@ property must be present.
 | `render.widget`   | Pick a built-in renderer shape like `text`, `number`, or `select`. |
 | `render.hints`    | Pass small UI hints to the built-in declarative renderer.          |
 
+`value.normalize` must be idempotent: normalizing an already normalized value must produce an
+equal value. The runtime may normalize values more than once while it stabilizes conditional field
+state. It fails early if a definition keeps changing its value during that process.
+
 The `definition` option exposes the advanced definition hooks without leaving the normal kit
 extension path: `validateConfig`, `getNestedFieldReferences`, `validateRuntime`, `onValueChanged`,
 `getMappedTargets`, and `getSubmissionEntries`. The field kind, schema, value normalization, and

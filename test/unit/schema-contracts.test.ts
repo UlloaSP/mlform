@@ -97,6 +97,22 @@ describe("normalized schema contracts", () => {
     ).toThrow(/overlaps submission path/);
   });
 
+  it("keeps backend-routed targets globally unique for backendless snapshots", () => {
+    const registry = createBuiltinMlRegistry();
+
+    expect(() =>
+      normalizeSchema(
+        {
+          fields: [
+            { id: "alpha", kind: "text", label: "Alpha", mappedTo: { alpha: "shared" } },
+            { id: "beta", kind: "text", label: "Beta", mappedTo: { beta: "shared" } },
+          ],
+        },
+        registry,
+      ),
+    ).toThrow(/duplicate submission path "shared"/i);
+  });
+
   it("rejects duplicate targets produced by custom field definitions", () => {
     expect(() =>
       normalizeSchema(

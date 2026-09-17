@@ -38,7 +38,11 @@ export const createStore = <T>(initialState: T, options: StoreOptions<T> = {}): 
         listener(state);
       } catch (error) {
         errors.push(error);
-        options.onListenerError?.(error, state);
+        try {
+          options.onListenerError?.(error, state);
+        } catch (observerError) {
+          errors.push(observerError);
+        }
       }
     }
 

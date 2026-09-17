@@ -25,7 +25,7 @@ const budgets: Record<string, number> = {
   "./kit": 75,
   "./primitives": 28,
   "./design": 15,
-  "./runtime": 18,
+  "./runtime": 19,
   "./builtins": 9,
   "./schema": 5,
   "./transport": 2,

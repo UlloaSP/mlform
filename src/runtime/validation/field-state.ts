@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { InternalFieldState } from "../state";
+import { EngineError } from "../errors";
 import type { FieldDefinition, FormStatus, NormalizedFieldConfig } from "../types";
 import { isEmptyValue } from "../utils";
 import { cloneValue, deepValueEquality } from "../values";
@@ -47,7 +48,20 @@ export const normalizeValue = (
   value: unknown,
 ): unknown => {
   if (definition.normalizeValue) {
-    return cloneFieldValue(definition, config, definition.normalizeValue(value, config));
+    const normalized = cloneFieldValue(
+      definition,
+      config,
+      definition.normalizeValue(value, config),
+    );
+    const repeated = cloneFieldValue(
+      definition,
+      config,
+      definition.normalizeValue(cloneFieldValue(definition, config, normalized), config),
+    );
+    if (!deepValueEquality(normalized, repeated)) {
+      throw new EngineError(`Field "${config.id}" normalizer must be idempotent.`);
+    }
+    return normalized;
   }
   return cloneFieldValue(definition, config, value);
 };

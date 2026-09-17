@@ -25,7 +25,7 @@ const moduleNames = new Set([
 const allowedDependencies = new Map<string, ReadonlySet<string>>([
   ["schema", new Set()],
   ["design", new Set()],
-  ["primitives", new Set()],
+  ["primitives", new Set(["transport"])],
   ["transport", new Set(["schema"])],
   ["runtime", new Set(["schema", "transport"])],
   ["builtins", new Set(["schema", "runtime"])],

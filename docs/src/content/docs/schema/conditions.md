@@ -33,3 +33,6 @@ Declarative field references use the same normalized ids as field definitions. F
 does not resolve to a declared field, including references nested inside `all`, `any`, or `not`.
 Function conditions are runtime code and therefore cannot be checked for references during schema
 normalization.
+
+Conditional state does not depend on field declaration order. When `reset-on-hide` changes a value
+that another field reads, the runtime re-evaluates the affected state until the form is stable.

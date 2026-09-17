@@ -31,3 +31,7 @@ Use hooks for analytics, logging, custom loading state, and backend tracing. Do 
 `afterReportFetch` and `onReportFetchError` are notifications: their failures do not replace the
 report outcome. Supply `onListenerError` to observe those failures. `onSubmitError` follows the same
 rule so that it cannot hide the transport, validation, or abort error it is reporting.
+With `listenerErrorPolicy: "ignore"`, failures thrown by `onListenerError` itself are isolated so
+they cannot interrupt later listeners or turn a committed state change into a caller-visible
+failure. The `throw-aggregate` policy includes both listener and observer failures in its final
+aggregate.
