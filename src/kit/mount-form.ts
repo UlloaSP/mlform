@@ -16,6 +16,7 @@ import {
 import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./types";
 import { createFormView } from "./view";
 import { defaultWizardLabels, resolveWizardText } from "./wizard-constants";
+import { bindDocumentLifecycle } from "./document-lifecycle";
 
 const mountedFormRef = Symbol("mlform.kit.mounted");
 
@@ -45,6 +46,7 @@ const createView = (options: MountFormOptions) =>
     behaviors: options.behaviors,
     plugins: options.plugins,
     initialValues: options.initialValues,
+    initialSnapshot: options.initialSnapshot,
     validators: options.validators,
     hooks: options.hooks,
     hookFailurePolicy: options.hookFailurePolicy,
@@ -115,6 +117,10 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   });
 
   let unmounted = false;
+  const disconnectHostLifecycle =
+    options.hostLifecycle === "document"
+      ? bindDocumentLifecycle(view.form, container.ownerDocument)
+      : (): void => {};
 
   const mounted: MountedForm = Object.freeze({
     form: view.form,
@@ -134,6 +140,12 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     resetDesignSystem() {
       designSystem.reset();
     },
+    suspend(reason?: string) {
+      view.suspend(reason);
+    },
+    resume() {
+      view.resume();
+    },
     unmount() {
       if (unmounted) {
         return;
@@ -145,6 +157,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
         delete hostContainer[mountedFormRef];
       }
 
+      disconnectHostLifecycle();
       view.dispose();
       designSystem.disconnect();
       unmountHost();

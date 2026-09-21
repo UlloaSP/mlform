@@ -14,6 +14,7 @@ import type {
 import type { InternalFieldController } from "./fields";
 import type { InternalReportController } from "./reports";
 import type { EngineStore } from "./state";
+import { createRuntimeLifecycle } from "./runtime-lifecycle";
 
 type CreateRuntimeControllerOptions = {
   fields: InternalFieldController[];
@@ -38,7 +39,10 @@ type CreateRuntimeControllerOptions = {
   resetReports: () => void;
   runBehaviorValueChanges: (events: readonly RuntimeBehaviorValueChangeEvent[]) => void;
   abortBehaviorChanges: (reason?: string) => void;
-  setRestingStatus: () => void;
+  snapshots: {
+    create(): import("./types").FormSnapshot;
+    restore(snapshot: unknown): void;
+  };
 };
 
 export const createRuntimeController = ({
@@ -59,15 +63,20 @@ export const createRuntimeController = ({
   resetReports,
   runBehaviorValueChanges,
   abortBehaviorChanges,
-  setRestingStatus,
+  snapshots,
 }: CreateRuntimeControllerOptions): FormController => {
   const readonlyFields = Object.freeze([...fields]) as readonly InternalFieldController[];
   const readonlyReports = Object.freeze([...reports]) as readonly InternalReportController[];
-  let disposed = false;
-  let explicitValidationCount = 0;
-  const assertActive = (): void => {
-    if (disposed) throw new EngineError("Form runtime has been disposed.");
-  };
+  const explicitValidations = new Set<symbol>();
+  const lifecycle = createRuntimeLifecycle({
+    store,
+    fields,
+    reports,
+    abortBehaviorChanges,
+    formSubmitter,
+    cancelExplicitValidations: () => explicitValidations.clear(),
+  });
+  const { assertUsable, assertActive } = lifecycle;
 
   return {
     get fields() {
@@ -99,6 +108,14 @@ export const createRuntimeController = ({
     },
     getValues() {
       return getValues();
+    },
+    createSnapshot() {
+      assertUsable();
+      return snapshots.create();
+    },
+    restoreSnapshot(snapshot) {
+      assertActive();
+      snapshots.restore(snapshot);
     },
     setValues(values) {
       assertActive();
@@ -166,16 +183,20 @@ export const createRuntimeController = ({
       if (formSubmitter.isActive()) {
         throw new EngineError("Cannot validate while a form submission is in progress.");
       }
-      explicitValidationCount += 1;
+      if (explicitValidations.size > 0) {
+        throw new EngineError("Form validation is already in progress.");
+      }
+      const validation = Symbol("explicit-validation");
+      explicitValidations.add(validation);
       try {
         return await formValidator.validate();
       } finally {
-        explicitValidationCount -= 1;
+        explicitValidations.delete(validation);
       }
     },
     submit(options) {
       assertActive();
-      if (explicitValidationCount > 0) {
+      if (explicitValidations.size > 0) {
         return Promise.reject(
           new EngineError("Cannot submit while explicit form validation is in progress."),
         );
@@ -183,6 +204,7 @@ export const createRuntimeController = ({
       return formSubmitter.submit(options);
     },
     abortSubmit(reason) {
+      assertActive();
       formSubmitter.abort(reason);
     },
     setExternalErrors(issue) {
@@ -197,15 +219,7 @@ export const createRuntimeController = ({
       store.batch(() => {
         for (const field of fields) field.setExternalErrors(issue.fields?.[field.id] ?? []);
         const formErrors = [...(issue.form ?? [])];
-        store.update((current) => ({
-          ...current,
-          formErrors,
-          status:
-            formErrors.length > 0 ||
-            Object.values(issue.fields ?? {}).some((errors) => errors.length)
-              ? "error"
-              : current.status,
-        }));
+        store.update((current) => ({ ...current, formErrors }));
       });
     },
     clearExternalErrors() {
@@ -213,7 +227,6 @@ export const createRuntimeController = ({
       store.batch(() => {
         for (const field of fields) field.setExternalErrors([]);
         store.update((current) => ({ ...current, formErrors: [] }));
-        setRestingStatus();
       });
     },
     reset() {
@@ -237,18 +250,28 @@ export const createRuntimeController = ({
         });
       });
     },
+    suspend(reason) {
+      lifecycle.suspend(reason);
+    },
+    resume() {
+      lifecycle.resume();
+    },
     subscribe(listener) {
-      assertActive();
+      assertUsable();
       return store.subscribe(() => {
         listener(getPublicState());
       });
+    },
+    subscribeTransitions(listener) {
+      assertUsable();
+      return store.subscribeTransitions(listener);
     },
     subscribeSelector<TSelected>(
       selector: (state: FormState) => TSelected,
       listener: (selected: TSelected, state: FormState) => void,
       options?: SelectorSubscriptionOptions<TSelected>,
     ) {
-      assertActive();
+      assertUsable();
       const equality = options?.equality ?? shallowEquality<TSelected>;
       let previousSelected = selector(getPublicState());
 
@@ -266,14 +289,7 @@ export const createRuntimeController = ({
       });
     },
     dispose() {
-      if (disposed) return;
-      abortBehaviorChanges("dispose");
-      formSubmitter.abort("dispose");
-      bumpLifecycleVersion();
-      for (const field of fields) field.dispose();
-      for (const report of reports) report.dispose();
-      disposed = true;
-      store.destroy();
+      lifecycle.dispose();
     },
   };
 };

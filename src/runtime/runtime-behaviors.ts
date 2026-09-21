@@ -19,7 +19,8 @@ type CreateRuntimeBehaviorsOptions = {
   fields: readonly InternalFieldController[];
   getValues: () => Record<string, unknown>;
   getSubmitCount: () => number;
-  getFormStatus: () => FormState["status"];
+  getFormOperation: () => FormState["operation"];
+  getSubmissionStatus: () => FormState["submissionStatus"];
   commitDerivedValue: (targetId: string, value: unknown) => void;
   syncDerivedState: (values: Record<string, unknown>) => void;
   onListenerError: CreateFormConfig["onListenerError"];
@@ -31,7 +32,8 @@ export const createRuntimeBehaviors = ({
   fields,
   getValues,
   getSubmitCount,
-  getFormStatus,
+  getFormOperation,
+  getSubmissionStatus,
   commitDerivedValue,
   syncDerivedState,
   onListenerError,
@@ -63,7 +65,8 @@ export const createRuntimeBehaviors = ({
     },
     getValues,
     getSubmitCount,
-    getFormStatus,
+    getFormOperation,
+    getSubmissionStatus,
     commitDerivedValue(fieldId, value) {
       if (signal?.aborted || (version !== undefined && version !== changeVersion)) return;
       commitDerivedValue(fieldId, value);

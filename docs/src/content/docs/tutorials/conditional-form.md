@@ -29,7 +29,7 @@ mountForm(container, {
         kind: "category",
         label: "Model",
         options: ["stable", "experimental"],
-        readOnlyWhen: { kind: "form-status", equals: "submitting" },
+        readOnlyWhen: { kind: "form-operation", equals: "submitting" },
       },
     ],
     reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],

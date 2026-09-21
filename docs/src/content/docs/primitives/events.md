@@ -19,3 +19,6 @@ mounted.host.addEventListener("mlf-submit-success", (event) => {
 ```
 
 Prefer engine hooks for business logic. Use primitive events when integrating with host DOM systems.
+The primitive form controller also exposes `subscribeTransitions()` for the complete validation,
+submission, reset, restoration, and disposal sequence without converting those records into DOM
+events.

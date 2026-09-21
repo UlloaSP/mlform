@@ -3,12 +3,16 @@
 
 import type {
   PrimitiveFormController,
-  PrimitiveFormStatus,
+  PrimitiveFormLifecycle,
+  PrimitiveFormOperation,
+  PrimitiveSubmissionStatus,
   PrimitiveReportController,
 } from "../controller-types";
 
 export type FormRenderState = {
-  status: PrimitiveFormStatus;
+  lifecycle: PrimitiveFormLifecycle;
+  operation: PrimitiveFormOperation;
+  submissionStatus: PrimitiveSubmissionStatus;
   submitCount: number;
   hasFormErrors: boolean;
   hasLastResult: boolean;
@@ -23,7 +27,9 @@ const sameIds = (left: readonly string[], right: readonly string[]): boolean => 
 
 export const sameFormRenderState = (left: FormRenderState, right: FormRenderState): boolean => {
   return (
-    left.status === right.status &&
+    left.lifecycle === right.lifecycle &&
+    left.operation === right.operation &&
+    left.submissionStatus === right.submissionStatus &&
     left.submitCount === right.submitCount &&
     left.hasFormErrors === right.hasFormErrors &&
     left.hasLastResult === right.hasLastResult &&
@@ -37,7 +43,9 @@ export const selectFormRenderState = (form: PrimitiveFormController): FormRender
   const state = form.state;
 
   return {
-    status: state.status,
+    lifecycle: state.lifecycle,
+    operation: state.operation,
+    submissionStatus: state.submissionStatus,
     submitCount: state.submitCount,
     hasFormErrors: state.errors.form.length > 0,
     hasLastResult: state.lastResult !== null,

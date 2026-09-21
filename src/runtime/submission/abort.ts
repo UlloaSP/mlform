@@ -126,10 +126,9 @@ export const createSubmissionAbortManager = (): SubmissionAbortManager => {
 
       if (currentSubmissionRequestId === requestId) {
         currentSubmissionRequestId = null;
+        activeAbortController = null;
+        activeAbortReason = "";
       }
-
-      activeAbortController = null;
-      activeAbortReason = "";
       abortedSubmissionReasons.delete(requestId);
     },
     reset() {

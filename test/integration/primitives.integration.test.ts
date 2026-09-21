@@ -1095,7 +1095,7 @@ describe("primitives", () => {
     await flush();
 
     expect(submit).toHaveBeenCalledTimes(1);
-    expect(form.state.status).toBe("success");
+    expect(form.state.submissionStatus).toBe("succeeded");
     expect(startListener).toHaveBeenCalledTimes(1);
     expect(successListener).toHaveBeenCalledTimes(1);
 
@@ -1371,7 +1371,7 @@ describe("primitives", () => {
     textInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     await flush();
 
-    expect(requestCount).toBeGreaterThan(0);
+    expect(requestCount).toBe(0);
 
     requestCount = 0;
     textInput.value = "Al";

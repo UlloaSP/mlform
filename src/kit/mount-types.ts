@@ -57,6 +57,7 @@ export interface MountFormOptions {
   designSystemRegistry?: DesignSystemRegistry;
   designSystem?: DesignSystemConfig;
   initialValues?: Record<string, unknown>;
+  initialSnapshot?: unknown;
   validators?: FormValidator[];
   hooks?: FormHooks;
   hookFailurePolicy?: {
@@ -73,6 +74,7 @@ export interface MountFormOptions {
   labels?: KitLabels;
   primitiveText?: PrimitiveTextOverrides;
   onDesignSystemChange?: (resolved: ResolvedDesignSystem) => void;
+  hostLifecycle?: "manual" | "document";
 }
 
 export interface MountedForm {
@@ -86,5 +88,7 @@ export interface MountedForm {
   updateDesignSystem(config: DesignSystemConfig): void;
   replaceDesignSystem(config: KitDesignSystemSnapshot): void;
   resetDesignSystem(): void;
+  suspend(reason?: string): void;
+  resume(): void;
   unmount(): void;
 }

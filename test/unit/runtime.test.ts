@@ -188,7 +188,8 @@ describe("runtime", () => {
       name: "Al",
       age: 15,
     });
-    expect(form.state.status).toBe("editing");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.dirty).toBe(true);
     expect(listener).toHaveBeenCalled();
 
     const validation = await form.validate();
@@ -698,8 +699,8 @@ describe("runtime", () => {
                   equals: true,
                 },
                 {
-                  kind: "form-status",
-                  equals: ["editing", "success"],
+                  kind: "form-operation",
+                  equals: "idle",
                 },
               ],
             },
@@ -724,7 +725,7 @@ describe("runtime", () => {
     form.setValues({ secret: "visible" });
     await form.submit();
 
-    expect(form.state.status).toBe("success");
+    expect(form.state.submissionStatus).toBe("succeeded");
     expect(form.getField("locked")?.state.readOnly).toBe(true);
   });
 
@@ -1357,7 +1358,7 @@ describe("runtime", () => {
     form.setValues({ name: "Alice" });
 
     await expect(form.submit()).rejects.toThrow("validation hook failed");
-    expect(form.state.status).toBe("error");
+    expect(form.state.submissionStatus).toBe("idle");
     expect(form.state.errors.form).toEqual(["validation hook failed"]);
 
     form.setValues({ name: "Bob" });
@@ -1394,7 +1395,7 @@ describe("runtime", () => {
     form.setValues({ name: "Alice" });
 
     await expect(form.submit()).rejects.toThrow("after validation hook failed");
-    expect(form.state.status).toBe("error");
+    expect(form.state.submissionStatus).toBe("idle");
     expect(form.state.errors.form).toEqual(["after validation hook failed"]);
     expect(submit).not.toHaveBeenCalled();
 
@@ -1729,7 +1730,8 @@ describe("runtime", () => {
 
     form.getField("advanced")?.setValue(true);
 
-    expect(form.state.status).toBe("editing");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.dirty).toBe(true);
     expect(form.getValues()).toEqual({
       advanced: true,
       secret: "",
@@ -1846,7 +1848,7 @@ describe("runtime", () => {
       },
     });
     expect(form.state.reportStates).toEqual(result.reportStates);
-    expect(form.state.status).toBe("success");
+    expect(form.state.submissionStatus).toBe("succeeded");
     expect(form.state.submitCount).toBe(1);
     expect(form.reports[0]?.state.status).toBe("ready");
     expect(describeReport(form, form.reports[0]!)).toEqual({
@@ -2070,7 +2072,7 @@ describe("runtime", () => {
     });
 
     await expect(form.submit()).rejects.toBeInstanceOf(SubmitError);
-    expect(form.state.status).toBe("error");
+    expect(form.state.submissionStatus).toBe("failed");
     expect(form.state.errors.form).toEqual(["backend offline"]);
     expect(form.reports[0]?.state.status).toBe("idle");
   });
@@ -2167,7 +2169,7 @@ describe("runtime", () => {
 
     const result = await form.submit();
 
-    expect(form.state.status).toBe("success");
+    expect(form.state.submissionStatus).toBe("succeeded");
     expect(form.state.lastResult).toEqual(result);
     expect(form.state.reportStates).toEqual(result.reportStates);
     expect(result.reportStates).toEqual({
@@ -2309,7 +2311,7 @@ describe("runtime", () => {
     await expect(form.submit()).rejects.toMatchObject({
       cause: expect.any(ReportPayloadError),
     });
-    expect(form.state.status).toBe("error");
+    expect(form.state.submissionStatus).toBe("failed");
     expect(onSubmitError).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.any(ReportPayloadError),
@@ -2497,7 +2499,7 @@ describe("runtime", () => {
     const result = await form.submit();
 
     expect(result.reportStates.classifier?.status).toBe("ready");
-    expect(form.state.status).toBe("success");
+    expect(form.state.submissionStatus).toBe("succeeded");
     expect(form.state.lastResult).toEqual(result);
     expect(onSubmitError).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -2796,7 +2798,8 @@ describe("runtime", () => {
     form.abortSubmit("user-cancelled");
 
     await expect(pendingSubmit).rejects.toBeInstanceOf(SubmissionAbortedError);
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.submissionStatus).toBe("aborted");
     expect(form.state.errors.form).toEqual(["Form submission was aborted: user-cancelled"]);
     expect(onSubmitError).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -2839,7 +2842,8 @@ describe("runtime", () => {
 
     expect(submit).not.toHaveBeenCalled();
     expect(form.getReport("classifier")?.state.status).toBe("idle");
-    expect(form.state.status).toBe("editing");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.dirty).toBe(true);
 
     await form.submit();
     expect(submit).toHaveBeenCalledTimes(1);
@@ -2896,7 +2900,7 @@ describe("runtime", () => {
     await expect(secondSubmit).resolves.toMatchObject({
       modelValues: { name: "Alice" },
     });
-    expect(form.state.status).toBe("success");
+    expect(form.state.submissionStatus).toBe("succeeded");
     expect(submit).toHaveBeenCalledTimes(2);
   });
 
@@ -2996,7 +3000,8 @@ describe("runtime", () => {
     await form.submit();
     form.reset();
 
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.submissionStatus).toBe("idle");
     expect(form.getValues()).toEqual({ name: "Initial" });
     expect(form.state.submitCount).toBe(0);
     expect(form.state.lastResult).toBeNull();
@@ -3074,7 +3079,7 @@ describe("runtime", () => {
     resolveSubmit?.({ reports: [] });
 
     await expect(pending).rejects.toBeInstanceOf(SubmissionAbortedError);
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
     expect(form.state.lastResult).toBeNull();
     expect(form.getValues()).toEqual({ name: "Initial" });
   });

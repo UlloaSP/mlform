@@ -8,7 +8,8 @@ import { toFieldStateSnapshots, toFormState, transitionEngineState } from "../st
 import type {
   FieldValidationResult,
   FormHooks,
-  FormStatus,
+  FormOperation,
+  FormSubmissionStatus,
   FormValidationContext,
   FormValidationIssue,
   FormValidationResult,
@@ -40,9 +41,10 @@ type CreateFormValidatorOptions = {
   hooks?: FormHooks;
   getValues: () => Record<string, unknown>;
   getSubmitCount: () => number;
-  getFormStatus: () => FormStatus;
+  getFormOperation: () => FormOperation;
+  getSubmissionStatus: () => FormSubmissionStatus;
   syncDerivedFieldState: (options?: SyncDerivedFieldStateOptions) => void;
-  setRestingStatus: () => void;
+  setRestingOperation: () => void;
   shouldResetInactiveFields: () => boolean;
   inactiveFieldPolicy?: InactiveFieldPolicy;
 };
@@ -89,9 +91,10 @@ export const createFormValidator = ({
   hooks,
   getValues,
   getSubmitCount,
-  getFormStatus,
+  getFormOperation,
+  getSubmissionStatus,
   syncDerivedFieldState,
-  setRestingStatus,
+  setRestingOperation,
   shouldResetInactiveFields,
   inactiveFieldPolicy,
 }: CreateFormValidatorOptions): {
@@ -114,7 +117,8 @@ export const createFormValidator = ({
         const context: FormValidationContext = {
           values: getValues(),
           submitCount: getSubmitCount(),
-          formStatus: getFormStatus(),
+          formOperation: getFormOperation(),
+          submissionStatus: getSubmissionStatus(),
           fields: toFieldStateSnapshots(store.getState().fieldStates),
           schema: deepFreeze(cloneValue(normalizedSchema)),
         };
@@ -197,8 +201,11 @@ export const createFormValidator = ({
           submitCount: getSubmitCount(),
         });
 
-        if (store.getState().activeValidationVersion === validationVersion) {
-          setRestingStatus();
+        if (
+          store.getState().activeValidationVersion === validationVersion &&
+          store.getState().lifecycleVersion === lifecycleVersion
+        ) {
+          setRestingOperation();
         }
 
         return result;

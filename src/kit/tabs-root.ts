@@ -66,16 +66,23 @@ export class KitTabsElement extends LitElement {
       return html``;
     }
 
-    const status = snapshot.form.status;
+    const operation = snapshot.form.operation;
+    const suspended = snapshot.form.lifecycle === "suspended";
     const submitText =
-      status === "validating"
+      operation === "validating"
         ? this.validatingLabel
-        : status === "submitting"
+        : operation === "submitting"
           ? this.submittingLabel
           : this.submitLabel;
 
     return html`
-      <section class="root" part="tabs-panel">
+      <section
+        class="root"
+        part="tabs-panel"
+        data-lifecycle=${snapshot.form.lifecycle}
+        ?inert=${suspended}
+        aria-disabled=${String(suspended)}
+      >
         <div class="tablist" role="tablist" aria-label="Form sections">
           ${repeat(
             snapshot.layout.tabs,
@@ -146,7 +153,7 @@ export class KitTabsElement extends LitElement {
             <button
               type="button"
               class="btn"
-              ?disabled=${!tabsState.canGoPrev}
+              ?disabled=${suspended || !tabsState.canGoPrev}
               @click=${() => this.view?.navigation.previous()}
             >
               Previous
@@ -154,7 +161,7 @@ export class KitTabsElement extends LitElement {
             <button
               type="button"
               class="btn"
-              ?disabled=${!tabsState.canGoNext}
+              ?disabled=${suspended || !tabsState.canGoNext}
               @click=${() => void this.view?.navigation.next()}
             >
               Next
@@ -163,7 +170,7 @@ export class KitTabsElement extends LitElement {
           <button
             type="button"
             class="btn btn-submit"
-            ?disabled=${status === "validating" || status === "submitting"}
+            ?disabled=${suspended || operation === "validating" || operation === "submitting"}
             @click=${this.#handleSubmit}
           >
             ${submitText}

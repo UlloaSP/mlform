@@ -49,7 +49,9 @@ export const toFormState = (state: EngineState): FormState => {
   const touched = Object.values(snapshots).some((fieldState) => fieldState.touched);
 
   return {
-    status: state.status,
+    lifecycle: state.lifecycle,
+    operation: state.operation,
+    submissionStatus: state.submissionStatus,
     submitCount: state.submitCount,
     valid,
     dirty,

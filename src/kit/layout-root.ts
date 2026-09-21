@@ -60,16 +60,23 @@ export class KitSinglePageElement extends LitElement {
       return html``;
     }
 
-    const status = snapshot.form.status;
+    const operation = snapshot.form.operation;
+    const suspended = snapshot.form.lifecycle === "suspended";
     const submitText =
-      status === "validating"
+      operation === "validating"
         ? this.validatingLabel
-        : status === "submitting"
+        : operation === "submitting"
           ? this.submittingLabel
           : this.submitLabel;
 
     return html`
-      <section class="root" part="layout-panel">
+      <section
+        class="root"
+        part="layout-panel"
+        data-lifecycle=${snapshot.form.lifecycle}
+        ?inert=${suspended}
+        aria-disabled=${String(suspended)}
+      >
         <div class="body">
           <div class="collection">
             ${repeat(
@@ -98,7 +105,7 @@ export class KitSinglePageElement extends LitElement {
           <button
             type="button"
             class="btn btn-submit"
-            ?disabled=${status === "validating" || status === "submitting"}
+            ?disabled=${suspended || operation === "validating" || operation === "submitting"}
             @click=${this.#handleSubmit}
           >
             ${submitText}

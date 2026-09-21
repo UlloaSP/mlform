@@ -1,13 +1,37 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export type PrimitiveFormStatus =
-  | "idle"
-  | "editing"
-  | "validating"
-  | "submitting"
-  | "success"
-  | "error";
+export type PrimitiveFormLifecycle = "active" | "suspended" | "disposed";
+export type PrimitiveFormOperation = "idle" | "validating" | "submitting";
+export type PrimitiveSubmissionStatus = "idle" | "succeeded" | "failed" | "aborted";
+export type PrimitiveFormTransitionType =
+  | "validation-started"
+  | "validation-finished"
+  | "validation-failed"
+  | "submission-started"
+  | "submission-succeeded"
+  | "submission-failed"
+  | "submission-aborted"
+  | "reset"
+  | "restored"
+  | "suspended"
+  | "resumed"
+  | "disposed";
+
+export interface PrimitiveFormTransitionState {
+  lifecycle: PrimitiveFormLifecycle;
+  operation: PrimitiveFormOperation;
+  submissionStatus: PrimitiveSubmissionStatus;
+  submitCount: number;
+}
+
+export interface PrimitiveFormTransition {
+  sequence: number;
+  type: PrimitiveFormTransitionType;
+  from: PrimitiveFormTransitionState;
+  to: PrimitiveFormTransitionState;
+  reason?: string;
+}
 
 export type PrimitiveReportStatus = "idle" | "loading" | "ready" | "skipped" | "error";
 
@@ -76,7 +100,9 @@ export interface PrimitiveReportContext {
 }
 
 export interface PrimitiveFormState {
-  status: PrimitiveFormStatus;
+  lifecycle: PrimitiveFormLifecycle;
+  operation: PrimitiveFormOperation;
+  submissionStatus: PrimitiveSubmissionStatus;
   submitCount: number;
   errors: { form: readonly string[] };
   lastResult: PrimitiveSubmitResult | null;
@@ -110,6 +136,7 @@ export interface PrimitiveFormController {
   getField(id: string): PrimitiveFieldController | undefined;
   getReport(id: string): PrimitiveReportController | undefined;
   submit(): Promise<PrimitiveSubmitResult>;
+  subscribeTransitions(listener: (transition: PrimitiveFormTransition) => void): () => void;
   subscribeSelector<T>(
     selector: (state: PrimitiveFormState) => T,
     listener: (value: T) => void,

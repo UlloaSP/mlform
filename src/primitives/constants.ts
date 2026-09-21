@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { PrimitiveFormStatus, PrimitiveReportStatus } from "./controller-types";
+import type {
+  PrimitiveFormOperation,
+  PrimitiveReportStatus,
+  PrimitiveSubmissionStatus,
+} from "./controller-types";
 
 export const primitiveTagNames = {
   form: "mlf-form",
@@ -88,7 +92,10 @@ export interface PrimitiveText {
   formMetaFields: (count: number) => string;
   formMetaReports: (count: number) => string;
   formMetaSubmits: (count: number) => string;
-  formStatusLabel: (status: PrimitiveFormStatus) => string;
+  formStateLabel: (
+    operation: PrimitiveFormOperation,
+    submissionStatus: PrimitiveSubmissionStatus,
+  ) => string;
   reportStatusLabel: (status: PrimitiveReportStatus) => string;
   reportsEmptyTitle: string;
   reportsEmptyBody: string;
@@ -136,20 +143,26 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
   formMetaFields: (count: number): string => `${count} fields`,
   formMetaReports: (count: number): string => `${count} reports`,
   formMetaSubmits: (count: number): string => `${count} submits`,
-  formStatusLabel: (status: PrimitiveFormStatus): string => {
-    switch (status) {
-      case "idle":
-        return "Idle";
-      case "editing":
-        return "Editing";
+  formStateLabel: (
+    operation: PrimitiveFormOperation,
+    submissionStatus: PrimitiveSubmissionStatus,
+  ): string => {
+    switch (operation) {
       case "validating":
         return "Validating";
       case "submitting":
         return "Submitting";
-      case "success":
-        return "Success";
-      case "error":
-        return "Error";
+      case "idle":
+        switch (submissionStatus) {
+          case "idle":
+            return "Idle";
+          case "succeeded":
+            return "Success";
+          case "failed":
+            return "Error";
+          case "aborted":
+            return "Aborted";
+        }
     }
   },
   reportStatusLabel: (status: PrimitiveReportStatus): string => {

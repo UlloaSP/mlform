@@ -4,7 +4,7 @@
 import type {
   PrimitiveFieldController,
   PrimitiveFormController,
-  PrimitiveFormStatus,
+  PrimitiveSubmissionStatus,
   PrimitivePipelineResult,
   PrimitiveReportRequest,
   PrimitiveReportController,
@@ -123,7 +123,7 @@ export interface PrimitiveSubmitErrorDetail {
   form: PrimitiveFormController;
   state: PrimitiveFormState;
   error: unknown;
-  status: PrimitiveFormStatus;
+  status: PrimitiveSubmissionStatus;
 }
 
 export type { PrimitiveText, PrimitiveTextOverrides } from "./constants";

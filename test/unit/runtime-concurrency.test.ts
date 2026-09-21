@@ -133,7 +133,7 @@ describe("runtime concurrency", () => {
       }),
     );
     const submission = form.submit();
-    await vi.waitFor(() => expect(form.state.status).toBe("submitting"));
+    await vi.waitFor(() => expect(form.state.operation).toBe("submitting"));
 
     await expect(form.validate()).rejects.toThrow("submission is in progress");
 
@@ -150,10 +150,26 @@ describe("runtime concurrency", () => {
       },
     });
     const validation = form.validate();
-    await vi.waitFor(() => expect(form.state.status).toBe("validating"));
+    await vi.waitFor(() => expect(form.state.operation).toBe("validating"));
 
     await expect(form.submit()).rejects.toThrow("explicit form validation is in progress");
     expect(submit).not.toHaveBeenCalled();
+
+    gate.resolve();
+    await validation;
+  });
+
+  it("rejects a second explicit validation while one is active", async () => {
+    const gate = deferred();
+    const form = createBehaviorForm({}, undefined, {
+      async beforeValidate() {
+        await gate.promise;
+      },
+    });
+    const validation = form.validate();
+    await vi.waitFor(() => expect(form.state.operation).toBe("validating"));
+
+    await expect(form.validate()).rejects.toThrow("validation is already in progress");
 
     gate.resolve();
     await validation;

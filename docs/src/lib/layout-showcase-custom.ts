@@ -184,11 +184,11 @@ export const mountCustomHeadless = (host: HTMLElement): Cleanup => {
     submit.type = "button";
     submit.className = "layout-showcase-custom-submit";
     submit.disabled =
-      snapshot.form.status === "validating" || snapshot.form.status === "submitting";
+      snapshot.form.operation === "validating" || snapshot.form.operation === "submitting";
     submit.textContent =
-      snapshot.form.status === "validating"
+      snapshot.form.operation === "validating"
         ? copy.statusValidating
-        : snapshot.form.status === "submitting"
+        : snapshot.form.operation === "submitting"
           ? copy.statusSubmitting
           : copy.customSubmit;
     submit.addEventListener("click", () => {
@@ -201,9 +201,9 @@ export const mountCustomHeadless = (host: HTMLElement): Cleanup => {
     const status = document.createElement("div");
     status.className = "layout-showcase-custom-status";
     status.textContent =
-      snapshot.form.status === "validating"
+      snapshot.form.operation === "validating"
         ? copy.statusValidating
-        : snapshot.form.status === "submitting"
+        : snapshot.form.operation === "submitting"
           ? copy.statusSubmitting
           : copy.statusIdle;
     main.append(status);

@@ -197,7 +197,7 @@ export class PrimitiveFormElement extends LitElement {
             detail: {
               form: this.form,
               state: this.form.state,
-              status: this.form.state.status,
+              status: this.form.state.submissionStatus,
               error,
             },
             bubbles: true,

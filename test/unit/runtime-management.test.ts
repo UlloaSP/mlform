@@ -16,13 +16,14 @@ describe("runtime management", () => {
       fields: { name: ["Name is already registered."] },
     });
 
-    expect(form.state.status).toBe("error");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.submissionStatus).toBe("idle");
     expect(form.state.errors.form).toEqual(["Request rejected."]);
     expect(form.getField("name")?.state.errors).toContain("Name is already registered.");
 
     form.clearExternalErrors();
 
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
     expect(form.state.errors.form).toEqual([]);
     expect(form.getField("name")?.state.errors).toEqual([]);
   });
@@ -62,16 +63,56 @@ describe("runtime management", () => {
     form.subscribe(listener);
     const submission = form.submit();
 
-    await vi.waitFor(() => expect(form.state.status).toBe("submitting"));
+    await vi.waitFor(() => expect(form.state.operation).toBe("submitting"));
     form.dispose();
+    expect(listener).toHaveBeenLastCalledWith(
+      expect.objectContaining({ lifecycle: "disposed", operation: "idle" }),
+    );
+    expect(form.state.lifecycle).toBe("disposed");
     resolveTransport({});
 
     await expect(submission).rejects.toMatchObject({ name: "SubmissionAbortedError" });
     const callsAfterDispose = listener.mock.calls.length;
     expect(() => form.setValues({ name: "ignored" })).toThrow("disposed");
+    expect(() => form.abortSubmit()).toThrow("disposed");
     expect(() => field.setValue("ignored")).toThrow("disposed");
     await expect(report.fetch({} as never)).rejects.toThrow("disposed");
     expect(listener).toHaveBeenCalledTimes(callsAfterDispose);
+  });
+
+  it("suspends pending work, preserves state, and resumes with fresh work", async () => {
+    const firstResult = Promise.withResolvers<unknown>();
+    const submit = vi.fn().mockReturnValueOnce(firstResult.promise).mockResolvedValueOnce({});
+    const form = createForm({
+      schema: {
+        fields: [{ kind: "text", id: "name", label: "Name", displayKey: "name", mappedTo: "name" }],
+      },
+      registry: createBuiltinTestKit().registry,
+      transport: { submit },
+    });
+    form.setValues({ name: "Ada" });
+    const pending = form.submit();
+    const pendingOutcome = expect(pending).rejects.toMatchObject({
+      name: "SubmissionAbortedError",
+    });
+    await vi.waitFor(() => expect(form.state.operation).toBe("submitting"));
+
+    form.suspend("host-hidden");
+
+    expect(form.state).toMatchObject({ lifecycle: "suspended", operation: "idle" });
+    expect(form.getValues()).toEqual({ name: "Ada" });
+    expect(form.createSnapshot().fields.name?.value).toBe("Ada");
+    expect(() => form.setValues({ name: "Grace" })).toThrow("suspended");
+    expect(() => form.getField("name")?.setValue("Grace")).toThrow("suspended");
+    expect(() => form.submit()).toThrow("suspended");
+    await pendingOutcome;
+
+    form.resume();
+    form.setValues({ name: "Grace" });
+    await expect(form.submit()).resolves.toMatchObject({ displayValues: { name: "Grace" } });
+    expect(form.state.lifecycle).toBe("active");
+    expect(submit).toHaveBeenCalledTimes(2);
+    firstResult.resolve({});
   });
 
   it("refreshes a report after an error", async () => {

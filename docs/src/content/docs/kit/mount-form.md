@@ -29,6 +29,8 @@ The returned object exposes:
 | `updateDesignSystem(config)`    | Merge design system changes.                                   |
 | `replaceDesignSystem(snapshot)` | Replace with an explicit mode, theme, and recipe.              |
 | `resetDesignSystem()`           | Restore defaults.                                              |
+| `suspend(reason?)`              | Quiesce work while retaining the mounted form.                 |
+| `resume()`                      | Resume a suspended mounted form.                               |
 | `unmount()`                     | Abort pending submit, disconnect styling, and remove the host. |
 
 Notes:
@@ -38,3 +40,4 @@ Notes:
 - Pass `containerStrategy: "replace"` only when you want MLForm to replace existing host content and restore it on `unmount()`.
 - `reportFetchMode` controls async reports after submit: `"lazy"` keeps renderer-driven fetches, `"all"` waits for all fetch-backed reports before success events, and `"none"` skips report fetches.
 - Pass custom field and report kinds through `plugins`; kit registers their definitions, presenters, and behaviors together.
+- Set `hostLifecycle: "document"` to suspend on hidden/pagehide and resume on visible/pageshow. The default `"manual"` leaves host lifecycle control to the application.

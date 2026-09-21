@@ -15,14 +15,8 @@ const functionFieldConditionSchema = z.custom<(context: unknown) => boolean>(
   (value) => typeof value === "function",
 );
 
-const formStatusSchema = z.enum([
-  "idle",
-  "editing",
-  "validating",
-  "submitting",
-  "success",
-  "error",
-]);
+const formOperationSchema = z.enum(["idle", "validating", "submitting"]);
+const submissionStatusSchema = z.enum(["idle", "succeeded", "failed", "aborted"]);
 
 const declarativeFieldConditionSchema: z.ZodType<DeclarativeFieldCondition> = z.lazy(() =>
   z.union([
@@ -49,8 +43,12 @@ const declarativeFieldConditionSchema: z.ZodType<DeclarativeFieldCondition> = z.
       operator: z.enum(["eq", "neq", "gt", "gte", "lt", "lte"]),
     }),
     z.object({
-      kind: z.literal("form-status"),
-      equals: z.union([formStatusSchema, z.array(formStatusSchema).min(1)]),
+      kind: z.literal("form-operation"),
+      equals: z.union([formOperationSchema, z.array(formOperationSchema).min(1)]),
+    }),
+    z.object({
+      kind: z.literal("submission-status"),
+      equals: z.union([submissionStatusSchema, z.array(submissionStatusSchema).min(1)]),
     }),
     z.object({
       kind: z.literal("submit-count"),

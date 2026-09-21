@@ -6,7 +6,8 @@ import type { EngineStore, InternalFieldState } from "../state";
 import type {
   FieldDefinition,
   FieldValidationResult,
-  FormStatus,
+  FormOperation,
+  FormSubmissionStatus,
   NormalizedFieldConfig,
 } from "../types";
 import { delay, isPromiseLike } from "../utils";
@@ -35,7 +36,8 @@ type CreateFieldValidatorOptions = {
   store: EngineStore;
   getValues: () => Record<string, unknown>;
   getSubmitCount: () => number;
-  getFormStatus: () => FormStatus;
+  getFormOperation: () => FormOperation;
+  getSubmissionStatus: () => FormSubmissionStatus;
   commitState: FieldStateCommitter;
 };
 
@@ -45,7 +47,8 @@ export const createFieldValidator = ({
   store,
   getValues,
   getSubmitCount,
-  getFormStatus,
+  getFormOperation,
+  getSubmissionStatus,
   commitState,
 }: CreateFieldValidatorOptions): FieldValidator => {
   let activeAbortController: AbortController | null = null;
@@ -61,7 +64,13 @@ export const createFieldValidator = ({
       const values = getValues();
       const normalizedValue = normalizeValue(definition, config, currentState.value);
       const submitCount = getSubmitCount();
-      const flags = resolveDerivedFlags(config, values, submitCount, getFormStatus());
+      const flags = resolveDerivedFlags(
+        config,
+        values,
+        submitCount,
+        getFormOperation(),
+        getSubmissionStatus(),
+      );
       const validationRunId = ++activeValidationRunId;
       const abortController = typeof AbortController !== "undefined" ? new AbortController() : null;
       const syncErrors = computeSyncErrors(

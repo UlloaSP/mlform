@@ -83,14 +83,24 @@ export const renderStackedLayout = (options: {
   reportFetchMode: PrimitiveReportFetchMode;
   onSubmitRequest: () => Promise<void>;
 }): TemplateResult => html`
-  <div class="root stacked">
+  <div
+    class="root stacked"
+    data-lifecycle=${options.state.lifecycle}
+    ?inert=${options.state.lifecycle === "suspended"}
+    aria-disabled=${String(options.state.lifecycle === "suspended")}
+  >
     <section class="panel form-pane" part="form-pane">
       <header class="pane-header">
         <div class="pane-copy">
           <p class="eyebrow">${options.text.formEyebrow}</p>
           <h1 class="pane-title">${options.formLabel}</h1>
         </div>
-        <span class="status">${options.text.formStatusLabel(options.state.status)}</span>
+        <span class="status"
+          >${options.text.formStateLabel(
+            options.state.operation,
+            options.state.submissionStatus,
+          )}</span
+        >
       </header>
 
       <div class="pane-body">
@@ -111,7 +121,7 @@ export const renderStackedLayout = (options: {
 
       <div class="actions" part="actions">
         <mlf-submit-button
-          .status=${options.state.status}
+          .operation=${options.state.operation}
           .idleLabel=${options.submitLabel}
           .validatingLabel=${options.validatingLabel}
           .submittingLabel=${options.submittingLabel}
@@ -167,13 +177,23 @@ export const renderSplitLayout = (options: {
   reportFetchMode: PrimitiveReportFetchMode;
   onSubmitRequest: () => Promise<void>;
 }): TemplateResult => html`
-  <div class="root split">
+  <div
+    class="root split"
+    data-lifecycle=${options.state.lifecycle}
+    ?inert=${options.state.lifecycle === "suspended"}
+    aria-disabled=${String(options.state.lifecycle === "suspended")}
+  >
     <div class="split-shell">
       <section class="left-section" part="form-pane">
         <div class="form-inputs scroll-y">
           <header class="sticky-header">
             <h2>${options.formLabel}</h2>
-            <span class="sticky-meta">${options.text.formStatusLabel(options.state.status)}</span>
+            <span class="sticky-meta"
+              >${options.text.formStateLabel(
+                options.state.operation,
+                options.state.submissionStatus,
+              )}</span
+            >
           </header>
 
           <div class="split-content">
@@ -195,7 +215,7 @@ export const renderSplitLayout = (options: {
 
         <div class="form-actions" part="actions">
           <mlf-submit-button
-            .status=${options.state.status}
+            .operation=${options.state.operation}
             .idleLabel=${options.submitLabel}
             .validatingLabel=${options.validatingLabel}
             .submittingLabel=${options.submittingLabel}

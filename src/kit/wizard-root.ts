@@ -67,18 +67,24 @@ export class KitWizardElement extends LitElement {
       return html``;
     }
 
-    const status = snapshot.form.status;
-    const busy = status === "validating" || status === "submitting";
+    const operation = snapshot.form.operation;
+    const suspended = snapshot.form.lifecycle === "suspended";
+    const busy = suspended || operation === "validating" || operation === "submitting";
     const actionLabel = wizard.isLastStep
-      ? status === "validating"
+      ? operation === "validating"
         ? this.labels.validating
-        : status === "submitting"
+        : operation === "submitting"
           ? this.labels.submitting
           : this.labels.submit
       : this.labels.next;
 
     return html`
-      <div class="root">
+      <div
+        class="root"
+        data-lifecycle=${snapshot.form.lifecycle}
+        ?inert=${suspended}
+        aria-disabled=${String(suspended)}
+      >
         <section class="panel" part="wizard-panel">
           <header class="pane-header">
             <mlf-kit-step-indicator

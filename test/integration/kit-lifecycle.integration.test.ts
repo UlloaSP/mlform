@@ -7,6 +7,42 @@ import { SubmissionAbortedError } from "@/runtime";
 import { flush } from "./kit-integration-helpers";
 
 describe("kit integration", () => {
+  it("can follow document visibility and disables the rendered form while suspended", async () => {
+    const visibility = Object.getOwnPropertyDescriptor(document, "visibilityState");
+    const setVisibility = (value: DocumentVisibilityState) => {
+      Object.defineProperty(document, "visibilityState", { configurable: true, value });
+      document.dispatchEvent(new Event("visibilitychange"));
+    };
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, {
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: { fields: [{ kind: "text", label: "Name" }] },
+      hostLifecycle: "document",
+    });
+
+    try {
+      setVisibility("hidden");
+      await flush();
+      expect(mounted.form.state.lifecycle).toBe("suspended");
+      expect(mounted.host.shadowRoot?.querySelector(".root")?.hasAttribute("inert")).toBe(true);
+
+      setVisibility("visible");
+      await flush();
+      expect(mounted.form.state.lifecycle).toBe("active");
+      expect(mounted.host.shadowRoot?.querySelector(".root")?.hasAttribute("inert")).toBe(false);
+
+      window.dispatchEvent(new Event("pagehide"));
+      expect(mounted.form.state.lifecycle).toBe("suspended");
+      window.dispatchEvent(new Event("pageshow"));
+      expect(mounted.form.state.lifecycle).toBe("active");
+    } finally {
+      mounted.unmount();
+      container.remove();
+      if (visibility) Object.defineProperty(document, "visibilityState", visibility);
+    }
+  });
+
   it("auto-unmounts an existing mounted form when reusing the same container", async () => {
     window.__setPreferredColorScheme?.("light");
 

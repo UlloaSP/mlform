@@ -112,7 +112,8 @@ describe("transport and submission conformance", () => {
     release();
 
     await expect(submission).rejects.toBeInstanceOf(SubmissionAbortedError);
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.submissionStatus).toBe("aborted");
     expect(form.state.errors.form).toEqual([
       "Form submission was aborted: cancelled-after-transport",
     ]);

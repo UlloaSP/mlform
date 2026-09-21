@@ -3,7 +3,7 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import type { PrimitiveFormStatus } from "../controller-types";
+import type { PrimitiveFormOperation } from "../controller-types";
 import { primitiveDefaultLabels, primitiveEventNames, primitiveTagNames } from "../constants";
 
 @customElement(primitiveTagNames.submitButton)
@@ -52,23 +52,23 @@ export class PrimitiveSubmitButtonElement extends LitElement {
     }
   `;
 
-  @property({ type: String }) accessor status: PrimitiveFormStatus = "idle";
+  @property({ type: String }) accessor operation: PrimitiveFormOperation = "idle";
   @property({ type: String }) accessor idleLabel = primitiveDefaultLabels.submit;
   @property({ type: String }) accessor validatingLabel = primitiveDefaultLabels.validating;
   @property({ type: String }) accessor submittingLabel = primitiveDefaultLabels.submitting;
   render() {
     const label =
-      this.status === "validating"
+      this.operation === "validating"
         ? this.validatingLabel
-        : this.status === "submitting"
+        : this.operation === "submitting"
           ? this.submittingLabel
           : this.idleLabel;
 
     return html`
       <button
         type="button"
-        ?disabled=${this.status === "validating" || this.status === "submitting"}
-        aria-busy=${String(this.status === "validating" || this.status === "submitting")}
+        ?disabled=${this.operation === "validating" || this.operation === "submitting"}
+        aria-busy=${String(this.operation === "validating" || this.operation === "submitting")}
         @click=${this.#handleClick}
       >
         ${label}

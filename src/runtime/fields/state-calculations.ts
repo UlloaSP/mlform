@@ -5,7 +5,8 @@ import { EngineError } from "../errors";
 import type { InternalFieldState } from "../state";
 import type {
   FieldDefinition,
-  FormStatus,
+  FormOperation,
+  FormSubmissionStatus,
   InactiveFieldPolicy,
   NormalizedFieldConfig,
 } from "../types";
@@ -21,8 +22,10 @@ const resolveFlags = (
   config: NormalizedFieldConfig,
   values: Record<string, unknown>,
   getSubmitCount: () => number,
-  getFormStatus: () => FormStatus,
-) => resolveDerivedFlags(config, values, getSubmitCount(), getFormStatus());
+  getFormOperation: () => FormOperation,
+  getSubmissionStatus: () => FormSubmissionStatus,
+) =>
+  resolveDerivedFlags(config, values, getSubmitCount(), getFormOperation(), getSubmissionStatus());
 
 export const prepareFieldState = ({
   config,
@@ -31,7 +34,8 @@ export const prepareFieldState = ({
   values,
   currentState,
   getSubmitCount,
-  getFormStatus,
+  getFormOperation,
+  getSubmissionStatus,
 }: {
   config: NormalizedFieldConfig;
   definition: FieldDefinition;
@@ -39,10 +43,11 @@ export const prepareFieldState = ({
   values: Record<string, unknown>;
   currentState: InternalFieldState;
   getSubmitCount: () => number;
-  getFormStatus: () => FormStatus;
+  getFormOperation: () => FormOperation;
+  getSubmissionStatus: () => FormSubmissionStatus;
 }): InternalFieldState => {
   const normalizedValue = normalizeValue(definition, config, value);
-  const flags = resolveFlags(config, values, getSubmitCount, getFormStatus);
+  const flags = resolveFlags(config, values, getSubmitCount, getFormOperation, getSubmissionStatus);
 
   if (!flags.visible)
     throw new EngineError(`Field "${config.id}" is hidden and cannot be updated.`);
@@ -80,7 +85,8 @@ export const refreshFieldState = ({
   currentState,
   values,
   getSubmitCount,
-  getFormStatus,
+  getFormOperation,
+  getSubmissionStatus,
   options,
 }: {
   config: NormalizedFieldConfig;
@@ -88,7 +94,8 @@ export const refreshFieldState = ({
   currentState: InternalFieldState;
   values: Record<string, unknown>;
   getSubmitCount: () => number;
-  getFormStatus: () => FormStatus;
+  getFormOperation: () => FormOperation;
+  getSubmissionStatus: () => FormSubmissionStatus;
   options?: {
     preserveValidationErrors?: boolean;
     preserveExternalErrors?: boolean;
@@ -96,7 +103,7 @@ export const refreshFieldState = ({
     inactiveFieldPolicy?: InactiveFieldPolicy;
   };
 }): InternalFieldState => {
-  const flags = resolveFlags(config, values, getSubmitCount, getFormStatus);
+  const flags = resolveFlags(config, values, getSubmitCount, getFormOperation, getSubmissionStatus);
   const inactiveFieldPolicy = config.inactiveFieldPolicy ?? options?.inactiveFieldPolicy;
   const shouldResetInactive =
     (options?.resetInactiveToInitial === true || inactiveFieldPolicy === "reset-on-hide") &&

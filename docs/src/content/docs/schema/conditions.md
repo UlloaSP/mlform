@@ -24,7 +24,8 @@ Supported condition kinds:
 | ------------------- | ------------------------------------------------------------------------------ |
 | `field-value`       | Compare one field with literals, ranges, sets, or empty/truthy state.          |
 | `field-comparison`  | Compare two fields with `eq`, `neq`, `gt`, `gte`, `lt`, or `lte`.              |
-| `form-status`       | React to `idle`, `editing`, `validating`, `submitting`, `success`, or `error`. |
+| `form-operation`    | React to `idle`, `validating`, or `submitting`.                               |
+| `submission-status` | React to `idle`, `succeeded`, `failed`, or `aborted`.                         |
 | `submit-count`      | React to submit count.                                                         |
 | `all`, `any`, `not` | Compose other conditions.                                                      |
 
@@ -33,6 +34,8 @@ Declarative field references use the same normalized ids as field definitions. F
 does not resolve to a declared field, including references nested inside `all`, `any`, or `not`.
 Function conditions are runtime code and therefore cannot be checked for references during schema
 normalization.
+
+Function conditions receive the same two axes as `formOperation` and `submissionStatus`.
 
 Conditional state does not depend on field declaration order. When `reset-on-hide` changes a value
 that another field reads, the runtime re-evaluates the affected state until the form is stable.

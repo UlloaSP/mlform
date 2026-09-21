@@ -27,6 +27,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     behaviors: registryPack.behaviors,
     transport: options.transport,
     initialValues: options.initialValues,
+    initialSnapshot: options.initialSnapshot,
     validators: options.validators,
     hooks: options.hooks,
     hookFailurePolicy: options.hookFailurePolicy,
@@ -150,6 +151,12 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     },
     reset() {
       form.reset();
+    },
+    suspend(reason) {
+      form.suspend(reason);
+    },
+    resume() {
+      form.resume();
     },
     dispose() {
       if (disposed) return;

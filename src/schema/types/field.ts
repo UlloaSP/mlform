@@ -5,7 +5,16 @@ import type { ZodType } from "zod";
 import type { MappedTo, MappedToTarget } from "./mapping";
 
 export type MaybePromise<T> = T | PromiseLike<T>;
-export type FormStatus = "idle" | "editing" | "validating" | "submitting" | "success" | "error";
+export type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+export type FormLifecycle = "active" | "suspended" | "disposed";
+export type FormOperation = "idle" | "validating" | "submitting";
+export type FormSubmissionStatus = "idle" | "succeeded" | "failed" | "aborted";
 export type FieldStatus = "idle" | "validating" | "valid" | "invalid";
 export type InactiveFieldPolicy = "include" | "omit" | "reset-on-hide";
 
@@ -70,7 +79,8 @@ export interface FieldConditionContext<TConfig extends FieldConfig = FieldConfig
   field: NormalizedFieldConfig<TConfig>;
   values: Record<string, unknown>;
   submitCount: number;
-  formStatus: FormStatus;
+  formOperation: FormOperation;
+  submissionStatus: FormSubmissionStatus;
 }
 
 export interface FieldValueCondition {
@@ -97,9 +107,14 @@ export interface FieldComparisonCondition {
   operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte";
 }
 
-export interface FormStatusCondition {
-  kind: "form-status";
-  equals: FormStatus | FormStatus[];
+export interface FormOperationCondition {
+  kind: "form-operation";
+  equals: FormOperation | FormOperation[];
+}
+
+export interface FormSubmissionStatusCondition {
+  kind: "submission-status";
+  equals: FormSubmissionStatus | FormSubmissionStatus[];
 }
 
 export interface SubmitCountCondition {
@@ -127,7 +142,8 @@ export interface NotCondition {
 export type DeclarativeFieldCondition =
   | FieldValueCondition
   | FieldComparisonCondition
-  | FormStatusCondition
+  | FormOperationCondition
+  | FormSubmissionStatusCondition
   | SubmitCountCondition
   | AllConditions
   | AnyConditions
@@ -200,6 +216,8 @@ export interface FieldDefinition<TConfig extends FieldConfig = FieldConfig, TVal
   cloneValue?: (value: TValue, config: TConfig) => TValue;
   isEqual?: (previous: TValue, next: TValue, config: TConfig) => boolean;
   serializeValue?: (value: TValue, config: TConfig) => unknown;
+  serializeSnapshotValue?: (value: TValue, config: TConfig) => JsonValue;
+  restoreSnapshotValue?: (value: JsonValue, config: TConfig) => TValue;
   validateSync?: (
     value: TValue,
     config: TConfig,

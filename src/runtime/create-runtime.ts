@@ -5,44 +5,33 @@ import type { Registry } from "@/schema";
 import { normalizeSchema } from "@/schema";
 import { createFieldController, type InternalFieldController } from "./fields";
 import { createReportController, type InternalReportController } from "./reports";
-import { createInitialEngineState, createStore, toFormState, transitionEngineState } from "./state";
+import {
+  createEngineStore,
+  createInitialEngineState,
+  toFormState,
+  transitionEngineState,
+} from "./state";
 import { createFormSubmitter } from "./submission";
 import { createFormValidator, createValidationResult } from "./validation";
 import {
   assertTransport,
-  hasInteractiveFieldState,
   missingDefinitionError,
   resolveInactiveFieldPolicy,
+  waitForBehaviorChanges,
 } from "./create-runtime-helpers";
 import { createRuntimeBehaviors } from "./runtime-behaviors";
 import { createRuntimeController } from "./runtime-controller";
 import { createRuntimeRefresh } from "./runtime-refresh";
 import { createRuntimeValues } from "./runtime-values";
+import { createRuntimeSnapshots } from "./runtime-snapshots";
 import type { CreateFormConfig, FormController, FormState } from "./types";
 import { deepFreeze } from "./utils";
 import { createDefinitionBehaviors } from "./definition-behaviors";
-import { createAbortError } from "./errors";
-
-const waitForBehaviorChanges = (
-  completion: Promise<void>,
-  signal: AbortSignal | undefined,
-): Promise<void> => {
-  if (!signal) return completion;
-  if (signal.aborted) return Promise.reject(createAbortError(String(signal.reason ?? "")));
-
-  return new Promise<void>((resolve, reject) => {
-    const onAbort = () => reject(createAbortError(String(signal.reason ?? "")));
-    signal.addEventListener("abort", onAbort, { once: true });
-    void completion.then(resolve, reject).finally(() => {
-      signal.removeEventListener("abort", onAbort);
-    });
-  });
-};
 
 export const createForm = (config: CreateFormConfig): FormController => {
   assertTransport(config.transport);
   const normalizedSchema = deepFreeze(normalizeSchema(config.schema, config.registry));
-  const store = createStore(createInitialEngineState(), {
+  const store = createEngineStore(createInitialEngineState(), {
     listenerErrorPolicy: config.listenerErrorPolicy ?? "ignore",
     onListenerError: config.onListenerError,
   });
@@ -61,7 +50,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
   };
 
   const getSubmitCount = () => store.getState().submitCount;
-  const getFormStatus = () => store.getState().status;
+  const getFormOperation = () => store.getState().operation;
+  const getSubmissionStatus = () => store.getState().submissionStatus;
   const shouldResetInactiveFields = () => config.inactiveFieldPolicy === "reset-on-hide";
   const getInternalValues = () =>
     Object.fromEntries(
@@ -91,7 +81,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
       store,
       getValues: () => getInternalValues(),
       getSubmitCount,
-      getFormStatus,
+      getFormOperation,
+      getSubmissionStatus,
       onValueChange: (fieldId, nextValues) => {
         store.batch(() => {
           store.update((current) =>
@@ -150,12 +141,11 @@ export const createForm = (config: CreateFormConfig): FormController => {
 
   const getCurrentFieldState = (fieldId: string) => store.getState().fieldStates[fieldId];
 
-  const { syncDerivedFieldState, setRestingStatus } = createRuntimeRefresh({
+  const { syncDerivedFieldState, setRestingOperation } = createRuntimeRefresh({
     store,
     fields,
     shouldResetInactiveFields,
     inactiveFieldPolicy: config.inactiveFieldPolicy,
-    hasInteractiveFieldState,
   });
 
   const { getValues, commitDerivedValue } = createRuntimeValues({
@@ -180,7 +170,8 @@ export const createForm = (config: CreateFormConfig): FormController => {
     fields,
     getValues,
     getSubmitCount,
-    getFormStatus,
+    getFormOperation,
+    getSubmissionStatus,
     commitDerivedValue,
     syncDerivedState(values) {
       syncDerivedFieldState({
@@ -219,9 +210,10 @@ export const createForm = (config: CreateFormConfig): FormController => {
     hooks: config.hooks,
     getValues,
     getSubmitCount,
-    getFormStatus,
+    getFormOperation,
+    getSubmissionStatus,
     syncDerivedFieldState,
-    setRestingStatus,
+    setRestingOperation,
     shouldResetInactiveFields,
     inactiveFieldPolicy: config.inactiveFieldPolicy,
   });
@@ -258,6 +250,21 @@ export const createForm = (config: CreateFormConfig): FormController => {
     onListenerError: config.onListenerError,
   });
 
+  const snapshots = createRuntimeSnapshots({
+    store,
+    fields,
+    reports,
+    refreshOptions: {
+      resetInactiveToInitial: shouldResetInactiveFields(),
+      inactiveFieldPolicy: config.inactiveFieldPolicy,
+    },
+    abortBehaviorChanges,
+    abortSubmission: (reason) => formSubmitter.abort(reason),
+    resetSubmission: () => formSubmitter.reset(),
+    resetReports,
+    runBehaviorValueChanges,
+  });
+
   const controller = createRuntimeController({
     fields,
     reports,
@@ -276,7 +283,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
     resetReports,
     runBehaviorValueChanges,
     abortBehaviorChanges,
-    setRestingStatus,
+    snapshots,
   });
 
   syncDerivedFieldState({
@@ -286,6 +293,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
     resetInactiveToInitial: shouldResetInactiveFields(),
     inactiveFieldPolicy: config.inactiveFieldPolicy,
   });
+  if (config.initialSnapshot !== undefined) controller.restoreSnapshot(config.initialSnapshot);
   validateBehaviors();
 
   return controller;

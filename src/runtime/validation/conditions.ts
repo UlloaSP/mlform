@@ -8,7 +8,8 @@ import type {
   FieldComparisonCondition,
   FieldCondition,
   FieldConditionContext,
-  FormStatus,
+  FormOperation,
+  FormSubmissionStatus,
   NormalizedFieldConfig,
 } from "../types";
 
@@ -132,9 +133,13 @@ export const evaluateDeclarativeCondition = (
         context.values[condition.otherField],
         condition.operator,
       );
-    case "form-status": {
+    case "form-operation": {
       const expected = Array.isArray(condition.equals) ? condition.equals : [condition.equals];
-      return expected.includes(context.formStatus);
+      return expected.includes(context.formOperation);
+    }
+    case "submission-status": {
+      const expected = Array.isArray(condition.equals) ? condition.equals : [condition.equals];
+      return expected.includes(context.submissionStatus);
     }
     case "submit-count": {
       if (condition.eq !== undefined && context.submitCount !== condition.eq) {
@@ -167,13 +172,15 @@ export const resolveDerivedFlags = (
   config: NormalizedFieldConfig,
   values: Record<string, unknown>,
   submitCount: number,
-  formStatus: FormStatus,
+  formOperation: FormOperation,
+  submissionStatus: FormSubmissionStatus,
 ): DerivedFieldFlags => {
   const context: FieldConditionContext = {
     field: config,
     values,
     submitCount,
-    formStatus,
+    formOperation,
+    submissionStatus,
   };
 
   const visible = !evaluateCondition(config.hiddenWhen, context, Boolean(config.hidden));

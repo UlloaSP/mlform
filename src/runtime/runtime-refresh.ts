@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { EngineError } from "./errors";
-import { transitionEngineState, type InternalFieldState } from "./state";
+import { transitionEngineState } from "./state";
 import type { RefreshOptions, InternalFieldController } from "./fields";
 import type { EngineStore } from "./state";
 import { deepValueEquality } from "./values";
@@ -12,7 +12,6 @@ type CreateRuntimeRefreshOptions = {
   fields: readonly InternalFieldController[];
   shouldResetInactiveFields: () => boolean;
   inactiveFieldPolicy: RefreshOptions["inactiveFieldPolicy"];
-  hasInteractiveFieldState: (fieldStates: Record<string, InternalFieldState>) => boolean;
 };
 
 export const createRuntimeRefresh = ({
@@ -20,7 +19,6 @@ export const createRuntimeRefresh = ({
   fields,
   shouldResetInactiveFields,
   inactiveFieldPolicy,
-  hasInteractiveFieldState,
 }: CreateRuntimeRefreshOptions) => {
   function syncDerivedFieldState(options?: RefreshOptions): void {
     store.batch(() => {
@@ -62,15 +60,11 @@ export const createRuntimeRefresh = ({
     });
   }
 
-  const setRestingStatus = (): void => {
+  const setRestingOperation = (): void => {
     store.batch(() => {
-      const nextStatus = hasInteractiveFieldState(store.getState().fieldStates)
-        ? "editing"
-        : "idle";
       store.update((current) =>
         transitionEngineState(current, {
           type: "rest",
-          status: nextStatus,
         }),
       );
 
@@ -85,6 +79,6 @@ export const createRuntimeRefresh = ({
 
   return {
     syncDerivedFieldState,
-    setRestingStatus,
+    setRestingOperation,
   };
 };

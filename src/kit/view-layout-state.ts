@@ -38,7 +38,7 @@ export const getWizardState = ({
     stepIndex: panel.index,
     stepCount: panel.count,
     currentStepId: panel.currentId,
-    canNext: formState.status !== "validating" && formState.status !== "submitting",
+    canNext: formState.operation !== "validating" && formState.operation !== "submitting",
     canPrev: panel.canGoPrev,
     isLastStep: panel.index === panel.count - 1,
   };

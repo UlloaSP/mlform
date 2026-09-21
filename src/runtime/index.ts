@@ -24,6 +24,7 @@ export {
 } from "./errors";
 export { createForm } from "./form";
 export { shallowEquality } from "./equality";
+export { removeFormSnapshot, restoreFormSnapshot, saveFormSnapshot } from "./snapshots";
 export type {
   AllConditions,
   AfterSubmitContext,
@@ -53,13 +54,25 @@ export type {
   FormHooks,
   FormSchema,
   FormState,
-  FormStatusCondition,
-  FormStatus,
+  FormLifecycle,
+  FormOperation,
+  FormOperationCondition,
+  FormPersistenceAdapter,
+  FormSnapshot,
+  FormSnapshotField,
+  FormSnapshotSchemaEntry,
+  FormSnapshotV1,
+  FormSubmissionStatus,
+  FormSubmissionStatusCondition,
+  FormTransition,
+  FormTransitionState,
+  FormTransitionType,
   FormValidator,
   FormValidationContext,
   FormValidationIssue,
   FormValidationResult,
   InactiveFieldPolicy,
+  JsonValue,
   MaybePromise,
   NormalizedFieldConfig,
   NormalizedReportConfig,

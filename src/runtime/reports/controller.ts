@@ -60,6 +60,7 @@ export type InternalReportController = ReportController & {
   update(result: SubmitResult): Promise<void>;
   markLoading(): void;
   reset(): void;
+  suspend(reason?: string): void;
   dispose(): void;
 };
 
@@ -71,8 +72,14 @@ export const createReportController = ({
   onListenerError,
 }: CreateReportControllerOptions): InternalReportController => {
   let disposed = false;
-  const assertActive = (): void => {
+  const assertUsable = (): void => {
     if (disposed) throw new EngineError(`Report "${config.id}" has been disposed.`);
+  };
+  const assertActive = (): void => {
+    assertUsable();
+    if (store.getState().lifecycle === "suspended") {
+      throw new EngineError(`Report "${config.id}" belongs to a suspended form.`);
+    }
   };
   const readonlyConfig = deepFreeze(cloneValue(config));
   setReportState(store, readonlyConfig.id, idleState);
@@ -222,8 +229,14 @@ export const createReportController = ({
       fetchRunner.abort();
       setReportState(store, readonlyConfig.id, idleState);
     },
+    suspend(reason) {
+      fetchRunner.abort(reason);
+      if (store.getState().reportStates[readonlyConfig.id]?.status === "loading") {
+        setReportState(store, readonlyConfig.id, idleState);
+      }
+    },
     subscribe(listener) {
-      assertActive();
+      assertUsable();
       let previousState = store.getState().reportStates[readonlyConfig.id];
       return store.subscribe(() => {
         const nextState = store.getState().reportStates[readonlyConfig.id];

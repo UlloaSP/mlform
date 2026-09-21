@@ -15,6 +15,10 @@ hooks: {
 }
 ```
 
+Hooks execute application behavior. Use `form.subscribeTransitions()` when an observer only needs
+the ordered state changes for tracing, metrics, or debugging. Transition records exclude field
+values and backend payloads by default.
+
 Lifecycle rules:
 
 | Situation                                         | Behavior                                                          |
@@ -23,7 +27,9 @@ Lifecycle rules:
 | Calling `mounted.unmount()`                       | Pending submit is aborted and design system observers disconnect. |
 | Calling `mounted.form.reset()`                    | Values and report state return to initial state.                  |
 | Calling `mounted.form.abortSubmit(reason)`        | In-flight submit receives an abort signal.                        |
-| Aborting while `afterSubmit` is pending           | The completed result is invalidated and state returns to `idle`.  |
+| Calling `mounted.suspend(reason)`                 | Pending work stops and mutations reject until `resume()`.         |
+| Using `hostLifecycle: "document"`                | Hidden/pagehide suspends; visible/pageshow resumes.                |
+| Aborting while `afterSubmit` is pending           | The completed result is invalidated and `submissionStatus` becomes `aborted`. |
 | Resetting or changing values during `afterSubmit` | The obsolete submit rejects with `SubmissionAbortedError`.        |
 | An error-observer hook throws                     | The primary outcome is preserved and `onListenerError` is called. |
 

@@ -75,7 +75,8 @@ describe("runtime validation lifecycle", () => {
     releaseResolver();
 
     await expect(submission).rejects.toBeInstanceOf(SubmissionAbortedError);
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.submissionStatus).toBe("aborted");
     expect(form.getReport("slow")?.state).toEqual({
       payload: undefined,
       error: null,

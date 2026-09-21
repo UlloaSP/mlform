@@ -4,7 +4,10 @@
 import type {
   FieldConfig,
   FieldStateSnapshot,
+  FormLifecycle,
+  FormOperation,
   FormSchema,
+  FormSubmissionStatus,
   InactiveFieldPolicy,
   NormalizedFieldConfig,
   NormalizedReportConfig,
@@ -24,7 +27,8 @@ import type {
 } from "./transport";
 import type { FieldController } from "./field";
 import type { ReportController } from "./report";
-import type { FormStatus } from "./status";
+import type { FormSnapshot } from "./snapshot";
+import type { FormTransition } from "./transition";
 
 type MaybePromise<T> = T | PromiseLike<T>;
 
@@ -35,7 +39,9 @@ export interface FormValidationResult {
 }
 
 export interface FormState {
-  status: FormStatus;
+  lifecycle: FormLifecycle;
+  operation: FormOperation;
+  submissionStatus: FormSubmissionStatus;
   submitCount: number;
   valid: boolean;
   dirty: boolean;
@@ -57,7 +63,8 @@ export interface FormValidationIssue {
 export interface FormValidationContext {
   values: Record<string, unknown>;
   submitCount: number;
-  formStatus: FormStatus;
+  formOperation: FormOperation;
+  submissionStatus: FormSubmissionStatus;
   fields: Record<string, FieldStateSnapshot>;
   schema: {
     fields: readonly NormalizedFieldConfig[];
@@ -116,6 +123,7 @@ export interface CreateFormConfig {
   inactiveFieldPolicy?: InactiveFieldPolicy;
   listenerErrorPolicy?: "ignore" | "throw-aggregate";
   onListenerError?: (error: unknown) => void;
+  initialSnapshot?: unknown;
 }
 
 export interface FormController {
@@ -130,6 +138,9 @@ export interface FormController {
   ): FieldController | undefined;
   getReport(id: string): ReportController | undefined;
   getValues(): Record<string, unknown>;
+  createSnapshot(): FormSnapshot;
+  restoreSnapshot(snapshot: unknown): void;
+  subscribeTransitions(listener: (transition: FormTransition) => void): () => void;
   setValues(values: Record<string, unknown>): void;
   validate(): Promise<FormValidationResult>;
   submit(options?: SubmitOptions): Promise<SubmitResult>;
@@ -137,6 +148,8 @@ export interface FormController {
   setExternalErrors(issue: FormValidationIssue): void;
   clearExternalErrors(): void;
   reset(): void;
+  suspend(reason?: string): void;
+  resume(): void;
   dispose(): void;
   subscribe(listener: (state: FormState) => void): () => void;
   subscribeSelector<TSelected>(
@@ -147,4 +160,4 @@ export interface FormController {
 }
 
 export type { FieldConfig, FormSchema, Registry, ReportConfig };
-export type { FormStatus } from "./status";
+export type { FormLifecycle, FormOperation, FormSubmissionStatus } from "@/schema";

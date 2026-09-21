@@ -3,12 +3,18 @@
 
 import { defaultEquality } from "../equality";
 import { EngineError } from "../errors";
-import { toFieldStateSnapshot, type EngineStore, type InternalFieldState } from "../state";
+import {
+  toFieldStateSnapshot,
+  transitionEngineState,
+  type EngineStore,
+  type InternalFieldState,
+} from "../state";
 import type {
   FieldController,
   FieldDefinition,
   FieldValidationResult,
-  FormStatus,
+  FormOperation,
+  FormSubmissionStatus,
   InactiveFieldPolicy,
   NormalizedFieldConfig,
 } from "../types";
@@ -23,6 +29,12 @@ import { cloneValue } from "../values";
 import { prepareFieldState, refreshFieldState } from "./state-calculations";
 import { setFieldState } from "./state";
 import { resolveMappedTargets, type FieldSubmissionEntry, type MappedToTarget } from "@/schema";
+import {
+  prepareRestoredFieldState,
+  restoreFieldSnapshotValue,
+  serializeFieldSnapshotValue,
+  type RestoredFieldOptions,
+} from "./snapshot";
 
 type CreateFieldControllerOptions = {
   config: NormalizedFieldConfig;
@@ -30,7 +42,8 @@ type CreateFieldControllerOptions = {
   store: EngineStore;
   getValues: () => Record<string, unknown>;
   getSubmitCount: () => number;
-  getFormStatus: () => FormStatus;
+  getFormOperation: () => FormOperation;
+  getSubmissionStatus: () => FormSubmissionStatus;
   onValueChange?: (fieldId: string, values: Record<string, unknown>) => void;
 };
 
@@ -55,6 +68,14 @@ export type InternalFieldController = FieldController & {
   dispose(): void;
   getMappedTargets(backend?: string): readonly MappedToTarget[];
   getSubmissionEntries(backend?: string): readonly FieldSubmissionEntry[] | undefined;
+  serializeSnapshotValue(): import("@/schema").JsonValue;
+  restoreSnapshotValue(value: import("@/schema").JsonValue): unknown;
+  prepareRestoredState(
+    value: unknown,
+    values: Record<string, unknown>,
+    touched: boolean,
+    options?: RestoredFieldOptions,
+  ): InternalFieldState;
 };
 
 export const createFieldController = ({
@@ -63,12 +84,19 @@ export const createFieldController = ({
   store,
   getValues,
   getSubmitCount,
-  getFormStatus,
+  getFormOperation,
+  getSubmissionStatus,
   onValueChange,
 }: CreateFieldControllerOptions): InternalFieldController => {
   let disposed = false;
-  const assertActive = (): void => {
+  const assertUsable = (): void => {
     if (disposed) throw new EngineError(`Field "${config.id}" has been disposed.`);
+  };
+  const assertActive = (): void => {
+    assertUsable();
+    if (store.getState().lifecycle === "suspended") {
+      throw new EngineError(`Field "${config.id}" belongs to a suspended form.`);
+    }
   };
   const readonlyConfig = deepFreeze(cloneValue(config));
   const initialValue =
@@ -82,7 +110,8 @@ export const createFieldController = ({
     initialValue,
     getValues(),
     getSubmitCount(),
-    getFormStatus(),
+    getFormOperation(),
+    getSubmissionStatus(),
   );
   setFieldState(store, config.id, initialState);
 
@@ -93,7 +122,8 @@ export const createFieldController = ({
     store,
     getValues,
     getSubmitCount,
-    getFormStatus,
+    getFormOperation,
+    getSubmissionStatus,
     commitState: (fieldId, nextState) => setFieldState(store, fieldId, nextState),
   });
 
@@ -124,12 +154,13 @@ export const createFieldController = ({
         return;
       }
 
-      store.update((current) => ({
-        ...current,
-        status: "editing",
-        formErrors: [],
-        lifecycleVersion: current.lifecycleVersion + 1,
-      }));
+      store.update((current) =>
+        transitionEngineState(current, {
+          type: "editing",
+          clearFormErrors: true,
+          bumpLifecycle: true,
+        }),
+      );
     },
     applyValue(value, values) {
       fieldValidator.abort("value-updated");
@@ -143,7 +174,8 @@ export const createFieldController = ({
         values,
         currentState: getInternalState(),
         getSubmitCount,
-        getFormStatus,
+        getFormOperation,
+        getSubmissionStatus,
       });
     },
     commitState(state) {
@@ -157,10 +189,7 @@ export const createFieldController = ({
         touched: true,
       });
 
-      store.update((current) => ({
-        ...current,
-        status: "editing",
-      }));
+      store.update((current) => transitionEngineState(current, { type: "editing" }));
     },
     focus() {
       assertActive();
@@ -181,7 +210,7 @@ export const createFieldController = ({
       });
     },
     subscribe(listener) {
-      assertActive();
+      assertUsable();
       let previousState = getInternalState();
       return store.subscribe(() => {
         const nextState = store.getState().fieldStates[readonlyConfig.id];
@@ -197,6 +226,23 @@ export const createFieldController = ({
         return definition.serializeValue(value, readonlyConfig);
       }
       return value;
+    },
+    serializeSnapshotValue() {
+      return serializeFieldSnapshotValue(definition, readonlyConfig, getInternalState().value);
+    },
+    restoreSnapshotValue(value) {
+      return restoreFieldSnapshotValue(definition, readonlyConfig, value);
+    },
+    prepareRestoredState(value, values, touched, options) {
+      return prepareRestoredFieldState({
+        config: readonlyConfig,
+        definition,
+        currentState: getInternalState(),
+        value,
+        values,
+        touched,
+        refreshOptions: options,
+      });
     },
     coerceValue(value) {
       return normalizeValue(definition, readonlyConfig, value);
@@ -229,7 +275,8 @@ export const createFieldController = ({
         currentState: getInternalState(),
         values: options?.values ?? getValues(),
         getSubmitCount,
-        getFormStatus,
+        getFormOperation,
+        getSubmissionStatus,
         options,
       });
 

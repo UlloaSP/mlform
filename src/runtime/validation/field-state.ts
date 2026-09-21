@@ -3,7 +3,12 @@
 
 import type { InternalFieldState } from "../state";
 import { EngineError } from "../errors";
-import type { FieldDefinition, FormStatus, NormalizedFieldConfig } from "../types";
+import type {
+  FieldDefinition,
+  FormOperation,
+  FormSubmissionStatus,
+  NormalizedFieldConfig,
+} from "../types";
 import { isEmptyValue } from "../utils";
 import { cloneValue, deepValueEquality } from "../values";
 import { resolveDerivedFlags, type DerivedFieldFlags } from "./conditions";
@@ -115,10 +120,11 @@ export const makeFieldState = (
   initialValue: unknown,
   values: Record<string, unknown>,
   submitCount: number,
-  formStatus: FormStatus,
+  formOperation: FormOperation,
+  submissionStatus: FormSubmissionStatus,
 ): InternalFieldState => {
   const normalizedValue = normalizeValue(definition, config, initialValue);
-  const flags = resolveDerivedFlags(config, values, submitCount, formStatus);
+  const flags = resolveDerivedFlags(config, values, submitCount, formOperation, submissionStatus);
   const syncErrors = computeSyncErrors(
     definition,
     config,

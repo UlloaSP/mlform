@@ -101,12 +101,13 @@ describe("runtime core invariants", () => {
 
     form.setValues({ name: "Ada" });
     const submission = form.submit();
-    await vi.waitFor(() => expect(form.state.status).toBe("success"));
+    await vi.waitFor(() => expect(form.state.submissionStatus).toBe("succeeded"));
 
     form.reset();
 
     await expect(submission).rejects.toBeInstanceOf(SubmissionAbortedError);
-    expect(form.state.status).toBe("idle");
+    expect(form.state.operation).toBe("idle");
+    expect(form.state.submissionStatus).toBe("idle");
     expect(form.getValues()).toEqual({ name: "Initial" });
     expect(form.state.lastResult).toBeNull();
     gate.resolve();

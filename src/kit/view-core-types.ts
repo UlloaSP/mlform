@@ -100,6 +100,7 @@ export interface CreateFormViewOptions {
   behaviors?: RuntimeBehavior[];
   plugins?: readonly MLFormPlugin[];
   initialValues?: Record<string, unknown>;
+  initialSnapshot?: unknown;
   validators?: FormValidator[];
   hooks?: FormHooks;
   hookFailurePolicy?: {
@@ -146,6 +147,8 @@ export interface FormViewController {
   submit(options?: SubmitOptions): Promise<SubmitResult>;
   submitPipeline(options?: SubmitOptions): Promise<PipelineResult>;
   reset(): void;
+  suspend(reason?: string): void;
+  resume(): void;
   dispose(): void;
   subscribe(listener: (snapshot: FormViewSnapshot) => void): () => void;
 }
