@@ -96,42 +96,94 @@ export const formRootStyles = css`
     font-weight: 600;
   }
 
-  .status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 999px;
-    background: var(
-      --mlf-status-bg,
-      color-mix(in srgb, var(--mlf-color-accent, #1e40af) 10%, transparent)
-    );
-    color: var(--mlf-status-color, var(--mlf-color-secondary, #475569));
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
   .pane-body {
     display: grid;
     gap: 1rem;
     padding: 1rem 1rem 0;
   }
 
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem 1rem;
-    color: var(--mlf-color-text-muted, #475569);
-    font-size: 0.84rem;
-  }
-
   .collection {
     display: grid;
     gap: var(--mlf-section-gap, 1rem);
+  }
+
+  .report-collection {
+    gap: 0;
+  }
+
+  .empty-report-state {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 1rem 1.1rem;
+    border: var(--mlf-border-width, 1px) dashed
+      color-mix(in srgb, var(--mlf-color-border, #e2e8f0) 90%, transparent);
+    border-radius: var(--mlf-radius-md, 16px);
+    background: var(--mlf-report-empty-bg, var(--mlf-color-surface-muted, #f5f7fa));
+    color: var(--mlf-color-text-muted, #475569);
+  }
+
+  .empty-report-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--mlf-color-accent, #1e40af) 12%, transparent);
+    color: var(--mlf-color-accent, #1e40af);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .empty-report-title,
+  .empty-report-copy {
+    margin: 0;
+  }
+  .empty-report-title {
+    color: var(--mlf-color-text, #0f172a);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .empty-report-copy {
+    margin-top: 0.25rem;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+  .report-skeleton {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.25rem;
+  }
+  .report-skeleton span {
+    height: 0.48rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--mlf-color-text-muted, #475569) 14%, transparent);
+    animation: report-pulse 1.4s ease-in-out infinite alternate;
+  }
+  .report-skeleton span:nth-child(2) {
+    width: 82%;
+  }
+  .report-skeleton span:nth-child(3) {
+    width: 58%;
+  }
+  @keyframes report-pulse {
+    to {
+      opacity: 0.38;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .report-skeleton span {
+      animation: none;
+    }
+  }
+  @media (forced-colors: active) {
+    .empty-report-state,
+    .empty-report-icon {
+      border: 1px solid CanvasText;
+    }
   }
 
   .actions {

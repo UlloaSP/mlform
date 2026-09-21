@@ -97,6 +97,8 @@ export interface PrimitiveText {
     submissionStatus: PrimitiveSubmissionStatus,
   ) => string;
   reportStatusLabel: (status: PrimitiveReportStatus) => string;
+  reportStateTitle: (status: PrimitiveReportStatus) => string;
+  reportStateMessage: (status: PrimitiveReportStatus, error: string | null) => string;
   reportsEmptyTitle: string;
   reportsEmptyBody: string;
 }
@@ -179,6 +181,34 @@ export const primitiveStaticText: PrimitiveText = Object.freeze({
         return "Error";
     }
   },
+  reportStateTitle: (status: PrimitiveReportStatus): string => {
+    switch (status) {
+      case "idle":
+        return "Awaiting submission";
+      case "loading":
+        return "Generating report";
+      case "ready":
+        return "Report ready";
+      case "skipped":
+        return "Report skipped";
+      case "error":
+        return "Report unavailable";
+    }
+  },
+  reportStateMessage: (status: PrimitiveReportStatus, error: string | null): string => {
+    switch (status) {
+      case "idle":
+        return "Complete the inputs and submit the form to generate this report.";
+      case "loading":
+        return "The latest inputs are being processed.";
+      case "ready":
+        return "The report is ready.";
+      case "skipped":
+        return "This report was not produced for the latest submission.";
+      case "error":
+        return error ?? "The report could not be generated. Submit the form again to retry.";
+    }
+  },
   reportsEmptyTitle: "Results",
   reportsEmptyBody: "Reports will appear here after the form is submitted.",
 });
@@ -193,4 +223,5 @@ export const primitiveIdPrefixes = {
   fieldErrors: "mlf-field-errors",
   fieldControl: "mlf-field-control",
   reportRegion: "mlf-report-region",
+  reportDescription: "mlf-report-description",
 } as const;

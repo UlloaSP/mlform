@@ -65,34 +65,6 @@ export const fieldFrameStyles = css`
     overflow-wrap: anywhere;
   }
 
-  .help-btn {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: var(--mlf-help-btn-bg, var(--mlf-color-accent, #1e40af));
-    color: var(--mlf-help-btn-color, #ffffff);
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-
-  .help-btn:hover:not(:disabled) {
-    background: var(--mlf-help-btn-bg-hover, var(--mlf-color-accent-hover, #1d4ed8));
-  }
-
-  .help-btn:disabled {
-    background: var(--mlf-help-btn-bg-disabled, var(--mlf-color-text-muted, #475569));
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-
   .description {
     display: none;
     min-width: 0;

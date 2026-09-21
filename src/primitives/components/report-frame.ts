@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { css, LitElement } from "lit";
+import { LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
 import type {
@@ -26,80 +26,14 @@ import type {
   PrimitiveReportRenderContext,
 } from "../types";
 import { toText } from "../utils";
+import { helpButtonStyles } from "./help-button-styles";
+import { reportFrameStyles } from "./report-frame-styles";
 
 let reportFrameSequence = 0;
 
 @customElement(primitiveTagNames.reportFrame)
 export class PrimitiveReportFrameElement extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    :host([hidden]) {
-      display: none;
-    }
-
-    .report {
-      display: grid;
-      gap: 0.9rem;
-      padding: 1.5rem 2rem;
-      border-radius: var(--mlf-report-radius, 12px);
-      border: var(--mlf-border-width, 1px) solid
-        var(--mlf-report-border, var(--mlf-color-border, #e2e8f0));
-      background: var(--mlf-report-bg, var(--mlf-color-surface, #ffffff));
-      box-shadow:
-        0 2px 4px var(--mlf-report-shadow-soft, rgba(0, 0, 0, 0.04)),
-        0 8px 16px var(--mlf-report-shadow, rgba(0, 0, 0, 0.04));
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      gap: 1rem;
-    }
-
-    .copy {
-      display: grid;
-      gap: 0.35rem;
-      min-width: 0;
-    }
-
-    .label {
-      margin: 0;
-      font-size: 0.875rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--mlf-report-label-color, var(--mlf-color-text-muted, #475569));
-    }
-
-    .description {
-      margin: 0;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: var(--mlf-report-description-color, var(--mlf-color-text, #0f172a));
-    }
-
-    .meta {
-      display: inline-flex;
-      align-items: center;
-      min-height: 1.8rem;
-      padding: 0.28rem 0.55rem;
-      border-radius: 999px;
-      background: var(
-        --mlf-report-meta-bg,
-        color-mix(in srgb, var(--mlf-color-accent, #1e40af) 10%, transparent)
-      );
-      color: var(--mlf-report-meta-color, var(--mlf-color-secondary, #475569));
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-  `;
+  static styles = [reportFrameStyles, helpButtonStyles];
 
   @property({ attribute: false }) accessor controller: PrimitiveReportController | undefined;
   @property({ attribute: false }) accessor registry: PrimitiveRegistry | undefined;
@@ -107,10 +41,11 @@ export class PrimitiveReportFrameElement extends LitElement {
   @property({ attribute: false }) accessor transport: PrimitiveReportTransport | undefined;
   @property({ attribute: false }) accessor fetchMode: PrimitiveReportFetchMode = "lazy";
   @property({ attribute: false }) accessor lastResult: PrimitiveSubmitResult | null = null;
-
   @property({ attribute: false }) accessor descriptor: ReportDescriptor | null = null;
+
   @state() private accessor resolvedDescriptor: ReportDescriptor | null = null;
   @state() private accessor reportState: PrimitiveReportStateSnapshot | null = null;
+  @state() private accessor descriptionVisibilityOverride: boolean | null = null;
 
   readonly #instanceId = ++reportFrameSequence;
   #memoizedContext: PrimitiveReportRenderContext | undefined;
@@ -125,12 +60,11 @@ export class PrimitiveReportFrameElement extends LitElement {
   });
 
   protected willUpdate(changedProperties: Map<string, unknown>): void {
-    if (changedProperties.has("controller")) {
-      this.#binding.bind(this.controller);
-    }
+    if (changedProperties.has("controller")) this.#binding.bind(this.controller);
 
     if (changedProperties.has("descriptor")) {
       this.resolvedDescriptor = this.descriptor;
+      if (!this.descriptor?.props.description) this.descriptionVisibilityOverride = null;
     }
 
     if (changedProperties.has("lastResult") || changedProperties.has("controller")) {
@@ -141,58 +75,90 @@ export class PrimitiveReportFrameElement extends LitElement {
   render() {
     const descriptor = this.resolvedDescriptor;
     const state = this.reportState;
-
-    if (!descriptor || !state) {
-      return html``;
-    }
+    if (!descriptor || !state) return html``;
 
     const props = descriptor.props;
     const component = this.registry?.resolveReport(descriptor.component);
+    const label = toText(props.label, this.controller?.config.label ?? "");
+    const description = toText(props.description);
+    const descriptionVisible = this.#isDescriptionVisible(description);
+    const descriptionId = `${primitiveIdPrefixes.reportDescription}-${this.controller?.id}-${this.#instanceId}`;
 
     return html`
       <section class="report">
         <div class="header">
-          <div class="copy">
-            <p class="label">${toText(props.label, this.controller?.config.label ?? "")}</p>
-            ${
-              props.description
-                ? html`<p class="description">${toText(props.description)}</p>`
-                : html``
-            }
-          </div>
-          <span class="meta">${this.text.reportStatusLabel(state.status)}</span>
+          <p class="label">${label}</p>
+          <button
+            class="help-btn"
+            type="button"
+            aria-label=${`${this.text.helpActionLabel}: ${label}`}
+            aria-expanded=${String(descriptionVisible)}
+            aria-controls=${descriptionId}
+            ?disabled=${description.length === 0}
+            @click=${this.#toggleDescription}
+          >
+            ${this.text.helpActionGlyph}
+          </button>
         </div>
-
         ${
-          component
-            ? this.#renderResolvedRenderer(component)
-            : html`
-                <mlf-unsupported-component
+          description
+            ? html`<p id=${descriptionId} class="description" ?hidden=${!descriptionVisible}>
+                ${description}
+              </p>`
+            : html``
+        }
+        ${
+          state.status === "ready"
+            ? component
+              ? this.#renderResolvedRenderer(component)
+              : html`<mlf-unsupported-component
                   role="report"
                   component=${descriptor.component}
                   .text=${this.text}
-                ></mlf-unsupported-component>
-              `
+                ></mlf-unsupported-component>`
+            : this.#renderState(state)
         }
       </section>
     `;
   }
 
+  #renderState(state: PrimitiveReportStateSnapshot) {
+    const isError = state.status === "error";
+    return html`
+      <div
+        class="state-view ${isError ? "error" : ""}"
+        role=${isError ? "alert" : "status"}
+        aria-live=${isError ? "assertive" : "polite"}
+        aria-busy=${String(state.status === "loading")}
+      >
+        <span class="state-marker" aria-hidden="true">
+          ${isError ? "!" : state.status === "loading" ? "…" : "i"}
+        </span>
+        <div class="state-copy">
+          <p class="state-title">${this.text.reportStateTitle(state.status)}</p>
+          <p class="state-message">${this.text.reportStateMessage(state.status, state.error)}</p>
+        </div>
+        ${
+          state.status === "loading"
+            ? html`<div class="skeleton" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>`
+            : html``
+        }
+      </div>
+    `;
+  }
+
   #renderResolvedRenderer(tagName: string) {
     const tag = unsafeStatic(tagName);
-    const context = this.#getContext();
-    const reportTransport = this.transport;
-    const reportRequest = this.#getReportRequest();
-    const descriptor = this.resolvedDescriptor;
-
     return html`
       <${tag}
         .controller=${this.controller}
-        .descriptor=${descriptor}
-        .context=${context}
+        .descriptor=${this.resolvedDescriptor}
+        .context=${this.#getContext()}
         .text=${this.text}
-        .transport=${reportTransport}
-        .request=${reportRequest}
+        .transport=${this.transport}
+        .request=${this.#getReportRequest()}
       ></${tag}>
     `;
   }
@@ -213,10 +179,7 @@ export class PrimitiveReportFrameElement extends LitElement {
   }
 
   #createContext(props: Record<string, unknown>): PrimitiveReportRenderContext | undefined {
-    if (!this.controller) {
-      return undefined;
-    }
-
+    if (!this.controller) return undefined;
     return {
       regionId: `${primitiveIdPrefixes.reportRegion}-${this.controller.id}-${this.#instanceId}`,
       label: toText(props.label, this.controller.config.label ?? this.controller.id),
@@ -227,17 +190,9 @@ export class PrimitiveReportFrameElement extends LitElement {
     };
   }
 
-  /**
-   * Builds a PrimitiveReportRequest from the last submit result, memoized by
-   * result identity so report renderers only re-fetch when a new submit completes.
-   */
   #getReportRequest(): PrimitiveReportRequest | null {
     const result = this.lastResult;
-
-    if (!result || !this.controller) {
-      return null;
-    }
-
+    if (!result || !this.controller) return null;
     if (
       result === this.#memoizedLastResult &&
       this.#memoizedRequest?.reportId === this.controller.id
@@ -245,10 +200,7 @@ export class PrimitiveReportFrameElement extends LitElement {
       return this.#memoizedRequest;
     }
 
-    const request: PrimitiveReportRequest = createPrimitiveReportRequest(result, {
-      reportId: this.controller.id,
-    });
-
+    const request = createPrimitiveReportRequest(result, { reportId: this.controller.id });
     this.#memoizedLastResult = result;
     this.#memoizedRequest = request;
     return request;
@@ -257,12 +209,24 @@ export class PrimitiveReportFrameElement extends LitElement {
   #maybeFetch(): void {
     const ctrl = this.controller;
     const request = this.#getReportRequest();
-
     if (this.fetchMode !== "lazy" || !ctrl?.canFetch || !request || ctrl.state.status !== "idle") {
       return;
     }
-
     void ctrl.fetch(request);
+  }
+
+  #toggleDescription = (): void => {
+    const description = toText(this.resolvedDescriptor?.props.description);
+    if (!description) return;
+    this.descriptionVisibilityOverride = !this.#isDescriptionVisible(description);
+  };
+
+  #isDescriptionVisible(description: string): boolean {
+    if (!description) return false;
+    return (
+      this.descriptionVisibilityOverride ??
+      this.resolvedDescriptor?.props.showDescriptionInline === true
+    );
   }
 }
 

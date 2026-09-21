@@ -17,13 +17,14 @@ import {
 import type { PrimitiveFieldRenderContext, PrimitiveRegistry } from "../types";
 import { joinMessages, toText } from "../utils";
 import { fieldFrameStyles } from "./field-frame-styles";
+import { helpButtonStyles } from "./help-button-styles";
 import { createFieldSuccessMessage, hasIntroducedValue } from "./field-frame-feedback";
 
 let fieldFrameSequence = 0;
 
 @customElement(primitiveTagNames.fieldFrame)
 export class PrimitiveFieldFrameElement extends LitElement {
-  static styles = fieldFrameStyles;
+  static styles = [fieldFrameStyles, helpButtonStyles];
 
   @property({ attribute: false }) accessor controller: PrimitiveFieldController | undefined;
   @property({ attribute: false }) accessor descriptor: FieldDescriptor | null = null;

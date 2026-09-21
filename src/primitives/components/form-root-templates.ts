@@ -45,23 +45,59 @@ const renderReports = (
   reportTransport: PrimitiveReportTransport | undefined,
   reportFetchMode: PrimitiveReportFetchMode,
   lastResult: PrimitiveFormController["state"]["lastResult"],
-): TemplateResult => html`
-  <div class="collection" part="report-list">
-    ${repeat(
-      reports,
-      (report) => report.controller.id,
-      (report) => html`
-        <mlf-report-frame
-          .controller=${report.controller}
-          .descriptor=${report.descriptor}
-          .registry=${registry}
-          .text=${text}
-          .transport=${reportTransport}
-          .fetchMode=${reportFetchMode}
-          .lastResult=${lastResult}
-        ></mlf-report-frame>
-      `,
-    )}
+): TemplateResult => {
+  const allIdle =
+    reports.length > 0 && reports.every(({ controller }) => controller.state.status === "idle");
+  const allLoading =
+    reports.length > 0 && reports.every(({ controller }) => controller.state.status === "loading");
+
+  if (allIdle) return renderEmptyReports(text);
+  if (allLoading) return renderLoadingReports(text);
+
+  return html`
+    <div class="collection report-collection" part="report-list">
+      ${repeat(
+        reports,
+        (report) => report.controller.id,
+        (report) => html`
+          <mlf-report-frame
+            .controller=${report.controller}
+            .descriptor=${report.descriptor}
+            .registry=${registry}
+            .text=${text}
+            .transport=${reportTransport}
+            .fetchMode=${reportFetchMode}
+            .lastResult=${lastResult}
+          ></mlf-report-frame>
+        `,
+      )}
+    </div>
+  `;
+};
+
+const renderEmptyReports = (text: PrimitiveText): TemplateResult => html`
+  <div class="empty-report-state" role="status">
+    <span class="empty-report-icon" aria-hidden="true">i</span>
+    <div>
+      <p class="empty-report-title">${text.reportsEmptyTitle}</p>
+      <p class="empty-report-copy">${text.reportsEmptyBody}</p>
+    </div>
+  </div>
+`;
+
+const renderLoadingReports = (text: PrimitiveText): TemplateResult => html`
+  <div
+    class="empty-report-state loading-report-state"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <span class="empty-report-icon" aria-hidden="true">…</span>
+    <div>
+      <p class="empty-report-title">${text.reportStateTitle("loading")}</p>
+      <p class="empty-report-copy">${text.reportStateMessage("loading", null)}</p>
+    </div>
+    <div class="report-skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
   </div>
 `;
 
@@ -95,21 +131,9 @@ export const renderStackedLayout = (options: {
           <p class="eyebrow">${options.text.formEyebrow}</p>
           <h1 class="pane-title">${options.formLabel}</h1>
         </div>
-        <span class="status"
-          >${options.text.formStateLabel(
-            options.state.operation,
-            options.state.submissionStatus,
-          )}</span
-        >
       </header>
 
       <div class="pane-body">
-        <div class="meta">
-          <span>${options.text.formMetaFields(options.visibleFields.length)}</span>
-          <span>${options.text.formMetaReports(options.form.reports.length)}</span>
-          <span>${options.text.formMetaSubmits(options.state.submitCount)}</span>
-        </div>
-
         <mlf-form-errors .form=${options.form} .text=${options.text}></mlf-form-errors>
         ${renderFieldFrames(
           options.visibleFields,
@@ -139,7 +163,6 @@ export const renderStackedLayout = (options: {
                   <p class="eyebrow">${options.text.reportEyebrow}</p>
                   <h2 class="pane-title">${options.reportsLabel}</h2>
                 </div>
-                <span class="status">${options.reportsToRender.length}</span>
               </header>
 
               <div class="pane-body">
@@ -188,21 +211,9 @@ export const renderSplitLayout = (options: {
         <div class="form-inputs scroll-y">
           <header class="sticky-header">
             <h2>${options.formLabel}</h2>
-            <span class="sticky-meta"
-              >${options.text.formStateLabel(
-                options.state.operation,
-                options.state.submissionStatus,
-              )}</span
-            >
           </header>
 
           <div class="split-content">
-            <div class="meta">
-              <span>${options.text.formMetaFields(options.visibleFields.length)}</span>
-              <span>${options.text.formMetaReports(options.form.reports.length)}</span>
-              <span>${options.text.formMetaSubmits(options.state.submitCount)}</span>
-            </div>
-
             <mlf-form-errors .form=${options.form} .text=${options.text}></mlf-form-errors>
             ${renderFieldFrames(
               options.visibleFields,
@@ -231,7 +242,6 @@ export const renderSplitLayout = (options: {
                 <div class="results-area scroll-y">
                   <header class="sticky-header">
                     <h2>${options.reportsLabel}</h2>
-                    <span class="sticky-meta">${options.reportsToRender.length}</span>
                   </header>
 
                   <div class="split-content">
@@ -245,12 +255,7 @@ export const renderSplitLayout = (options: {
                             options.reportFetchMode,
                             options.form.state.lastResult ?? null,
                           )
-                        : html`
-                            <div class="empty-report-state">
-                              <p class="empty-report-title">${options.text.reportsEmptyTitle}</p>
-                              <p class="empty-report-copy">${options.text.reportsEmptyBody}</p>
-                            </div>
-                          `
+                        : renderEmptyReports(options.text)
                     }
                   </div>
                 </div>

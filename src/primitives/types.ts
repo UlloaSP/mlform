@@ -38,7 +38,8 @@ export interface PrimitiveRegistry {
 /**
  * Transport for fetching post-submit report content.
  * Receives the full submit result + report context; may return any value.
- * Renderers decide how to display loading, success, and error states.
+ * The report frame displays runtime loading and error states. Renderers display
+ * ready report content and may use this transport for additional, renderer-owned details.
  */
 export interface PrimitiveReportTransport {
   submit: (request: PrimitiveReportRequest) => Promise<unknown>;

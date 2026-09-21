@@ -55,17 +55,28 @@ export const formRootSplitStyles = css`
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
-    scrollbar-color: color-mix(in srgb, var(--mlf-color-text-muted, #475569) 60%, transparent)
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scroll-y:hover,
+  .scroll-y:focus-within {
+    scrollbar-color: color-mix(in srgb, var(--mlf-color-text-muted, #475569) 32%, transparent)
       transparent;
   }
 
   .scroll-y::-webkit-scrollbar {
-    width: 8px;
+    width: 5px;
   }
 
   .scroll-y::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--mlf-color-text-muted, #475569) 55%, transparent);
+    background: transparent;
     border-radius: 999px;
+  }
+
+  .scroll-y:hover::-webkit-scrollbar-thumb,
+  .scroll-y:focus-within::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--mlf-color-text-muted, #475569) 32%, transparent);
   }
 
   .sticky-header {
@@ -76,7 +87,7 @@ export const formRootSplitStyles = css`
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 1rem;
     border-bottom: var(--mlf-border-width, 1px) solid
       var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
     background: var(
@@ -94,14 +105,6 @@ export const formRootSplitStyles = css`
     font-weight: 600;
   }
 
-  .sticky-meta {
-    color: var(--mlf-color-text-muted, #475569);
-    font-size: var(--mlf-font-size-xs, 0.72rem);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
   .form-inputs,
   .results-area {
     flex: 1 1 auto;
@@ -110,38 +113,18 @@ export const formRootSplitStyles = css`
   .split-content {
     display: grid;
     gap: 1rem;
-    padding: 1.25rem 2rem 2rem;
+    padding: 1rem;
+  }
+
+  .results-area .split-content {
+    padding-inline-end: 0.75rem;
   }
 
   .form-actions {
-    padding: 1rem 2rem;
+    padding: 1rem;
     border-top: var(--mlf-border-width, 1px) solid
       var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
     background: var(--mlf-shell-action-bg, var(--mlf-color-surface-muted, #f5f7fa));
-  }
-
-  .empty-report-state {
-    display: grid;
-    gap: 0.35rem;
-    padding: 1.1rem 1.2rem;
-    border: var(--mlf-border-width, 1px) dashed
-      color-mix(in srgb, var(--mlf-color-border, #e2e8f0) 90%, transparent);
-    border-radius: var(--mlf-radius-md, 16px);
-    background: color-mix(in srgb, var(--mlf-color-surface, #ffffff) 84%, transparent);
-    color: var(--mlf-color-text-muted, #475569);
-  }
-
-  .empty-report-title {
-    margin: 0;
-    color: var(--mlf-color-text, #0f172a);
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-
-  .empty-report-copy {
-    margin: 0;
-    font-size: var(--mlf-font-size-sm, 0.84rem);
-    line-height: var(--mlf-line-height-normal, 1.5);
   }
 
   @media (max-width: 900px) {
@@ -165,7 +148,17 @@ export const formRootSplitStyles = css`
     .sticky-header,
     .split-content,
     .form-actions {
-      padding-inline: 1.25rem;
+      padding-inline: 1rem;
+    }
+
+    .results-area .split-content {
+      padding-inline-end: 0.75rem;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .scroll-y {
+      scrollbar-color: auto;
     }
   }
 `;

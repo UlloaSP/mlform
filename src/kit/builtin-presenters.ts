@@ -174,7 +174,6 @@ const reportPresenter = (
 ): ReportPresenter<BuiltinReportConfig> => ({
   kind,
   describe(config, context: ReportDescriptorContext) {
-    if (context.state.status === "idle" && context.payload === undefined) return null;
     return {
       component,
       props: {
