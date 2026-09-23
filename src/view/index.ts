@@ -19,6 +19,7 @@ export type {
 export type { MLFormFieldKind, MLFormPlugin, MLFormReportKind } from "./plugin";
 export type {
   FormLayoutConfig,
+  FormLayoutCustomNode,
   FormLayoutFieldNode,
   FormLayoutGroupNode,
   FormLayoutNode,
@@ -26,6 +27,7 @@ export type {
   FormLayoutSectionNode,
   ResolvedFormLayout,
   ResolvedFormLayoutFieldNode,
+  ResolvedFormLayoutCustomNode,
   ResolvedFormLayoutGroupNode,
   ResolvedFormLayoutNode,
   ResolvedFormLayoutReportNode,

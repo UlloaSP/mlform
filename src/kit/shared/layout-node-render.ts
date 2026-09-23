@@ -180,5 +180,7 @@ export const renderLayoutNode = ({
         ></mlf-report-frame>
       `;
     }
+    case "custom":
+      throw new TypeError(`Custom region "${node.id}" requires an application-owned layout.`);
   }
 };

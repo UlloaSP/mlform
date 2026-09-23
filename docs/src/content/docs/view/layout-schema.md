@@ -38,6 +38,10 @@ host refers to them through `navigation.activate(id)`.
 
 - `{ kind: "field", field: "prompt" }` places a field by runtime id.
 - `{ kind: "report", report: "prediction" }` places a report by runtime id.
+- `{ kind: "custom", id: "materials", fields: ["material-a", "material-b"] }` reserves a
+  region rendered by the application. Its fields count as placed in the layout and inherit the
+  enclosing tab, wizard step, and disclosure sections. Use `createFormView()` to render it;
+  `mountForm()` rejects layouts containing custom regions.
 - `{ kind: "group", id?, columns?, children }` groups nodes in one, two, or three columns.
 - `{ kind: "section", id?, title, description?, defaultOpen?, children }` creates a disclosure
   section. `title` must be non-empty so the built-in toggle has an accessible name. Every section
@@ -49,7 +53,8 @@ control, use `group`.
 
 ## Validation
 
-An explicit layout must reference every field exactly once. A report may be omitted or placed
+An explicit layout must reference every field exactly once, either directly or in a custom region.
+A custom region must declare at least one field. A report may be omitted or placed
 once. Unknown field or report ids, duplicate references, missing fields, untitled sections, and
 empty wizard steps or tabs fail when the view is created. View resolves ids before returning its
 snapshot; the kit uses that same resolved layout when mounting custom sections, tabs, or steps.

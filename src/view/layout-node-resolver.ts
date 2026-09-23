@@ -54,6 +54,16 @@ export const resolveNodes = (
         assertKnownReport(node.report, entities);
         markReport(node.report, maps, stepId, tabId, sectionIds);
         return { kind: "report", report: node.report };
+      case "custom": {
+        const id = nextNodeId("custom", node.id, nodeIds);
+        if (!Array.isArray(node.fields) || node.fields.length === 0)
+          throw new TypeError(viewErrorMessages.customRequiresFields(id));
+        for (const fieldId of node.fields) {
+          assertKnownField(fieldId, entities);
+          markField(fieldId, maps, stepId, tabId, sectionIds);
+        }
+        return { kind: "custom", id, fields: [...node.fields] };
+      }
     }
   });
 };

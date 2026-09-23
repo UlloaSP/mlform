@@ -10,6 +10,7 @@ export const viewErrorMessages = {
     `Report "${reportId}" appears multiple times in layout.`,
   unknownFieldReference: (fieldId: string) => `Layout references unknown field "${fieldId}".`,
   unknownReportReference: (reportId: string) => `Layout references unknown report "${reportId}".`,
+  customRequiresFields: (id: string) => `Custom region "${id}" must declare at least one field.`,
   wizardRequiresSteps: "Wizard layout must define at least one step.",
   wizardStepEmpty: (stepId: string) =>
     `Wizard step "${stepId}" must contain at least one layout node.`,

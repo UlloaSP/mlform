@@ -134,6 +134,7 @@ export interface FormViewNavigationController {
 
 export interface FormViewController {
   readonly form: FormController;
+  readonly reportFetchMode: ReportFetchMode;
   readonly engineRegistry: Registry;
   readonly descriptorRegistry: PrimitiveDescriptorRegistry;
   readonly navigation: FormViewNavigationController;

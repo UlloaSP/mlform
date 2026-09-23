@@ -112,6 +112,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
 
   return Object.freeze({
     form,
+    reportFetchMode,
     engineRegistry,
     descriptorRegistry,
     navigation,

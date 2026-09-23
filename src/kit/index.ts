@@ -3,6 +3,8 @@
 
 export { defaultKitDesignSystem, defaultKitLabels } from "./defaults";
 export { mountForm, unmountForm } from "./mount-form";
+export { createPrimitiveAdapter } from "./primitive-adapter";
+export type { PrimitiveAdapter, PrimitiveAdapterOptions } from "./primitive-adapter";
 export type {
   KitDesignSystemSnapshot,
   KitLabels,

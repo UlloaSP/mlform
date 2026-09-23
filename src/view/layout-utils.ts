@@ -70,6 +70,9 @@ export const collectLayoutReferences = (layout: ResolvedFormLayout): LayoutRefer
       case "report":
         references.reports.push(node.report);
         break;
+      case "custom":
+        references.fields.push(...node.fields);
+        break;
       default:
         break;
     }

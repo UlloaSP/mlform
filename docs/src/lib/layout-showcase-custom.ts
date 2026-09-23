@@ -106,6 +106,8 @@ const renderCustomNode = (
         return null;
       }
       return createFrame("mlf-report-frame", snapshot, node.report, primitiveRegistry);
+    case "custom":
+      throw new TypeError(`No renderer for custom region "${node.id}".`);
   }
 };
 

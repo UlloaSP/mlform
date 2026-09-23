@@ -46,6 +46,11 @@ Fix:
 
 - align layout ids with normalized schema ids
 
+## Empty custom region
+
+`Custom region "materials" must declare at least one field.` Add the runtime ids of the fields
+rendered by that region. Those ids also count toward duplicate and missing field checks.
+
 ## Empty wizard
 
 Errors:

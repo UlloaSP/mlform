@@ -39,6 +39,7 @@ Use `plugins` for custom field and report kinds. A plugin carries its schema def
 ```ts
 interface FormViewController {
   form: FormController;
+  reportFetchMode: ReportFetchMode;
   engineRegistry: Registry;
   descriptorRegistry: PrimitiveDescriptorRegistry;
   navigation: FormViewNavigationController;
@@ -153,3 +154,5 @@ Typical host pattern:
 - `mountForm()` for built-in tabs DOM
 - `mountForm()` for built-in disclosure DOM
 - `attachDesignSystem()` yourself when your custom host needs it
+- `createPrimitiveAdapter()` from `mlform/kit` when your host owns the layout but uses built-in
+  controls

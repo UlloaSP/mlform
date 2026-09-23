@@ -27,11 +27,18 @@ export interface FormLayoutReportNode {
   report: string;
 }
 
+export interface FormLayoutCustomNode {
+  kind: "custom";
+  id: string;
+  fields: readonly string[];
+}
+
 export type FormLayoutNode =
   | FormLayoutSectionNode
   | FormLayoutGroupNode
   | FormLayoutFieldNode
-  | FormLayoutReportNode;
+  | FormLayoutReportNode
+  | FormLayoutCustomNode;
 
 export interface SinglePageLayoutConfig {
   kind?: "stacked" | "split";
@@ -90,11 +97,18 @@ export interface ResolvedFormLayoutReportNode {
   report: string;
 }
 
+export interface ResolvedFormLayoutCustomNode {
+  kind: "custom";
+  id: string;
+  fields: readonly string[];
+}
+
 export type ResolvedFormLayoutNode =
   | ResolvedFormLayoutSectionNode
   | ResolvedFormLayoutGroupNode
   | ResolvedFormLayoutFieldNode
-  | ResolvedFormLayoutReportNode;
+  | ResolvedFormLayoutReportNode
+  | ResolvedFormLayoutCustomNode;
 
 export interface ResolvedSinglePageLayout {
   kind: "stacked" | "split";

@@ -29,5 +29,6 @@ describe("public module surfaces", () => {
     expect(view).toHaveProperty("defineMLFormPlugin");
     expect(kit).not.toHaveProperty("createFormView");
     expect(kit).toHaveProperty("mountForm");
+    expect(kit).toHaveProperty("createPrimitiveAdapter");
   });
 });

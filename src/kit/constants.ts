@@ -3,6 +3,8 @@
 
 export const kitErrorMessages = {
   invalidDesignSystemSnapshot: "replaceDesignSystem requires an explicit mode, theme, and recipe.",
+  customRegionRequiresHost: (id: string) =>
+    `Custom region "${id}" requires an application-owned layout. Use createFormView and render that region in your host.`,
 } as const;
 
 export const kitTagNames = {

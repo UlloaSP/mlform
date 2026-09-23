@@ -4,8 +4,8 @@ description: Mount and manage the integrated MLForm interface.
 ---
 
 `mlform` and `mlform/kit` resolve to the same package entry. They export `mountForm`, `unmountForm`,
-`defaultKitDesignSystem`, and `defaultKitLabels`, along with `MountFormOptions`, `MountedForm`,
-`KitLabels`, and `KitDesignSystemSnapshot` types.
+`createPrimitiveAdapter`, `defaultKitDesignSystem`, and `defaultKitLabels`, along with their
+mounting, adapter, label, and design system types.
 
 `mountForm(container, options)` requires a schema and transport. It creates a view, renders the
 selected layout with built-in Web Components, attaches the design system, and returns a handle
@@ -22,3 +22,6 @@ layouts, and extension definitions.
 
 `reportPane: "hidden"` hides report nodes in explicit layouts. A parent window may mount into a
 same-origin iframe after MLForm's components are registered in the iframe document.
+
+Use [`createPrimitiveAdapter`](../../kit/primitive-adapter/) with `createFormView` when the
+application owns the layout and mounts individual built-in controls in stable slots.

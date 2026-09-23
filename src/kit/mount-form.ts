@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { attachDesignSystem, type DesignSystemConfig, type ResolvedDesignSystem } from "@/design";
-import { createFormView } from "@/view";
+import { createFormView, flattenLayoutNodes } from "@/view";
 import { kitErrorMessages } from "./constants";
 import {
   resolveDesignSystemRegistry,
@@ -81,6 +81,12 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
   let pendingDesignChange: ResolvedDesignSystem | undefined;
   let committed = false;
   try {
+    const customNode = flattenLayoutNodes(view.getSnapshot().layout).find(
+      (node) => node.kind === "custom",
+    );
+    if (customNode?.kind === "custom") {
+      throw new TypeError(kitErrorMessages.customRegionRequiresHost(customNode.id));
+    }
     if (shouldUsePrimitive) {
       const mountedPrimitive = mountSinglePageForm(
         stagingContainer,

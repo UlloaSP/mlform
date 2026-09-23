@@ -11,7 +11,12 @@ description: Build your own wizard, tabs, disclosure, or review UI on top of cre
 2. read `snapshot.layout`
 3. render nodes recursively
 4. use `field.controller` and `report.controller`
-5. re-render on `subscribe()`
+5. update the existing DOM on `subscribe()`
+
+For built-in controls inside an application-owned shell, use
+[`createPrimitiveAdapter()`](../../kit/primitive-adapter/) to mount each field or report in a stable
+slot. Create the shell once; replacing it on every snapshot also replaces the controls and loses
+their focus state.
 
 ## Recursive render model
 
@@ -34,6 +39,8 @@ function renderNode(node, snapshot) {
       return renderField(snapshot.fields.find((field) => field.id === node.field));
     case "report":
       return renderReport(snapshot.reports.find((report) => report.id === node.report));
+    case "custom":
+      return renderApplicationRegion(node.id, node.fields);
   }
 }
 ```
@@ -75,7 +82,7 @@ Best when you need:
 
 ## When not to use createFormView
 
-Use `mountForm()` or `mountForm()` if:
+Use `mountForm()` if:
 
 - the built-in UI already matches your needs
 - you do not want to own host rendering
