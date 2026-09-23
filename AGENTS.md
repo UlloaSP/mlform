@@ -59,7 +59,8 @@ Use these terms consistently:
 - **registry**: collection of available definitions
 - **runtime**: headless state, validation, conditions, report state, and submission orchestration
 - **primitive**: built-in Web Component renderer
-- **kit**: high-level mounting, layout, navigation, and lifecycle APIs
+- **view**: headless layout, navigation, snapshots, and presenter composition
+- **kit**: high-level mounting, built-in UI, design attachment, and lifecycle APIs
 - **transport**: boundary that sends submission data to a backend and returns results
 - **design system**: themes, recipes, tokens, density, motion, and host integration
 - **runtime id**: identity used by controllers and internal state
@@ -77,6 +78,7 @@ Use these terms consistently:
   - `mlform/transport`
   - `mlform/primitives`
   - `mlform/design`
+  - `mlform/view`
   - `mlform/kit`
 - Cross-module imports use the target module root. Internal paths remain private to their owning module.
 - Public API changes are deliberate and visible. Never change them silently.
@@ -94,9 +96,10 @@ Typical flow:
 4. Submission snapshots separate display values from backend-facing values.
 5. Transports execute backend requests.
 6. Report results return through explicit mapped targets and report contexts.
-7. Primitives render individual fields and reports.
-8. Kit composes primitives into layouts and manages mounting and navigation.
-9. Design applies themes, recipes, tokens, density, and host integration.
+7. View composes layout, navigation, visibility, and presenter descriptors without mounting DOM.
+8. Primitives render individual fields and reports.
+9. Kit mounts the view with primitives and manages host lifecycle.
+10. Design applies themes, recipes, tokens, density, and host integration.
 
 Complexity should live at explicit boundaries: schema normalization, definitions, registries, transports, and renderer adapters. Runtime behavior should remain deterministic; UI components should consume it instead of reconstructing it.
 
@@ -108,7 +111,8 @@ Complexity should live at explicit boundaries: schema normalization, definitions
 - `src/transport` — transport contracts, request execution, errors, and fanout
 - `src/primitives` — Web Components, descriptors, renderer registries, and primitive requests
 - `src/design` — themes, recipes, token contracts, and design-system attachment
-- `src/kit` — mounting, layouts, navigation, lifecycle, and declarative extension APIs
+- `src/view` — layout, navigation, snapshots, presenter registration, and declarative extensions
+- `src/kit` — built-in mounting, host lifecycle, labels, and design-system integration
 - `test/unit` — focused contract and behavior tests
 - `test/integration` — interactions spanning modules or mounted UI
 - `docs` — shipped user and API documentation

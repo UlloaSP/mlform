@@ -4,7 +4,7 @@
 export { normalizeSchemaId } from "./ids";
 export { baseFieldConfigSchema, baseReportConfigSchema, mappedToSchema } from "./config-schema";
 export * from "./mapped-to";
-export * from "./normalize";
+export { normalizeSchema, SchemaNormalizationError } from "./normalize";
 export * from "./report-context";
 export * from "./submission-path";
 export * from "./validation";

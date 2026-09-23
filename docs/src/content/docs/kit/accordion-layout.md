@@ -1,9 +1,9 @@
 ---
 title: Disclosure Layout
-description: Use the official built-in disclosure layout or the same disclosure config through the headless kit API.
+description: Mount disclosure sections from the view layout contract.
 ---
 
-`mountForm()` is the official built-in disclosure layout built on top of the headless kit API.
+`mountForm()` renders disclosure sections from the layout contract in `mlform/view`.
 
 ```ts
 import { mountForm } from "mlform/kit";
@@ -14,12 +14,14 @@ mountForm(container, {
   schema,
   layout: {
     kind: "stacked",
-    sections: [
+    children: [
       {
+        kind: "section",
         title: "Inputs",
         children: [{ kind: "field", field: "prompt" }],
       },
       {
+        kind: "section",
         title: "Results",
         children: [{ kind: "report", report: "prediction" }],
       },
@@ -32,6 +34,6 @@ mountForm(container, {
 
 - renders disclosure sections from top to bottom
 - multiple sections can remain open
-- first section opens by default unless config overrides it
+- every section opens by default unless `defaultOpen: false` is set
 - submit stays available in a persistent footer
 - opening or closing sections never validates

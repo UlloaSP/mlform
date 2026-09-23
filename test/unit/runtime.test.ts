@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createBuiltinTestKit } from "../helpers/builtin-test-kit";
-import { defineFieldKind, defineReportKind } from "@/kit";
+import { defineFieldKind, defineReportKind } from "@/view";
 import { type FieldPresenter, type ReportPresenter } from "@/primitives";
 import { resolveMappedReportPayload } from "@/schema";
 import type { FieldConfig, ReportConfig } from "@/schema";
@@ -2755,9 +2755,11 @@ describe("runtime", () => {
 
   it("aborts in-flight submissions and routes the error through hooks", async () => {
     const onSubmitError = vi.fn();
+    const transportStarted = Promise.withResolvers<void>();
     const submit = vi.fn().mockImplementation(
       ({ signal }: { signal?: AbortSignal }) =>
-        new Promise((resolve, reject) => {
+        new Promise((_resolve, reject) => {
+          transportStarted.resolve();
           signal?.addEventListener(
             "abort",
             () => {
@@ -2765,12 +2767,6 @@ describe("runtime", () => {
             },
             { once: true },
           );
-
-          setTimeout(() => {
-            resolve({
-              reports: [readyReport("classifier", { prediction: "late" })],
-            });
-          }, 50);
         }),
     );
 
@@ -2795,6 +2791,7 @@ describe("runtime", () => {
     form.setValues({ name: "Alice" });
 
     const pendingSubmit = form.submit();
+    await transportStarted.promise;
     form.abortSubmit("user-cancelled");
 
     await expect(pendingSubmit).rejects.toBeInstanceOf(SubmissionAbortedError);

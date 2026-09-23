@@ -9,13 +9,15 @@ export type MediaQueryListWithLegacy = MediaQueryList & {
   removeListener?: (callback: (event: MediaQueryListEvent) => void) => void;
 };
 
-export const createMediaQueries = (): {
+export const createMediaQueries = (
+  ownerWindow: Window | null,
+): {
   scheme: MediaQueryListWithLegacy | null;
   motion: MediaQueryListWithLegacy | null;
   contrast: MediaQueryListWithLegacy | null;
   forcedColors: MediaQueryListWithLegacy | null;
 } => {
-  const hasMQ = typeof window !== "undefined" && typeof window.matchMedia === "function";
+  const hasMQ = ownerWindow && typeof ownerWindow.matchMedia === "function";
   if (!hasMQ) {
     return {
       scheme: null,
@@ -26,16 +28,16 @@ export const createMediaQueries = (): {
   }
 
   return {
-    scheme: window.matchMedia(
+    scheme: ownerWindow.matchMedia(
       designSystemMediaQueries.prefersDarkScheme,
     ) as MediaQueryListWithLegacy,
-    motion: window.matchMedia(
+    motion: ownerWindow.matchMedia(
       designSystemMediaQueries.prefersReducedMotion,
     ) as MediaQueryListWithLegacy,
-    contrast: window.matchMedia(
+    contrast: ownerWindow.matchMedia(
       designSystemMediaQueries.prefersMoreContrast,
     ) as MediaQueryListWithLegacy,
-    forcedColors: window.matchMedia(
+    forcedColors: ownerWindow.matchMedia(
       designSystemMediaQueries.forcedColors,
     ) as MediaQueryListWithLegacy,
   };

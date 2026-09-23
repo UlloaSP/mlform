@@ -5,11 +5,17 @@ import type { PrimitiveFieldController } from "../controller-types";
 
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => {
-    window.setTimeout(resolve, 0);
+    globalThis.setTimeout(resolve, 0);
   });
 
+const isHTMLElement = (element: Element): element is HTMLElement => {
+  const Constructor = (element.ownerDocument.defaultView as (Window & typeof globalThis) | null)
+    ?.HTMLElement;
+  return Boolean(Constructor && element instanceof Constructor);
+};
+
 const isFocusable = (element: Element): element is HTMLElement =>
-  element instanceof HTMLElement &&
+  isHTMLElement(element) &&
   (element.matches("input, select, textarea, button, [tabindex]") ||
     element.getAttribute("role") === "textbox");
 
@@ -19,7 +25,7 @@ const findFocusable = (root: ParentNode): HTMLElement | null => {
       return element;
     }
 
-    if (element instanceof HTMLElement && element.shadowRoot) {
+    if (isHTMLElement(element) && element.shadowRoot) {
       const nested = findFocusable(element.shadowRoot);
       if (nested) {
         return nested;
@@ -42,7 +48,8 @@ export const scrollFieldFrameIntoView = async (frame: HTMLElement | null): Promi
 
   frame.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "nearest" });
   await nextFrame();
-  findFocusable(frame.shadowRoot ?? frame)?.focus();
+  const controlRoot = frame.shadowRoot?.querySelector(".control-slot") ?? frame.shadowRoot ?? frame;
+  findFocusable(controlRoot)?.focus();
   return true;
 };
 

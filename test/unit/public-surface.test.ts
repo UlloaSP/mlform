@@ -4,6 +4,7 @@ import { RegistryError as RuntimeRegistryError } from "@/runtime";
 import { createRegistry, RegistryError as SchemaRegistryError } from "@/schema";
 import * as runtime from "@/runtime";
 import * as kit from "@/kit";
+import * as view from "@/view";
 
 describe("public module surfaces", () => {
   it("uses one RegistryError identity across schema and runtime", () => {
@@ -22,9 +23,11 @@ describe("public module surfaces", () => {
     expect(runtime).not.toHaveProperty("createFormRuntime");
     expect(runtime).not.toHaveProperty("identity");
     expect(runtime).not.toHaveProperty("isPromiseLike");
-    expect(kit).not.toHaveProperty("defineMlformPlugin");
-    expect(kit).not.toHaveProperty("registerDefinedFieldKind");
-    expect(kit).not.toHaveProperty("registerDefinedReportKind");
-    expect(kit).toHaveProperty("defineMLFormPlugin");
+    expect(view).not.toHaveProperty("defineMlformPlugin");
+    expect(view).not.toHaveProperty("registerDefinedFieldKind");
+    expect(view).not.toHaveProperty("registerDefinedReportKind");
+    expect(view).toHaveProperty("defineMLFormPlugin");
+    expect(kit).not.toHaveProperty("createFormView");
+    expect(kit).toHaveProperty("mountForm");
   });
 });

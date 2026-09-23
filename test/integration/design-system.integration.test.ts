@@ -14,6 +14,23 @@ const flush = async (): Promise<void> => {
 };
 
 describe("design integration", () => {
+  it("cleans up when initial attachment throws", () => {
+    const host = document.createElement("div");
+    host.style.setProperty("--mlf-color-accent", "#123456");
+    const failure = new Error("design callback failed");
+
+    expect(() =>
+      attachDesignSystem(host, {
+        onChange: () => {
+          throw failure;
+        },
+      }),
+    ).toThrow(failure);
+
+    expect(host.getAttribute("data-mlf-theme-id")).toBeNull();
+    expect(host.style.getPropertyValue("--mlf-color-accent")).toBe("#123456");
+  });
+
   it("applies tokens, supports patch vs replace semantics, and restores host state on disconnect", async () => {
     const form = createForm({
       schema: {

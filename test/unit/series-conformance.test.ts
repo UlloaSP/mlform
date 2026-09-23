@@ -100,6 +100,11 @@ describe("series conformance", () => {
       path: ["fields", 0, "field1", "step"],
     },
     {
+      field1: { kind: "date", label: "Date", min: "invalid" },
+      message: /valid date/iu,
+      path: ["fields", 0, "field1", "min"],
+    },
+    {
       field1: { kind: "text", label: "Text", minLength: 4, maxLength: 2 },
       message: /minimum length cannot exceed maximum length/iu,
       path: ["fields", 0, "field1", "minLength"],

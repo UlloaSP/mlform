@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { array, never, strictObject, toJSONSchema, xor, type ZodType } from "zod";
-import { normalizeSchema, SchemaNormalizationError } from "./normalize";
+import { normalizeSchema, SchemaNormalizationError, unsupportedSchemaKeys } from "./normalize";
 import { composeFieldConfigSchema, composeReportConfigSchema } from "./config-schema";
 import type { FieldConfig } from "./types/field";
 import type { FormSchema, NormalizedFormSchema } from "./types/form";
@@ -169,15 +169,12 @@ export const validateSchema = (schema: unknown, registry: Registry): SchemaValid
   }
 
   const issues: SchemaValidationIssue[] = [];
-  const allowed = new Set(["fields", "reports"]);
-  for (const key of Object.keys(schema)) {
-    if (!allowed.has(key)) {
-      issues.push({
-        path: [key],
-        message: `Unsupported schema property "${key}".`,
-        code: "invalid-schema",
-      });
-    }
+  for (const key of unsupportedSchemaKeys(schema)) {
+    issues.push({
+      path: [key],
+      message: `Unsupported schema property "${key}".`,
+      code: "invalid-schema",
+    });
   }
 
   validateSection("fields", schema.fields, registry, issues);

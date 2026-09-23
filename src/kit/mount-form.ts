@@ -1,27 +1,42 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { attachDesignSystem, type DesignSystemConfig } from "@/design";
-import { mountPrimitiveForm, resolvePrimitiveText, type PrimitiveRegistry } from "@/primitives";
-import "./layout-root";
-import "./tabs-root";
-import "./wizard-root";
-import { kitErrorMessages, kitTagNames } from "./constants";
+import { attachDesignSystem, type DesignSystemConfig, type ResolvedDesignSystem } from "@/design";
+import { createFormView } from "@/view";
+import { kitErrorMessages } from "./constants";
 import {
   resolveDesignSystemRegistry,
   resolveKitDesignSystem,
   resolveKitLabels,
   resolvePrimitiveRegistry,
 } from "./defaults";
-import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./types";
-import { createFormView } from "./view";
-import { defaultWizardLabels, resolveWizardText } from "./wizard-constants";
+import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./mount-types";
 import { bindDocumentLifecycle } from "./document-lifecycle";
+import { captureHostContent, restoreHostContent } from "./host-container";
+import { createLayoutHost } from "./layout-host";
+import { mountSinglePageForm } from "./single-page/mount";
 
 const mountedFormRef = Symbol("mlform.kit.mounted");
 
 type KitContainer = HTMLElement & {
-  [mountedFormRef]?: MountedForm;
+  [mountedFormRef]?: { mounted: MountedForm; originalContent: readonly Node[] };
+};
+
+const runCleanup = (steps: readonly (() => void)[]): unknown[] => {
+  const errors: unknown[] = [];
+  for (const step of steps) {
+    try {
+      step();
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  return errors;
+};
+
+const throwCleanupErrors = (errors: readonly unknown[]): void => {
+  if (errors.length === 1) throw errors[0];
+  if (errors.length > 1) throw new AggregateError(errors, "Form cleanup failed.");
 };
 
 const assertDesignSystemSnapshot: (
@@ -37,30 +52,8 @@ const hasLayoutChildren = (options: MountFormOptions): boolean => {
   return Boolean(layout && "children" in layout && layout.children && layout.children.length > 0);
 };
 
-const createView = (options: MountFormOptions) =>
-  createFormView({
-    schema: options.schema,
-    transport: options.transport,
-    registry: options.registry,
-    descriptorRegistry: options.descriptorRegistry,
-    behaviors: options.behaviors,
-    plugins: options.plugins,
-    initialValues: options.initialValues,
-    initialSnapshot: options.initialSnapshot,
-    validators: options.validators,
-    hooks: options.hooks,
-    hookFailurePolicy: options.hookFailurePolicy,
-    inactiveFieldPolicy: options.inactiveFieldPolicy,
-    listenerErrorPolicy: options.listenerErrorPolicy,
-    onListenerError: options.onListenerError,
-    layout: options.layout,
-    reportFetchMode: options.reportFetchMode,
-  });
-
 export const mountForm = (container: HTMLElement, options: MountFormOptions): MountedForm => {
   const hostContainer = container as KitContainer;
-  hostContainer[mountedFormRef]?.unmount();
-
   const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
   const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const labels = resolveKitLabels(options.labels);
@@ -72,55 +65,74 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
       options.layout.kind === "stacked" ||
       options.layout.kind === "split") &&
       !hasLayoutChildren(options));
-  const view = createView(options);
+  const previousMount = hostContainer[mountedFormRef];
+  const originalContent = captureHostContent(
+    container,
+    options.containerStrategy,
+    previousMount?.mounted.host,
+    previousMount?.originalContent,
+  );
+  const view = createFormView(options);
+  const stagingContainer = container.ownerDocument.createElement("div");
   let unmountHost = (): void => {};
-  const host = shouldUsePrimitive
-    ? (() => {
-        const mountedPrimitive = mountPrimitiveForm(container, view.form, {
-          registry: primitiveRegistry,
-          descriptorRegistry: view.descriptorRegistry,
-          layout: options.layout?.kind === "split" ? "split" : "stacked",
-          containerStrategy: options.containerStrategy,
-          formLabel: labels.form,
-          reportsLabel: labels.reports,
-          submitLabel: labels.submit,
-          validatingLabel: labels.validating,
-          submittingLabel: labels.submitting,
-          reportPane: options.reportPane,
-          text: options.primitiveText,
-          reportTransport: options.reportTransport,
-          reportFetchMode: options.reportFetchMode,
-          submitHandler:
-            options.reportFetchMode && options.reportFetchMode !== "lazy"
-              ? async () => {
-                  const pipelineResult = await view.submitPipeline();
-                  return {
-                    result: pipelineResult.submitResult,
-                    pipelineResult,
-                  };
-                }
-              : undefined,
-        });
-        unmountHost = () => mountedPrimitive.unmount();
-        return mountedPrimitive.host;
-      })()
-    : (() => {
-        const layoutHost = mountLayoutHost(container, options, primitiveRegistry, labels, view);
-        unmountHost = () => layoutHost.remove();
-        return layoutHost;
-      })();
+  let host!: HTMLElement;
+  let designSystem: ReturnType<typeof attachDesignSystem> | undefined;
+  let disconnectHostLifecycle = (): void => {};
+  let pendingDesignChange: ResolvedDesignSystem | undefined;
+  let committed = false;
+  try {
+    if (shouldUsePrimitive) {
+      const mountedPrimitive = mountSinglePageForm(
+        stagingContainer,
+        view,
+        options,
+        primitiveRegistry,
+        labels,
+      );
+      host = mountedPrimitive.host;
+      unmountHost = () => mountedPrimitive.unmount();
+    } else {
+      host = createLayoutHost({
+        ownerDocument: container.ownerDocument,
+        options,
+        registry: primitiveRegistry,
+        labels,
+        view,
+      });
+      stagingContainer.append(host);
+      unmountHost = () => host.remove();
+    }
 
-  const designSystem = attachDesignSystem(host, {
-    config: initialDesignSystem,
-    registry: designSystemRegistry,
-    onChange: options.onDesignSystemChange,
-  });
+    container.append(host);
+    designSystem = attachDesignSystem(host, {
+      config: initialDesignSystem,
+      registry: designSystemRegistry,
+      onChange: options.onDesignSystemChange
+        ? (resolved) => {
+            if (committed) options.onDesignSystemChange?.(resolved);
+            else pendingDesignChange = resolved;
+          }
+        : undefined,
+    });
+    if (options.hostLifecycle === "document") {
+      disconnectHostLifecycle = bindDocumentLifecycle(view.form, container.ownerDocument);
+    }
+    if (pendingDesignChange) options.onDesignSystemChange?.(pendingDesignChange);
+  } catch (error) {
+    const cleanupErrors = runCleanup([
+      disconnectHostLifecycle,
+      () => designSystem?.disconnect(),
+      unmountHost,
+      () => host?.remove(),
+      () => view.dispose(),
+    ]);
+    if (cleanupErrors.length > 0) {
+      throw new AggregateError([error, ...cleanupErrors], "Form setup and cleanup failed.");
+    }
+    throw error;
+  }
 
   let unmounted = false;
-  const disconnectHostLifecycle =
-    options.hostLifecycle === "document"
-      ? bindDocumentLifecycle(view.form, container.ownerDocument)
-      : (): void => {};
 
   const mounted: MountedForm = Object.freeze({
     form: view.form,
@@ -130,6 +142,9 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     primitiveRegistry,
     designSystemRegistry,
     designSystem,
+    submit(options?: Parameters<MountedForm["submit"]>[0]) {
+      return view.submit(options);
+    },
     updateDesignSystem(config: DesignSystemConfig) {
       designSystem.update(config);
     },
@@ -153,61 +168,35 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
 
       unmounted = true;
 
-      if (hostContainer[mountedFormRef] === mounted) {
+      if (hostContainer[mountedFormRef]?.mounted === mounted) {
         delete hostContainer[mountedFormRef];
       }
 
-      disconnectHostLifecycle();
-      view.dispose();
-      designSystem.disconnect();
-      unmountHost();
+      throwCleanupErrors(
+        runCleanup([
+          disconnectHostLifecycle,
+          () => view.dispose(),
+          () => designSystem.disconnect(),
+          unmountHost,
+          () => restoreHostContent(container, originalContent),
+        ]),
+      );
     },
   });
 
-  hostContainer[mountedFormRef] = mounted;
+  try {
+    previousMount?.mounted.unmount();
+    container.replaceChildren(host);
+  } catch (error) {
+    mounted.unmount();
+    throw error;
+  }
+  hostContainer[mountedFormRef] = { mounted, originalContent };
+  committed = true;
 
   return mounted;
 };
 
 export const unmountForm = (mounted: MountedForm): void => {
   mounted.unmount();
-};
-
-const mountLayoutHost = (
-  container: HTMLElement,
-  options: MountFormOptions,
-  primitiveRegistry: PrimitiveRegistry,
-  labels: ReturnType<typeof resolveKitLabels>,
-  view: ReturnType<typeof createView>,
-): HTMLElement => {
-  const snapshot = view.getSnapshot();
-  const tagName =
-    snapshot.layout.kind === "wizard"
-      ? kitTagNames.wizard
-      : snapshot.layout.kind === "tabs"
-        ? kitTagNames.tabs
-        : kitTagNames.disclosure;
-  const host = document.createElement(tagName) as unknown as HTMLElement & Record<string, unknown>;
-  host.view = view;
-  host.registry = primitiveRegistry;
-  host.primitiveText = resolvePrimitiveText(options.primitiveText);
-
-  if (snapshot.layout.kind === "wizard") {
-    const wizardLabels = { ...defaultWizardLabels, ...options.labels };
-    host.labels = wizardLabels;
-    host.text = resolveWizardText({
-      prevLabel: wizardLabels.prev,
-      nextLabel: wizardLabels.next,
-      submitLabel: wizardLabels.submit,
-      validatingLabel: wizardLabels.validating,
-      submittingLabel: wizardLabels.submitting,
-    });
-  } else {
-    host.submitLabel = labels.submit;
-    host.validatingLabel = labels.validating;
-    host.submittingLabel = labels.submitting;
-  }
-
-  container.replaceChildren(host);
-  return host;
 };

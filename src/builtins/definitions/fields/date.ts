@@ -35,6 +35,12 @@ export const dateFieldDefinition: BuiltinFieldDefinition<DateFieldConfig, Date |
   validateConfig(config, context) {
     const minDate = toDate(config.min);
     const maxDate = toDate(config.max);
+    if (config.min !== undefined && !minDate) {
+      context.fail("Date minimum must be a valid date.", ["min"]);
+    }
+    if (config.max !== undefined && !maxDate) {
+      context.fail("Date maximum must be a valid date.", ["max"]);
+    }
     if (minDate && maxDate && minDate.getTime() > maxDate.getTime()) {
       context.fail(builtinValidationMessages.invalidDateRange, ["min"]);
     }

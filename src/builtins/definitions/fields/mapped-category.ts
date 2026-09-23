@@ -60,17 +60,14 @@ export const mappedCategoryFieldDefinition: BuiltinFieldDefinition<
 
     return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
   },
-  validateRuntime(config, context) {
-    for (const option of config.options) {
-      for (const targetId of Object.keys(option.mapping)) {
-        const target = context.getField(targetId) ?? context.getField(normalizeSchemaId(targetId));
-        if (!target) {
-          throw new Error(
-            `mapped-category "${config.id}": mapping references unknown field "${targetId}".`,
-          );
-        }
-      }
-    }
+  getFieldReferences(config) {
+    return config.options.flatMap((option, optionIndex) =>
+      Object.keys(option.mapping).map((id) => ({
+        id,
+        path: ["options", optionIndex, "mapping", id],
+        unknownFieldMessage: `mapped-category "${config.id}": mapping references unknown field "${id}".`,
+      })),
+    );
   },
   onValueChanged(value, config, context) {
     const selected = config.options.find((option) => option.value === value);

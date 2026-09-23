@@ -2,215 +2,187 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "MLForm — Current Architecture",
-    "locale": "en",
+    "title": "Arquitectura actual de MLForm",
     "output": "mlform-system.architecture.html",
     "quality_profile": "showcase",
-    "viewBox": [1390, 758],
+    "viewBox": [1390, 820],
     "views": [
       {
-        "id": "application-path",
-        "label": "Application path",
-        "focus": ["consumer", "kit", "runtime", "transport", "backend"],
-        "note": "The integrated API composes rendering, runtime state and backend transport."
+        "id": "ruta-integrada",
+        "label": "Ruta integrada",
+        "focus": ["aplicacion", "kit", "vista", "runtime", "transporte", "backend"],
+        "note": "El kit monta la vista; el runtime prepara la solicitud que ejecuta el transporte."
       },
       {
-        "id": "extension-path",
-        "label": "Extension path",
-        "focus": ["domain_plugins", "kit", "builtins", "primitives", "schema"],
-        "note": "MlformPlugin coordinates custom field, report and behavior registration."
-      },
-      {
-        "id": "headless-path",
-        "label": "Headless path",
-        "focus": ["consumer", "runtime", "transport", "schema"],
-        "note": "Consumers can use runtime directly when they own rendering and composition."
+        "id": "contratos-render",
+        "label": "Contratos y renderizado",
+        "focus": ["esquema", "definiciones", "vista", "primitivos", "diseno"],
+        "note": "El esquema define el contrato; las definiciones y los primitivos aportan comportamiento y UI."
       }
     ]
   },
   "components": [
     {
-      "id": "consumer",
+      "id": "aplicacion",
       "type": "external",
-      "label": "Consumer application",
-      "sublabel": "Integrated UI or headless",
-      "pos": [20, 305],
-      "size": [180, 74]
+      "label": "Aplicación",
+      "sublabel": "UI integrada o uso headless",
+      "pos": [20, 330],
+      "size": [160, 76]
     },
     {
       "id": "kit",
       "type": "frontend",
       "label": "mlform = mlform/kit",
-      "sublabel": "Public facade · composition root",
-      "tag": "exact export alias",
-      "pos": [280, 302],
-      "size": [195, 80]
+      "sublabel": "Montaje y ciclo de vida",
+      "pos": [240, 330],
+      "size": [180, 76]
+    },
+    {
+      "id": "vista",
+      "type": "frontend",
+      "label": "mlform/view",
+      "sublabel": "Layout y descriptores",
+      "pos": [480, 330],
+      "size": [170, 76]
     },
     {
       "id": "runtime",
       "type": "backend",
       "label": "mlform/runtime",
-      "sublabel": "State · validation · pipeline",
-      "tag": "headless core",
-      "pos": [560, 302],
-      "size": [195, 80]
+      "sublabel": "Estado y validación",
+      "pos": [710, 330],
+      "size": [170, 76]
     },
     {
-      "id": "transport",
+      "id": "transporte",
       "type": "backend",
       "label": "mlform/transport",
-      "sublabel": "Adapters · fanout · errors",
-      "pos": [840, 305],
-      "size": [190, 74]
+      "sublabel": "Solicitudes al backend",
+      "pos": [940, 330],
+      "size": [180, 76]
     },
     {
       "id": "backend",
       "type": "external",
-      "label": "Model backend",
-      "sublabel": "Prediction · scoring · reports",
-      "pos": [1115, 305],
-      "size": [190, 74]
+      "label": "Backend ML",
+      "sublabel": "Predicciones e informes",
+      "pos": [1180, 330],
+      "size": [160, 76]
     },
     {
-      "id": "domain_plugins",
-      "type": "external",
-      "label": "Domain plugins",
-      "sublabel": "Fields · reports · behaviors",
-      "pos": [20, 555],
-      "size": [180, 74]
-    },
-    {
-      "id": "builtins",
-      "type": "backend",
-      "label": "mlform/builtins",
-      "sublabel": "Included definitions",
-      "pos": [280, 555],
-      "size": [195, 74]
-    },
-    {
-      "id": "schema",
-      "type": "backend",
-      "label": "mlform/schema",
-      "sublabel": "Canonical contracts · registry",
-      "pos": [560, 555],
-      "size": [195, 74]
-    },
-    {
-      "id": "design",
+      "id": "diseno",
       "type": "frontend",
       "label": "mlform/design",
-      "sublabel": "Themes · recipes · tokens",
-      "pos": [280, 55],
-      "size": [195, 74]
+      "sublabel": "Temas, recetas y tokens",
+      "pos": [240, 85],
+      "size": [180, 76]
     },
     {
-      "id": "primitives",
+      "id": "primitivos",
       "type": "frontend",
       "label": "mlform/primitives",
-      "sublabel": "Renderers · Web Components",
-      "pos": [560, 55],
-      "size": [195, 74]
+      "sublabel": "Web Components",
+      "pos": [480, 85],
+      "size": [170, 76]
+    },
+    {
+      "id": "definiciones",
+      "type": "backend",
+      "label": "mlform/builtins",
+      "sublabel": "Definiciones incluidas",
+      "pos": [480, 575],
+      "size": [170, 76]
+    },
+    {
+      "id": "esquema",
+      "type": "backend",
+      "label": "mlform/schema",
+      "sublabel": "Contrato y registros",
+      "pos": [710, 575],
+      "size": [170, 76]
     }
   ],
   "boundaries": [
     {
       "kind": "region",
-      "label": "MLForm package — enforced dependency DAG",
-      "wraps": ["kit", "runtime", "transport", "builtins", "schema", "design", "primitives"],
-      "pad": 20
+      "label": "Paquete MLForm · ocho superficies públicas",
+      "wraps": [
+        "kit",
+        "vista",
+        "runtime",
+        "transporte",
+        "diseno",
+        "primitivos",
+        "definiciones",
+        "esquema"
+      ],
+      "pad": 18
     }
   ],
   "connections": [
+    { "id": "app-kit", "from": "aplicacion", "to": "kit", "label": "monta", "variant": "emphasis" },
+    { "id": "kit-vista", "from": "kit", "to": "vista", "label": "presenta", "variant": "emphasis" },
     {
-      "id": "consumer_to_kit",
-      "from": "consumer",
-      "to": "kit",
-      "label": "integrated API",
-      "variant": "emphasis"
-    },
-    {
-      "id": "kit_to_runtime",
-      "from": "kit",
+      "id": "vista-runtime",
+      "from": "vista",
       "to": "runtime",
-      "label": "creates controllers",
-      "labelAt": [518, 396],
+      "label": "controla",
       "variant": "emphasis"
     },
     {
-      "id": "runtime_to_transport",
+      "id": "runtime-transporte",
       "from": "runtime",
-      "to": "transport",
-      "label": "Transport port",
+      "to": "transporte",
+      "label": "envía",
       "variant": "emphasis"
     },
     {
-      "id": "transport_to_backend",
-      "from": "transport",
+      "id": "transporte-backend",
+      "from": "transporte",
       "to": "backend",
-      "label": "backend I/O",
+      "label": "solicita",
       "variant": "emphasis"
     },
+    { "id": "kit-diseno", "from": "kit", "to": "diseno", "label": "adjunta" },
+    { "id": "vista-primitivos", "from": "vista", "to": "primitivos", "label": "descriptores" },
     {
-      "id": "plugins_to_kit",
-      "from": "domain_plugins",
-      "to": "kit",
-      "label": "plugins[]",
-      "variant": "dashed"
+      "id": "vista-definiciones",
+      "from": "vista",
+      "to": "definiciones",
+      "label": "registra",
+      "labelAt": [565, 420]
     },
     {
-      "id": "kit_to_builtins",
-      "from": "kit",
-      "to": "builtins",
-      "label": "headless definitions",
-      "labelAt": [378, 396]
-    },
-    { "id": "kit_to_primitives", "from": "kit", "to": "primitives", "label": "mounts renderers" },
-    { "id": "kit_to_design", "from": "kit", "to": "design", "label": "attaches design system" },
-    {
-      "id": "runtime_to_schema",
+      "id": "runtime-esquema",
       "from": "runtime",
-      "to": "schema",
-      "label": "normalized contracts",
-      "labelAt": [658, 396]
+      "to": "esquema",
+      "label": "normaliza",
+      "labelAt": [795, 420]
     },
-    {
-      "id": "transport_to_schema",
-      "from": "transport",
-      "to": "schema",
-      "label": "submission types"
-    },
-    {
-      "id": "builtins_to_schema",
-      "from": "builtins",
-      "to": "schema",
-      "label": "registers definitions",
-      "labelAt": [518, 647]
-    }
+    { "id": "definiciones-esquema", "from": "definiciones", "to": "esquema", "label": "declara" }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Public surfaces",
+      "title": "Entradas públicas",
       "items": [
-        "Root facade plus seven stable layer roots",
-        "mlform and mlform/kit expose the same API",
-        "runtime remains independently usable"
+        "mlform y mlform/kit comparten archivos",
+        "La aplicación puede usar view o runtime por separado"
       ]
     },
     {
       "dot": "emerald",
-      "title": "Enforced seams",
+      "title": "Propiedad del contrato",
       "items": [
-        "MlformPlugin coordinates extensions",
-        "builtins stays headless; kit owns presenters",
-        "TypeScript tests enforce the dependency DAG",
-        "Packed consumers verify the facade and all seven layer roots"
+        "schema valida campos, informes y destinos mappedTo",
+        "runtime conserva estado y orquesta el envío"
       ]
     },
     {
-      "dot": "amber",
-      "title": "Compatibility horizon",
-      "items": ["Plugin versioning and compatibility policy are not formalized"]
+      "dot": "violet",
+      "title": "Montaje",
+      "items": ["view compone layout sin DOM", "kit monta primitivos y adjunta design"]
     }
   ]
 }

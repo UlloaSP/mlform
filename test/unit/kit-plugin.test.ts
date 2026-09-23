@@ -3,13 +3,8 @@
 
 import * as z from "zod";
 import { describe, expect, it, vi } from "vite-plus/test";
-import {
-  createFormView,
-  defineFieldKind,
-  defineMLFormPlugin,
-  defineReportKind,
-  mountForm,
-} from "@/kit";
+import { createFormView, defineFieldKind, defineMLFormPlugin, defineReportKind } from "@/view";
+import { mountForm } from "@/kit";
 
 const scoreField = defineFieldKind({
   kind: "score",

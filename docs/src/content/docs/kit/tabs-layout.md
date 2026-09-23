@@ -1,9 +1,9 @@
 ---
 title: Tabs Layout
-description: Use the official built-in tabs layout or the same tabs config through the headless kit API.
+description: Mount tabs from the view layout contract.
 ---
 
-`mountForm()` is the official built-in tabs layout built on top of the headless kit API.
+`mountForm()` renders tabs from the layout contract in `mlform/view`.
 
 ```ts
 import { mountForm } from "mlform/kit";

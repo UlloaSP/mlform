@@ -55,11 +55,12 @@ export const resolveInheritedScheme = (
     current = current.parentElement;
   }
 
-  if (typeof window === "undefined") {
+  const ownerWindow = host.ownerDocument.defaultView;
+  if (!ownerWindow) {
     return { scheme: null, source: null };
   }
 
-  const computedColorScheme = window.getComputedStyle(host).colorScheme;
+  const computedColorScheme = ownerWindow.getComputedStyle(host).colorScheme;
   if (computedColorScheme.includes("dark")) {
     return { scheme: "dark", source: "host-style" };
   }

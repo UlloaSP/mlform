@@ -192,6 +192,12 @@ export interface NestedFieldReference {
   unknownKindMessage?: string;
 }
 
+export interface FieldReference {
+  id: string;
+  path: readonly (string | number)[];
+  unknownFieldMessage?: string;
+}
+
 export interface FieldConfigValidationContext {
   fail(
     message: string,
@@ -248,6 +254,7 @@ export interface FieldDefinition<TConfig extends FieldConfig = FieldConfig, TVal
     context: FieldSubmissionContext,
   ) => readonly FieldSubmissionEntry[];
   getNestedFieldReferences?: (config: TConfig) => readonly NestedFieldReference[];
+  getFieldReferences?: (config: NormalizedFieldConfig<TConfig>) => readonly FieldReference[];
   validateConfig?: (config: TConfig, context: FieldConfigValidationContext) => void;
 }
 

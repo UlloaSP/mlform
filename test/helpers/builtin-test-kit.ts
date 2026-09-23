@@ -1,6 +1,6 @@
 import { createBuiltinMlRegistry } from "@/builtins";
-import { createBuiltinDescriptorRegistry } from "@/kit";
-import type { DefinedFieldKind, DefinedReportKind } from "@/kit";
+import { createBuiltinDescriptorRegistry } from "@/view";
+import type { DefinedFieldKind, DefinedReportKind } from "@/view";
 import type { PrimitiveDescriptorRegistry } from "@/primitives";
 import type { FieldConfig, Registry, ReportConfig } from "@/schema";
 

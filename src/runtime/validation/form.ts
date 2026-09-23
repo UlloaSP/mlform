@@ -180,6 +180,10 @@ export const createFormValidator = ({
           submitCount: getSubmitCount(),
         });
 
+        if (store.getState().lifecycleVersion !== lifecycleVersion) {
+          return createValidationResult(store);
+        }
+
         await Promise.all(fields.map((field) => field.validate(validationVersion)));
 
         if (store.getState().lifecycleVersion !== lifecycleVersion) {

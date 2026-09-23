@@ -1,5 +1,5 @@
 ---
-title: Custom Wizard From Headless Kit
+title: Custom Wizard With View
 description: Build your own wizard UI while keeping MLForm state, validation, and submission logic.
 ---
 
@@ -10,6 +10,8 @@ Use this pattern when:
 - steps need app-specific chrome
 
 ```ts
+import { createFormView } from "mlform/view";
+
 const view = createFormView({
   transport,
   schema,

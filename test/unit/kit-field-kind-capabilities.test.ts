@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { describe, expect, it, vi } from "vitest";
-import { defineFieldKind } from "@/kit";
+import { defineFieldKind } from "@/view";
 import { createForm } from "@/runtime";
 import { createRegistry } from "@/schema";
 

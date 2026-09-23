@@ -42,6 +42,9 @@ Shared field options also include:
 - `mappedTo`: Writes the field to a backend feature name, numeric position, or backend-specific map.
 - `valuePath`: Writes the field into a nested `modelValues` path.
 
+Submission paths reject `__proto__`, `prototype`, and `constructor` segments to keep backend
+payload construction confined to its own object.
+
 Incoherent built-in constraints are schema errors, not value errors. Text length ranges and regular
 expressions, numeric ranges, and date ranges are checked during schema normalization so invalid
 forms fail before a runtime is created.

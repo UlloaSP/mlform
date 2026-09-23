@@ -64,8 +64,13 @@ describe("kit disclosure integration", () => {
             title: "Details",
             defaultOpen: false,
             children: [
-              { kind: "field", field: "age" },
-              { kind: "report", report: "risk" },
+              {
+                kind: "group",
+                children: [
+                  { kind: "field", field: "age" },
+                  { kind: "report", report: "risk" },
+                ],
+              },
             ],
           },
         ],

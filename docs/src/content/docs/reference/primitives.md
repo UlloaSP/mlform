@@ -26,6 +26,6 @@ Layouts are `stacked` and `split`.
 
 `mountPrimitiveForm(container, form)` is the low-level renderer and expects an empty container by default. Most applications should use `mountForm` from `mlform/kit`.
 
-Built-in ML kinds require `createBuiltinDescriptorRegistry()` from `mlform/kit` in the mount options. The matching headless definitions come from `createBuiltinMlRegistry()` in `mlform/builtins`.
+Built-in ML kinds require `createBuiltinDescriptorRegistry()` from `mlform/view` in the mount options. The matching headless definitions come from `createBuiltinMlRegistry()` in `mlform/builtins`.
 
 Use `containerStrategy: "replace"` when you need to replace existing children and restore them on `unmount()`.

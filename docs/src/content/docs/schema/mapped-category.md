@@ -83,13 +83,13 @@ MLForm checks mappings in two places:
 
 | Time | Check |
 | --- | --- |
-| form creation | Every mapping target id exists in the schema. |
+| schema normalization | Every mapping target id exists in the schema. |
 | value apply | Each mapped value passes the target field's coercion and validation. |
 
 Example setup failure:
 
 ```txt
-EngineError: mapped-category "color": mapping references unknown field "is_purple".
+SchemaNormalizationError: mapped-category "color": mapping references unknown field "is_purple".
 ```
 
 Example runtime failure:
@@ -114,6 +114,6 @@ After that call, `is_red`, `is_green`, and `is_blue` contain the mapped values.
 - Changing a subordinate field does not update the master.
 - Writes happen in one batch, so subscribers see one state change.
 - `mapped-category` is excluded from submission by default.
-- Target field ids are validated at form creation.
+- Target field ids are validated during schema normalization.
 - Target values are validated at runtime.
 - Avoid mapping one `mapped-category` into another.

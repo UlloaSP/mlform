@@ -11,10 +11,16 @@ Typical pattern:
 4. unsubscribe on unmount
 
 ```ts
+import { createFormView } from "mlform/view";
+
 useEffect(() => {
   const view = createFormView({ transport, schema, layout });
   setSnapshot(view.getSnapshot());
-  return view.subscribe(setSnapshot);
+  const unsubscribe = view.subscribe(setSnapshot);
+  return () => {
+    unsubscribe();
+    view.dispose();
+  };
 }, []);
 ```
 

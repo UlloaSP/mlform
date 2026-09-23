@@ -3,7 +3,8 @@
 
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
-import { defineFieldKind, defineMLFormPlugin, defineReportKind, mountForm } from "mlform/kit";
+import { mountForm } from "@/kit";
+import { defineFieldKind, defineMLFormPlugin, defineReportKind } from "@/view";
 import {
   baseFieldConfigSchema,
   baseReportConfigSchema,

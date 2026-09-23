@@ -9,6 +9,7 @@ description: The handle returned by mountForm.
 | ------------------------------- | ---------------------- | ----------------------------------------------------- |
 | `form`                          | `FormController`       | Read values, validate, submit, reset, or subscribe.   |
 | `host`                          | `HTMLElement`          | Mounted primitive host element.                       |
+| `submit(options?)`              | `Promise<SubmitResult>` | Submit using the configured report fetch policy.      |
 | `engineRegistry`                | `Registry`             | Field and report definitions used by this instance.   |
 | `primitiveRegistry`             | `PrimitiveRegistry`    | Renderer mapping used by this instance.               |
 | `designSystemRegistry`          | `DesignSystemRegistry` | Theme and recipe registry.                            |
@@ -35,7 +36,7 @@ mounted.form.subscribe((state) => {
 window.addEventListener("beforeunload", () => mounted.unmount());
 ```
 
-Calling `mountForm` again on the same container unmounts the previous MLForm instance before mounting the next one.
+Calling `mountForm` again on the same container keeps the previous instance until the new host is ready. A setup failure leaves the previous instance mounted.
 
 Use `hostLifecycle: "document"` to connect the mounted form to document visibility and page
 hide/show events. This mode suspends pending work when the page is hidden and resumes when it is

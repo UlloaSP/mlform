@@ -75,7 +75,8 @@ export class DesignSystemController {
     this.#hydrateOnConnect = hydrate ?? false;
     this.#originalColorScheme = host.style.colorScheme || null;
 
-    const mediaQueries = createMediaQueries();
+    const ownerWindow = host.ownerDocument.defaultView;
+    const mediaQueries = createMediaQueries(ownerWindow);
     this.#schemeMediaQuery = mediaQueries.scheme;
     this.#motionMediaQuery = mediaQueries.motion;
     this.#contrastMediaQuery = mediaQueries.contrast;
@@ -86,8 +87,8 @@ export class DesignSystemController {
     this.#contrastMediaListener = () => this.refresh();
     this.#forcedColorsMediaListener = () => this.refresh();
 
-    this.#mutationObserver =
-      typeof MutationObserver !== "undefined" ? new MutationObserver(() => this.refresh()) : null;
+    const Observer = (ownerWindow as (Window & typeof globalThis) | null)?.MutationObserver;
+    this.#mutationObserver = Observer ? new Observer(() => this.refresh()) : null;
 
     this.#unsubscribeRegistry = this.#registry.onChange(() => {
       this.#signature = "";

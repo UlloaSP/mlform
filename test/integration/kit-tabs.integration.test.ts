@@ -29,6 +29,51 @@ const getFieldControlHost = (host: HTMLElement, index: number): HTMLElement => {
 };
 
 describe("kit tabs integration", () => {
+  it("uses roving tab focus and configured navigation labels", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, {
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: {
+        fields: [
+          { id: "first", kind: "text", label: "First" },
+          { id: "second", kind: "text", label: "Second" },
+        ],
+      },
+      layout: {
+        kind: "tabs",
+        tabs: [
+          { title: "One", children: [{ kind: "field", field: "first" }] },
+          { title: "Two", children: [{ kind: "field", field: "second" }] },
+        ],
+      },
+      labels: { prev: "Anterior", next: "Siguiente", tabs: "Secciones" },
+    });
+
+    await vi.waitFor(() =>
+      expect(getShadow(mounted.host).querySelectorAll('[role="tab"]')).toHaveLength(2),
+    );
+    const tabs = getShadow(mounted.host).querySelectorAll<HTMLButtonElement>('[role="tab"]');
+    for (const tab of tabs) {
+      const panelId = tab.getAttribute("aria-controls");
+      expect(panelId).toBeTruthy();
+      expect(getShadow(mounted.host).getElementById(panelId!)).not.toBeNull();
+    }
+    expect(tabs[0]?.tabIndex).toBe(0);
+    expect(tabs[1]?.tabIndex).toBe(-1);
+    expect(
+      getShadow(mounted.host).querySelector('[role="tablist"]')?.getAttribute("aria-label"),
+    ).toBe("Secciones");
+    expect(getShadow(mounted.host).textContent).toContain("Siguiente");
+
+    tabs[0]?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await vi.waitFor(() => expect(tabs[1]?.getAttribute("aria-selected")).toBe("true"));
+    expect(tabs[1]?.tabIndex).toBe(0);
+    expect(getShadow(mounted.host).activeElement).toBe(tabs[1]);
+    mounted.unmount();
+    container.remove();
+  });
+
   it("mounts tabs, switches active content, submits, and renders reports", async () => {
     const submit = vi.fn().mockResolvedValue({
       reports: [

@@ -160,13 +160,14 @@ export const createReportController = ({
 
       setReportState(store, readonlyConfig.id, loadingState);
 
-      const transport = definition.fetch({
-        config: readonlyConfig,
-        reportId: readonlyConfig.id,
-      });
-
       const outcome = await fetchRunner.run(
-        (signal) => transport.submit({ ...request, signal }),
+        (signal) => {
+          const transport = definition.fetch!({
+            config: readonlyConfig,
+            reportId: readonlyConfig.id,
+          });
+          return transport.submit({ ...request, signal });
+        },
         [request.signal],
       );
 

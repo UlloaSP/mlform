@@ -59,6 +59,10 @@
       "types": "./dist/types/kit/index.d.ts",
       "import": "./dist/mlform/kit.mjs"
     },
+    "./view": {
+      "types": "./dist/types/view/index.d.ts",
+      "import": "./dist/mlform/view.mjs"
+    },
     "./runtime": {
       "types": "./dist/types/runtime/index.d.ts",
       "import": "./dist/mlform/runtime.mjs"

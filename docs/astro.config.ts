@@ -76,16 +76,22 @@ const sidebar = [
     ],
   },
   {
+    label: "View",
+    collapsed: true,
+    items: [
+      { label: "Overview", slug: "view/overview" },
+      { label: "Layout Overview", slug: "view/layout-overview" },
+      { label: "Layout Schema", slug: "view/layout-schema" },
+      { label: "createFormView", slug: "view/create-form-view" },
+      { label: "Custom Layouts", slug: "view/custom-layouts" },
+      { label: "Layout Recipes", slug: "view/layout-recipes" },
+      { label: "Layout Errors", slug: "view/layout-errors" },
+    ],
+  },
+  {
     label: "Kit",
     collapsed: true,
     items: [
-      { label: "Headless Kit", slug: "kit/headless-kit" },
-      { label: "Layout Overview", slug: "kit/layout-overview" },
-      { label: "Layout Schema", slug: "kit/layout-schema" },
-      { label: "createFormView", slug: "kit/create-form-view" },
-      { label: "Custom Layouts", slug: "kit/custom-layouts" },
-      { label: "Layout Recipes", slug: "kit/layout-recipes" },
-      { label: "Layout Errors", slug: "kit/layout-errors" },
       { label: "mountForm", slug: "kit/mount-form" },
       { label: "Wizard Layout", slug: "kit/wizard-layout" },
       { label: "Tabs Layout", slug: "kit/tabs-layout" },
@@ -163,6 +169,7 @@ const sidebar = [
     collapsed: true,
     items: [
       { label: "Package Exports", slug: "reference/package-exports" },
+      { label: "View", slug: "reference/view" },
       { label: "Kit", slug: "reference/kit" },
       { label: "Engine", slug: "reference/engine" },
       { label: "Primitives", slug: "reference/primitives" },

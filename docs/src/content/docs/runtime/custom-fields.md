@@ -7,7 +7,8 @@ Use `defineFieldKind` for the normal extension path. It lets you define parsing,
 
 ```ts
 import { z } from "zod";
-import { defineFieldKind, defineMLFormPlugin, mountForm } from "mlform/kit";
+import { mountForm } from "mlform/kit";
+import { defineFieldKind, defineMLFormPlugin } from "mlform/view";
 import { baseFieldConfigSchema } from "mlform/schema";
 
 const scoreField = defineFieldKind({
@@ -64,11 +65,15 @@ equal value. The runtime may normalize values more than once while it stabilizes
 state. It fails early if a definition keeps changing its value during that process.
 
 The `definition` option exposes the advanced definition hooks without leaving the normal kit
-extension path: `validateConfig`, `getNestedFieldReferences`, `validateRuntime`, `onValueChanged`,
+extension path: `validateConfig`, `getNestedFieldReferences`, `getFieldReferences`, `validateRuntime`, `onValueChanged`,
 `getMappedTargets`, and `getSubmissionEntries`. The field kind, schema, value normalization, and
 declarative validators remain owned by `defineFieldKind` and cannot be overridden there. A field
 that implements `getSubmissionEntries` must declare every possible emitted target through
 `getMappedTargets`; emitting an undeclared target fails submission.
+
+Use `getFieldReferences` when a field's configuration names other fields. Return each referenced
+id and its path within the field config; schema normalization rejects missing targets before a
+runtime is created.
 
 Use `defineFieldDefinition` when you need full control over the definition itself, and pair it with
 an explicit presenter or primitive component.

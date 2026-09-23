@@ -6,7 +6,7 @@ import { join, relative, resolve } from "node:path";
 import ts from "@typescript/typescript6";
 import type { BuiltinFieldDefinition, SeriesPoint } from "@/builtins";
 import type { ComponentKey, ThemeManifest } from "@/design";
-import type { DefinedReportKind } from "@/kit";
+import type { DefinedReportKind } from "@/view";
 import type { PrimitiveReportRequest, ReportDescriptor } from "@/primitives";
 import type { FieldController } from "@/runtime";
 import type { FormSchema, ReportConfig } from "@/schema";
@@ -20,6 +20,7 @@ const moduleNames = new Set([
   "runtime",
   "schema",
   "transport",
+  "view",
 ]);
 
 const allowedDependencies = new Map<string, ReadonlySet<string>>([
@@ -29,7 +30,8 @@ const allowedDependencies = new Map<string, ReadonlySet<string>>([
   ["transport", new Set(["schema"])],
   ["runtime", new Set(["schema", "transport"])],
   ["builtins", new Set(["schema", "runtime"])],
-  ["kit", new Set(["schema", "runtime", "builtins", "primitives", "design"])],
+  ["view", new Set(["schema", "runtime", "builtins", "primitives"])],
+  ["kit", new Set(["runtime", "primitives", "design", "view"])],
 ]);
 
 const sourceRoot = resolve(process.cwd(), "src");

@@ -9,7 +9,7 @@ import {
   builtinReportKinds,
   createBuiltinMlRegistry,
 } from "mlform/builtins";
-import { createBuiltinDescriptorRegistry } from "mlform/kit";
+import { createBuiltinDescriptorRegistry } from "@/view";
 import { createBuiltinPrimitiveRegistry } from "mlform/primitives";
 
 const fieldRenderers = {

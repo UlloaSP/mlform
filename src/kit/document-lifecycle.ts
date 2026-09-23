@@ -20,11 +20,16 @@ export const bindDocumentLifecycle = (
   ownerDocument.addEventListener("visibilitychange", syncVisibility);
   ownerWindow?.addEventListener("pagehide", suspendForPageHide);
   ownerWindow?.addEventListener("pageshow", syncVisibility);
-  syncVisibility();
-
-  return () => {
+  const disconnect = (): void => {
     ownerDocument.removeEventListener("visibilitychange", syncVisibility);
     ownerWindow?.removeEventListener("pagehide", suspendForPageHide);
     ownerWindow?.removeEventListener("pageshow", syncVisibility);
   };
+  try {
+    syncVisibility();
+  } catch (error) {
+    disconnect();
+    throw error;
+  }
+  return disconnect;
 };

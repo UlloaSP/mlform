@@ -7,36 +7,27 @@ import {
   type DesignSystemRegistry,
   mergeDesignSystemConfig,
 } from "@/design";
-import { createRegistry, type Registry } from "@/schema";
 import {
   createBuiltinPrimitiveRegistry,
   primitiveDefaultLabels,
   type PrimitiveRegistry,
 } from "@/primitives";
-import type { KitLabels } from "./types";
+import type { KitLabels } from "./mount-types";
 
 export const defaultKitLabels: Required<KitLabels> = {
   ...primitiveDefaultLabels,
+  prev: "Previous",
+  next: "Next",
+  step: "Step",
+  tabs: "Form sections",
+  sectionsOpen: (count) => `${count} sections open`,
+  stepLabel: (current, total) => `Step ${current} of ${total}`,
 };
 
 export const defaultKitDesignSystem: DesignSystemConfig = {
   mode: "auto",
   theme: "neutral",
   recipe: "default",
-};
-
-export const cloneSchemaRegistry = (registry: Registry): Registry => {
-  const next = createRegistry();
-
-  for (const definition of registry.listFields()) {
-    next.registerField(definition);
-  }
-
-  for (const definition of registry.listReports()) {
-    next.registerReport(definition);
-  }
-
-  return next;
 };
 
 export const resolvePrimitiveRegistry = (registry?: PrimitiveRegistry): PrimitiveRegistry => {

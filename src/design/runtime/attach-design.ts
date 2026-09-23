@@ -35,7 +35,28 @@ export const createAttachedDesignSystem = (
     transition: options.transition,
   });
 
-  controller.connect();
+  try {
+    controller.connect();
+  } catch (error) {
+    controller.disconnect();
+    throw error;
+  }
+
+  const applyConfig = (nextConfig: DesignSystemConfig): void => {
+    const previousConfig = currentConfig;
+    currentConfig = nextConfig;
+    try {
+      controller.refresh();
+    } catch (error) {
+      currentConfig = previousConfig;
+      try {
+        controller.refresh();
+      } catch {
+        // Preserve the error from the rejected update.
+      }
+      throw error;
+    }
+  };
 
   return Object.freeze({
     host,
@@ -47,16 +68,13 @@ export const createAttachedDesignSystem = (
       return controller.resolved;
     },
     update(config: DesignSystemConfig) {
-      currentConfig = freezeConfig(currentConfig, config);
-      controller.refresh();
+      applyConfig(freezeConfig(currentConfig, config));
     },
     replace(config: DesignSystemConfig) {
-      currentConfig = freezeConfig(config);
-      controller.refresh();
+      applyConfig(freezeConfig(config));
     },
     reset() {
-      currentConfig = initialConfig;
-      controller.refresh();
+      applyConfig(initialConfig);
     },
     disconnect() {
       controller.disconnect();

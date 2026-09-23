@@ -139,6 +139,7 @@ export default defineConfig({
         "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
         "mlform/design": resolve(rootDir, "src/design/index.ts"),
         "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
+        "mlform/view": resolve(rootDir, "src/view/index.ts"),
         "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
       },
       name: "mlform",
@@ -158,7 +159,7 @@ export default defineConfig({
       beforeWriteFile(_filePath, content) {
         return {
           content: content.replace(
-            /(["'])(?:\.\.\/)+(builtins|design|kit|primitives|runtime|schema|transport)\1/g,
+            /(["'])(?:\.\.\/)+(builtins|design|kit|primitives|runtime|schema|transport|view)\1/g,
             "$1mlform/$2$1",
           ),
         };
@@ -173,6 +174,7 @@ export default defineConfig({
       "mlform/builtins": resolve(rootDir, "src/builtins/index.ts"),
       "mlform/design": resolve(rootDir, "src/design/index.ts"),
       "mlform/kit": resolve(rootDir, "src/kit/index.ts"),
+      "mlform/view": resolve(rootDir, "src/view/index.ts"),
       "mlform/primitives": resolve(rootDir, "src/primitives/index.ts"),
       "mlform/transport": resolve(rootDir, "src/transport/index.ts"),
     },
@@ -219,7 +221,7 @@ export default defineConfig({
           lines: 85,
           statements: 85,
         },
-        "src/kit/kinds/**": {
+        "src/view/kinds/**": {
           branches: 80,
           functions: 80,
           lines: 80,

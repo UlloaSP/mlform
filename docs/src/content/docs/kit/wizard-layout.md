@@ -3,7 +3,7 @@ title: Wizard Layout
 description: Mount the official wizard layout or consume wizard state through createFormView.
 ---
 
-`mountForm()` is the official built-in wizard layout built on top of the headless kit API.
+`mountForm()` renders wizard steps from the layout contract in `mlform/view`.
 
 ```ts
 import { mountForm } from "mlform/kit";

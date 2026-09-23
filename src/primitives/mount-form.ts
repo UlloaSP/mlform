@@ -43,7 +43,13 @@ export const mountPrimitiveForm = (
   form: PrimitiveFormController,
   options: MountFormOptions = {},
 ): MountedForm => {
-  const host = document.createElement(primitiveTagNames.form) as HTMLElement & {
+  const ownerDocument = container.ownerDocument;
+  if (!ownerDocument.defaultView?.customElements.get(primitiveTagNames.form)) {
+    throw new TypeError(
+      "MLForm elements are not registered in the container's document. Load MLForm in that document before mounting.",
+    );
+  }
+  const host = ownerDocument.createElement(primitiveTagNames.form) as HTMLElement & {
     form: PrimitiveFormController;
     registry: PrimitiveRegistry;
     descriptorRegistry: PrimitiveDescriptorRegistry;

@@ -9,7 +9,8 @@ import {
   createFormView,
   defineReportKind,
   flattenLayoutNodes,
-} from "@/kit";
+} from "@/view";
+import { createPrimitiveDescriptorRegistry } from "@/primitives";
 
 const reportPayload = (reports: readonly unknown[], id: string): unknown => {
   const item = reports.find(
@@ -24,6 +25,85 @@ const reportPayload = (reports: readonly unknown[], id: string): unknown => {
 };
 
 describe("kit view", () => {
+  it("defers descriptor work until an observer or caller needs a snapshot", () => {
+    const describe = vi.fn(() => ({ component: "text", props: { label: "Name" } }));
+    const descriptorRegistry = createPrimitiveDescriptorRegistry().registerField({
+      kind: "text",
+      describe,
+    });
+    const view = createFormView({
+      transport: { submit: async () => ({ reports: [] }) },
+      schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+      descriptorRegistry,
+    });
+
+    view.form.getField("name")?.setValue("Ada");
+    expect(describe).not.toHaveBeenCalled();
+    expect(view.getSnapshot().fields[0]?.state.value).toBe("Ada");
+    expect(describe).toHaveBeenCalledOnce();
+    view.dispose();
+  });
+
+  it("caches snapshots until form or navigation state changes", () => {
+    const view = createFormView({
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+    });
+
+    const initial = view.getSnapshot();
+    expect(view.getSnapshot()).toBe(initial);
+    view.form.getField("name")?.setValue("Ada");
+    expect(view.getSnapshot()).not.toBe(initial);
+    expect(view.getSnapshot().fields[0]?.state.value).toBe("Ada");
+    view.dispose();
+  });
+
+  it("tracks every enclosing section when resolving visibility", () => {
+    const view = createFormView({
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+      layout: {
+        kind: "stacked",
+        children: [
+          {
+            kind: "section",
+            title: "Outer",
+            defaultOpen: false,
+            children: [
+              {
+                kind: "section",
+                title: "Inner",
+                children: [{ kind: "field", field: "name" }],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(view.getField("name")?.sectionIds).toEqual(["outer", "inner"]);
+    expect(view.getField("name")?.visibleInLayout).toBe(false);
+    view.navigation.disclosure.open("outer");
+    expect(view.getField("name")?.visibleInLayout).toBe(true);
+    view.navigation.disclosure.close("inner");
+    expect(view.getField("name")?.visibleInLayout).toBe(false);
+    expect(view.navigation.getActiveNodes()).toMatchObject([{ kind: "section", children: [] }]);
+    view.dispose();
+  });
+
+  it("rejects a disclosure section without an accessible title", () => {
+    expect(() =>
+      createFormView({
+        transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+        schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+        layout: {
+          kind: "stacked",
+          children: [{ kind: "section", children: [{ kind: "field", field: "name" }] }],
+        } as never,
+      }),
+    ).toThrow("Disclosure sections require a non-empty title.");
+  });
+
   it("builds an automatic stacked layout when layout is omitted", () => {
     const pack = createBuiltinTestKit();
     registerDefinedReportKind(

@@ -113,7 +113,8 @@ The backend returns explicit report results:
 | Package | Purpose |
 | --- | --- |
 | `mlform` | Application-facing alias of `mlform/kit`. |
-| `mlform/kit` | Mounting, layouts, navigation, lifecycle, and declarative extensions. |
+| `mlform/kit` | Mounting, built-in layout rendering, design, and lifecycle. |
+| `mlform/view` | Headless layout, navigation, descriptors, and declarative extensions. |
 | `mlform/runtime` | Headless state, validation, conditions, hooks, and submission orchestration. |
 | `mlform/schema` | Schema contracts, normalization, mappings, and registries. |
 | `mlform/builtins` | Headless definitions for included field and report kinds. |
@@ -144,7 +145,7 @@ Full documentation lives at [ulloasp.github.io/mlform](https://ulloasp.github.io
 - [Installation](https://ulloasp.github.io/mlform/getting-started/installation/)
 - [Quick start](https://ulloasp.github.io/mlform/getting-started/quick-start/)
 - [Backend contract](https://ulloasp.github.io/mlform/guides/backend-contract/)
-- [Headless kit](https://ulloasp.github.io/mlform/kit/headless-kit/)
+- [Headless view](https://ulloasp.github.io/mlform/view/overview/)
 - [Design system](https://ulloasp.github.io/mlform/design/overview/)
 - [Package exports](https://ulloasp.github.io/mlform/reference/package-exports/)
 

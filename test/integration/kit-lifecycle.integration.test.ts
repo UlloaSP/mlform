@@ -7,6 +7,153 @@ import { SubmissionAbortedError } from "@/runtime";
 import { flush } from "./kit-integration-helpers";
 
 describe("kit integration", () => {
+  it("applies container replacement rules to explicit layouts", () => {
+    const container = document.createElement("div");
+    const previous = document.createElement("p");
+    previous.textContent = "Existing content";
+    container.append(previous);
+    const options = {
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+      layout: {
+        kind: "stacked" as const,
+        children: [
+          {
+            kind: "section" as const,
+            title: "Details",
+            children: [{ kind: "field" as const, field: "name" }],
+          },
+        ],
+      },
+    };
+
+    expect(() => mountForm(container, options)).toThrow(
+      'Mount into an empty container or pass `containerStrategy: "replace"`.',
+    );
+    expect(container.firstChild).toBe(previous);
+
+    const mounted = mountForm(container, { ...options, containerStrategy: "replace" });
+    expect(container.firstChild).toBe(mounted.host);
+    mounted.unmount();
+    expect(container.firstChild).toBe(previous);
+  });
+
+  it("keeps the previous mount when a replacement layout is invalid", () => {
+    const container = document.createElement("div");
+    const transport = { submit: vi.fn().mockResolvedValue({ reports: [] }) };
+    const first = mountForm(container, {
+      transport,
+      schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+    });
+
+    expect(() =>
+      mountForm(container, {
+        transport,
+        schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+        layout: { kind: "stacked", children: [{ kind: "field", field: "missing" }] },
+      }),
+    ).toThrow('Layout references unknown field "missing".');
+
+    expect(container.firstChild).toBe(first.host);
+    expect(first.form.state.lifecycle).toBe("active");
+    first.unmount();
+  });
+
+  it.each(["stacked", "tabs"] as const)(
+    "keeps the previous mount when %s host setup fails",
+    (kind) => {
+      const container = document.createElement("div");
+      const transport = { submit: vi.fn().mockResolvedValue({ reports: [] }) };
+      const schema = { fields: [{ id: "name", kind: "text", label: "Name" }] };
+      const first = mountForm(container, { transport, schema });
+      const failure = new Error("design callback failed");
+
+      expect(() =>
+        mountForm(container, {
+          transport,
+          schema,
+          layout:
+            kind === "tabs"
+              ? {
+                  kind: "tabs",
+                  tabs: [{ title: "Main", children: [{ kind: "field", field: "name" }] }],
+                }
+              : { kind: "stacked" },
+          onDesignSystemChange: () => {
+            throw failure;
+          },
+        }),
+      ).toThrow(failure);
+
+      expect(container.childElementCount).toBe(1);
+      expect(container.firstElementChild).toBe(first.host);
+      expect(first.form.state.lifecycle).toBe("active");
+
+      const replacement = mountForm(container, { transport, schema });
+      expect(container.firstElementChild).toBe(replacement.host);
+      expect(first.form.state.lifecycle).toBe("disposed");
+      replacement.unmount();
+    },
+  );
+
+  it("keeps replaced content across successive mounts", () => {
+    const container = document.createElement("div");
+    const placeholder = document.createElement("p");
+    container.append(placeholder);
+    const options = {
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+    };
+
+    const first = mountForm(container, { ...options, containerStrategy: "replace" });
+    const second = mountForm(container, options);
+    expect(container.firstElementChild).toBe(second.host);
+    expect(first.form.state.lifecycle).toBe("disposed");
+
+    second.unmount();
+    expect(container.firstElementChild).toBe(placeholder);
+  });
+
+  it("resubscribes a layout host after it reconnects", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, {
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: {
+        fields: [
+          { id: "name", kind: "text", label: "Name" },
+          { id: "email", kind: "text", label: "Email" },
+        ],
+      },
+      layout: {
+        kind: "tabs",
+        tabs: [
+          { id: "first", title: "First", children: [{ kind: "field", field: "name" }] },
+          { id: "second", title: "Second", children: [{ kind: "field", field: "email" }] },
+        ],
+      },
+    });
+
+    try {
+      await vi.waitFor(() =>
+        expect(mounted.host.shadowRoot?.querySelectorAll('[role="tab"]').length).toBe(2),
+      );
+      mounted.host.remove();
+      container.append(mounted.host);
+      const secondTab = mounted.host.shadowRoot?.querySelectorAll('[role="tab"]')[1];
+      if (!(secondTab instanceof HTMLButtonElement)) throw new Error("Missing second tab");
+      secondTab.click();
+      await vi.waitFor(() =>
+        expect(mounted.host.shadowRoot?.querySelector('[role="tabpanel"]:not([hidden])')?.id).toBe(
+          "panel-second",
+        ),
+      );
+    } finally {
+      mounted.unmount();
+      container.remove();
+    }
+  });
+
   it("can follow document visibility and disables the rendered form while suspended", async () => {
     const visibility = Object.getOwnPropertyDescriptor(document, "visibilityState");
     const setVisibility = (value: DocumentVisibilityState) => {

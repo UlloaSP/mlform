@@ -65,10 +65,13 @@ export const dispatchDesignSystemChange = (
   resolved: ResolvedDesignSystem,
 ): void => {
   host.dispatchEvent(
-    new CustomEvent(designSystemEventNames.change, {
-      detail: { designSystem: resolved },
-      bubbles: true,
-      composed: true,
-    }),
+    new (host.ownerDocument.defaultView?.CustomEvent ?? CustomEvent)(
+      designSystemEventNames.change,
+      {
+        detail: { designSystem: resolved },
+        bubbles: true,
+        composed: true,
+      },
+    ),
   );
 };

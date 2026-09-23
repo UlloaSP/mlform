@@ -3,6 +3,7 @@
 
 import { createAbortError, isAbortLikeError, ValidationError } from "../errors";
 import { createReportContexts } from "@/schema";
+import { transitionEngineState } from "../state";
 import { awaitWithSubmissionAbort, createSubmissionAbortManager } from "./abort";
 import { assertBackendIdentity } from "./backend";
 import { createSubmissionLifecycle } from "./lifecycle";
@@ -77,10 +78,36 @@ export const createFormSubmitter = ({
         !submitSignal.aborted &&
         !abortManager.isAborted(submissionRequestId);
 
+      const abortBeforeSubmission = (): never => {
+        const abortedError = createAbortError(abortManager.getAbortReason(submissionRequestId));
+        try {
+          if (
+            abortManager.getCurrentRequestId() === submissionRequestId &&
+            store.getState().lifecycleVersion === lifecycleVersion &&
+            store.getState().lifecycle === "active"
+          ) {
+            store.batch(() => {
+              store.update((current) => transitionEngineState(current, { type: "bump-lifecycle" }));
+              lifecycle.abort(abortedError.message);
+            });
+          }
+        } finally {
+          abortManager.clear(submissionRequestId);
+        }
+        throw abortedError;
+      };
+
       let validation: import("../types").FormValidationResult;
       try {
-        validation = await validate(submitSignal);
+        validation = await awaitWithSubmissionAbort(validate(submitSignal), submitSignal);
       } catch (error) {
+        if (
+          isAbortLikeError(error) ||
+          submitSignal.aborted ||
+          abortManager.isAborted(submissionRequestId)
+        ) {
+          abortBeforeSubmission();
+        }
         abortManager.clear(submissionRequestId);
         throw error;
       }
@@ -93,15 +120,13 @@ export const createFormSubmitter = ({
         abortManager.clear(submissionRequestId);
         throw createAbortError("form state changed during submission validation");
       }
+      if (submitSignal.aborted || abortManager.isAborted(submissionRequestId)) {
+        abortBeforeSubmission();
+      }
       if (!validation.valid) {
         abortManager.clear(submissionRequestId);
         throw new ValidationError(validation);
       }
-      if (options?.signal?.aborted) {
-        abortManager.clear(submissionRequestId);
-        throw createAbortError(String(options.signal.reason ?? ""));
-      }
-
       store.batch(() => {
         markReportsLoading();
         lifecycle.start(submissionRequestId);

@@ -1,4 +1,4 @@
-import type { FormLayoutConfig, TabsLayoutConfig, WizardLayoutConfig } from "@/kit";
+import type { FormLayoutConfig, TabsLayoutConfig, WizardLayoutConfig } from "@/view";
 import type { SubmitRequest, TransportResponse } from "@/runtime";
 import type { FormSchema } from "@/schema";
 

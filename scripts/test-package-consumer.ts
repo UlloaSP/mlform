@@ -49,11 +49,10 @@ try {
     join(temporaryDirectory, "consumer.ts"),
     `import { mountForm as mountFormFromRoot } from "mlform";
 import {
-  createBuiltinDescriptorRegistry,
-  defineMLFormPlugin,
   mountForm,
   type MountFormOptions,
 } from "mlform/kit";
+import { createBuiltinDescriptorRegistry, createFormView, defineMLFormPlugin } from "mlform/view";
 import { createForm } from "mlform/runtime";
 import {
   baseFieldConfigSchema,
@@ -72,6 +71,7 @@ type Options = MountFormOptions;
 void (null as Options | null);
 void [
   createBuiltinDescriptorRegistry,
+  createFormView,
   defineMLFormPlugin,
   mountForm,
   mountFormFromRoot,
@@ -116,6 +116,7 @@ primitives.unmountForm;
     `import assert from "node:assert/strict";
 import { mountForm as mountFormFromRoot } from "mlform";
 import { mountForm as mountFormFromKit } from "mlform/kit";
+import { createFormView } from "mlform/view";
 import { createBuiltinMlRegistry } from "mlform/builtins";
 import { createForm } from "mlform/runtime";
 import {
@@ -128,6 +129,7 @@ import { extractErrorMessage } from "mlform/transport";
 
 assert.equal(createBuiltinMlRegistry().getField("text")?.kind, "text");
 assert.equal(mountFormFromRoot, mountFormFromKit);
+assert.equal(typeof createFormView, "function");
 assert.equal(createRegistry().listFields().length, 0);
 assert.equal(baseFieldConfigSchema.safeParse({ kind: "custom", label: "Custom" }).success, true);
 assert.equal(baseReportConfigSchema.safeParse({ kind: "custom" }).success, true);
@@ -140,7 +142,7 @@ assert.equal(extractErrorMessage(new Error("expected")), "expected");
     cwd: temporaryDirectory,
     stdio: "inherit",
   });
-  console.log("Packed package consumer passed for the root facade and all seven layer roots.");
+  console.log("Packed package consumer passed for the root facade and all eight layer roots.");
 } finally {
   rmSync(temporaryDirectory, { force: true, recursive: true });
 }

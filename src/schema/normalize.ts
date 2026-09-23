@@ -21,6 +21,9 @@ export class SchemaNormalizationError extends Error {
   }
 }
 
+export const unsupportedSchemaKeys = (schema: object): string[] =>
+  Object.keys(schema).filter((key) => key !== "fields" && key !== "reports");
+
 const resolveId = (
   explicitId: string | undefined,
   fallbackLabel: string,
@@ -107,6 +110,9 @@ const normalizeReport = (
 };
 
 export const normalizeSchema = (schema: FormSchema, registry: Registry): NormalizedFormSchema => {
+  for (const key of unsupportedSchemaKeys(schema)) {
+    throw new SchemaNormalizationError(`Unsupported schema property "${key}".`, [key]);
+  }
   const usedFieldIds = new Set<string>();
   const usedReportIds = new Set<string>();
   const parsedFields = schema.fields.map((field, index) =>

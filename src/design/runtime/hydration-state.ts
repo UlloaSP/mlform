@@ -92,11 +92,12 @@ export const hostMatchesResolved = (host: HTMLElement, resolved: ResolvedDesignS
     return true;
   }
 
-  if (typeof window === "undefined") {
+  const ownerWindow = host.ownerDocument.defaultView;
+  if (!ownerWindow) {
     return false;
   }
 
-  const computed = window.getComputedStyle(host);
+  const computed = ownerWindow.getComputedStyle(host);
   for (const [token, value] of resolvedEntries) {
     if (computed.getPropertyValue(token).trim() !== value) {
       return false;

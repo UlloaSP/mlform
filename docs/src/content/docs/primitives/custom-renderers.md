@@ -5,7 +5,7 @@ description: Map primitive descriptors to custom Web Components.
 
 Use a primitive registry when you intentionally opt into the advanced path and return a custom `component` value from a low-level definition.
 
-For most custom kinds, prefer `defineFieldKind` or `defineReportKind` from `mlform/kit`. Register those helpers with both the schema registry and descriptor registry; they use built-in declarative renderers and do not require primitive registry wiring.
+For most custom kinds, prefer `defineFieldKind` or `defineReportKind` from `mlform/view`. Register those helpers with both the schema registry and descriptor registry; they use built-in declarative renderers and do not require primitive registry wiring.
 
 ```ts
 import { predictionTransport } from "./prediction-transport";

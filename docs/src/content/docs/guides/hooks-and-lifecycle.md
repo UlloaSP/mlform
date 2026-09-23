@@ -23,10 +23,10 @@ Lifecycle rules:
 
 | Situation                                         | Behavior                                                          |
 | ------------------------------------------------- | ----------------------------------------------------------------- |
-| Mounting into a container that already has MLForm | The previous mounted form is unmounted first.                     |
+| Mounting into a container that already has MLForm | The previous form stays mounted until the new host is ready.      |
 | Calling `mounted.unmount()`                       | Pending submit is aborted and design system observers disconnect. |
 | Calling `mounted.form.reset()`                    | Values and report state return to initial state.                  |
-| Calling `mounted.form.abortSubmit(reason)`        | In-flight submit receives an abort signal.                        |
+| Calling `mounted.form.abortSubmit(reason)`        | Pending validation or submit ends with an abort state.             |
 | Calling `mounted.suspend(reason)`                 | Pending work stops and mutations reject until `resume()`.         |
 | Using `hostLifecycle: "document"`                | Hidden/pagehide suspends; visible/pageshow resumes.                |
 | Aborting while `afterSubmit` is pending           | The completed result is invalidated and `submissionStatus` becomes `aborted`. |

@@ -9,7 +9,8 @@ import {
   registerDefinedFieldKind,
   registerDefinedReportKind,
 } from "../helpers/builtin-test-kit";
-import { defineFieldKind, defineReportKind, mountForm } from "@/kit";
+import { mountForm } from "@/kit";
+import { defineFieldKind, defineReportKind } from "@/view";
 import { resolveMappedReportPayload } from "@/schema";
 import {
   flush,

@@ -115,7 +115,13 @@ const validateSubmissionPaths = (
       targets.length > 0 ? targets : field.valuePath === undefined ? [] : [field.valuePath];
 
     for (const candidate of candidates) {
-      const path = normalizeSubmissionPath(candidate);
+      const issuePath = ["fields", fieldIndex, targets.length > 0 ? "mappedTo" : "valuePath"];
+      let path: string[];
+      try {
+        path = normalizeSubmissionPath(candidate);
+      } catch (error) {
+        fail(error instanceof Error ? error.message : String(error), issuePath);
+      }
       if (path.length === 0) {
         fail(`Field "${field.id}" resolves to an empty submission path.`, [
           "fields",
@@ -131,7 +137,7 @@ const validateSubmissionPaths = (
           currentPath === existingPath
             ? `Duplicate submission path "${currentPath}" for fields "${existing.fieldId}" and "${field.id}".`
             : `Submission path "${currentPath}" for field "${field.id}" overlaps submission path "${existingPath}" for field "${existing.fieldId}".`;
-        fail(message, ["fields", fieldIndex, targets.length > 0 ? "mappedTo" : "valuePath"]);
+        fail(message, issuePath);
       }
       paths.push({ fieldId: field.id, path });
     }
@@ -147,6 +153,17 @@ export const normalizeFieldContracts = (
   const displayKeys = new Map<string, string>();
 
   const normalized = fields.map((field, index): NormalizedFieldConfig => {
+    const definition = registry.getField(field.kind);
+    for (const reference of definition?.getFieldReferences?.(field) ?? []) {
+      const id = normalizeSchemaId(reference.id);
+      if (!fieldIds.has(id)) {
+        fail(
+          reference.unknownFieldMessage ??
+            `Field "${field.id}" references unknown field "${reference.id}".`,
+          ["fields", index, ...reference.path],
+        );
+      }
+    }
     const displayKey = typeof field.displayKey === "string" ? field.displayKey.trim() : undefined;
     if (typeof field.displayKey === "string" && !displayKey) {
       fail(`Field "${field.id}": displayKey must not be empty.`, ["fields", index, "displayKey"]);

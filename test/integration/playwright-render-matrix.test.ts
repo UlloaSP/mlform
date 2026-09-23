@@ -16,6 +16,8 @@ const html = `
 const appModule = `
   import * as z from "zod";
   import * as kit from "/src/kit/index.ts";
+  import { focusPrimitiveField, mountPrimitiveForm } from "/src/primitives/index.ts";
+  import * as view from "/src/view/index.ts";
   import { executeFormPipeline, executeMultiBackendPipeline } from "/src/runtime/index.ts";
   import {
     baseFieldConfigSchema,
@@ -24,7 +26,7 @@ const appModule = `
   } from "/src/schema/index.ts";
 
   const state = { fetchRequest: null };
-  const scoreSlider = kit.defineFieldKind({
+  const scoreSlider = view.defineFieldKind({
       kind: "score-slider",
       schema: baseFieldConfigSchema.extend({
         kind: z.literal("score-slider"),
@@ -37,7 +39,7 @@ const appModule = `
       render: { widget: "number", hints: { input: "range", min: 0, max: 100, step: 1 } },
     });
 
-  const riskSummary = kit.defineReportKind({
+  const riskSummary = view.defineReportKind({
       kind: "risk-summary",
       schema: baseReportConfigSchema.extend({
         kind: z.literal("risk-summary"),
@@ -48,7 +50,7 @@ const appModule = `
       },
     });
 
-  const contextDump = kit.defineReportKind({
+  const contextDump = view.defineReportKind({
       kind: "context-dump",
       schema: baseReportConfigSchema.extend({
         kind: z.literal("context-dump"),
@@ -68,7 +70,7 @@ const appModule = `
       },
     });
 
-  const plugin = kit.defineMLFormPlugin({
+  const plugin = view.defineMLFormPlugin({
     fields: [scoreSlider],
     reports: [riskSummary, contextDump],
   });
@@ -211,6 +213,88 @@ const appModule = `
 
   window.__mlformMatrix = {
     submitFromPipeline,
+    async mountInRegisteredFrame(frame) {
+      const targetDocument = frame.contentDocument;
+      const targetWindow = frame.contentWindow;
+      const previousMatchMedia = targetWindow.matchMedia;
+      targetWindow.matchMedia = (query) => ({
+        matches: query === "(prefers-color-scheme: dark)",
+        media: query,
+        addEventListener() {},
+        removeEventListener() {},
+      });
+      try {
+        const results = [];
+        for (const layout of [undefined, {
+          kind: "tabs",
+          tabs: [{ title: "Main", children: [{ kind: "field", field: "name" }] }],
+        }]) {
+          const target = targetDocument.createElement("div");
+          targetDocument.body.append(target);
+          const mounted = kit.mountForm(target, {
+            schema: { fields: [{ id: "name", kind: "text", label: "Name" }] },
+            layout,
+            transport: { submit: async () => ({ reports: [] }) },
+          });
+          try {
+            await mounted.host.updateComplete;
+            const frameElement = mounted.host.shadowRoot.querySelector("mlf-field-frame");
+            await frameElement.updateComplete;
+            const fieldElement = frameElement.shadowRoot.querySelector("mlf-text-field");
+            await fieldElement.updateComplete;
+            const input = fieldElement.shadowRoot.querySelector("input");
+            await focusPrimitiveField(mounted.host, "name");
+            results.push({
+              scheme: mounted.designSystem.resolved?.effectiveScheme,
+              focused: fieldElement.shadowRoot.activeElement === input,
+            });
+          } finally {
+            mounted.unmount();
+            target.remove();
+          }
+        }
+        return results;
+      } finally {
+        targetWindow.matchMedia = previousMatchMedia;
+      }
+    },
+    async mountInFrame() {
+      const frame = document.createElement("iframe");
+      frame.srcdoc = '<div id="vertical"></div><div id="tabs"></div><div id="primitive"></div>';
+      document.body.append(frame);
+      await new Promise((resolve) => frame.addEventListener("load", resolve, { once: true }));
+      const targetDocument = frame.contentDocument;
+      const baseOptions = {
+        schema: { fields: [{ kind: "text", id: "name", label: "Name" }] },
+        transport: { submit: async () => ({ reports: [] }) },
+      };
+      const attempts = [
+        ["#vertical", baseOptions],
+        ["#tabs", {
+          ...baseOptions,
+          layout: {
+            kind: "tabs",
+            tabs: [{ title: "Main", children: [{ kind: "field", field: "name" }] }],
+          },
+        }],
+      ].map(([selector, options]) => {
+        try {
+          const mounted = kit.mountForm(targetDocument.querySelector(selector), options);
+          mounted.unmount();
+          return "mounted";
+        } catch (error) {
+          return error.message;
+        }
+      });
+      try {
+        mountPrimitiveForm(targetDocument.querySelector("#primitive"), mounted.form);
+        attempts.push("mounted");
+      } catch (error) {
+        attempts.push(error.message);
+      }
+      frame.remove();
+      return attempts;
+    },
     builtinValues() {
       return Object.fromEntries(
         ["bio", "plan", "channels", "rating"].map((id) => [
@@ -354,6 +438,62 @@ describe("Playwright render matrix", () => {
       modelA: { snapshot: { score_a: 8, sex_m_a: 1, sex_f_a: 0 }, target: "risk_a" },
       modelB: { snapshot: { score_b: 8, sex_m_b: 1, sex_f_b: 0 }, target: "risk_b" },
     });
+  }, 20_000);
+
+  it("rejects mounting from a parent window into an unregistered iframe", async () => {
+    const url = await startServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+    await page.waitForSelector("mlf-form");
+
+    expect(await page.evaluate("window.__mlformMatrix.mountInFrame()")).toEqual([
+      "MLForm elements are not registered in the container's document. Load MLForm in that document before mounting.",
+      "MLForm elements are not registered in the container's document. Load MLForm in that document before mounting.",
+      "MLForm elements are not registered in the container's document. Load MLForm in that document before mounting.",
+    ]);
+  }, 20_000);
+
+  it("renders normally when MLForm loads inside the iframe", async () => {
+    const url = await startServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+    await page.evaluate((frameUrl) => {
+      const frame = document.createElement("iframe");
+      frame.id = "embedded-form";
+      frame.src = frameUrl;
+      document.body.append(frame);
+    }, url);
+
+    const embedded = page.frameLocator("#embedded-form");
+    await embedded.locator("mlf-form").first().waitFor();
+    await embedded.locator('input[type="range"]').waitFor();
+    expect(await embedded.locator('input[type="range"]').getAttribute("min")).toBe("0");
+  }, 20_000);
+
+  it("uses the target document for design media and field focus from a parent caller", async () => {
+    const url = await startServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto(url);
+    await page.evaluate((frameUrl) => {
+      const frame = document.createElement("iframe");
+      frame.id = "embedded-form";
+      frame.src = frameUrl;
+      document.body.append(frame);
+    }, url);
+    await page.frameLocator("#embedded-form").locator("mlf-form").first().waitFor();
+
+    expect(
+      await page.evaluate(
+        "window.__mlformMatrix.mountInRegisteredFrame(document.querySelector('#embedded-form'))",
+      ),
+    ).toEqual([
+      { scheme: "dark", focused: true },
+      { scheme: "dark", focused: true },
+    ]);
   }, 20_000);
 
   it("runs the weak built-in field families in a real browser", async () => {

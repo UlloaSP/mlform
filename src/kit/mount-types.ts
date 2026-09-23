@@ -7,16 +7,7 @@ import type {
   DesignSystemRegistry,
   ResolvedDesignSystem,
 } from "@/design";
-import type {
-  FormController,
-  FormHooks,
-  FormSchema,
-  FormValidator,
-  InactiveFieldPolicy,
-  Registry,
-  RuntimeBehavior,
-  Transport,
-} from "@/runtime";
+import type { FormController, Registry } from "@/runtime";
 import type {
   PrimitiveContainerStrategy,
   PrimitiveRegistry,
@@ -24,10 +15,8 @@ import type {
   PrimitiveTextOverrides,
 } from "@/primitives";
 import type { PrimitiveDescriptorRegistry } from "@/primitives";
-import type { FormLayoutConfig } from "./layout-types";
-import type { MLFormPlugin } from "./plugin";
-
-export type MountedReportFetchMode = "lazy" | "all" | "none";
+import type { CreateFormViewOptions, FormViewController } from "@/view";
+import type { WizardLabels } from "./wizard/labels";
 
 export interface KitDesignSystemSnapshot extends Omit<
   DesignSystemConfig,
@@ -38,38 +27,20 @@ export interface KitDesignSystemSnapshot extends Omit<
   recipe: NonNullable<DesignSystemConfig["recipe"]>;
 }
 
-export interface KitLabels {
+export interface KitLabels extends WizardLabels {
   form?: string;
   reports?: string;
-  submit?: string;
-  validating?: string;
-  submitting?: string;
+  tabs?: string;
+  sectionsOpen?: (count: number) => string;
+  stepLabel?: (current: number, total: number) => string;
 }
 
-export interface MountFormOptions {
-  schema: FormSchema;
-  transport: Transport;
-  registry?: Registry;
-  descriptorRegistry?: PrimitiveDescriptorRegistry;
-  behaviors?: RuntimeBehavior[];
-  plugins?: readonly MLFormPlugin[];
+export interface MountFormOptions extends CreateFormViewOptions {
   primitiveRegistry?: PrimitiveRegistry;
   designSystemRegistry?: DesignSystemRegistry;
   designSystem?: DesignSystemConfig;
-  initialValues?: Record<string, unknown>;
-  initialSnapshot?: unknown;
-  validators?: FormValidator[];
-  hooks?: FormHooks;
-  hookFailurePolicy?: {
-    afterSubmit?: "fail-submit" | "preserve-success";
-  };
-  inactiveFieldPolicy?: InactiveFieldPolicy;
-  listenerErrorPolicy?: "ignore" | "throw-aggregate";
-  onListenerError?: (error: unknown) => void;
-  layout?: FormLayoutConfig;
   containerStrategy?: PrimitiveContainerStrategy;
   reportPane?: "auto" | "always" | "hidden";
-  reportFetchMode?: MountedReportFetchMode;
   reportTransport?: PrimitiveReportTransport;
   labels?: KitLabels;
   primitiveText?: PrimitiveTextOverrides;
@@ -85,6 +56,7 @@ export interface MountedForm {
   readonly primitiveRegistry: PrimitiveRegistry;
   readonly designSystemRegistry: DesignSystemRegistry;
   readonly designSystem: AttachedDesignSystem;
+  submit: FormViewController["submit"];
   updateDesignSystem(config: DesignSystemConfig): void;
   replaceDesignSystem(config: KitDesignSystemSnapshot): void;
   resetDesignSystem(): void;

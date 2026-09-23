@@ -5,7 +5,8 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { readyReport } from "../report-result";
 import * as z from "zod";
 import { createBuiltinTestKit, registerDefinedReportKind } from "../helpers/builtin-test-kit";
-import { defineReportKind, mountForm } from "@/kit";
+import { mountForm } from "@/kit";
+import { defineReportKind } from "@/view";
 import { resolveMappedReportPayload } from "@/schema";
 
 const flush = async (): Promise<void> => {

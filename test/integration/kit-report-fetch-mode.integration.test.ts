@@ -4,7 +4,8 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 import { createBuiltinTestKit, registerDefinedReportKind } from "../helpers/builtin-test-kit";
-import { defineReportKind, mountForm } from "@/kit";
+import { mountForm } from "@/kit";
+import { defineReportKind } from "@/view";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -55,6 +56,75 @@ const clickSubmit = (host: HTMLElement): void => {
 };
 
 describe("kit reportFetchMode", () => {
+  it("applies the report policy to programmatic submission", async () => {
+    const fetchReport = vi.fn().mockResolvedValue({ rows: [1] });
+    const pack = createPack(fetchReport);
+    const container = document.createElement("div");
+    const mounted = mountForm(container, {
+      registry: pack.registry,
+      descriptorRegistry: pack.descriptorRegistry,
+      reportFetchMode: "all",
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: {
+        fields: [{ kind: "text", id: "name", label: "Name", mappedTo: "name" }],
+        reports: [{ kind: "async-summary", id: "summary", label: "Summary" }],
+      },
+      initialValues: { name: "Alice" },
+    });
+
+    await mounted.submit();
+
+    expect(fetchReport).toHaveBeenCalledTimes(1);
+    expect(mounted.form.getReport("summary")?.state.status).toBe("ready");
+    mounted.unmount();
+  });
+
+  it("does not let layout report frames fetch in none mode", async () => {
+    const fetchReport = vi.fn().mockResolvedValue({ rows: [1] });
+    const pack = createPack(fetchReport);
+    const container = document.createElement("div");
+    document.body.append(container);
+    const mounted = mountForm(container, {
+      registry: pack.registry,
+      descriptorRegistry: pack.descriptorRegistry,
+      reportFetchMode: "none",
+      transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
+      schema: {
+        fields: [{ kind: "text", id: "name", label: "Name", mappedTo: "name" }],
+        reports: [{ kind: "async-summary", id: "summary", label: "Summary" }],
+      },
+      layout: {
+        kind: "tabs",
+        tabs: [
+          {
+            title: "Main",
+            children: [
+              { kind: "field", field: "name" },
+              { kind: "report", report: "summary" },
+            ],
+          },
+        ],
+      },
+      initialValues: { name: "Alice" },
+    });
+
+    await vi.waitFor(() =>
+      expect(getShadow(mounted.host).querySelector(".btn-submit")).not.toBeNull(),
+    );
+    (getShadow(mounted.host).querySelector(".btn-submit") as HTMLButtonElement).click();
+    await vi.waitFor(() => expect(mounted.form.state.submitCount).toBe(1));
+    const reportFrame = getShadow(mounted.host).querySelector("mlf-report-frame") as HTMLElement & {
+      updateComplete: Promise<boolean>;
+      fetchMode: string;
+    };
+    await reportFrame.updateComplete;
+
+    expect(reportFrame.fetchMode).toBe("none");
+    expect(fetchReport).not.toHaveBeenCalled();
+    mounted.unmount();
+    container.remove();
+  });
+
   it("waits for async report fetches before submit success when mode is all", async () => {
     let resolveFetch: ((value: unknown) => void) | undefined;
     const fetchReport = vi.fn(

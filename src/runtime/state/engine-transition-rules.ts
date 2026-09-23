@@ -33,12 +33,7 @@ export const assertAllowedTransition = (
       case "submission-success":
         return active && operation === "submitting";
       case "submission-aborted":
-        return (
-          active &&
-          (operation === "validating" ||
-            operation === "submitting" ||
-            (operation === "idle" && submissionStatus === "succeeded"))
-        );
+        return active;
       case "submission-error":
         return (
           active &&
