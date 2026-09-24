@@ -53,14 +53,17 @@ export abstract class PrimitiveFieldElement extends LitElement {
     }
 
     .control:disabled {
-      --mlf-control-bg: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
+      --mlf-control-bg: var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa));
       cursor: not-allowed;
       opacity: 0.72;
       background: var(--mlf-control-bg);
     }
 
     .control[readonly] {
-      --mlf-control-bg: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
+      --mlf-control-bg: var(
+        --mlf-input-bg-readonly,
+        var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa))
+      );
       background: var(--mlf-control-bg);
     }
 

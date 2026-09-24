@@ -61,11 +61,17 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
 
       .input-wrapper.is-disabled .unit {
         opacity: 0.72;
-        --mlf-number-overlay-bg: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
+        --mlf-number-overlay-bg: var(
+          --mlf-input-bg-disabled,
+          var(--mlf-color-surface-muted, #f5f7fa)
+        );
       }
 
       .input-wrapper.is-readonly .unit {
-        --mlf-number-overlay-bg: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
+        --mlf-number-overlay-bg: var(
+          --mlf-input-bg-readonly,
+          var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa))
+        );
       }
 
       .unit:empty {

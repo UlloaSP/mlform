@@ -174,11 +174,14 @@ export const seriesFieldStyles = css`
 
   .value-wrap.is-disabled .unit {
     opacity: 0.72;
-    --mlf-series-unit-bg: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
+    --mlf-series-unit-bg: var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa));
   }
 
   .value-wrap.is-readonly .unit {
-    --mlf-series-unit-bg: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
+    --mlf-series-unit-bg: var(
+      --mlf-input-bg-readonly,
+      var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa))
+    );
   }
 
   .unit {

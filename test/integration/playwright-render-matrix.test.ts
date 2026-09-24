@@ -218,8 +218,11 @@ const appModule = `
       container.id = "dark-number";
       document.body.append(container);
       const mounted = kit.mountForm(container, {
-        schema: { fields: [{ kind: "number", id: "ph", label: "Media pH" }] },
-        initialValues: { ph: 3 },
+        schema: { fields: [
+          { kind: "number", id: "ph", label: "Editable pH" },
+          { kind: "number", id: "readonly-ph", label: "Media pH", readOnly: true },
+        ] },
+        initialValues: { ph: 3, "readonly-ph": 3 },
         designSystem: { theme: "cobalt", mode: "dark" },
         transport: { submit: async () => ({ reports: [] }) },
       });
@@ -230,7 +233,18 @@ const appModule = `
       await field.updateComplete;
       const input = field.shadowRoot.querySelector("input");
       const style = getComputedStyle(input);
-      const result = { background: style.backgroundColor, color: style.color };
+      const readonlyFrame = mounted.host.shadowRoot.querySelector('[data-field-id="readonly-ph"]');
+      await readonlyFrame.updateComplete;
+      const readonlyField = readonlyFrame.shadowRoot.querySelector("mlf-number-field");
+      await readonlyField.updateComplete;
+      const readonlyInput = readonlyField.shadowRoot.querySelector("input");
+      const readonlyStyle = getComputedStyle(readonlyInput);
+      const result = {
+        background: style.backgroundColor,
+        color: style.color,
+        readonlyBackground: readonlyStyle.backgroundColor,
+        readonlyColor: readonlyStyle.color,
+      };
       return result;
     },
     async mountInRegisteredFrame(frame) {
@@ -414,10 +428,15 @@ describe("Playwright render matrix", () => {
     const colors = (await page.evaluate("window.__mlformMatrix.mountDarkNumber()")) as {
       background: string;
       color: string;
+      readonlyBackground: string;
+      readonlyColor: string;
     };
-    await page.locator("#dark-number mlf-number-field input").evaluate((input) => {
-      (input as HTMLElement).style.transition = "none";
-    });
+    await page
+      .locator("#dark-number mlf-number-field input")
+      .first()
+      .evaluate((input) => {
+        (input as HTMLElement).style.transition = "none";
+      });
 
     const session = await page.context().newCDPSession(page);
     await session.send("DOM.enable");
@@ -434,6 +453,7 @@ describe("Playwright render matrix", () => {
     });
     const autofillColors = await page
       .locator("#dark-number mlf-number-field input")
+      .first()
       .evaluate((input) => {
         const style = getComputedStyle(input);
         return {
@@ -445,12 +465,15 @@ describe("Playwright render matrix", () => {
       });
     expect(colors.background).not.toBe("rgb(255, 255, 255)");
     expect(colors.color).not.toBe(colors.background);
+    expect(colors.readonlyBackground).toBe("rgb(22, 35, 59)");
+    expect(colors.readonlyColor).toBe(colors.color);
     expect(autofillColors.shadow).toContain(colors.background);
     expect(autofillColors.fill).toBe(colors.color);
 
     await page.emulateMedia({ forcedColors: "active" });
     const forcedColors = await page
       .locator("#dark-number mlf-number-field input")
+      .first()
       .evaluate((input) => {
         const style = getComputedStyle(input);
         return { shadow: style.boxShadow, color: style.color, fill: style.webkitTextFillColor };
