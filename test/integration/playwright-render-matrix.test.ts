@@ -213,6 +213,26 @@ const appModule = `
 
   window.__mlformMatrix = {
     submitFromPipeline,
+    async mountDarkNumber() {
+      const container = document.createElement("div");
+      container.id = "dark-number";
+      document.body.append(container);
+      const mounted = kit.mountForm(container, {
+        schema: { fields: [{ kind: "number", id: "ph", label: "Media pH" }] },
+        initialValues: { ph: 3 },
+        designSystem: { theme: "cobalt", mode: "dark" },
+        transport: { submit: async () => ({ reports: [] }) },
+      });
+      await mounted.host.updateComplete;
+      const frame = mounted.host.shadowRoot.querySelector("mlf-field-frame");
+      await frame.updateComplete;
+      const field = frame.shadowRoot.querySelector("mlf-number-field");
+      await field.updateComplete;
+      const input = field.shadowRoot.querySelector("input");
+      const style = getComputedStyle(input);
+      const result = { background: style.backgroundColor, color: style.color };
+      return result;
+    },
     async mountInRegisteredFrame(frame) {
       const targetDocument = frame.contentDocument;
       const targetWindow = frame.contentWindow;
@@ -383,6 +403,61 @@ describe("Playwright render matrix", () => {
     browser = undefined;
     server = undefined;
   });
+
+  it("keeps number input colors legible in Cobalt dark mode", async () => {
+    const url = await startServer();
+    browser = await chromium.launch();
+    const page = await browser.newPage();
+    await page.goto(url);
+    await page.waitForFunction("window.__mlformMatrix?.mountDarkNumber");
+
+    const colors = (await page.evaluate("window.__mlformMatrix.mountDarkNumber()")) as {
+      background: string;
+      color: string;
+    };
+    await page.locator("#dark-number mlf-number-field input").evaluate((input) => {
+      (input as HTMLElement).style.transition = "none";
+    });
+
+    const session = await page.context().newCDPSession(page);
+    await session.send("DOM.enable");
+    await session.send("CSS.enable");
+    await session.send("DOM.getDocument", { depth: -1, pierce: true });
+    const remote = await session.send("Runtime.evaluate", {
+      expression:
+        'document.querySelector("#dark-number mlf-form").shadowRoot.querySelector("mlf-field-frame").shadowRoot.querySelector("mlf-number-field").shadowRoot.querySelector("input")',
+    });
+    const node = await session.send("DOM.requestNode", { objectId: remote.result.objectId! });
+    await session.send("CSS.forcePseudoState", {
+      nodeId: node.nodeId,
+      forcedPseudoClasses: ["autofill"],
+    });
+    const autofillColors = await page
+      .locator("#dark-number mlf-number-field input")
+      .evaluate((input) => {
+        const style = getComputedStyle(input);
+        return {
+          background: style.backgroundColor,
+          color: style.color,
+          shadow: style.boxShadow,
+          fill: style.webkitTextFillColor,
+        };
+      });
+    expect(colors.background).not.toBe("rgb(255, 255, 255)");
+    expect(colors.color).not.toBe(colors.background);
+    expect(autofillColors.shadow).toContain(colors.background);
+    expect(autofillColors.fill).toBe(colors.color);
+
+    await page.emulateMedia({ forcedColors: "active" });
+    const forcedColors = await page
+      .locator("#dark-number mlf-number-field input")
+      .evaluate((input) => {
+        const style = getComputedStyle(input);
+        return { shadow: style.boxShadow, color: style.color, fill: style.webkitTextFillColor };
+      });
+    expect(forcedColors.shadow).toBe("none");
+    expect(forcedColors.fill).toBe(forcedColors.color);
+  }, 20_000);
 
   it("renders custom plugins, onehot mappedTo, report mappedTo maps, and fanout", async () => {
     const url = await startServer();

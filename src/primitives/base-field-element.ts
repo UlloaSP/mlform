@@ -26,6 +26,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
     }
 
     .control {
+      --mlf-control-bg: var(--mlf-input-bg, var(--mlf-color-surface, #ffffff));
       display: block;
       width: 100%;
       max-width: 100%;
@@ -35,7 +36,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
       border: var(--mlf-border-width, 1px) solid
         var(--mlf-input-border, var(--mlf-color-border, #e2e8f0));
       border-radius: var(--mlf-input-radius, 12px);
-      background: var(--mlf-input-bg, var(--mlf-color-surface, #ffffff));
+      background: var(--mlf-control-bg);
       color: var(--mlf-input-text, var(--mlf-color-text, #0f172a));
       font: inherit;
       line-height: 1.4;
@@ -52,13 +53,35 @@ export abstract class PrimitiveFieldElement extends LitElement {
     }
 
     .control:disabled {
+      --mlf-control-bg: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
       cursor: not-allowed;
       opacity: 0.72;
-      background: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
+      background: var(--mlf-control-bg);
     }
 
     .control[readonly] {
-      background: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
+      --mlf-control-bg: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
+      background: var(--mlf-control-bg);
+    }
+
+    .control:is(:autofill, :-webkit-autofill) {
+      box-shadow: inset 0 0 0 1000px var(--mlf-control-bg);
+      -webkit-text-fill-color: var(--mlf-input-text, var(--mlf-color-text, #0f172a));
+      caret-color: var(--mlf-input-text, var(--mlf-color-text, #0f172a));
+    }
+
+    .control:is(:autofill, :-webkit-autofill):focus-visible {
+      box-shadow:
+        inset 0 0 0 1000px var(--mlf-control-bg),
+        var(--mlf-input-shadow-focus, 0 0 0 3px rgba(29, 78, 216, 0.18));
+    }
+
+    @media (forced-colors: active) {
+      .control:is(:autofill, :-webkit-autofill) {
+        box-shadow: none;
+        -webkit-text-fill-color: CanvasText;
+        caret-color: CanvasText;
+      }
     }
 
     .control::placeholder {
