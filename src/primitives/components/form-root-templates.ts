@@ -206,7 +206,7 @@ export const renderSplitLayout = (options: {
     ?inert=${options.state.lifecycle === "suspended"}
     aria-disabled=${String(options.state.lifecycle === "suspended")}
   >
-    <div class="split-shell">
+    <div class=${options.showReports ? "split-shell" : "split-shell single-pane"}>
       <section class="left-section" part="form-pane">
         <div class="form-inputs scroll-y">
           <header class="sticky-header">

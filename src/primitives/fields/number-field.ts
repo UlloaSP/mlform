@@ -146,11 +146,11 @@ export class PrimitiveNumberFieldElement extends PrimitiveFieldElement {
       }
 
       input[type="range"].control:focus-visible::-webkit-slider-thumb {
-        box-shadow: 0 0 0 4px var(--mlf-input-shadow-focus, rgba(29, 78, 216, 0.18));
+        box-shadow: var(--mlf-input-shadow-focus, 0 0 0 4px rgba(29, 78, 216, 0.18));
       }
 
       input[type="range"].control:focus-visible::-moz-range-thumb {
-        box-shadow: 0 0 0 4px var(--mlf-input-shadow-focus, rgba(29, 78, 216, 0.18));
+        box-shadow: var(--mlf-input-shadow-focus, 0 0 0 4px rgba(29, 78, 216, 0.18));
       }
     `,
   ];

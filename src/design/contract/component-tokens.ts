@@ -18,8 +18,8 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
       "--mlf-shell-panel-border": "var(--mlf-color-border)",
       "--mlf-shell-panel-shadow-soft": "var(--mlf-shadow-sm)",
       "--mlf-shell-panel-shadow": "var(--mlf-shadow-md)",
-      "--mlf-shell-header-bg": "color-mix(in srgb, var(--mlf-color-surface) 76%, transparent)",
-      "--mlf-shell-header-blur": "3px",
+      "--mlf-shell-header-bg": "var(--mlf-color-surface)",
+      "--mlf-shell-header-blur": "0px",
       "--mlf-shell-action-bg": "var(--mlf-color-surface-muted)",
       "--mlf-shell-left-min-width": "22rem",
       "--mlf-shell-left-max-width": "48rem",
@@ -40,11 +40,10 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   },
   field: {
     tokens: {
-      "--mlf-field-bg":
-        "radial-gradient(circle at top left, color-mix(in srgb, var(--mlf-color-accent) 8%, transparent), transparent 38%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 96%, transparent), color-mix(in srgb, var(--mlf-color-surface) 98%, var(--mlf-color-surface-muted)))",
+      "--mlf-field-bg": "var(--mlf-color-surface)",
       "--mlf-field-border": "var(--mlf-color-border)",
-      "--mlf-field-border-invalid": "color-mix(in srgb, var(--mlf-color-danger) 34%, transparent)",
-      "--mlf-field-shadow": "var(--mlf-shadow-md)",
+      "--mlf-field-border-invalid": "var(--mlf-color-danger)",
+      "--mlf-field-shadow": "none",
       "--mlf-field-radius": "var(--mlf-radius-lg)",
       "--mlf-field-label-color": "var(--mlf-color-text)",
       "--mlf-field-description-color": "var(--mlf-color-text-muted)",
@@ -56,10 +55,9 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   },
   report: {
     tokens: {
-      "--mlf-report-bg":
-        "radial-gradient(circle at top right, color-mix(in srgb, var(--mlf-color-accent) 10%, transparent), transparent 34%), linear-gradient(180deg, color-mix(in srgb, var(--mlf-color-surface) 96%, transparent), color-mix(in srgb, var(--mlf-color-surface) 98%, var(--mlf-color-surface-muted)))",
+      "--mlf-report-bg": "var(--mlf-color-surface)",
       "--mlf-report-border": "var(--mlf-color-border)",
-      "--mlf-report-shadow": "var(--mlf-shadow-md)",
+      "--mlf-report-shadow": "none",
       "--mlf-report-radius": "var(--mlf-radius-lg)",
       "--mlf-report-label-color": "var(--mlf-color-text)",
       "--mlf-report-description-color": "var(--mlf-color-text-muted)",
@@ -87,15 +85,11 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   },
   submit: {
     tokens: {
-      "--mlf-submit-bg":
-        "linear-gradient(135deg, var(--mlf-color-accent), color-mix(in srgb, var(--mlf-color-accent) 70%, #0f8cff))",
-      "--mlf-submit-bg-hover":
-        "linear-gradient(135deg, var(--mlf-color-accent-hover), color-mix(in srgb, var(--mlf-color-accent-hover) 75%, #0f8cff))",
+      "--mlf-submit-bg": "var(--mlf-color-accent)",
+      "--mlf-submit-bg-hover": "var(--mlf-color-accent-hover)",
       "--mlf-submit-color": "var(--mlf-color-text-inverse)",
-      "--mlf-submit-shadow":
-        "0 18px 32px color-mix(in srgb, var(--mlf-color-accent) 28%, transparent)",
-      "--mlf-submit-shadow-hover":
-        "0 24px 36px color-mix(in srgb, var(--mlf-color-accent) 34%, transparent)",
+      "--mlf-submit-shadow": "none",
+      "--mlf-submit-shadow-hover": "none",
       "--mlf-submit-radius": "var(--mlf-radius-md)",
       "--mlf-submit-focus-ring":
         "0 0 0 var(--mlf-ring-width) color-mix(in srgb, var(--mlf-color-accent) 18%, transparent)",
@@ -126,8 +120,7 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   chart: {
     tokens: {
       "--mlf-chart-track-bg": "var(--mlf-color-chart-track)",
-      "--mlf-chart-fill-bg":
-        "linear-gradient(90deg, var(--mlf-color-accent), color-mix(in srgb, var(--mlf-color-accent) 72%, #0f8cff))",
+      "--mlf-chart-fill-bg": "var(--mlf-color-accent)",
     },
   },
 };

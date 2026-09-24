@@ -21,6 +21,35 @@ import {
 import type { ResolvedDesignSystem } from "@/design";
 
 describe("design", () => {
+  it("keeps builtin accent controls readable in both schemes", () => {
+    const luminance = (hex: string): number => {
+      const channels = hex.match(/[\da-f]{2}/gi)?.map((pair) => {
+        const value = Number.parseInt(pair, 16) / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+      if (!channels || channels.length !== 3) throw new Error(`Expected a hex color: ${hex}`);
+      return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722;
+    };
+
+    for (const theme of [
+      "neutral",
+      "cobalt",
+      "graphite",
+      "sage",
+      "sunset",
+      "airbnb",
+      "clickhouse",
+    ]) {
+      for (const mode of ["light", "dark"] as const) {
+        const { tokens } = resolveDesignSystem({ theme, mode });
+        const accent = luminance(tokens["--mlf-color-accent"]!);
+        const text = luminance(tokens["--mlf-color-text-inverse"]!);
+        const ratio = (Math.max(accent, text) + 0.05) / (Math.min(accent, text) + 0.05);
+        expect(ratio, `${theme}/${mode}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
   it("resolves the builtin design defaults", () => {
     const resolved = resolveDesignSystem();
 

@@ -16,16 +16,15 @@ export class PrimitiveSubmitButtonElement extends LitElement {
     button {
       width: 100%;
       min-height: var(--mlf-control-height, 3rem);
-      padding: 0.85rem 1.1rem;
+      padding: 0.7rem 1.1rem;
       border: none;
       border-radius: var(--mlf-submit-radius, 12px);
       background: var(--mlf-submit-bg, var(--mlf-color-accent, #1e40af));
       color: var(--mlf-submit-color, #ffffff);
       font: inherit;
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 0.92rem;
+      font-weight: 600;
       cursor: pointer;
-      transform: skew(var(--mlf-submit-skew, -12deg));
       transition:
         background-color 0.2s ease-in-out,
         transform 0.2s ease-in-out,
@@ -38,7 +37,7 @@ export class PrimitiveSubmitButtonElement extends LitElement {
     }
 
     button:active:not(:disabled) {
-      transform: scale(0.95) skew(var(--mlf-submit-skew, -12deg));
+      transform: translateY(1px);
     }
 
     button:focus-visible {

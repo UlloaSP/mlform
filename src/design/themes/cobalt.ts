@@ -43,6 +43,7 @@ export const cobaltTheme: ThemeManifest = {
         "--mlf-color-surface-elevated": "#1a2944",
         "--mlf-color-text": "#edf4ff",
         "--mlf-color-text-muted": "#a3b5cf",
+        "--mlf-color-text-inverse": "#0d1524",
         "--mlf-color-border": "#243552",
         "--mlf-color-border-strong": "#304465",
         "--mlf-color-accent": "#68a0ff",

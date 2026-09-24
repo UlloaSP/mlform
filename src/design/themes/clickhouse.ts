@@ -32,6 +32,7 @@ export const clickHouseTheme: ThemeManifest = {
 
         "--mlf-color-text": "#0a0a0a",
         "--mlf-color-text-muted": "#5a5a5a",
+        "--mlf-color-text-inverse": "#0a0a0a",
 
         "--mlf-color-border": "#d8d8cf",
         "--mlf-color-border-strong": "#bdbdaf",
@@ -80,6 +81,7 @@ export const clickHouseTheme: ThemeManifest = {
 
         "--mlf-color-text": "#ffffff",
         "--mlf-color-text-muted": "#cccccc",
+        "--mlf-color-text-inverse": "#0a0a0a",
 
         "--mlf-color-border": "#2a2a2a",
         "--mlf-color-border-strong": "#3a3a3a",

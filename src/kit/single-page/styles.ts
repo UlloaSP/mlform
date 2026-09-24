@@ -21,7 +21,7 @@ export const singlePageRootStyles = css`
     display: grid;
     grid-template-rows: auto 1fr auto;
     min-height: 100%;
-    border-radius: var(--mlf-panel-radius, 12px);
+    border-radius: var(--mlf-panel-radius, var(--mlf-radius-lg, 10px));
     border: var(--mlf-border-width, 1px) solid
       var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
     background: var(--mlf-shell-panel-bg, var(--mlf-color-surface, #ffffff));
@@ -62,7 +62,9 @@ export const singlePageRootStyles = css`
   }
   .body {
     display: grid;
+    align-content: start;
     gap: 0;
+    padding: 1.25rem;
     overflow-y: auto;
     overflow-x: hidden;
   }
@@ -176,6 +178,9 @@ export const singlePageRootStyles = css`
     opacity: 0.55;
   }
   @media (max-width: 900px) {
+    .body {
+      padding: 1rem;
+    }
     .group.columns-2,
     .group.columns-3 {
       grid-template-columns: minmax(0, 1fr);

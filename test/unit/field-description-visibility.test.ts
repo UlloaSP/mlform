@@ -18,7 +18,11 @@ const getShadow = (element: Element | null): ShadowRoot => {
   return element.shadowRoot;
 };
 
-const mountFieldFrame = async (showDescriptionInline?: boolean) => {
+const mountFieldFrame = async (
+  showDescriptionInline?: boolean,
+  readOnly = false,
+  description = "Used for notifications.",
+) => {
   const container = document.createElement("div");
   document.body.append(container);
   const mounted = mountForm(container, {
@@ -28,8 +32,9 @@ const mountFieldFrame = async (showDescriptionInline?: boolean) => {
           id: "email",
           kind: "text",
           label: "Email",
-          description: "Used for notifications.",
+          description,
           showDescriptionInline,
+          readOnly,
         },
       ],
     },
@@ -69,6 +74,30 @@ describe("field description visibility", () => {
 
     expect(description?.classList.contains("show")).toBe(false);
     expect(help.getAttribute("aria-expanded")).toBe("false");
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("keeps help available for a read-only field with a description", async () => {
+    const { container, mounted, frame } = await mountFieldFrame(undefined, true);
+    const shadow = getShadow(frame);
+    const help = shadow.querySelector(".help-btn") as HTMLButtonElement;
+
+    expect(help.disabled).toBe(false);
+    help.click();
+    await flush();
+    expect(shadow.querySelector(".description")?.classList.contains("show")).toBe(true);
+
+    mounted.unmount();
+    container.remove();
+  });
+
+  it("hides help when the field has no description", async () => {
+    const { container, mounted, frame } = await mountFieldFrame(undefined, true, "");
+    const help = getShadow(frame).querySelector(".help-btn") as HTMLButtonElement;
+
+    expect(help.disabled).toBe(true);
 
     mounted.unmount();
     container.remove();

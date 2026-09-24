@@ -7,6 +7,11 @@ export const seriesFieldStyles = css`
   .series {
     display: grid;
     gap: 0.9rem;
+    container-type: inline-size;
+    --mlf-series-control-height: max(
+      var(--mlf-control-height, 3rem),
+      calc(1.4em + 2 * var(--mlf-control-padding-block, 0.78rem) + 2 * var(--mlf-border-width, 1px))
+    );
   }
 
   .toolbar {
@@ -24,7 +29,7 @@ export const seriesFieldStyles = css`
     );
     color: var(--mlf-series-action-text, var(--mlf-color-text, #0f172a));
     font: inherit;
-    line-height: 1;
+    line-height: 1.2;
     cursor: pointer;
     transition:
       background 0.2s ease,
@@ -33,18 +38,30 @@ export const seriesFieldStyles = css`
   }
 
   .add-btn {
-    padding: 0.7rem 1rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
+    height: var(--mlf-series-control-height);
+    padding: 0.65rem 1rem;
+    border-radius: var(--mlf-input-radius, 8px);
+    font-size: inherit;
     font-weight: 700;
     letter-spacing: 0.01em;
   }
 
   .remove-btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 0.8rem;
-    font-size: 1.15rem;
+    display: inline-grid;
+    place-items: center;
+    width: var(--mlf-series-control-height);
+    height: var(--mlf-series-control-height);
+    padding: 0;
+    border-radius: var(--mlf-input-radius, 8px);
+  }
+
+  .remove-btn svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .add-btn:hover:not(:disabled),
@@ -57,6 +74,13 @@ export const seriesFieldStyles = css`
     transform: translateY(-1px);
   }
 
+  .add-btn:focus-visible,
+  .remove-btn:focus-visible {
+    outline: var(--mlf-focus-ring-width, 2px) solid
+      var(--mlf-focus-ring-color, var(--mlf-color-accent, #2456c7));
+    outline-offset: 2px;
+  }
+
   .add-btn:disabled,
   .remove-btn:disabled {
     cursor: not-allowed;
@@ -66,19 +90,18 @@ export const seriesFieldStyles = css`
 
   .grid {
     display: grid;
-    gap: 0.65rem;
+    gap: 0.85rem;
   }
 
   .header,
   .row {
     display: grid;
-    grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
     gap: 0.65rem;
     align-items: start;
   }
 
   .header {
-    padding: 0 0.15rem;
     color: var(--mlf-series-heading, var(--mlf-color-text-muted, #475569));
     font-size: 0.72rem;
     font-weight: 700;
@@ -87,26 +110,49 @@ export const seriesFieldStyles = css`
   }
 
   .row {
-    padding: 0.55rem;
-    border-radius: 1rem;
-    background: var(
-      --mlf-series-row-bg,
-      color-mix(in srgb, var(--mlf-color-surface, #ffffff) 80%, var(--mlf-color-bg-light, #f8fafc))
-    );
-    border: var(--mlf-border-width, 1px) solid
-      var(
-        --mlf-series-row-border,
-        color-mix(in srgb, var(--mlf-color-border, #e2e8f0) 90%, transparent)
-      );
+    min-width: 0;
   }
 
   .cell {
     min-width: 0;
   }
 
+  .cell-label {
+    display: none;
+  }
+
   .cell select,
   .cell input {
-    min-height: var(--mlf-control-height, 3rem);
+    height: var(--mlf-series-control-height);
+    min-height: 0;
+    padding-block: 0;
+  }
+
+  .select-wrap {
+    position: relative;
+    min-width: 0;
+  }
+
+  .select-wrap select {
+    padding-right: 2.8rem;
+    appearance: none;
+  }
+
+  .chevron {
+    position: absolute;
+    top: 50%;
+    right: 0.9rem;
+    width: 14px;
+    height: 14px;
+    transform: translateY(-50%);
+    color: var(--mlf-category-chevron-color, var(--mlf-color-text-muted, #475569));
+    pointer-events: none;
+  }
+
+  .chevron svg {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .value-wrap {
@@ -114,7 +160,25 @@ export const seriesFieldStyles = css`
   }
 
   .value-wrap input {
-    padding-right: calc(var(--mlf-series-unit-width, 2rem) + 1.8rem);
+    padding-right: calc(var(--mlf-series-unit-width, 2rem) + 2rem);
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    appearance: textfield;
+  }
+
+  .value-wrap input::-webkit-inner-spin-button,
+  .value-wrap input::-webkit-outer-spin-button {
+    appearance: none;
+  }
+
+  .value-wrap.is-disabled .unit {
+    opacity: 0.72;
+    --mlf-series-unit-bg: var(--mlf-input-bg-disabled, var(--mlf-color-bg-light, #f5f7fa));
+  }
+
+  .value-wrap.is-readonly .unit {
+    --mlf-series-unit-bg: var(--mlf-input-bg-readonly, var(--mlf-color-bg-light, #f5f7fa));
   }
 
   .unit {
@@ -122,11 +186,22 @@ export const seriesFieldStyles = css`
     top: 50%;
     right: 0.85rem;
     transform: translateY(-50%);
-    max-width: 42%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    max-width: 40%;
+    min-width: var(--mlf-series-unit-width, 2rem);
+    padding-left: 0.65rem;
     overflow: hidden;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--mlf-series-unit-bg, var(--mlf-input-bg, #fff)) 0%, transparent),
+      var(--mlf-series-unit-bg, var(--mlf-input-bg, #fff)) 45%
+    );
     color: var(--mlf-series-unit-color, var(--mlf-color-text-muted, #475569));
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     font-weight: 700;
+    line-height: 1;
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
@@ -139,18 +214,25 @@ export const seriesFieldStyles = css`
   .empty {
     padding: 0.95rem 1rem;
     border-radius: 0.9rem;
-    border: 1px dashed var(--mlf-series-empty-border, var(--mlf-color-border, #cbd5e1));
     color: var(--mlf-series-empty-text, var(--mlf-color-text-muted, #475569));
     font-size: 0.9rem;
   }
 
-  @media (max-width: 640px) {
+  @container (max-width: 32rem) {
     .header {
       display: none;
     }
 
     .row {
       grid-template-columns: 1fr;
+    }
+
+    .cell-label {
+      display: block;
+      margin-block-end: 0.3rem;
+      color: var(--mlf-series-heading, var(--mlf-color-text-muted, #475569));
+      font-size: 0.78rem;
+      font-weight: 600;
     }
 
     .remove-btn {

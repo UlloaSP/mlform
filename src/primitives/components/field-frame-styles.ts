@@ -6,6 +6,7 @@ import { css } from "lit";
 export const fieldFrameStyles = css`
   :host {
     display: block;
+    align-self: start;
   }
 
   :host([hidden]) {
@@ -13,38 +14,34 @@ export const fieldFrameStyles = css`
   }
 
   .tile {
-    position: relative;
     display: grid;
-    gap: 0.85rem;
-    overflow: hidden;
-    padding: 1.5rem 2rem;
+    gap: 0.7rem;
+    padding: 1rem 1.1rem;
     border-radius: var(--mlf-field-radius, 12px);
     border: var(--mlf-border-width, 1px) solid
       var(--mlf-field-border, var(--mlf-color-border, #e2e8f0));
     background: var(--mlf-field-bg, var(--mlf-color-surface, #ffffff));
-    box-shadow: 0 4px 12px var(--mlf-field-shadow, rgba(0, 0, 0, 0.04));
-    transition: box-shadow 0.2s ease;
+    box-shadow: var(--mlf-field-shadow, none);
+    transition: border-color var(--mlf-motion-fast, 140ms ease);
   }
 
-  .tile:hover {
-    box-shadow: 0 6px 18px var(--mlf-field-shadow-hover, rgba(0, 0, 0, 0.06));
+  .tile.success,
+  .tile.error {
+    border-inline-start-width: 4px;
+    padding-inline-start: calc(1.1rem + var(--mlf-border-width, 1px) - 4px);
   }
 
-  .tile::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 6px;
-    background: var(--mlf-field-accent, var(--mlf-color-accent, #1e40af));
-    transition: background 0.2s ease;
+  .tile:focus-within {
+    border-color: var(--mlf-color-accent, #2456c7);
+    background: color-mix(in srgb, var(--mlf-color-accent, #2456c7) 3%, var(--mlf-field-bg, #fff));
   }
 
-  .tile.success::before {
-    background: var(--mlf-field-accent-success, var(--mlf-color-success, #059669));
+  .tile.success {
+    border-inline-start-color: var(--mlf-color-success, #16704f);
   }
 
-  .tile.error::before {
-    background: var(--mlf-field-accent-error, var(--mlf-color-danger, #dc2626));
+  .tile.error {
+    border-inline-start-color: var(--mlf-field-border-invalid, var(--mlf-color-danger, #b93636));
   }
 
   .header {
@@ -59,9 +56,9 @@ export const fieldFrameStyles = css`
     margin: 0;
     min-width: 0;
     color: var(--mlf-field-label-color, var(--mlf-color-text, #0f172a));
-    font-size: 1rem;
+    font-size: 0.92rem;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.35;
     overflow-wrap: anywhere;
   }
 
@@ -80,22 +77,28 @@ export const fieldFrameStyles = css`
   }
 
   .control-slot {
-    min-width: fit-content;
+    min-width: 0;
   }
 
   .feedback {
     min-width: 0;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     line-height: 1.5;
     white-space: normal;
     overflow-wrap: anywhere;
   }
 
   .feedback.success {
-    color: var(--mlf-field-feedback-success, var(--mlf-color-success, #059669));
+    color: var(--mlf-field-feedback-success, var(--mlf-color-success, #16704f));
   }
 
   .feedback.error {
     color: var(--mlf-field-feedback-error, var(--mlf-color-danger, #dc2626));
+  }
+
+  @media (forced-colors: active) {
+    .tile.error {
+      border-inline-start-style: dashed;
+    }
   }
 `;

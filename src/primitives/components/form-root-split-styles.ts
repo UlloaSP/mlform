@@ -15,6 +15,20 @@ export const formRootSplitStyles = css`
     background: var(--mlf-shell-bg, var(--mlf-color-bg, #f5f7fa));
   }
 
+  .split-shell.single-pane {
+    justify-content: center;
+    background: var(--mlf-shell-panel-bg, var(--mlf-color-surface, #ffffff));
+  }
+
+  .single-pane .left-section {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: var(--mlf-shell-left-max-width, 48rem);
+    resize: none;
+    border-right: 0;
+  }
+
   .left-section,
   .right-section,
   .form-inputs,
@@ -37,11 +51,10 @@ export const formRootSplitStyles = css`
 
   .left-section {
     flex: 0 1 auto;
+    width: 42%;
     resize: horizontal;
-    min-width: min-content;
+    min-width: var(--mlf-shell-left-min-width, 22rem);
     max-width: var(--mlf-shell-left-max-width, 48rem);
-    border-right: var(--mlf-border-width, 1px) solid
-      var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
   }
 
   .right-section {
@@ -138,6 +151,7 @@ export const formRootSplitStyles = css`
 
     .left-section,
     .right-section {
+      width: 100%;
       min-width: 0;
       max-width: none;
       resize: none;

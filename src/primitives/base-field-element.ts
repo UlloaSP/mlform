@@ -31,7 +31,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
       max-width: 100%;
       box-sizing: border-box;
       min-height: var(--mlf-control-height, 3rem);
-      padding: 0.75rem 1rem;
+      padding: var(--mlf-control-padding-block, 0.78rem) var(--mlf-control-padding-inline, 0.92rem);
       border: var(--mlf-border-width, 1px) solid
         var(--mlf-input-border, var(--mlf-color-border, #e2e8f0));
       border-radius: var(--mlf-input-radius, 12px);
@@ -48,7 +48,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
     .control:focus-visible {
       outline: none;
       border-color: var(--mlf-input-border-focus, var(--mlf-color-accent, #1e40af));
-      box-shadow: 0 0 0 3px var(--mlf-input-shadow-focus, rgba(29, 78, 216, 0.18));
+      box-shadow: var(--mlf-input-shadow-focus, 0 0 0 3px rgba(29, 78, 216, 0.18));
     }
 
     .control:disabled {

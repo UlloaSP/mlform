@@ -9,21 +9,23 @@ export const helpButtonStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     padding: 0;
-    border: none;
+    border: 1px solid transparent;
     border-radius: 50%;
-    background: var(--mlf-help-btn-bg, var(--mlf-color-accent, #1e40af));
-    color: var(--mlf-help-btn-color, #ffffff);
-    font-size: 1rem;
-    font-weight: 700;
+    background: var(--mlf-help-btn-bg, var(--mlf-color-surface-muted, #f5f7fa));
+    color: var(--mlf-help-btn-color, var(--mlf-color-text-muted, #526170));
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 600;
     cursor: pointer;
     transition: background 0.2s ease;
   }
 
   .help-btn:hover:not(:disabled) {
-    background: var(--mlf-help-btn-bg-hover, var(--mlf-color-accent-hover, #1d4ed8));
+    color: var(--mlf-color-accent, #2456c7);
+    background: var(--mlf-help-btn-bg-hover, var(--mlf-color-accent-soft, #edf2fc));
   }
 
   .help-btn:focus-visible {
@@ -32,9 +34,7 @@ export const helpButtonStyles = css`
   }
 
   .help-btn:disabled {
-    background: var(--mlf-help-btn-bg-disabled, var(--mlf-color-text-muted, #475569));
-    cursor: not-allowed;
-    opacity: 0.7;
+    display: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

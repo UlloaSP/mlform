@@ -43,6 +43,7 @@ export const sageTheme: ThemeManifest = {
         "--mlf-color-surface-elevated": "#24372a",
         "--mlf-color-text": "#edf5ef",
         "--mlf-color-text-muted": "#a8b9aa",
+        "--mlf-color-text-inverse": "#121a15",
         "--mlf-color-border": "#304234",
         "--mlf-color-border-strong": "#3f5544",
         "--mlf-color-accent": "#59b07d",

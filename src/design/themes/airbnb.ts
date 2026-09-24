@@ -31,6 +31,7 @@ export const airbnbTheme: ThemeManifest = {
 
         "--mlf-color-text": "#222222",
         "--mlf-color-text-muted": "#6a6a6a",
+        "--mlf-color-text-inverse": "#222222",
 
         "--mlf-color-border": "#dddddd",
         "--mlf-color-border-strong": "#c1c1c1",
@@ -78,6 +79,7 @@ export const airbnbTheme: ThemeManifest = {
 
         "--mlf-color-text": "#f7f7f7",
         "--mlf-color-text-muted": "#b0b0b0",
+        "--mlf-color-text-inverse": "#121212",
 
         "--mlf-color-border": "#3a3a3a",
         "--mlf-color-border-strong": "#505050",

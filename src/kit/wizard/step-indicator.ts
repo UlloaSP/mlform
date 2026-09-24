@@ -58,31 +58,6 @@ export class KitStepIndicatorElement extends LitElement {
       background: var(--mlf-color-accent, #1e40af);
       transition: width 0.3s ease;
     }
-
-    .dots {
-      display: flex;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-    }
-
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--mlf-color-border, #e2e8f0);
-      transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
-    }
-
-    .dot.active {
-      background: var(--mlf-color-accent, #1e40af);
-      transform: scale(1.25);
-    }
-
-    .dot.done {
-      background: color-mix(in srgb, var(--mlf-color-accent, #1e40af) 50%, transparent);
-    }
   `;
 
   @property({ type: Number }) accessor current = 1;
@@ -105,13 +80,6 @@ export class KitStepIndicatorElement extends LitElement {
         </div>
         <div class="track" aria-hidden="true">
           <div class="fill" style="width: ${pct}%"></div>
-        </div>
-        <div class="dots" aria-hidden="true">
-          ${Array.from({ length: this.total }, (_, i) => {
-            const cls =
-              i + 1 < this.current ? "dot done" : i + 1 === this.current ? "dot active" : "dot";
-            return html`<div class=${cls}></div>`;
-          })}
         </div>
       </div>
     `;

@@ -50,7 +50,7 @@ export const formRootStyles = css`
     gap: 0;
     min-width: 0;
     overflow: hidden;
-    border-radius: var(--mlf-panel-radius, 12px);
+    border-radius: var(--mlf-panel-radius, var(--mlf-radius-lg, 10px));
     border: var(--mlf-border-width, 1px) solid
       var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
     background: var(--mlf-shell-panel-bg, var(--mlf-color-surface, #ffffff));
@@ -108,7 +108,7 @@ export const formRootStyles = css`
   }
 
   .report-collection {
-    gap: 0;
+    gap: 0.75rem;
   }
 
   .empty-report-state {
@@ -117,9 +117,8 @@ export const formRootStyles = css`
     gap: 0.75rem;
     align-items: start;
     padding: 1rem 1.1rem;
-    border: var(--mlf-border-width, 1px) dashed
-      color-mix(in srgb, var(--mlf-color-border, #e2e8f0) 90%, transparent);
-    border-radius: var(--mlf-radius-md, 16px);
+    border: var(--mlf-border-width, 1px) solid var(--mlf-color-border, #d9e1e7);
+    border-radius: var(--mlf-radius-md, 8px);
     background: var(--mlf-report-empty-bg, var(--mlf-color-surface-muted, #f5f7fa));
     color: var(--mlf-color-text-muted, #475569);
   }
@@ -130,7 +129,7 @@ export const formRootStyles = css`
     justify-content: center;
     width: 1.6rem;
     height: 1.6rem;
-    border-radius: 50%;
+    border-radius: var(--mlf-radius-sm, 6px);
     background: color-mix(in srgb, var(--mlf-color-accent, #1e40af) 12%, transparent);
     color: var(--mlf-color-accent, #1e40af);
     font-size: 0.78rem;

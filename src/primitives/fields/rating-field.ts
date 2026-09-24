@@ -61,7 +61,7 @@ export class PrimitiveRatingFieldElement extends PrimitiveFieldElement {
       .rating-btn:focus-visible {
         outline: none;
         border-color: var(--mlf-input-border-focus, var(--mlf-color-accent, #1e40af));
-        box-shadow: 0 0 0 3px var(--mlf-input-shadow-focus, rgba(29, 78, 216, 0.18));
+        box-shadow: var(--mlf-input-shadow-focus, 0 0 0 3px rgba(29, 78, 216, 0.18));
       }
     `,
   ];

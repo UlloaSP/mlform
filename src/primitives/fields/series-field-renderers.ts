@@ -45,6 +45,16 @@ const renderSeriesTextValue = (value: unknown): string => {
       : "";
 };
 
+const renderSelectChevron = () => html`
+  <span class="chevron" aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="currentColor">
+      <path
+        d="M5.516 7.548a.75.75 0 0 1 1.06-.032L10 10.79l3.424-3.274a.75.75 0 0 1 1.029 1.09l-3.955 3.787a.75.75 0 0 1-1.029 0L5.548 8.606a.75.75 0 0 1-.032-1.058z"
+      ></path>
+    </svg>
+  </span>
+`;
+
 export const renderSeriesCell = ({
   config,
   value,
@@ -86,23 +96,27 @@ export const renderSeriesCell = ({
       const options = Array.isArray(config.options) ? config.options : [];
       const selected = typeof value === "string" ? value : "";
       return html`
-        <select
-          class="control"
-          id=${id}
-          aria-label=${label}
-          aria-describedby=${ifDefined(context?.describedBy)}
-          aria-invalid=${String(context?.invalid ?? false)}
-          ?required=${required}
-          ?disabled=${Boolean(disabled || readOnly)}
-          @change=${(event: Event) =>
-            onInput(index, field, (event.target as HTMLSelectElement).value)}
-          @blur=${onBlur}
-        >
-          <option value="" ?selected=${selected === ""}>
-            &#8212; ${text.categoryPlaceholder} &#8212;
-          </option>
-          ${options.map((option) => renderSeriesSelectOption(option, selected))}
-        </select>
+        <div class="select-wrap">
+          <select
+            class="control"
+            id=${id}
+            aria-label=${label}
+            aria-describedby=${ifDefined(context?.describedBy)}
+            aria-invalid=${String(context?.invalid ?? false)}
+            aria-readonly=${String(readOnly)}
+            ?required=${required}
+            ?disabled=${Boolean(disabled || readOnly)}
+            @change=${(event: Event) =>
+              onInput(index, field, (event.target as HTMLSelectElement).value)}
+            @blur=${onBlur}
+          >
+            <option value="" ?selected=${selected === ""}>
+              &#8212; ${text.categoryPlaceholder} &#8212;
+            </option>
+            ${options.map((option) => renderSeriesSelectOption(option, selected))}
+          </select>
+          ${renderSelectChevron()}
+        </div>
       `;
     }
     case "boolean": {
@@ -110,34 +124,39 @@ export const renderSeriesCell = ({
       const falseLabel = toText(config.falseLabel, text.booleanFalse);
       const selected = value === true ? "true" : value === false ? "false" : "";
       return html`
-        <select
-          class="control"
-          id=${id}
-          aria-label=${label}
-          aria-describedby=${ifDefined(context?.describedBy)}
-          aria-invalid=${String(context?.invalid ?? false)}
-          ?required=${required}
-          ?disabled=${Boolean(disabled || readOnly)}
-          @change=${(event: Event) => {
-            const next = (event.target as HTMLSelectElement).value;
-            onInput(index, field, next === "" ? "" : next === "true");
-          }}
-          @blur=${onBlur}
-        >
-          <option value="" ?selected=${selected === ""}>&#8212; Select &#8212;</option>
-          <option value="true" ?selected=${selected === "true"}>${trueLabel}</option>
-          <option value="false" ?selected=${selected === "false"}>${falseLabel}</option>
-        </select>
+        <div class="select-wrap">
+          <select
+            class="control"
+            id=${id}
+            aria-label=${label}
+            aria-describedby=${ifDefined(context?.describedBy)}
+            aria-invalid=${String(context?.invalid ?? false)}
+            aria-readonly=${String(readOnly)}
+            ?required=${required}
+            ?disabled=${Boolean(disabled || readOnly)}
+            @change=${(event: Event) => {
+              const next = (event.target as HTMLSelectElement).value;
+              onInput(index, field, next === "" ? "" : next === "true");
+            }}
+            @blur=${onBlur}
+          >
+            <option value="" ?selected=${selected === ""}>&#8212; Select &#8212;</option>
+            <option value="true" ?selected=${selected === "true"}>${trueLabel}</option>
+            <option value="false" ?selected=${selected === "false"}>${falseLabel}</option>
+          </select>
+          ${renderSelectChevron()}
+        </div>
       `;
     }
     case "number": {
       const unit = seriesNumberUnit(config);
       return html`
-        <div class="value-wrap">
+        <div class="value-wrap ${disabled ? "is-disabled" : readOnly ? "is-readonly" : ""}">
           <input
             class="control"
             id=${id}
             type="number"
+            inputmode="decimal"
             spellcheck="false"
             autocomplete="off"
             .value=${renderSeriesTextValue(value)}

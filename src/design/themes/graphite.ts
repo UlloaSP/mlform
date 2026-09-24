@@ -43,6 +43,7 @@ export const graphiteTheme: ThemeManifest = {
         "--mlf-color-surface-elevated": "#24303d",
         "--mlf-color-text": "#ebf1f7",
         "--mlf-color-text-muted": "#9ca8b5",
+        "--mlf-color-text-inverse": "#0f1318",
         "--mlf-color-border": "#2c3642",
         "--mlf-color-border-strong": "#3b4754",
         "--mlf-color-accent": "#4ea1ff",

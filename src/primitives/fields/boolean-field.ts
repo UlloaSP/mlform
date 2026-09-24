@@ -18,7 +18,9 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         width: 100%;
         margin: 0;
         padding: 0;
-        border: none;
+        border: var(--mlf-border-width, 1px) solid var(--mlf-toggle-border, var(--mlf-color-border));
+        border-radius: var(--mlf-input-radius, 8px);
+        overflow: hidden;
       }
 
       input[type="radio"] {
@@ -32,7 +34,8 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 0.65rem 0.25rem;
+        min-height: var(--mlf-control-height, 3rem);
+        padding: 0.6rem 0.5rem;
         font-size: 0.9rem;
         font-weight: 500;
         color: var(--mlf-toggle-text, var(--mlf-color-text, #0f172a));
@@ -40,24 +43,25 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
           --mlf-toggle-bg,
           color-mix(in srgb, var(--mlf-color-accent, #1e40af) 10%, transparent)
         );
-        border: var(--mlf-border-width, 1px) solid
-          var(--mlf-toggle-border, var(--mlf-color-border, #e2e8f0));
+        border: 0;
+        border-radius: 0;
         cursor: pointer;
         user-select: none;
         transition:
           background 0.2s ease,
           color 0.2s ease,
           border-color 0.2s ease;
-        transform: skewX(var(--mlf-toggle-skew, -12deg));
-        margin-right: -1px;
+        margin: 0;
       }
 
-      .opt:last-of-type {
-        margin-right: 0;
+      .opt + input + .opt {
+        border-left: var(--mlf-border-width, 1px) solid
+          var(--mlf-toggle-border, var(--mlf-color-border, #e2e8f0));
       }
 
-      .opt span {
-        transform: skewX(calc(-1 * var(--mlf-toggle-skew, -12deg)));
+      input[type="radio"]:focus-visible + .opt {
+        outline: 2px solid var(--mlf-color-accent, #2456c7);
+        outline-offset: -3px;
       }
 
       .opt:hover {
@@ -68,9 +72,9 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
       }
 
       input[type="radio"]:checked + label.opt {
-        background: var(--mlf-toggle-bg-active, var(--mlf-color-success, #059669));
-        border-color: var(--mlf-toggle-border-active, var(--mlf-color-success, #059669));
-        color: var(--mlf-toggle-text-active, #ffffff);
+        background: var(--mlf-toggle-bg-active, var(--mlf-color-accent, #2456c7));
+        border-color: var(--mlf-toggle-border-active, var(--mlf-color-accent, #2456c7));
+        color: var(--mlf-toggle-text-active, var(--mlf-color-text-inverse, #ffffff));
       }
 
       input[type="radio"]:disabled + label.opt {

@@ -24,6 +24,7 @@ export const neutralTheme: ThemeManifest = {
         "--mlf-color-surface-elevated": "#202731",
         "--mlf-color-text": "#ebf1f7",
         "--mlf-color-text-muted": "#a5b1bd",
+        "--mlf-color-text-inverse": "#12161c",
         "--mlf-color-border": "#313a47",
         "--mlf-color-border-strong": "#414b58",
         "--mlf-color-accent": "#71a7ff",

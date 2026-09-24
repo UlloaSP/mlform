@@ -29,7 +29,7 @@ export const tabsRootStyles = css`
     min-width: 0;
     min-height: 0;
     overflow: hidden;
-    border-radius: var(--mlf-panel-radius, 12px);
+    border-radius: var(--mlf-panel-radius, var(--mlf-radius-lg, 10px));
     border: var(--mlf-border-width, 1px) solid
       var(--mlf-shell-panel-border, var(--mlf-color-border, #e2e8f0));
     background: var(--mlf-shell-panel-bg, var(--mlf-color-surface, #ffffff));
@@ -53,7 +53,7 @@ export const tabsRootStyles = css`
   .tab {
     position: relative;
     border: none;
-    border-radius: 12px 12px 0 0;
+    border-radius: var(--mlf-radius-md, 8px) var(--mlf-radius-md, 8px) 0 0;
     background: transparent;
     color: var(--mlf-color-text-muted, #475569);
     font: inherit;

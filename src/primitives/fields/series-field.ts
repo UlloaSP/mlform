@@ -92,6 +92,9 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
                     return html`
                       <div class="row">
                         <div class="cell">
+                          <span class="cell-label" aria-hidden="true"
+                            >${toText(field1.label, "field1")}</span
+                          >
                           ${this.#renderCell(
                             field1,
                             row.field1,
@@ -103,6 +106,9 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
                           )}
                         </div>
                         <div class="cell">
+                          <span class="cell-label" aria-hidden="true"
+                            >${toText(field2.label, "field2")}</span
+                          >
                           ${this.#renderCell(
                             field2,
                             row.field2,
@@ -120,7 +126,9 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
                           ?disabled=${locked || !canRemove}
                           @click=${() => this.#handleRemoveRow(index)}
                         >
-                          &times;
+                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7" />
+                          </svg>
                         </button>
                       </div>
                     `;

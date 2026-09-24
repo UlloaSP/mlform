@@ -6,6 +6,7 @@ import { css } from "lit";
 export const reportFrameStyles = css`
   :host {
     display: block;
+    align-self: start;
   }
   :host([hidden]),
   .description[hidden] {
@@ -15,9 +16,12 @@ export const reportFrameStyles = css`
   .report {
     display: grid;
     gap: 0.75rem;
-    padding: 1.15rem 0;
-    border-bottom: var(--mlf-border-width, 1px) solid
+    padding: 1rem 1.1rem;
+    border: var(--mlf-border-width, 1px) solid
       var(--mlf-report-border, var(--mlf-color-border, #e2e8f0));
+    border-radius: var(--mlf-report-radius, 10px);
+    background: var(--mlf-report-bg, var(--mlf-color-surface, #ffffff));
+    box-shadow: var(--mlf-report-shadow, none);
   }
 
   .header {
@@ -29,11 +33,9 @@ export const reportFrameStyles = css`
   .label {
     margin: 0;
     min-width: 0;
-    color: var(--mlf-report-label-color, var(--mlf-color-text-muted, #475569));
-    font-size: 0.875rem;
+    color: var(--mlf-report-label-color, var(--mlf-color-text, #172330));
+    font-size: 0.92rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     overflow-wrap: anywhere;
   }
   .description {
@@ -50,14 +52,10 @@ export const reportFrameStyles = css`
     gap: 0.75rem;
     align-items: start;
     padding: 1rem 1.1rem;
-    border: var(--mlf-border-width, 1px) dashed
-      color-mix(in srgb, var(--mlf-color-border, #e2e8f0) 90%, transparent);
-    border-radius: var(--mlf-radius-md, 16px);
+    border-radius: var(--mlf-radius-md, 8px);
     background: var(--mlf-report-empty-bg, var(--mlf-color-surface-muted, #f5f7fa));
   }
   .state-view.error {
-    border-style: solid;
-    border-color: color-mix(in srgb, var(--mlf-color-danger, #dc2626) 34%, transparent);
     background: color-mix(in srgb, var(--mlf-color-danger, #dc2626) 7%, transparent);
   }
   .state-marker {
@@ -66,7 +64,7 @@ export const reportFrameStyles = css`
     justify-content: center;
     width: 1.6rem;
     height: 1.6rem;
-    border-radius: 50%;
+    border-radius: var(--mlf-radius-sm, 6px);
     background: color-mix(in srgb, var(--mlf-color-accent, #1e40af) 12%, transparent);
     color: var(--mlf-color-accent, #1e40af);
     font-size: 0.78rem;
