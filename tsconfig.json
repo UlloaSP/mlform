@@ -32,7 +32,16 @@
 
     // Path aliases
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "mlform": ["./src/kit/index.ts"],
+      "mlform/kit": ["./src/kit/index.ts"],
+      "mlform/view": ["./src/view/index.ts"],
+      "mlform/runtime": ["./src/runtime/index.ts"],
+      "mlform/schema": ["./src/schema/index.ts"],
+      "mlform/builtins": ["./src/builtins/index.ts"],
+      "mlform/transport": ["./src/transport/index.ts"],
+      "mlform/primitives": ["./src/primitives/index.ts"],
+      "mlform/design": ["./src/design/index.ts"]
     },
 
     // Type definitions
