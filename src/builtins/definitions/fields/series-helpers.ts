@@ -11,18 +11,10 @@ import { dateFieldDefinition } from "./date";
 import { numberFieldDefinition } from "./number";
 import { textFieldDefinition } from "./text";
 import { isRecord } from "./value-helpers";
+import { seriesAggregationSchema, type SeriesAggregation } from "./series-aggregations";
+import type { SeriesPoint, SeriesColumnConfig } from "./series-types";
 
-export type SeriesPoint = {
-  field1: unknown;
-  field2: unknown;
-};
-
-export type SeriesSubFieldConfig = {
-  kind: string;
-  label: string;
-  required?: boolean;
-  [key: string]: unknown;
-};
+export type { SeriesPoint, SeriesColumnConfig } from "./series-types";
 
 export const supportedSeriesSubFieldKinds = [
   "text",
@@ -34,14 +26,16 @@ export const supportedSeriesSubFieldKinds = [
 
 export type SeriesFieldConfig = BaseFieldConfig & {
   kind: "series";
-  field1: SeriesSubFieldConfig;
-  field2: SeriesSubFieldConfig;
+  columns: SeriesColumnConfig[];
   minPoints?: number;
   maxPoints?: number;
+  aggregations?: SeriesAggregation[];
+  showAggregationSummary?: boolean;
 };
 
-const seriesSubFieldSchema: z.ZodType<SeriesSubFieldConfig> = z
+const seriesColumnSchema: z.ZodType<SeriesColumnConfig> = z
   .object({
+    id: z.string().regex(/^(?!__proto__$|constructor$|prototype$)[A-Za-z_][A-Za-z0-9_-]*$/u),
     kind: z.string().min(1),
     label: z.string().min(1),
     required: z.boolean().optional(),
@@ -51,10 +45,11 @@ const seriesSubFieldSchema: z.ZodType<SeriesSubFieldConfig> = z
 export const seriesFieldSchema = z.object({
   kind: z.literal("series"),
   ...baseFieldShape,
-  field1: seriesSubFieldSchema,
-  field2: seriesSubFieldSchema,
+  columns: z.array(seriesColumnSchema).min(1),
   minPoints: z.number().int().nonnegative().optional(),
   maxPoints: z.number().int().nonnegative().optional(),
+  aggregations: z.array(seriesAggregationSchema).min(1).optional(),
+  showAggregationSummary: z.boolean().default(false),
 });
 
 const requiredMessage = "This field is required.";
@@ -73,7 +68,7 @@ const getBuiltinSeriesSubFieldDefinition = (kind: string) => {
     | undefined;
 };
 
-const normalizeSubFieldValue = (config: SeriesSubFieldConfig, value: unknown): unknown => {
+const normalizeSubFieldValue = (config: SeriesColumnConfig, value: unknown): unknown => {
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
   if (!definition?.normalizeValue) {
     return value;
@@ -82,7 +77,7 @@ const normalizeSubFieldValue = (config: SeriesSubFieldConfig, value: unknown): u
   return definition.normalizeValue(value, config as never);
 };
 
-export const serializeSubFieldValue = (config: SeriesSubFieldConfig, value: unknown): unknown => {
+export const serializeSubFieldValue = (config: SeriesColumnConfig, value: unknown): unknown => {
   if (value === null || value === undefined) {
     return null;
   }
@@ -107,7 +102,7 @@ const isSubFieldEmpty = (value: unknown): boolean => {
   return false;
 };
 
-export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unknown): string[] => {
+export const validateSubFieldValue = (config: SeriesColumnConfig, value: unknown): string[] => {
   if (config.required && isSubFieldEmpty(value)) {
     return [requiredMessage];
   }
@@ -118,7 +113,7 @@ export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unkno
   }
 
   const result = definition.validateSync(value as never, config as never, {
-    field: { ...config, id: config.label } as never,
+    field: config as never,
     values: {},
     submitCount: 0,
     validationVersion: 0,
@@ -129,7 +124,7 @@ export const validateSubFieldValue = (config: SeriesSubFieldConfig, value: unkno
 };
 
 export const validateSeriesSubFieldConfig = (
-  config: SeriesSubFieldConfig,
+  config: SeriesColumnConfig,
 ): { message: string; path: readonly (string | number)[] } | null => {
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
   if (!definition) return null;
@@ -165,52 +160,16 @@ export const prefixRowErrors = (index: number, label: string, errors: string[]):
   return errors.map((error) => `Row ${index + 1} (${label}): ${error}`);
 };
 
-const extractSeriesPair = (
-  value: unknown,
-): {
-  field1: unknown;
-  field2: unknown;
-} | null => {
-  if (Array.isArray(value)) {
-    return value.length >= 2 ? { field1: value[0], field2: value[1] } : null;
-  }
-
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  if ("field1" in value || "field2" in value) {
-    return {
-      field1: value.field1,
-      field2: value.field2,
-    };
-  }
-
-  const entries = Object.entries(value);
-  if (entries.length < 2) {
-    return null;
-  }
-
-  return {
-    field1: entries[0]?.[1],
-    field2: entries[1]?.[1],
-  };
-};
-
-export const normalizeSeriesPoint = (
-  value: unknown,
-  config: SeriesFieldConfig,
-): SeriesPoint | null => {
-  const pair = extractSeriesPair(value);
-  if (!pair) {
-    return null;
-  }
-
-  return {
-    field1: normalizeSubFieldValue(config.field1, pair.field1),
-    field2: normalizeSubFieldValue(config.field2, pair.field2),
-  };
-};
+export const normalizeSeriesPoint = (value: unknown, config: SeriesFieldConfig): SeriesPoint =>
+  Object.fromEntries(
+    config.columns.map((column) => [
+      column.id,
+      normalizeSubFieldValue(
+        column,
+        isRecord(value) && Object.hasOwn(value, column.id) ? value[column.id] : null,
+      ),
+    ]),
+  );
 
 export const validateSeriesPointCount = (
   value: SeriesPoint[],

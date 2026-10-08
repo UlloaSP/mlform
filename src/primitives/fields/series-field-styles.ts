@@ -91,22 +91,34 @@ export const seriesFieldStyles = css`
   .grid {
     display: grid;
     gap: 0.85rem;
+    overflow-x: auto;
+  }
+
+  .grid:focus-visible {
+    outline: var(--mlf-focus-ring-width, 2px) solid
+      var(--mlf-focus-ring-color, var(--mlf-color-accent, #2456c7));
+    outline-offset: -2px;
   }
 
   .header,
   .row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-columns: repeat(var(--mlf-series-column-count), minmax(10rem, 1fr)) var(
+        --mlf-series-control-height
+      );
     gap: 0.65rem;
     align-items: start;
   }
 
   .header {
     color: var(--mlf-series-heading, var(--mlf-color-text-muted, #475569));
-    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  .header > div {
+    font-size: 0.72rem;
   }
 
   .row {

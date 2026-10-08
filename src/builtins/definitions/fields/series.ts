@@ -2,6 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { BuiltinFieldDefinition } from "../shared";
+import { resolveMappedTargets } from "@/schema";
+import { calculateSeriesAggregation } from "./series-aggregations";
 import {
   normalizeSeriesPoint,
   prefixRowErrors,
@@ -23,59 +25,110 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
       return [];
     }
 
-    return config.defaultValue
-      .map((point) => normalizeSeriesPoint(point, config))
-      .filter((point): point is SeriesPoint => point !== null);
+    return Array.from(config.defaultValue, (point) => normalizeSeriesPoint(point, config));
   },
   normalizeValue(value, config) {
     if (!Array.isArray(value)) {
       return [];
     }
 
-    return value
-      .map((point) => normalizeSeriesPoint(point, config))
-      .filter((point): point is SeriesPoint => point !== null);
+    return Array.from(value, (point) => normalizeSeriesPoint(point, config));
   },
   serializeValue(value, config) {
-    return value.map((point) => ({
-      field1: serializeSubFieldValue(config.field1, point.field1),
-      field2: serializeSubFieldValue(config.field2, point.field2),
-    }));
+    return value.map((point) =>
+      Object.fromEntries(
+        config.columns.map((column) => [
+          column.id,
+          serializeSubFieldValue(column, point[column.id]),
+        ]),
+      ),
+    );
   },
-  getNestedFieldReferences(config) {
+  getMappedTargets(config, context) {
     return [
-      {
-        kind: config.field1.kind,
-        path: ["field1", "kind"],
-        unknownKindMessage: `Series field "${config.label}" uses unknown sub-field kind "${config.field1.kind}" in "field1".`,
-      },
-      {
-        kind: config.field2.kind,
-        path: ["field2", "kind"],
-        unknownKindMessage: `Series field "${config.label}" uses unknown sub-field kind "${config.field2.kind}" in "field2".`,
-      },
+      ...resolveMappedTargets(config.mappedTo, context.backend),
+      ...(config.aggregations ?? []).flatMap((aggregation) =>
+        resolveMappedTargets(aggregation.mappedTo, context.backend),
+      ),
     ];
   },
+  getSubmissionEntries(value, serializedValue, config, context) {
+    if (!config.aggregations) return undefined;
+    return [
+      ...resolveMappedTargets(config.mappedTo, context.backend).map((target) => ({
+        target,
+        value: serializedValue,
+      })),
+      ...config.aggregations.flatMap((aggregation) =>
+        resolveMappedTargets(aggregation.mappedTo, context.backend).map((target) => ({
+          target,
+          value: calculateSeriesAggregation(value, aggregation),
+        })),
+      ),
+    ];
+  },
+  getNestedFieldReferences(config) {
+    return config.columns.map((column, index) => ({
+      kind: column.kind,
+      path: ["columns", index, "kind"],
+      unknownKindMessage: `Series field "${config.label}" uses unknown sub-field kind "${column.kind}" in "${column.id}".`,
+    }));
+  },
   validateConfig(config, context) {
-    for (const name of ["field1", "field2"] as const) {
-      if (config[name].kind === "series") {
-        context.fail(`Series field "${config.label}" cannot nest series in "${name}".`, [
-          name,
+    if (config.aggregations && config.valuePath !== undefined) {
+      context.fail(
+        "Series aggregations use explicit mappedTo targets; valuePath is not supported.",
+        ["valuePath"],
+      );
+    }
+    config.aggregations?.forEach((aggregation, index) => {
+      const source = config.columns.find((column) => column.id === aggregation.source);
+      if (!source) {
+        context.fail("Series aggregation source must identify a declared column.", [
+          "aggregations",
+          index,
+          "source",
+        ]);
+      }
+      if (source?.kind !== "number") {
+        context.fail("Series aggregations require a number sub-field.", [
+          "aggregations",
+          index,
+          "source",
+        ]);
+      }
+      if (resolveMappedTargets(aggregation.mappedTo, undefined).length === 0) {
+        context.fail("Series aggregations require at least one mappedTo target.", [
+          "aggregations",
+          index,
+          "mappedTo",
+        ]);
+      }
+    });
+    const ids = new Set<string>();
+    for (const [index, column] of config.columns.entries()) {
+      if (ids.has(column.id))
+        context.fail("Series column ids must be unique.", ["columns", index, "id"]);
+      ids.add(column.id);
+      if (column.kind === "series") {
+        context.fail(`Series field "${config.label}" cannot nest series in "${column.id}".`, [
+          "columns",
+          index,
           "kind",
         ]);
       }
-      if (!(supportedSeriesSubFieldKinds as readonly string[]).includes(config[name].kind)) {
+      if (!(supportedSeriesSubFieldKinds as readonly string[]).includes(column.kind)) {
         context.fail(
-          `Series field "${config.label}" does not support sub-field kind "${config[name].kind}" in "${name}".`,
-          [name, "kind"],
+          `Series field "${config.label}" does not support sub-field kind "${column.kind}" in "${column.id}".`,
+          ["columns", index, "kind"],
         );
       }
 
-      const invalidConfig = validateSeriesSubFieldConfig(config[name]);
+      const invalidConfig = validateSeriesSubFieldConfig(column);
       if (invalidConfig) {
         context.fail(
-          `Series field "${config.label}" has invalid ${config[name].kind} configuration in "${name}": ${invalidConfig.message}`,
-          [name, ...invalidConfig.path],
+          `Series field "${config.label}" has invalid ${column.kind} configuration in "${column.id}": ${invalidConfig.message}`,
+          ["columns", index, ...invalidConfig.path],
         );
       }
     }
@@ -92,24 +145,36 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
   },
   validateSync(value, config) {
     const errors = validateSeriesPointCount(value, config);
+    const sources = new Set(config.aggregations?.map((aggregation) => aggregation.source));
 
     value.forEach((point, index) => {
-      for (const error of prefixRowErrors(
-        index,
-        config.field1.label,
-        validateSubFieldValue(config.field1, point.field1),
-      )) {
-        errors.add(error);
-      }
-
-      for (const error of prefixRowErrors(
-        index,
-        config.field2.label,
-        validateSubFieldValue(config.field2, point.field2),
-      )) {
-        errors.add(error);
+      for (const column of config.columns) {
+        if (
+          sources.has(column.id) &&
+          (typeof point[column.id] !== "number" || !Number.isFinite(point[column.id]))
+        ) {
+          errors.add(
+            `Row ${index + 1} (${column.label}): Enter a finite number in every measurement.`,
+          );
+        }
+        for (const error of prefixRowErrors(
+          index,
+          column.label,
+          validateSubFieldValue(column, point[column.id]),
+        ))
+          errors.add(error);
       }
     });
+
+    if (value.length > 0 && errors.size === 0) {
+      for (const aggregation of config.aggregations ?? []) {
+        if (calculateSeriesAggregation(value, aggregation) === null) {
+          errors.add(
+            `${config.columns.find((column) => column.id === aggregation.source)?.label}: Check the measurements and ensure there are enough values to calculate a result.`,
+          );
+        }
+      }
+    }
 
     return [...errors];
   },

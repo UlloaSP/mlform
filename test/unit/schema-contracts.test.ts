@@ -148,8 +148,10 @@ describe("normalized schema contracts", () => {
             {
               kind: "series",
               label: "Unsupported series",
-              field1: { kind: "custom-cell", label: "Custom" },
-              field2: { kind: "number", label: "Value" },
+              columns: [
+                { id: "field1", kind: "custom-cell", label: "Custom" },
+                { id: "field2", kind: "number", label: "Value" },
+              ],
             },
           ],
         },

@@ -15,6 +15,7 @@ export {
   ratingFieldDefinition,
   regressorReportDefinition,
   seriesFieldDefinition,
+  calculateSeriesAggregation,
   singleChoiceFieldDefinition,
   textFieldDefinition,
   builtinFieldDefinitions,
@@ -26,10 +27,11 @@ export type {
   BuiltinReportConfig,
   BuiltinReportDefinition,
   SeriesFieldConfig,
+  SeriesAggregation,
   OneHotCategoryFieldConfig,
   OneHotCategoryOption,
   SeriesPoint,
-  SeriesSubFieldConfig,
+  SeriesColumnConfig,
 } from "./definitions";
 export { createBuiltinMlRegistry } from "./registry";
 export * from "./onehot-display";

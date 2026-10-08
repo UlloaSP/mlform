@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-export type SeriesSubFieldConfig = {
+export type SeriesColumnConfig = {
+  id: string;
   kind?: unknown;
   label?: unknown;
   required?: unknown;
@@ -20,13 +21,7 @@ export type SeriesSubFieldConfig = {
 
 export type DraftRow = {
   key: string;
-  field1: unknown;
-  field2: unknown;
-};
-
-type SerializedPoint = {
-  field1?: unknown;
-  field2?: unknown;
+  values: Record<string, unknown>;
 };
 
 let rowSequence = 0;
@@ -46,7 +41,7 @@ const normalizeBooleanValue = (value: unknown): boolean | "" => {
   return "";
 };
 
-export const normalizeCellValue = (config: SeriesSubFieldConfig, value: unknown): unknown => {
+export const normalizeCellValue = (config: SeriesColumnConfig, value: unknown): unknown => {
   switch (config.kind) {
     case "number":
       return typeof value === "number" ? String(value) : typeof value === "string" ? value : "";
@@ -70,23 +65,23 @@ export const normalizeCellValue = (config: SeriesSubFieldConfig, value: unknown)
 
 export const normalizeRows = (
   value: unknown,
-  field1Config: SeriesSubFieldConfig,
-  field2Config: SeriesSubFieldConfig,
+  columns: readonly SeriesColumnConfig[],
 ): DraftRow[] => {
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value.map((point) => {
-    const row = point as SerializedPoint;
+    const row = point as Record<string, unknown>;
     return {
       key: createRowKey(),
-      field1: normalizeCellValue(field1Config, row.field1),
-      field2: normalizeCellValue(field2Config, row.field2),
+      values: Object.fromEntries(
+        columns.map((column) => [column.id, normalizeCellValue(column, row?.[column.id])]),
+      ),
     } satisfies DraftRow;
   });
 };
 
-export const seriesNumberUnit = (config: SeriesSubFieldConfig): string => {
+export const seriesNumberUnit = (config: SeriesColumnConfig): string => {
   return typeof config.unit === "string" ? config.unit : "";
 };

@@ -49,8 +49,10 @@ describe("builtin definitions", () => {
     const config = seriesFieldDefinition.schema.parse({
       kind: "series",
       label: "History",
-      field1: { kind: "date", label: "field1", required: true },
-      field2: { kind: "number", label: "field2", required: true },
+      columns: [
+        { id: "field1", kind: "date", label: "field1", required: true },
+        { id: "field2", kind: "number", label: "field2", required: true },
+      ],
       granularity: "date",
     });
 
@@ -59,12 +61,13 @@ describe("builtin definitions", () => {
       config,
     );
 
-    expect(normalized).toHaveLength(2);
+    expect(normalized).toHaveLength(3);
     expect(normalized?.[0]?.field2).toBe(10);
-    expect(normalized?.[1]?.field1).toBeInstanceOf(Date);
+    expect(normalized?.[1]).toEqual({ field1: null, field2: null });
     expect(seriesFieldDefinition.serializeValue?.(normalized ?? [], config)).toEqual([
       { field1: "2026-01-01T00:00:00.000Z", field2: 10 },
-      { field1: "2026-01-02T00:00:00.000Z", field2: 12 },
+      { field1: null, field2: null },
+      { field1: null, field2: null },
     ]);
   });
 
@@ -72,8 +75,10 @@ describe("builtin definitions", () => {
     const config = seriesFieldDefinition.schema.parse({
       kind: "series",
       label: "History",
-      field1: { kind: "date", label: "field1", required: true },
-      field2: { kind: "number", label: "field2", required: true, min: 10 },
+      columns: [
+        { id: "field1", kind: "date", label: "field1", required: true },
+        { id: "field2", kind: "number", label: "field2", required: true, min: 10 },
+      ],
     });
 
     const errors = seriesFieldDefinition.validateSync?.(

@@ -8,7 +8,6 @@ import { createForm } from "mlform/runtime";
 const baseConfig = {
   kind: "series" as const,
   label: "Observations",
-  field2: { kind: "text", label: "Note" },
 };
 
 const subFieldCases = [
@@ -53,7 +52,10 @@ describe("series conformance", () => {
   it.each(subFieldCases)("reuses the $kind value contract for nested fields", (testCase) => {
     const config = seriesFieldDefinition.schema.parse({
       ...baseConfig,
-      field1: testCase.config,
+      columns: [
+        { id: "field1", ...testCase.config },
+        { id: "field2", kind: "text", label: "Note" },
+      ],
     });
     const value = seriesFieldDefinition.normalizeValue?.(
       [{ field1: testCase.input, field2: "note" }],
@@ -71,8 +73,10 @@ describe("series conformance", () => {
     const config = seriesFieldDefinition.schema.parse({
       kind: "series",
       label: "History",
-      field1: { kind: "date", label: "Date" },
-      field2: { kind: "number", label: "Value" },
+      columns: [
+        { id: "field1", kind: "date", label: "Date" },
+        { id: "field2", kind: "number", label: "Value" },
+      ],
     });
     const input = [
       { field1: "2026-01-02", field2: 2 },
@@ -92,37 +96,37 @@ describe("series conformance", () => {
     {
       field1: { kind: "category", label: "Category" },
       message: /invalid category configuration/iu,
-      path: ["fields", 0, "field1", "options"],
+      path: ["fields", 0, "columns", 0, "options"],
     },
     {
       field1: { kind: "number", label: "Number", step: 0 },
       message: /invalid number configuration/iu,
-      path: ["fields", 0, "field1", "step"],
+      path: ["fields", 0, "columns", 0, "step"],
     },
     {
       field1: { kind: "date", label: "Date", min: "invalid" },
       message: /valid date/iu,
-      path: ["fields", 0, "field1", "min"],
+      path: ["fields", 0, "columns", 0, "min"],
     },
     {
       field1: { kind: "text", label: "Text", minLength: 4, maxLength: 2 },
       message: /minimum length cannot exceed maximum length/iu,
-      path: ["fields", 0, "field1", "minLength"],
+      path: ["fields", 0, "columns", 0, "minLength"],
     },
     {
       field1: { kind: "text", label: "Text", pattern: "[" },
       message: /valid regular expression/iu,
-      path: ["fields", 0, "field1", "pattern"],
+      path: ["fields", 0, "columns", 0, "pattern"],
     },
     {
       field1: { kind: "number", label: "Number", min: 2, max: 1 },
       message: /minimum value cannot exceed maximum value/iu,
-      path: ["fields", 0, "field1", "min"],
+      path: ["fields", 0, "columns", 0, "min"],
     },
     {
       field1: { kind: "date", label: "Date", min: "2026-02-01", max: "2026-01-01" },
       message: /minimum date cannot be after maximum date/iu,
-      path: ["fields", 0, "field1", "min"],
+      path: ["fields", 0, "columns", 0, "min"],
     },
   ])("rejects invalid nested configuration before runtime", ({ field1, message, path }) => {
     let thrown: unknown;
@@ -134,8 +138,10 @@ describe("series conformance", () => {
             {
               kind: "series",
               label: "History",
-              field1,
-              field2: { kind: "text", label: "Note" },
+              columns: [
+                { id: "field1", ...field1 },
+                { id: "field2", kind: "text", label: "Note" },
+              ],
             },
           ],
         },

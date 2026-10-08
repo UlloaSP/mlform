@@ -262,8 +262,10 @@ describe("primitives", () => {
             kind: "series",
             label: "History",
             required: true,
-            field1: { kind: "date", label: "field1", required: true },
-            field2: { kind: "number", label: "field2", required: true },
+            columns: [
+              { id: "field1", kind: "date", label: "field1", required: true },
+              { id: "field2", kind: "number", label: "field2", required: true },
+            ],
           },
         ],
       },
@@ -509,14 +511,10 @@ describe("primitives", () => {
             id: "history",
             kind: "series",
             label: "History",
-            field1: { kind: "date", label: "field1", required: true },
-            field2: {
-              kind: "number",
-              label: "field2",
-              required: true,
-              min: 100,
-              max: 200,
-            },
+            columns: [
+              { id: "field1", kind: "date", label: "field1", required: true },
+              { id: "field2", kind: "number", label: "field2", required: true, min: 100, max: 200 },
+            ],
             minPoints: 2,
           },
         ],
@@ -886,8 +884,10 @@ describe("primitives", () => {
           {
             kind: "series",
             label: "Demand history",
-            field1: { kind: "date", label: "field1", required: true },
-            field2: { kind: "number", label: "field2", required: true, unit: "MW" },
+            columns: [
+              { id: "field1", kind: "date", label: "field1", required: true },
+              { id: "field2", kind: "number", label: "field2", required: true, unit: "MW" },
+            ],
             defaultValue: [
               { field1: "2026-07-10", field2: 10 },
               { field1: "2026-07-11", field2: 12 },
@@ -958,8 +958,10 @@ describe("primitives", () => {
           {
             kind: "series",
             label: "Demand history",
-            field1: { kind: "date", label: "field1", required: true },
-            field2: { kind: "number", label: "field2", required: true },
+            columns: [
+              { id: "field1", kind: "date", label: "field1", required: true },
+              { id: "field2", kind: "number", label: "field2", required: true },
+            ],
             defaultValue: [{ field1: "2026-07-10", field2: 10 }],
           },
         ],

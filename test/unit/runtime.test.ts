@@ -306,8 +306,10 @@ describe("runtime", () => {
               id: "series",
               kind: "series",
               label: "Series",
-              field1: { kind: "date", label: "field1", required: true },
-              field2: { kind: "number", label: "field2", required: true },
+              columns: [
+                { id: "field1", kind: "date", label: "field1", required: true },
+                { id: "field2", kind: "number", label: "field2", required: true },
+              ],
               minPoints: 3,
               maxPoints: 1,
               minDate: "2026-12-31",
@@ -334,8 +336,10 @@ describe("runtime", () => {
             {
               kind: "series",
               label: "Nested series",
-              field1: { kind: "series", label: "field1" },
-              field2: { kind: "number", label: "field2" },
+              columns: [
+                { id: "field1", kind: "series", label: "field1" },
+                { id: "field2", kind: "number", label: "field2" },
+              ],
             },
           ],
         },
@@ -355,8 +359,10 @@ describe("runtime", () => {
             {
               kind: "series",
               label: "Unknown series",
-              field1: { kind: "date", label: "field1" },
-              field2: { kind: "mystery", label: "field2" },
+              columns: [
+                { id: "field1", kind: "date", label: "field1" },
+                { id: "field2", kind: "mystery", label: "field2" },
+              ],
             },
           ],
         },
@@ -2935,8 +2941,10 @@ describe("runtime", () => {
             kind: "series",
             label: "Series",
             mappedTo: "series",
-            field1: { kind: "date", label: "field1", required: true },
-            field2: { kind: "number", label: "field2", required: true },
+            columns: [
+              { id: "field1", kind: "date", label: "field1", required: true },
+              { id: "field2", kind: "number", label: "field2", required: true },
+            ],
           },
         ],
       },

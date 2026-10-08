@@ -45,8 +45,10 @@ const fieldExamples: Record<
   date: { config: {}, value: null },
   series: {
     config: {
-      field1: { kind: "date", label: "Date" },
-      field2: { kind: "number", label: "Value" },
+      columns: [
+        { id: "field1", kind: "date", label: "Date" },
+        { id: "field2", kind: "number", label: "Value" },
+      ],
     },
     value: [],
   },

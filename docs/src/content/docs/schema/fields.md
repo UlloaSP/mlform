@@ -14,7 +14,7 @@ Built-in field kinds:
 | `mapped-category` | `string \| null` | `options` as `{ label, value, mapping }`. See [Mapped Category](/schema/mapped-category/).                                   |
 | `onehot-category` | `string \| null` | `options` as `{ label, value, mappedTo }`. Emits 0/1 one-hot columns. See [OneHot Category](/schema/onehot-category/).       |
 | `date`            | `Date \| null`   | `min`, `max`, `step`                                                                                                         |
-| `series`          | paired points    | `field1`, `field2`, `minPoints`, `maxPoints`; sub-fields support `text`, `number`, `date`, `category`, and `boolean`          |
+| `series`          | named row values | `columns` (one or more columns with unique `id`), `minPoints`, `maxPoints`, `aggregations`, `showAggregationSummary` (default `false`); see [Series](/examples/series/) |
 
 Shared options:
 
@@ -51,7 +51,8 @@ forms fail before a runtime is created.
 
 ## Series fields
 
-Each `series` point contains `field1` and `field2`. Their nested configurations use the same
+Each `series` point is an object keyed by the ids declared in `columns`. There is no fixed
+column count. Column configurations use the same
 constraints as the corresponding built-in kind: for example, text length and pattern constraints,
 number ranges, date ranges and steps, and category options. Invalid nested configuration fails
 during schema normalization. Nested values also use the built-in serialization contract, so dates
@@ -61,3 +62,11 @@ are emitted as full ISO timestamps just like top-level `date` fields.
 removal at the minimum and row creation at the maximum. MLForm preserves the supplied point order
 and duplicate values; sort or de-duplicate them before assigning the series when the backend
 requires that contract.
+
+Use `aggregations` to turn numeric observations into multiple backend features without adding
+editable derived fields. Each aggregate declares its numeric `source`, `operation`, `label`, and
+`mappedTo`. The runtime preserves the original series and computes the model values from it;
+the built-in editor shows only the observations by default. Set `showAggregationSummary: true`
+to show the calculated results. Each aggregate's `source` identifies a declared numeric column.
+See [Series](/examples/series/) for the
+statistical and missing-value contract.

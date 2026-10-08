@@ -99,8 +99,10 @@ describe("schema validation tooling", () => {
           {
             kind: "series",
             label: "History",
-            field1: { kind: "tenant-field", label: "When" },
-            field2: { kind: "number", label: "Value" },
+            columns: [
+              { id: "field1", kind: "tenant-field", label: "When" },
+              { id: "field2", kind: "number", label: "Value" },
+            ],
           },
         ],
       },
@@ -108,7 +110,7 @@ describe("schema validation tooling", () => {
     );
     expect(nested).toMatchObject({
       success: false,
-      issues: [{ path: ["fields", 0, "field1", "kind"], code: "unknown-kind" }],
+      issues: [{ path: ["fields", 0, "columns", 0, "kind"], code: "unknown-kind" }],
     });
 
     const duplicate = validateSchema(

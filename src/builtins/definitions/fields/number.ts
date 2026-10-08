@@ -76,10 +76,21 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
     }
     if (config.step !== undefined) {
       const origin = config.min ?? 0;
-      const diff = Math.abs(value - origin);
-      const remainder = diff % config.step;
-      const tolerance = config.step * 1e-9;
-      if (remainder > tolerance && Math.abs(remainder - config.step) > tolerance) {
+      const nearest = origin + Math.round((value - origin) / config.step) * config.step;
+      // Modular coordinates keep valid finite values checkable when the quotient overflows.
+      const remainder = (value % config.step) / config.step - (origin % config.step) / config.step;
+      const distance = Number.isFinite(nearest)
+        ? Math.abs(value - nearest)
+        : Math.abs(remainder - Math.round(remainder)) * config.step;
+      // Bound floating-point rounding so it cannot hide a distinguishable fraction of a step.
+      const tolerance = Math.min(
+        config.step * 1e-3,
+        Math.max(
+          config.step * 1e-9,
+          Number.EPSILON * Math.max(Math.abs(value), Math.abs(origin)) * 4,
+        ),
+      );
+      if (distance > tolerance) {
         errors.push(builtinValidationMessages.stepValue(config.step, origin));
       }
     }

@@ -252,7 +252,7 @@ export interface FieldDefinition<TConfig extends FieldConfig = FieldConfig, TVal
     serializedValue: unknown,
     config: NormalizedFieldConfig<TConfig>,
     context: FieldSubmissionContext,
-  ) => readonly FieldSubmissionEntry[];
+  ) => readonly FieldSubmissionEntry[] | undefined;
   getNestedFieldReferences?: (config: TConfig) => readonly NestedFieldReference[];
   getFieldReferences?: (config: NormalizedFieldConfig<TConfig>) => readonly FieldReference[];
   validateConfig?: (config: TConfig, context: FieldConfigValidationContext) => void;

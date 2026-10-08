@@ -60,7 +60,13 @@ import {
   createRegistry,
   mappedToSchema,
 } from "mlform/schema";
-import { createBuiltinMlRegistry } from "mlform/builtins";
+import {
+  calculateSeriesAggregation,
+  createBuiltinMlRegistry,
+  type SeriesAggregation,
+  type SeriesColumnConfig,
+  type SeriesPoint,
+} from "mlform/builtins";
 import { createTransportRequestRunner } from "mlform/transport";
 import { mountPrimitiveForm } from "mlform/primitives";
 import { createBuiltinDesignSystemRegistry } from "mlform/design";
@@ -83,6 +89,13 @@ void [
   createBuiltinMlRegistry,
 ];
 void [createTransportRequestRunner, mountPrimitiveForm, createBuiltinDesignSystemRegistry];
+const column: SeriesColumnConfig = { id: "value", kind: "number", label: "Value" };
+const points: SeriesPoint[] = [{ value: 10 }, { value: 20 }];
+const aggregation: SeriesAggregation = {
+  label: "Mean", source: column.id, operation: "mean", mappedTo: "mean",
+};
+const aggregate: number | null = calculateSeriesAggregation(points, aggregation);
+void aggregate;
 // @ts-expect-error removed before publication; no compatibility alias remains
 builtins.createMlRegistryPack;
 // @ts-expect-error use mountPrimitiveForm instead
@@ -136,6 +149,25 @@ assert.equal(baseReportConfigSchema.safeParse({ kind: "custom" }).success, true)
 assert.equal(mappedToSchema.safeParse({ primary: "prediction", optional: null }).success, true);
 assert.equal(typeof createForm, "function");
 assert.equal(extractErrorMessage(new Error("expected")), "expected");
+const form = createForm({
+  registry: createBuiltinMlRegistry(),
+  schema: { fields: [{
+    id: "measurements", kind: "series", label: "Measurements", displayKey: "Observations",
+    columns: [{ id: "value", kind: "number", label: "Value", required: true }],
+    defaultValue: [{ value: 10 }, { value: 20 }],
+    aggregations: [
+      { label: "Mean", source: "value", operation: "mean", mappedTo: "mean" },
+      { label: "Sample deviation", source: "value", operation: "stddev", ddof: 1, mappedTo: "sd" },
+    ],
+  }] },
+  transport: { async submit(request) {
+    assert.deepEqual(request.modelValues, { mean: 15, sd: Math.sqrt(50) });
+    assert.deepEqual(request.displayValues, { Observations: [{ value: 10 }, { value: 20 }] });
+    return { reports: [] };
+  } },
+});
+await form.submit();
+form.dispose();
 `,
   );
   execFileSync(process.execPath, ["consumer.mjs"], {

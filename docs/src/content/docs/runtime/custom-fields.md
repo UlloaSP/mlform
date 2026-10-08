@@ -70,6 +70,9 @@ extension path: `validateConfig`, `getNestedFieldReferences`, `getFieldReference
 declarative validators remain owned by `defineFieldKind` and cannot be overridden there. A field
 that implements `getSubmissionEntries` must declare every possible emitted target through
 `getMappedTargets`; emitting an undeclared target fails submission.
+Return `undefined` from `getSubmissionEntries` to use ordinary field serialization and mapping
+for configurations that do not need custom submission entries. Return an empty array to emit
+no model values.
 
 Use `getFieldReferences` when a field's configuration names other fields. Return each referenced
 id and its path within the field config; schema normalization rejects missing targets before a

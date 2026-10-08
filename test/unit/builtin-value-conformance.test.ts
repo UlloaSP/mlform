@@ -106,8 +106,10 @@ const cases: ValueCase[] = [
     config: {
       kind: "series",
       label: "Series",
-      field1: { kind: "date", label: "Date" },
-      field2: { kind: "number", label: "Value" },
+      columns: [
+        { id: "field1", kind: "date", label: "Date" },
+        { id: "field2", kind: "number", label: "Value" },
+      ],
     },
     input: [{ field1: "2026-01-02", field2: "4" }],
     normalized: [{ field1: new Date("2026-01-02T00:00:00.000Z"), field2: 4 }],

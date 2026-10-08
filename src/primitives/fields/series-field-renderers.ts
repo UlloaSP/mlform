@@ -6,19 +6,19 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import type { PrimitiveText } from "../constants";
 import type { PrimitiveFieldRenderContext } from "../types";
 import { toText } from "../utils";
-import { seriesNumberUnit, type SeriesSubFieldConfig } from "./series-field-helpers";
+import { seriesNumberUnit, type SeriesColumnConfig } from "./series-field-helpers";
 
 export type RenderSeriesCellOptions = {
-  config: SeriesSubFieldConfig;
+  config: SeriesColumnConfig;
   value: unknown;
   index: number;
   id: string;
   disabled: boolean;
   readOnly: boolean;
-  field: 1 | 2;
+  columnId: string;
   context: PrimitiveFieldRenderContext | undefined;
   text: PrimitiveText;
-  onInput: (index: number, field: 1 | 2, value: unknown) => void;
+  onInput: (index: number, columnId: string, value: unknown) => void;
   onBlur: () => void;
   label: string;
 };
@@ -62,7 +62,7 @@ export const renderSeriesCell = ({
   id,
   disabled,
   readOnly,
-  field,
+  columnId,
   context,
   text,
   onInput,
@@ -88,7 +88,7 @@ export const renderSeriesCell = ({
           max=${ifDefined(typeof config.max === "string" ? config.max : undefined)}
           step=${ifDefined(typeof config.step === "number" ? config.step : undefined)}
           @input=${(event: Event) =>
-            onInput(index, field, (event.target as HTMLInputElement).value)}
+            onInput(index, columnId, (event.target as HTMLInputElement).value)}
           @blur=${onBlur}
         />
       `;
@@ -107,7 +107,7 @@ export const renderSeriesCell = ({
             ?required=${required}
             ?disabled=${Boolean(disabled || readOnly)}
             @change=${(event: Event) =>
-              onInput(index, field, (event.target as HTMLSelectElement).value)}
+              onInput(index, columnId, (event.target as HTMLSelectElement).value)}
             @blur=${onBlur}
           >
             <option value="" ?selected=${selected === ""}>
@@ -136,7 +136,7 @@ export const renderSeriesCell = ({
             ?disabled=${Boolean(disabled || readOnly)}
             @change=${(event: Event) => {
               const next = (event.target as HTMLSelectElement).value;
-              onInput(index, field, next === "" ? "" : next === "true");
+              onInput(index, columnId, next === "" ? "" : next === "true");
             }}
             @blur=${onBlur}
           >
@@ -150,8 +150,12 @@ export const renderSeriesCell = ({
     }
     case "number": {
       const unit = seriesNumberUnit(config);
+      const unitWidth = `${Math.max(unit.length * 0.56 + 0.8, 2.3)}rem`;
       return html`
-        <div class="value-wrap ${disabled ? "is-disabled" : readOnly ? "is-readonly" : ""}">
+        <div
+          class="value-wrap ${disabled ? "is-disabled" : readOnly ? "is-readonly" : ""}"
+          style=${`--mlf-series-unit-width: ${unitWidth};`}
+        >
           <input
             class="control"
             id=${id}
@@ -171,7 +175,7 @@ export const renderSeriesCell = ({
             max=${ifDefined(typeof config.max === "number" ? config.max : undefined)}
             step=${ifDefined(typeof config.step === "number" ? config.step : undefined)}
             @input=${(event: Event) =>
-              onInput(index, field, (event.target as HTMLInputElement).value)}
+              onInput(index, columnId, (event.target as HTMLInputElement).value)}
             @blur=${onBlur}
           />
           <span class="unit" aria-hidden="true">${unit}</span>
@@ -200,7 +204,7 @@ export const renderSeriesCell = ({
           )}
           pattern=${ifDefined(typeof config.pattern === "string" ? config.pattern : undefined)}
           @input=${(event: Event) =>
-            onInput(index, field, (event.target as HTMLInputElement).value)}
+            onInput(index, columnId, (event.target as HTMLInputElement).value)}
           @blur=${onBlur}
         />
       `;

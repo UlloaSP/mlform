@@ -10,18 +10,18 @@ import { toText } from "../utils";
 import {
   createRowKey,
   normalizeRows,
-  seriesNumberUnit,
   type DraftRow,
-  type SeriesSubFieldConfig,
+  type SeriesColumnConfig,
 } from "./series-field-helpers";
 import { renderSeriesCell } from "./series-field-renderers";
 import { seriesFieldStyles } from "./series-field-styles";
+import { renderSeriesSummary, seriesSummaryStyles } from "./series-field-summary";
 
 const commitCellValue = (value: unknown): unknown => (value === "" ? null : value);
 
 @customElement(primitiveTagNames.seriesField)
 export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
-  static styles = [PrimitiveFieldElement.styles, seriesFieldStyles];
+  static styles = [PrimitiveFieldElement.styles, seriesFieldStyles, seriesSummaryStyles];
 
   @state() private accessor rows: DraftRow[] = [];
   #rowsDirtySinceCommit = false;
@@ -47,17 +47,15 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
     const disabled = Boolean(this.fieldContext?.disabled);
     const readOnly = Boolean(this.fieldContext?.readOnly);
     const locked = disabled || readOnly;
-    const field1 = this.#field1Config;
-    const field2 = this.#field2Config;
+    const columns = this.#columns;
     const canAdd = this.#canAddRow;
     const canRemove = this.#canRemoveRow;
-    const unitWidth = `${Math.max(seriesNumberUnit(field2).length * 0.56 + 0.8, 2.3)}rem`;
     const text = this.text;
 
     return html`
       <div
         class="series"
-        style=${`--mlf-series-unit-width: ${unitWidth};`}
+        style=${`--mlf-series-column-count: ${columns.length};`}
         role="group"
         tabindex="-1"
         aria-label=${context?.label ?? toText(this.props.label)}
@@ -79,46 +77,36 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
         ${
           this.rows.length > 0
             ? html`
-                <div class="grid">
+                <div
+                  class="grid"
+                  tabindex="0"
+                  role="group"
+                  aria-label=${context?.label ?? toText(this.props.label)}
+                >
                   <div class="header" aria-hidden="true">
-                    <div>${toText(field1.label, "field1")}</div>
-                    <div>${toText(field2.label, "field2")}</div>
+                    ${columns.map((column) => html`<div>${toText(column.label, column.id)}</div>`)}
                     <div></div>
                   </div>
                   ${this.rows.map((row, index) => {
-                    const field1Id = `${context?.controlId ?? "mlf-series"}-${row.key}-field1`;
-                    const field2Id = `${context?.controlId ?? "mlf-series"}-${row.key}-field2`;
-
                     return html`
                       <div class="row">
-                        <div class="cell">
-                          <span class="cell-label" aria-hidden="true"
-                            >${toText(field1.label, "field1")}</span
-                          >
-                          ${this.#renderCell(
-                            field1,
-                            row.field1,
-                            index,
-                            field1Id,
-                            disabled,
-                            readOnly,
-                            1,
-                          )}
-                        </div>
-                        <div class="cell">
-                          <span class="cell-label" aria-hidden="true"
-                            >${toText(field2.label, "field2")}</span
-                          >
-                          ${this.#renderCell(
-                            field2,
-                            row.field2,
-                            index,
-                            field2Id,
-                            disabled,
-                            readOnly,
-                            2,
-                          )}
-                        </div>
+                        ${columns.map(
+                          (column) => html`
+                            <div class="cell">
+                              <span class="cell-label" aria-hidden="true"
+                                >${toText(column.label, column.id)}</span
+                              >
+                              ${this.#renderCell(
+                                column,
+                                row.values[column.id],
+                                index,
+                                `${context?.controlId ?? "mlf-series"}-${row.key}-${column.id}`,
+                                disabled,
+                                readOnly,
+                              )}
+                            </div>
+                          `,
+                        )}
                         <button
                           class="remove-btn"
                           type="button"
@@ -137,17 +125,14 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
               `
             : html`<div class="empty">${text.seriesEmpty}</div>`
         }
+        ${renderSeriesSummary(this.props.aggregationResults)}
       </div>
       ${this.renderAssistiveText()}
     `;
   }
 
-  get #field1Config(): SeriesSubFieldConfig {
-    return (this.props.field1 as SeriesSubFieldConfig | undefined) ?? {};
-  }
-
-  get #field2Config(): SeriesSubFieldConfig {
-    return (this.props.field2 as SeriesSubFieldConfig | undefined) ?? {};
+  get #columns(): SeriesColumnConfig[] {
+    return Array.isArray(this.props.columns) ? (this.props.columns as SeriesColumnConfig[]) : [];
   }
 
   get #canAddRow(): boolean {
@@ -161,14 +146,20 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
   }
 
   #syncRowsFromDescriptor(): void {
-    this.rows = normalizeRows(this.props.value, this.#field1Config, this.#field2Config);
+    this.rows = normalizeRows(this.props.value, this.#columns);
     this.#rowsDirtySinceCommit = false;
   }
 
   #handleAddRow = (): void => {
     if (!this.#canAddRow) return;
     this.#pendingFocus = { kind: "row", index: this.rows.length };
-    this.rows = [...this.rows, { key: createRowKey(), field1: "", field2: "" }];
+    this.rows = [
+      ...this.rows,
+      {
+        key: createRowKey(),
+        values: Object.fromEntries(this.#columns.map((column) => [column.id, ""])),
+      },
+    ];
     this.#rowsDirtySinceCommit = true;
     this.#commitRows();
   };
@@ -200,7 +191,10 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
 
     const target =
       pending.kind === "row"
-        ? this.renderRoot.querySelectorAll<HTMLElement>(".row .control").item(pending.index * 2)
+        ? this.renderRoot
+            .querySelectorAll<HTMLElement>(".row")
+            .item(pending.index)
+            ?.querySelector<HTMLElement>(".control")
         : pending.target === "remove"
           ? this.renderRoot
               .querySelectorAll<HTMLButtonElement>(".remove-btn:not(:disabled)")
@@ -215,9 +209,9 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
     this.#pendingFocus = null;
   }
 
-  #handleCellInput(index: number, field: 1 | 2, value: unknown): void {
+  #handleCellInput(index: number, columnId: string, value: unknown): void {
     this.rows = this.rows.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, [field === 1 ? "field1" : "field2"]: value } : row,
+      rowIndex === index ? { ...row, values: { ...row.values, [columnId]: value } } : row,
     );
     this.#rowsDirtySinceCommit = true;
     this.#commitRows();
@@ -234,25 +228,25 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
     }
 
     this.commitValue(
-      this.rows.map((row) => ({
-        field1: commitCellValue(row.field1),
-        field2: commitCellValue(row.field2),
-      })),
+      this.rows.map((row) =>
+        Object.fromEntries(
+          this.#columns.map((column) => [column.id, commitCellValue(row.values[column.id])]),
+        ),
+      ),
     );
     this.#rowsDirtySinceCommit = false;
   }
 
   #renderCell(
-    config: SeriesSubFieldConfig,
+    config: SeriesColumnConfig,
     value: unknown,
     index: number,
     id: string,
     disabled: boolean,
     readOnly: boolean,
-    field: 1 | 2,
   ) {
     const context = this.fieldContext;
-    const label = `${context?.label ?? toText(this.props.label)} ${toText(config.label, `field${field}`)} ${index + 1}`;
+    const label = `${context?.label ?? toText(this.props.label)} ${toText(config.label, config.id)} ${index + 1}`;
     return renderSeriesCell({
       config,
       value,
@@ -260,7 +254,7 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
       id,
       disabled,
       readOnly,
-      field,
+      columnId: config.id,
       context,
       text: this.text,
       onInput: (rowIndex, targetField, nextValue) =>

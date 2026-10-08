@@ -171,8 +171,10 @@ const appModule = `
           label: "Observations",
           minPoints: 1,
           maxPoints: 2,
-          field1: { kind: "text", label: "Code", required: true },
-          field2: { kind: "date", label: "Day", required: true },
+          columns: [
+            { id: "field1", kind: "text", label: "Code", required: true },
+            { id: "field2", kind: "date", label: "Day", required: true },
+          ],
           defaultValue: [{ field1: "AA", field2: "2026-01-01" }],
           includeInSubmission: false,
         },
@@ -211,7 +213,28 @@ const appModule = `
     };
   };
 
+  let columnsMount;
+  let columnsRequest;
   window.__mlformMatrix = {
+    async mountColumns(count) {
+      columnsMount?.unmount();
+      const target = document.querySelector("#columns-demo") ?? document.body.appendChild(document.createElement("div"));
+      target.id = "columns-demo";
+      columnsRequest = undefined;
+      const columns = Array.from({ length: count }, (_, index) => ({ id: "value_" + index, kind: "number", label: "Value " + index, required: true }));
+      columnsMount = kit.mountForm(target, {
+        schema: { fields: [{ id: "series", kind: "series", label: "Measurements", displayKey: "Measurements", columns, minPoints: 1,
+          defaultValue: [Object.fromEntries(columns.map((column, index) => [column.id, index + 1]))],
+          aggregations: columns.map((column, index) => ({ label: column.label, source: column.id, operation: "mean", mappedTo: index })),
+        }] },
+        transport: { submit: async (request) => { columnsRequest = request; return { reports: [] }; } },
+      });
+      await columnsMount.host.updateComplete;
+    },
+    async submitColumns() {
+      await columnsMount.form.submit();
+      return { modelValues: columnsRequest.modelValues, displayValues: columnsRequest.displayValues };
+    },
     submitFromPipeline,
     async mountDarkNumber() {
       const container = document.createElement("div");
@@ -417,6 +440,83 @@ describe("Playwright render matrix", () => {
     browser = undefined;
     server = undefined;
   });
+
+  it.each([1, 3, 6])(
+    "edits %i named columns and keeps narrow and wide series contained",
+    async (count) => {
+      const url = await startServer();
+      browser = await chromium.launch();
+      const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+      await page.goto(url);
+      await page.waitForFunction("window.__mlformMatrix?.mountColumns");
+      await page.evaluate(`window.__mlformMatrix.mountColumns(${count})`);
+      const series = page.locator("#columns-demo mlf-series-field");
+      await series.locator(".row .control").first().waitFor();
+      expect(await series.locator(".row .control").count()).toBe(count);
+      expect(await series.locator(".aggregation-summary").count()).toBe(0);
+      await series.locator(".add-btn").press("Enter");
+      await series
+        .getByRole("spinbutton", { name: "Measurements Value 0 2", exact: true })
+        .waitFor();
+      expect(
+        await series
+          .getByRole("spinbutton", { name: "Measurements Value 0 2", exact: true })
+          .evaluate((input) => (input.getRootNode() as ShadowRoot).activeElement === input),
+      ).toBe(true);
+      for (let index = 0; index < count; index += 1) {
+        await series
+          .getByRole("spinbutton", { name: `Measurements Value ${index} 2`, exact: true })
+          .fill(String(index + 3));
+      }
+      const result = (await page.evaluate("window.__mlformMatrix.submitColumns()")) as {
+        modelValues: Record<string, unknown>;
+        displayValues: { Measurements: Record<string, unknown>[] };
+      };
+      expect(result.modelValues).toEqual(
+        Object.fromEntries(Array.from({ length: count }, (_, index) => [index, index + 2])),
+      );
+      expect(Object.keys(result.displayValues.Measurements[0])).toEqual(
+        Array.from({ length: count }, (_, index) => `value_${index}`),
+      );
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      if (count === 6) {
+        await page.setViewportSize({ width: 820, height: 800 });
+        const grid = series.locator(".grid");
+        expect(await grid.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(
+          true,
+        );
+        await grid.evaluate((element) => {
+          element.scrollLeft = 0;
+        });
+        await grid.focus();
+        await grid.press("ArrowRight");
+        await page.waitForFunction(() => {
+          const grid = document
+            .querySelector("#columns-demo mlf-form")
+            ?.shadowRoot?.querySelector("mlf-field-frame")
+            ?.shadowRoot?.querySelector("mlf-series-field")
+            ?.shadowRoot?.querySelector(".grid");
+          return grid && grid.scrollLeft > 0;
+        });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+          true,
+        );
+      }
+      await page.setViewportSize({ width: 390, height: 800 });
+      await page.emulateMedia({ forcedColors: "active" });
+      await series.locator(".remove-btn").last().press("Space");
+      expect(await series.locator(".row .control").count()).toBe(count);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      expect(await series.locator(".cell-label").first().isVisible()).toBe(true);
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.emulateMedia({ forcedColors: "none" });
+    },
+    20_000,
+  );
 
   it("keeps number input colors legible in Cobalt dark mode", async () => {
     const url = await startServer();

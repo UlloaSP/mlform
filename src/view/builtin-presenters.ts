@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { builtinReportLabels, seriesFieldDefinition } from "@/builtins";
+import {
+  builtinReportLabels,
+  calculateSeriesAggregation,
+  seriesFieldDefinition,
+  type SeriesAggregation,
+  type SeriesFieldConfig,
+  type SeriesPoint,
+} from "@/builtins";
 import {
   createPrimitiveDescriptorRegistry,
   type FieldDescriptorContext,
@@ -28,10 +35,10 @@ type BuiltinFieldConfig = NormalizedFieldConfig & {
   falseLabel?: string;
   options?: readonly Option[];
   layout?: "horizontal" | "vertical";
-  field1?: unknown;
-  field2?: unknown;
+  columns?: SeriesFieldConfig["columns"];
   minPoints?: number;
   maxPoints?: number;
+  aggregations?: SeriesAggregation[];
 };
 
 type BuiltinReportConfig = NormalizedReportConfig & {
@@ -79,6 +86,18 @@ const displayOptions = (config: BuiltinFieldConfig): Option[] =>
   options(config).map((option) =>
     typeof option === "string" ? option : { label: option.label, value: option.value },
   );
+
+const aggregationUnit = (aggregation: SeriesAggregation, sourceUnit: unknown): unknown => {
+  if (
+    ["count", "distinct-count", "product", "cv", "skewness", "kurtosis"].includes(
+      aggregation.operation,
+    )
+  ) {
+    return undefined;
+  }
+  if (typeof sourceUnit !== "string") return undefined;
+  return aggregation.operation === "variance" ? `${sourceUnit}²` : sourceUnit;
+};
 
 const builtinFieldPresenters: readonly FieldPresenter<BuiltinFieldConfig, unknown>[] = [
   fieldPresenter("text", "text-field", (config, context) => ({
@@ -132,16 +151,31 @@ const builtinFieldPresenters: readonly FieldPresenter<BuiltinFieldConfig, unknow
     max: config.max,
     step: config.step,
   })),
-  fieldPresenter("series", "series-field", (config, context) => ({
-    ...fieldState(config, context),
-    value: Array.isArray(context.state.value)
-      ? seriesFieldDefinition.serializeValue?.(context.state.value as never, config as never)
-      : [],
-    field1: config.field1,
-    field2: config.field2,
-    minPoints: config.minPoints,
-    maxPoints: config.maxPoints,
-  })),
+  fieldPresenter("series", "series-field", (config, context) => {
+    const series = config as SeriesFieldConfig;
+    const points = Array.isArray(context.state.value) ? (context.state.value as SeriesPoint[]) : [];
+    const sources = new Set(series.aggregations?.map((aggregation) => aggregation.source));
+    return {
+      ...fieldState(config, context),
+      value: seriesFieldDefinition.serializeValue?.(points, series),
+      columns: series.columns.map((column) => ({
+        ...column,
+        required: column.required || sources.has(column.id),
+      })),
+      minPoints: config.minPoints,
+      maxPoints: config.maxPoints,
+      aggregationResults: series.showAggregationSummary
+        ? series.aggregations?.map((aggregation) => ({
+            label: aggregation.label,
+            value: calculateSeriesAggregation(points, aggregation),
+            unit: aggregationUnit(
+              aggregation,
+              series.columns.find((column) => column.id === aggregation.source)?.unit,
+            ),
+          }))
+        : undefined,
+    };
+  }),
   fieldPresenter("long-text", "long-text-field", (config, context) => ({
     ...fieldState(config, context),
     placeholder: config.placeholder ?? "",

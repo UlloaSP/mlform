@@ -19,8 +19,10 @@ mountForm(container, {
         kind: "series",
         label: "Demand history",
         mappedTo: "history",
-        field1: { kind: "date", label: "Date", required: true },
-        field2: { kind: "number", label: "Demand", required: true, min: 0, unit: "units" },
+        columns: [
+          { id: "date", kind: "date", label: "Date", required: true },
+          { id: "demand", kind: "number", label: "Demand", required: true, min: 0, unit: "units" },
+        ],
         minPoints: 3,
         maxPoints: 24,
       },
@@ -38,9 +40,9 @@ Serialized request:
 {
   "modelValues": {
     "history": [
-      { "field1": "2026-01-01", "field2": 12 },
-      { "field1": "2026-02-01", "field2": 16 },
-      { "field1": "2026-03-01", "field2": 18 }
+      { "date": "2026-01-01T00:00:00.000Z", "demand": 12 },
+      { "date": "2026-02-01T00:00:00.000Z", "demand": 16 },
+      { "date": "2026-03-01T00:00:00.000Z", "demand": 18 }
     ]
   }
 }

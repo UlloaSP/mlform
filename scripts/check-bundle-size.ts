@@ -21,13 +21,13 @@ interface BundleResult {
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as PackageManifest;
 const budgets: Record<string, number> = {
-  ".": 76,
-  "./kit": 76,
-  "./view": 58,
+  ".": 80,
+  "./kit": 80,
+  "./view": 59,
   "./primitives": 28,
   "./design": 15,
   "./runtime": 22,
-  "./builtins": 9,
+  "./builtins": 11,
   "./schema": 6,
   "./transport": 2,
 };

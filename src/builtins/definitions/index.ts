@@ -11,12 +11,14 @@ export { multiChoiceFieldDefinition } from "./fields/multi-choice";
 export { numberFieldDefinition } from "./fields/number";
 export { ratingFieldDefinition } from "./fields/rating";
 export { seriesFieldDefinition } from "./fields/series";
+export { calculateSeriesAggregation } from "./fields/series-aggregations";
+export type { SeriesAggregation } from "./fields/series-aggregations";
 export { singleChoiceFieldDefinition } from "./fields/single-choice";
 export { textFieldDefinition } from "./fields/text";
 export { classifierReportDefinition } from "./reports/classifier";
 export { regressorReportDefinition } from "./reports/regressor";
 export { builtinFieldDefinitions, builtinReportDefinitions } from "./collections";
-export type { SeriesFieldConfig, SeriesPoint, SeriesSubFieldConfig } from "./fields/series-helpers";
+export type { SeriesFieldConfig, SeriesPoint, SeriesColumnConfig } from "./fields/series-helpers";
 export type { OneHotCategoryFieldConfig, OneHotCategoryOption } from "./fields/onehot-category";
 export type {
   BuiltinFieldConfig,
