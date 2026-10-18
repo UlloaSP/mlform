@@ -12,7 +12,7 @@ export const createShell = () => {
       </a>
       <span class="app-brand-context">playground</span>
       <nav aria-label="Recursos de MLForm">
-        <a href="https://ulloasp.github.io/mlform/">Docs</a>
+        <a href="https://docs.mlform.eshkra.dev/">Docs</a>
         <a href="https://github.com/UlloaSP/mlform">GitHub</a>
         <a href="https://eshkra.dev">eshkra ↗</a>
       </nav>

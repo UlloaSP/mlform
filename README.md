@@ -1,18 +1,25 @@
-<h1>
-  <img src="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/mlform.png" alt="" height="72" />
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/mlform.png" alt="" height="112" />
+</p>
+
+<h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/wordmark-dark.svg" />
-    <img src="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/wordmark-light.svg" alt="MLform" height="56" />
+    <img src="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/wordmark-light.svg" alt="MLform" height="52" />
   </picture>
 </h1>
 
-Part of [eshkra](https://eshkra.dev), a family of open-source tools for putting machine-learning models in front of people.
+<p align="center">Schema-driven forms for machine-learning products.</p>
 
-[Documentation](https://ulloasp.github.io/mlform/) · [Playground](https://github.com/UlloaSP/mlform/tree/main/playground) · [npm](https://www.npmjs.com/package/mlform) · [Source](https://github.com/UlloaSP/mlform)
-
-[![CI](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/mlform.svg)](https://www.npmjs.com/package/mlform)
-[![MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+<p align="center">
+  <a href="https://docs.mlform.eshkra.dev/"><img src="https://img.shields.io/badge/docs-303039?style=flat&amp;logo=readthedocs&amp;logoColor=ff6a1a" alt="Documentation" /></a>
+  <a href="https://playground.mlform.eshkra.dev/"><img src="https://img.shields.io/badge/playground-303039?style=flat&amp;logo=stackblitz&amp;logoColor=ff6a1a" alt="Playground" /></a>
+  <a href="https://www.npmjs.com/package/mlform"><img src="https://img.shields.io/npm/v/mlform?style=flat&amp;logo=npm&amp;logoColor=white&amp;labelColor=303039&amp;color=b73d00" alt="npm version" /></a>
+  <a href="https://github.com/UlloaSP/mlform"><img src="https://img.shields.io/badge/source-303039?style=flat&amp;logo=github&amp;logoColor=white" alt="Source on GitHub" /></a>
+  <a href="https://github.com/UlloaSP/mlform/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/UlloaSP/mlform/ci.yml?branch=main&amp;style=flat&amp;label=CI&amp;labelColor=303039" alt="CI status" /></a>
+  <a href="https://github.com/UlloaSP/mlform/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-b73d00?style=flat&amp;labelColor=303039" alt="MIT license" /></a>
+  <a href="https://eshkra.dev"><img src="https://img.shields.io/badge/part_of-eshkra-b73d00?style=flat&amp;labelColor=303039" alt="Part of eshkra" /></a>
+</p>
 
 MLForm is a schema-driven form runtime and Web Component kit for machine-learning products. Define inputs and reports once; MLForm handles normalization, validation, backend-facing values, submission state, and result rendering.
 
@@ -150,14 +157,14 @@ MLForm does not host models, prescribe a backend framework, or require its built
 
 ## Documentation
 
-Full documentation lives at [ulloasp.github.io/mlform](https://ulloasp.github.io/mlform/).
+Full documentation lives at [docs.mlform.eshkra.dev](https://docs.mlform.eshkra.dev/).
 
-- [Installation](https://ulloasp.github.io/mlform/getting-started/installation/)
-- [Quick start](https://ulloasp.github.io/mlform/getting-started/quick-start/)
-- [Backend contract](https://ulloasp.github.io/mlform/guides/backend-contract/)
-- [Headless view](https://ulloasp.github.io/mlform/view/overview/)
-- [Design system](https://ulloasp.github.io/mlform/design/overview/)
-- [Package exports](https://ulloasp.github.io/mlform/reference/package-exports/)
+- [Installation](https://docs.mlform.eshkra.dev/getting-started/installation/)
+- [Quick start](https://docs.mlform.eshkra.dev/getting-started/quick-start/)
+- [Backend contract](https://docs.mlform.eshkra.dev/guides/backend-contract/)
+- [Headless view](https://docs.mlform.eshkra.dev/view/overview/)
+- [Design system](https://docs.mlform.eshkra.dev/design/overview/)
+- [Package exports](https://docs.mlform.eshkra.dev/reference/package-exports/)
 
 The current architecture is available as an [interactive diagram](./architecture/mlform-system.architecture.html).
 

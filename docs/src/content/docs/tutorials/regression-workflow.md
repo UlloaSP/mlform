@@ -48,4 +48,4 @@ Mistakes to avoid:
 | Treating empty number inputs as zero  | Handle `null` in the backend.           |
 | Returning a string for numeric output | Return a numeric payload when possible. |
 
-Next: [Conditional Form](./conditional-form/).
+Next: [Conditional Form](/tutorials/conditional-form/).

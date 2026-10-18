@@ -21,4 +21,4 @@ try {
 }
 ```
 
-Related: [Error Handling](/mlform/guides/error-handling/).
+Related: [Error Handling](/guides/error-handling/).

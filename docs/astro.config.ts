@@ -191,8 +191,7 @@ const sidebar = [
 ];
 
 export default defineConfig({
-  site: "https://ulloasp.github.io",
-  base: "/mlform",
+  site: "https://docs.mlform.eshkra.dev",
   vite: {
     resolve: {
       alias: {

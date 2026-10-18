@@ -51,7 +51,7 @@ Use `subscribe()` to re-render your host UI and `navigation.next()`, `navigation
 
 Read next:
 
-- [Layout Overview](./layout-overview/)
-- [Layout Schema](./layout-schema/)
-- [createFormView](./create-form-view/)
-- [Custom Layouts](./custom-layouts/)
+- [Layout Overview](/view/layout-overview/)
+- [Layout Schema](/view/layout-schema/)
+- [createFormView](/view/create-form-view/)
+- [Custom Layouts](/view/custom-layouts/)

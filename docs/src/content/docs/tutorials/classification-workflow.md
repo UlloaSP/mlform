@@ -55,4 +55,4 @@ Mistakes to avoid:
 | Using display labels as backend keys     | Use stable report ids.                                            |
 | Hiding class probabilities in the schema | Set `showClassProbabilities: true` or omit it to use the default. |
 
-Next: [Regression Workflow](./regression-workflow/).
+Next: [Regression Workflow](/tutorials/regression-workflow/).

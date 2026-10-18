@@ -32,6 +32,8 @@ vp install
 vp run build
 ```
 
+Documentation is served at <https://docs.mlform.eshkra.dev/> and the playground at <https://playground.mlform.eshkra.dev/>. CI deploys both to Cloudflare Workers only after successfully publishing a new version to npm. It deploys the artifacts verified in the same run, using the repository's `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets. An unchanged npm version or failed publication skips both deployments. From the repository root, `vp dlx wrangler@4.151.1 deploy --dry-run --config docs/wrangler.jsonc` validates the built docs without publishing.
+
 The [playground](./playground/README.md) belongs to the root workspace. From the repository root, run `vp run playground` to build MLForm and start the demos at `http://127.0.0.1:10001`. After library changes, restart that command to rebuild MLForm. To run the playground's unit, API, build, and browser checks separately, use `vp build && vp run check:playground`; these checks also run as part of `vp run ci`.
 
 ## Read this first

@@ -66,7 +66,7 @@ const mounted = mountForm(container, {
 window.addEventListener("beforeunload", () => mounted.unmount());
 ```
 
-The example transport sends `request.modelValues` under `inputs`. Build the endpoint in [First Backend](./first-backend/).
+The example transport sends `request.modelValues` under `inputs`. Build the endpoint in [First Backend](/getting-started/first-backend/).
 
 Return explicit report envelopes:
 

@@ -52,4 +52,4 @@ Mistakes to avoid:
 | Returning a top-level prediction only | Return `reports.fit`.                                  |
 | Remounting on every state change      | Mount once and update through controllers when needed. |
 
-Next: [Classification Workflow](./classification-workflow/).
+Next: [Classification Workflow](/tutorials/classification-workflow/).

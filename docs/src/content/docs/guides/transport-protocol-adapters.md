@@ -11,5 +11,5 @@ MLForm does not ship HTTP, GraphQL, SSE, WebSocket, or gRPC adapters. Those prot
 application-specific authentication, framing, retry, and response contracts; keeping their
 adapters local avoids hidden guesses.
 
-For an HTTP example, see [Custom Transport](/mlform/examples/custom-transport/). For independent
+For an HTTP example, see [Custom Transport](/examples/custom-transport/). For independent
 named backends, use `createFanoutTransport` from `mlform/transport`.

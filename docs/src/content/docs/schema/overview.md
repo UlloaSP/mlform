@@ -68,8 +68,8 @@ Use explicit ids in production. Generated ids are useful for demos, but stable i
 
 ## Related Pages
 
-- [Fields](/mlform/schema/fields/)
-- [OneHot Category](/mlform/schema/onehot-category/)
-- [Reports](/mlform/schema/reports/)
-- [Conditions](/mlform/schema/conditions/)
-- [Initial Values](/mlform/schema/initial-values/)
+- [Fields](/schema/fields/)
+- [OneHot Category](/schema/onehot-category/)
+- [Reports](/schema/reports/)
+- [Conditions](/schema/conditions/)
+- [Initial Values](/schema/initial-values/)

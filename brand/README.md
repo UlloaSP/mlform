@@ -13,9 +13,9 @@ Keep `mlform` unchanged in package names, imports, commands and URLs. Use the st
 Link roles:
 
 - Brand and package homepage: <https://eshkra.dev>.
-- Documentation: <https://ulloasp.github.io/mlform/> until a docs-domain migration is deployed.
+- Documentation: <https://docs.mlform.eshkra.dev/>.
 - Source and issues: <https://github.com/UlloaSP/mlform> and its issue tracker.
 - Package: <https://www.npmjs.com/package/mlform>.
-- Public playground target: `https://playground.mlform.eshkra.dev`, after the deployment described in [the playground guide](../playground/README.md).
+- Playground: <https://playground.mlform.eshkra.dev/>.
 
-README images use absolute repository URLs for GitHub and npm. Updating npm's README and homepage requires publishing a new package version. Do not advertise an undeployed subdomain as live.
+The README centers the icon above the wordmark and groups navigation and status badges below them. Keep badges in the same flat style, with graphite labels and warm orange accents. README images use absolute repository URLs for GitHub and npm. Updating npm's README and homepage requires publishing a new package version.

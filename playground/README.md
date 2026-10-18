@@ -63,16 +63,18 @@ DoseTailor retains the original public sample values and options. It uses the pl
 
 ## Production hosting
 
-The intended URL is `https://playground.mlform.eshkra.dev`. It is a playground rather than a staging environment, so `playground` describes its role better than `test`. This address is configured but is not live until the first deployment.
+The public playground is at <https://playground.mlform.eshkra.dev/>. Documentation is at <https://docs.mlform.eshkra.dev/>.
 
 Cloudflare Workers serves `dist/` and proxies the specific POST prediction endpoints used by DoseTailor and M3DISEEN. Static hosting alone is insufficient. The Worker forwards the body and upstream status, strips browser credentials, disables response caching, and bounds API calls to 30 seconds. Upstream availability still determines whether live predictions succeed; automated tests mock those services.
 
-To activate it through GitHub Actions:
+GitHub Actions deploys the playground and documentation automatically after a new package version is successfully published to npm. Both use the build artifacts already verified in that CI run; neither deploys when the version is unchanged or publication fails.
+
+Deployment prerequisites:
 
 1. Keep `eshkra.dev` as an active Cloudflare zone in the deployment account.
-2. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to the repository or its `playground` environment. The token needs Workers Scripts edit and the Workers Routes and DNS permissions for this zone.
-3. After these changes reach `main`, run **Deploy Playground** from Actions on `main`. It verifies and builds the app, then deploys with pinned Wrangler 4.151.1. Deployment is manual and independent of npm releases.
-4. Verify the public site and its real prediction APIs, then point the README and docs playground links at the live URL. Keep the package homepage at `https://eshkra.dev` and documentation at `https://ulloasp.github.io/mlform/`.
+2. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to the repository or to both its `playground` and `docs` environments. The token needs Workers Scripts edit and the Workers Routes and DNS permissions for this zone.
+3. Publish releases through **CI & Publish** on `main`. After the npm publication succeeds, its **Deploy playground** and **Deploy docs** jobs publish the sites with pinned Wrangler 4.151.1.
+4. Verify the public site and its real prediction APIs after deployment. The package homepage remains `https://eshkra.dev`.
 
 The custom domain configuration creates its DNS record and HTTPS certificate, including for a multi-level subdomain; see [Cloudflare custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/). No separate static host or manually maintained CNAME is needed.
 
