@@ -41,6 +41,8 @@ MLForm exists so every screen does not invent that integration again. The schema
 npm install mlform
 ```
 
+See the [release and upgrade notes](https://github.com/UlloaSP/mlform/blob/main/CHANGELOG.md) when updating an existing integration.
+
 ## Quick start
 
 Add a host element:
