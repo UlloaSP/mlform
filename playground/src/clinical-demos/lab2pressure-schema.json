@@ -1,0 +1,272 @@
+{
+  "fields": [
+    {
+      "id": "urea-nitrogen",
+      "kind": "series",
+      "label": "Nitrógeno ureico (BUN)",
+      "description": "Introduce las mediciones originales en mg/dL; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "required": true,
+      "minPoints": 1,
+      "columns": [
+        {
+          "id": "value",
+          "kind": "number",
+          "label": "Valor",
+          "unit": "mg/dL",
+          "step": 1e-08,
+          "required": true,
+          "min": 0
+        }
+      ],
+      "aggregations": [
+        {
+          "label": "Urea Nitrogen_max",
+          "source": "value",
+          "operation": "max",
+          "mappedTo": {
+            "Best BP Minimal": "Urea Nitrogen_max"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chloride",
+      "kind": "series",
+      "label": "Cloro",
+      "description": "Introduce las mediciones originales en mEq/L; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "required": true,
+      "minPoints": 1,
+      "columns": [
+        {
+          "id": "value",
+          "kind": "number",
+          "label": "Valor",
+          "unit": "mEq/L",
+          "step": 1e-08,
+          "required": true,
+          "min": 0
+        }
+      ],
+      "aggregations": [
+        {
+          "label": "Chloride_min",
+          "source": "value",
+          "operation": "min",
+          "mappedTo": {
+            "Best BP Minimal": "Chloride_min"
+          }
+        }
+      ]
+    },
+    {
+      "id": "glucose",
+      "kind": "series",
+      "label": "Glucosa",
+      "description": "Introduce las mediciones originales en mg/dL; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "required": true,
+      "minPoints": 1,
+      "columns": [
+        {
+          "id": "value",
+          "kind": "number",
+          "label": "Valor",
+          "unit": "mg/dL",
+          "step": 1e-08,
+          "required": true,
+          "min": 0
+        }
+      ],
+      "aggregations": [
+        {
+          "label": "Glucose_max",
+          "source": "value",
+          "operation": "max",
+          "mappedTo": {
+            "Best BP Minimal": "Glucose_max"
+          }
+        }
+      ]
+    },
+    {
+      "id": "potassium",
+      "kind": "series",
+      "label": "Potasio",
+      "description": "Introduce las mediciones originales en mEq/L; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "required": true,
+      "minPoints": 1,
+      "columns": [
+        {
+          "id": "value",
+          "kind": "number",
+          "label": "Valor",
+          "unit": "mEq/L",
+          "step": 1e-08,
+          "required": true,
+          "min": 0
+        }
+      ],
+      "aggregations": [
+        {
+          "label": "Potassium_min",
+          "source": "value",
+          "operation": "min",
+          "mappedTo": {
+            "Best BP Minimal": "Potassium_min"
+          }
+        }
+      ]
+    },
+    {
+      "id": "blood-pressure",
+      "kind": "series",
+      "label": "Presión arterial",
+      "description": "Una fila por lectura, con sistólica y diastólica en mmHg. Se admite una sola lectura; su desviación estándar poblacional es cero.",
+      "required": true,
+      "minPoints": 1,
+      "columns": [
+        {
+          "id": "systolic",
+          "kind": "number",
+          "label": "Sistólica",
+          "unit": "mmHg",
+          "min": 0,
+          "step": 1e-08,
+          "required": true
+        },
+        {
+          "id": "diastolic",
+          "kind": "number",
+          "label": "Diastólica",
+          "unit": "mmHg",
+          "min": 0,
+          "step": 1e-08,
+          "required": true
+        }
+      ],
+      "aggregations": [
+        {
+          "label": "bp_s_mean",
+          "source": "systolic",
+          "operation": "mean",
+          "mappedTo": {
+            "Best BP Minimal": "bp_s_mean"
+          }
+        },
+        {
+          "label": "bp_s_sd",
+          "source": "systolic",
+          "operation": "stddev",
+          "mappedTo": {
+            "Best BP Minimal": "bp_s_sd"
+          },
+          "ddof": 0
+        },
+        {
+          "label": "bp_s_q1",
+          "source": "systolic",
+          "operation": "quantile",
+          "mappedTo": {
+            "Best BP Minimal": "bp_s_q1"
+          },
+          "q": 0.25,
+          "method": "linear"
+        },
+        {
+          "label": "bp_s_q3",
+          "source": "systolic",
+          "operation": "quantile",
+          "mappedTo": {
+            "Best BP Minimal": "bp_s_q3"
+          },
+          "q": 0.75,
+          "method": "linear"
+        },
+        {
+          "label": "bp_s_min",
+          "source": "systolic",
+          "operation": "min",
+          "mappedTo": {
+            "Best BP Minimal": "bp_s_min"
+          }
+        },
+        {
+          "label": "bp_s_max",
+          "source": "systolic",
+          "operation": "max",
+          "mappedTo": {
+            "Best BP Minimal": "bp_s_max"
+          }
+        },
+        {
+          "label": "bp_d_mean",
+          "source": "diastolic",
+          "operation": "mean",
+          "mappedTo": {
+            "Best BP Minimal": "bp_d_mean"
+          }
+        },
+        {
+          "label": "bp_d_sd",
+          "source": "diastolic",
+          "operation": "stddev",
+          "mappedTo": {
+            "Best BP Minimal": "bp_d_sd"
+          },
+          "ddof": 0
+        },
+        {
+          "label": "bp_d_q1",
+          "source": "diastolic",
+          "operation": "quantile",
+          "mappedTo": {
+            "Best BP Minimal": "bp_d_q1"
+          },
+          "q": 0.25,
+          "method": "linear"
+        },
+        {
+          "label": "bp_d_q3",
+          "source": "diastolic",
+          "operation": "quantile",
+          "mappedTo": {
+            "Best BP Minimal": "bp_d_q3"
+          },
+          "q": 0.75,
+          "method": "linear"
+        },
+        {
+          "label": "bp_d_min",
+          "source": "diastolic",
+          "operation": "min",
+          "mappedTo": {
+            "Best BP Minimal": "bp_d_min"
+          }
+        },
+        {
+          "label": "bp_d_max",
+          "source": "diastolic",
+          "operation": "max",
+          "mappedTo": {
+            "Best BP Minimal": "bp_d_max"
+          }
+        }
+      ]
+    }
+  ],
+  "reports": [
+    {
+      "kind": "classifier",
+      "label": "Predicción de hipertensión",
+      "labels": [
+        "Sano",
+        "Hipertenso"
+      ],
+      "mappedTo": {
+        "Best BP Minimal": 0
+      },
+      "showClassProbabilities": true,
+      "id": "prediction",
+      "description": "0: Sano. 1: Hipertenso."
+    }
+  ]
+}

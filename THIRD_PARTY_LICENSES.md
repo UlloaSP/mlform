@@ -2,6 +2,8 @@
 
 MLForm depends on the following open-source libraries. We are grateful to their maintainers and contributors.
 
+The documentation and playground also self-host Mona Sans Variable and JetBrains Mono Variable from Fontsource 5.3.0 under SIL OFL 1.1. Their complete licenses are preserved in [brand/fonts](./brand/fonts/). These font assets are not runtime dependencies of the published library.
+
 ---
 
 ## Runtime Dependencies

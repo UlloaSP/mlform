@@ -5,6 +5,8 @@ description: Schema-driven machine learning forms for web applications.
 
 MLForm mounts validated, schema-driven forms that submit structured values to a machine learning backend and render model reports in the same host element.
 
+Part of [eshkra](https://eshkra.dev), alongside MLbundle, MLschema and MLsuite. Explore the [playground](https://github.com/UlloaSP/mlform/tree/main/playground) for runnable examples.
+
 Use it when a product needs a predictable input layer for models: prediction forms, scoring dashboards, review tools, forecasting panels, internal ML consoles, or any workflow where UI state and backend payloads must stay aligned.
 
 ```ts

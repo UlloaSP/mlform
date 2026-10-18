@@ -38,7 +38,7 @@ jobs:
         run: vp install
 
       - name: Run root checks
-        run: vp check README.md src test package.json tsconfig.json tsconfig.build.json vite.config.ts .github/workflows .github/ISSUE_TEMPLATE .github/pull_request_template.md CODE_OF_CONDUCT.md CONTRIBUTING.md DEBT.md SECURITY.md AUTHORS.md THIRD_PARTY_LICENSES.md
+        run: vp check README.md src test playground brand package.json tsconfig.json tsconfig.build.json vite.config.ts .github/workflows .github/ISSUE_TEMPLATE .github/pull_request_template.md CODE_OF_CONDUCT.md CONTRIBUTING.md DEBT.md SECURITY.md AUTHORS.md THIRD_PARTY_LICENSES.md
 
   type-check:
     name: Type Check
@@ -80,6 +80,12 @@ jobs:
 
       - name: Run tests
         run: vp test run
+
+      - name: Build MLForm for the playground
+        run: vp build
+
+      - name: Verify playground
+        run: vp run check:playground
 
   build-docs:
     name: Build Documentation

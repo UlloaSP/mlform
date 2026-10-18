@@ -203,11 +203,12 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "MLForm",
-      logo: {
-        src: "./src/assets/logo.svg",
-        alt: "MLForm",
+      components: {
+        Head: "./src/components/BrandHead.astro",
+        SiteTitle: "./src/components/BrandTitle.astro",
       },
       social: [
+        { icon: "external", label: "eshkra", href: "https://eshkra.dev" },
         {
           icon: "github",
           label: "GitHub",
@@ -217,16 +218,7 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/UlloaSP/mlform/edit/main/docs/",
       },
-      head: [
-        {
-          tag: "meta",
-          attrs: {
-            property: "og:image",
-            content: "/mlform/social-card.svg",
-          },
-        },
-      ],
-      customCss: ["./src/styles/custom.css"],
+      customCss: ["../brand/typography.css", "./src/styles/custom.css"],
       sidebar,
     }),
   ],

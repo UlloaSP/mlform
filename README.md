@@ -1,4 +1,14 @@
-# MLForm
+<h1>
+  <img src="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/mlform.png" alt="" height="72" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/wordmark-dark.svg" />
+    <img src="https://raw.githubusercontent.com/UlloaSP/mlform/main/brand/wordmark-light.svg" alt="MLform" height="56" />
+  </picture>
+</h1>
+
+Part of [eshkra](https://eshkra.dev), a family of open-source tools for putting machine-learning models in front of people.
+
+[Documentation](https://ulloasp.github.io/mlform/) · [Playground](https://github.com/UlloaSP/mlform/tree/main/playground) · [npm](https://www.npmjs.com/package/mlform) · [Source](https://github.com/UlloaSP/mlform)
 
 [![CI](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlform/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/mlform.svg)](https://www.npmjs.com/package/mlform)
@@ -180,6 +190,8 @@ vp build
 ```
 
 Read [CONTRIBUTING.md](./CONTRIBUTING.md) before opening an issue or pull request.
+
+Run `vp run playground` to build MLForm and serve the local demos at `http://127.0.0.1:10001`. See the [playground guide](./playground/README.md) for examples and verification commands.
 
 ## License
 

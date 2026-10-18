@@ -1,0 +1,184 @@
+.clinical-page {
+  min-height: 100dvh;
+  padding: 1.2rem;
+  color: var(--mlf-color-text, #221d36);
+  color-scheme: light;
+  --mlf-control-height: 2.7rem;
+  --mlf-input-radius: 0.35rem;
+  --mlf-field-radius: 0.35rem;
+}
+
+.clinical-page[data-mode="dark"] {
+  color-scheme: dark;
+}
+.clinical-page [hidden] {
+  display: none !important;
+}
+.clinical-page ::selection {
+  background: var(--mlf-color-accent, #655dc6);
+  color: #fff;
+}
+.clinical-page :is(input, select) {
+  caret-color: var(--mlf-color-accent, #655dc6);
+}
+.clinical-page a {
+  text-underline-offset: 0.15em;
+}
+.clinical-container {
+  width: min(1220px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.clinical-card {
+  background: var(--mlf-color-surface, #fff);
+  border: 1px solid var(--mlf-color-border, #d9dce7);
+  border-radius: 0.5rem;
+  overflow: clip;
+}
+
+.clinical-example-card {
+  padding: 1rem 1.2rem;
+  text-align: center;
+}
+.clinical-page h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 500;
+}
+.clinical-example-card > h1 {
+  margin-bottom: 1rem;
+}
+.clinical-example-card header p {
+  margin: 0.2rem 0 1rem;
+  color: var(--mlf-color-text-muted, #5f5a87);
+}
+.clinical-example-loader {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+}
+.clinical-example-loader select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.7rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--mlf-color-border, #cfd3e2);
+  border-radius: 0.35rem;
+  background: var(--mlf-color-surface, #fff);
+  color: inherit;
+}
+.clinical-page button {
+  min-height: 2.7rem;
+  border: 0;
+  border-radius: 0.35rem;
+  padding: 0.65rem 1.1rem;
+  background: var(--mlf-color-accent, #655dc6);
+  color: var(--mlf-color-text-inverse, #fff);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.clinical-page button:hover {
+  filter: brightness(0.93);
+}
+.clinical-page button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.clinical-page :is(button, select, a, summary):focus-visible {
+  outline: 3px solid var(--mlf-color-accent, #655dc6);
+  outline-offset: 3px;
+}
+.clinical-form {
+  padding: 1rem;
+}
+.clinical-intro {
+  max-width: 75ch;
+  margin: 0.25rem auto 1.5rem;
+  text-align: center;
+  color: var(--mlf-color-text-muted, #5f5a87);
+}
+.clinical-page mlf-kit-disclosure::part(actions) {
+  display: none;
+}
+.clinical-page mlf-kit-disclosure::part(layout-panel) {
+  border: 0;
+  box-shadow: none;
+}
+.clinical-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+}
+.clinical-actions p {
+  color: var(--mlf-color-text-muted, #5f5a87);
+  font-size: 0.92rem;
+}
+.clinical-actions button {
+  flex-shrink: 0;
+}
+.clinical-errors {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--mlf-color-danger, #b93636);
+  border-radius: 0.35rem;
+  color: var(--mlf-color-danger, #b93636);
+  overflow-wrap: anywhere;
+}
+.clinical-errors p {
+  margin: 0;
+}
+.clinical-note {
+  margin: 1rem auto 0.25rem;
+  color: var(--mlf-color-text-muted, #5f5a87);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.dt-prediction-panel {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--mlf-color-border, #d9dce7);
+}
+.dt-prediction-panel progress {
+  display: block;
+  width: 100%;
+  height: 16px;
+  appearance: none;
+  border: 0;
+  border-radius: 6px;
+  background: var(--mlf-color-surface-muted, #e9ecef);
+  overflow: hidden;
+}
+.dt-prediction-panel progress::-webkit-progress-bar {
+  background: var(--mlf-color-surface-muted, #e9ecef);
+}
+.dt-prediction-panel progress::-webkit-progress-value {
+  background: var(--mlf-color-accent, #655dc6);
+}
+.dt-prediction-panel progress::-moz-progress-bar {
+  background: var(--mlf-color-accent, #655dc6);
+}
+
+@media (max-width: 600px) {
+  .clinical-page {
+    padding: 0.4rem;
+  }
+  .clinical-example-loader {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .clinical-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .clinical-actions p {
+    margin: 0.25rem 0;
+  }
+  .clinical-page h1 {
+    overflow-wrap: anywhere;
+  }
+}

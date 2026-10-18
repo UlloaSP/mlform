@@ -14,6 +14,10 @@ const toolIgnorePatterns = [
   "docs/**",
   "coverage/**",
   "output/**",
+  "playground/node_modules/**",
+  "playground/dist/**",
+  "playground/test-results/**",
+  "playground/playwright-report/**",
   "stats/**",
   "architecture/*.html",
   ".github/**",
@@ -113,7 +117,12 @@ export default defineConfig({
     },
   },
   fmt: {
-    ignorePatterns: toolIgnorePatterns,
+    ignorePatterns: [
+      ...toolIgnorePatterns,
+      "playground/public/models/**",
+      "playground/tests/fixtures/**",
+      "playground/src/clinical-demos/lab2pressure-schema.json",
+    ],
     printWidth: 100,
     tabWidth: 2,
     useTabs: false,
@@ -189,7 +198,15 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     coverage: {
       reporter: ["text", "html"],
-      exclude: ["node_modules/", "test/", "dist/", "**/*.d.ts", "**/*.config.*", "**/coverage/**"],
+      exclude: [
+        "node_modules/",
+        "test/",
+        "dist/",
+        "playground/",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/coverage/**",
+      ],
       thresholds: {
         // Browser and platform fallbacks keep the repository-wide branch baseline below the
         // contract seams, which are held to the stricter target independently.

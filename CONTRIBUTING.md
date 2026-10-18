@@ -32,6 +32,8 @@ vp install
 vp run build
 ```
 
+The [playground](./playground/README.md) belongs to the root workspace. From the repository root, run `vp run playground` to build MLForm and start the demos at `http://127.0.0.1:10001`. After library changes, restart that command to rebuild MLForm. To run the playground's unit, API, build, and browser checks separately, use `vp build && vp run check:playground`; these checks also run as part of `vp run ci`.
+
 ## Read this first
 
 MLForm is pre-1.0 and its public model is still becoming smaller and more explicit. Contributions are welcome, but preserving a coherent schema, runtime, transport, rendering, and package contract matters more than adding surface area.

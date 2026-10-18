@@ -1,0 +1,36 @@
+name: Deploy Playground
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playground-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'UlloaSP'
+    runs-on: ubuntu-latest
+    environment:
+      name: playground
+      url: https://playground.mlform.eshkra.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24.15.0"
+          cache: true
+      - run: vp install --frozen-lockfile
+      - run: vp check
+      - run: vp run typecheck
+      - run: vp build
+      - run: vp exec playwright install --with-deps chromium
+      - run: vp run check:playground
+      - name: Deploy assets and prediction proxy
+        run: vp dlx wrangler@4.151.1 deploy --config playground/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,0 +1,23 @@
+{
+  "name": "playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev --host 127.0.0.1 --port 10001 --strictPort",
+    "build": "vp build",
+    "test:mlform-api": "node scripts/smoke-mlform-api.mjs",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:e2e": "playwright test",
+    "preview": "vp preview"
+  },
+  "dependencies": {
+    "mlform": "workspace:*",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "jsdom": "^30.0.1",
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest"
+  }
+}
