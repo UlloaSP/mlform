@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { css } from "lit";
+import { seriesFieldResponsiveStyles } from "./series-field-responsive-styles";
 
 export const seriesFieldStyles = css`
   .series {
@@ -32,9 +33,9 @@ export const seriesFieldStyles = css`
     line-height: 1.2;
     cursor: pointer;
     transition:
-      background 0.2s ease,
-      border-color 0.2s ease,
-      transform 0.2s ease;
+      background var(--mlf-motion-fast, 140ms ease),
+      border-color var(--mlf-motion-fast, 140ms ease),
+      transform var(--mlf-motion-fast, 140ms ease);
   }
 
   .add-btn {
@@ -71,7 +72,6 @@ export const seriesFieldStyles = css`
       color-mix(in srgb, var(--mlf-color-accent, #1e40af) 16%, var(--mlf-color-surface, #ffffff))
     );
     border-color: var(--mlf-series-action-border-hover, var(--mlf-color-accent, #1e40af));
-    transform: translateY(-1px);
   }
 
   .add-btn:focus-visible,
@@ -92,6 +92,7 @@ export const seriesFieldStyles = css`
     display: grid;
     gap: 0.85rem;
     overflow-x: auto;
+    padding: max(4px, var(--mlf-ring-width, 3px));
   }
 
   .grid:focus-visible {
@@ -172,7 +173,7 @@ export const seriesFieldStyles = css`
   }
 
   .value-wrap input {
-    padding-right: calc(var(--mlf-series-unit-width, 2rem) + 2rem);
+    padding-right: min(calc(var(--mlf-series-unit-width, 2rem) + 2rem), calc(40% + 2rem));
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
@@ -201,11 +202,10 @@ export const seriesFieldStyles = css`
     top: 50%;
     right: 0.85rem;
     transform: translateY(-50%);
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
+    display: block;
+    text-align: right;
     max-width: 40%;
-    min-width: var(--mlf-series-unit-width, 2rem);
+    min-width: min(var(--mlf-series-unit-width, 2rem), 40%);
     padding-left: 0.65rem;
     overflow: hidden;
     background: linear-gradient(
@@ -216,7 +216,8 @@ export const seriesFieldStyles = css`
     color: var(--mlf-series-unit-color, var(--mlf-color-text-muted, #475569));
     font-size: 0.9rem;
     font-weight: 700;
-    line-height: 1;
+    line-height: 1.5;
+    padding-block: 2px;
     text-overflow: ellipsis;
     white-space: nowrap;
     pointer-events: none;
@@ -233,25 +234,13 @@ export const seriesFieldStyles = css`
     font-size: 0.9rem;
   }
 
-  @container (max-width: 32rem) {
-    .header {
-      display: none;
-    }
-
-    .row {
-      grid-template-columns: 1fr;
-    }
-
-    .cell-label {
-      display: block;
-      margin-block-end: 0.3rem;
-      color: var(--mlf-series-heading, var(--mlf-color-text-muted, #475569));
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-
+  @media (prefers-reduced-motion: reduce) {
+    .add-btn,
     .remove-btn {
-      justify-self: end;
+      transition: none;
+      transform: none;
     }
   }
+
+  ${seriesFieldResponsiveStyles}
 `;

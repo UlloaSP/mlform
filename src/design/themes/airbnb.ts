@@ -40,7 +40,7 @@ export const airbnbTheme: ThemeManifest = {
         "--mlf-color-accent-hover": "#e00b41",
         "--mlf-color-accent-soft": "rgba(255, 56, 92, 0.12)",
 
-        "--mlf-color-success": "#008a05",
+        "--mlf-color-success": "#007508",
         "--mlf-color-warning": "#b26a00",
         "--mlf-color-danger": "#c13515",
         "--mlf-color-danger-soft": "rgba(193, 53, 21, 0.12)",

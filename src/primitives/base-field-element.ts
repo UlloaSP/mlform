@@ -15,6 +15,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
   static styles: CSSResultGroup = css`
     :host {
       display: block;
+      position: relative;
       min-width: 0;
       box-sizing: border-box;
     }
@@ -41,9 +42,9 @@ export abstract class PrimitiveFieldElement extends LitElement {
       font: inherit;
       line-height: 1.4;
       transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background-color 0.2s ease;
+        border-color var(--mlf-motion-fast, 140ms ease),
+        box-shadow var(--mlf-motion-fast, 140ms ease),
+        background-color var(--mlf-motion-fast, 140ms ease);
     }
 
     .control:focus-visible {
@@ -55,7 +56,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
     .control:disabled {
       --mlf-control-bg: var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa));
       cursor: not-allowed;
-      opacity: 0.72;
+      color: var(--mlf-color-text-muted, #526170);
       background: var(--mlf-control-bg);
     }
 
@@ -65,6 +66,8 @@ export abstract class PrimitiveFieldElement extends LitElement {
         var(--mlf-input-bg-disabled, var(--mlf-color-surface-muted, #f5f7fa))
       );
       background: var(--mlf-control-bg);
+      color: var(--mlf-color-text-muted, #526170);
+      cursor: default;
     }
 
     .control:is(:autofill, :-webkit-autofill) {
@@ -79,11 +82,35 @@ export abstract class PrimitiveFieldElement extends LitElement {
         var(--mlf-input-shadow-focus, 0 0 0 3px rgba(29, 78, 216, 0.18));
     }
 
+    .control[readonly],
+    .control:disabled {
+      caret-color: transparent;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .control {
+        transition: none;
+      }
+    }
+
     @media (forced-colors: active) {
+      .control:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+      }
       .control:is(:autofill, :-webkit-autofill) {
         box-shadow: none;
         -webkit-text-fill-color: CanvasText;
         caret-color: CanvasText;
+      }
+      .control[readonly],
+      .control:disabled:not([type="range"]) {
+        forced-color-adjust: none;
+        background: Canvas;
+        color: GrayText;
+        -webkit-text-fill-color: GrayText;
+        border-color: GrayText;
+        caret-color: transparent;
       }
     }
 
@@ -110,7 +137,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
   @property({ attribute: false }) accessor text: PrimitiveText = primitiveStaticText;
 
   protected commitValue(value: unknown): void {
-    if (this.context?.disabled || this.context?.readOnly) {
+    if (!this.isConnected || this.context?.disabled || this.context?.readOnly) {
       return;
     }
 
@@ -118,6 +145,7 @@ export abstract class PrimitiveFieldElement extends LitElement {
   }
 
   protected commitBlur(): void {
+    if (!this.isConnected) return;
     this.controller?.blur();
     void this.controller?.validate();
   }

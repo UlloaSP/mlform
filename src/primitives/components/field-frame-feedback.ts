@@ -53,17 +53,16 @@ export const hasIntroducedValue = (
   component: string,
   props: Record<string, unknown>,
   state: PrimitiveFieldStateSnapshot,
-  defaultValue: unknown,
 ): boolean => {
   const resolvedComponent = resolveFieldFeedbackComponent(component, props);
 
   switch (resolvedComponent) {
     case "text-field":
-      return typeof state.value === "string" && state.value.trim().length > 0;
+      return typeof state.value === "string" && state.value.length > 0;
     case "date-field":
       return typeof props.value === "string" && props.value.trim().length > 0;
     case "category-field":
-      return resolveCategorySelection(props, state.value) !== null;
+      return typeof state.value === "string" && state.value.length > 0;
     case "number-field":
       return (
         state.value !== null &&
@@ -72,7 +71,7 @@ export const hasIntroducedValue = (
         !(typeof state.value === "number" && Number.isNaN(state.value))
       );
     case "boolean-field":
-      return defaultValue !== undefined || state.dirty || state.touched;
+      return typeof state.value === "boolean";
     case "series-field":
       return Array.isArray(props.value) && props.value.length > 0;
     default:

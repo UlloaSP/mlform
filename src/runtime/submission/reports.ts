@@ -12,6 +12,12 @@ export type SubmissionReport = {
   commitState(state: ReportStateSnapshot): void;
 };
 
+export const failReportStates = (reports: readonly SubmissionReport[], message: string): void => {
+  for (const report of reports) {
+    report.commitState({ status: "error", payload: undefined, error: message });
+  }
+};
+
 export const prepareReportStates = async (
   reports: readonly SubmissionReport[],
   baseResult: SubmitResult,

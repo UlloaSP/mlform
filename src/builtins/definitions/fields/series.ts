@@ -3,6 +3,7 @@
 
 import type { BuiltinFieldDefinition } from "../shared";
 import { resolveMappedTargets } from "@/schema";
+import { getSeriesCellErrors } from "./series-validation";
 import { calculateSeriesAggregation } from "./series-aggregations";
 import {
   normalizeSeriesPoint,
@@ -14,7 +15,6 @@ import {
   type SeriesPoint,
   validateSeriesPointCount,
   validateSeriesSubFieldConfig,
-  validateSubFieldValue,
 } from "./series-helpers";
 
 export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, SeriesPoint[]> = {
@@ -41,6 +41,24 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
           column.id,
           serializeSubFieldValue(column, point[column.id]),
         ]),
+      ),
+    );
+  },
+  serializeSnapshotValue(value, config) {
+    return value.map((point) =>
+      Object.fromEntries(
+        config.columns.map((column) => {
+          const cell = serializeSubFieldValue(column, point[column.id]);
+          if (
+            cell === null ||
+            typeof cell === "string" ||
+            typeof cell === "number" ||
+            typeof cell === "boolean"
+          ) {
+            return [column.id, cell];
+          }
+          throw new TypeError(`Unsupported snapshot value for series column "${column.id}".`);
+        }),
       ),
     );
   },
@@ -145,23 +163,9 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
   },
   validateSync(value, config) {
     const errors = validateSeriesPointCount(value, config);
-    const sources = new Set(config.aggregations?.map((aggregation) => aggregation.source));
-
-    value.forEach((point, index) => {
+    getSeriesCellErrors(value, config).forEach((cells, index) => {
       for (const column of config.columns) {
-        if (
-          sources.has(column.id) &&
-          (typeof point[column.id] !== "number" || !Number.isFinite(point[column.id]))
-        ) {
-          errors.add(
-            `Row ${index + 1} (${column.label}): Enter a finite number in every measurement.`,
-          );
-        }
-        for (const error of prefixRowErrors(
-          index,
-          column.label,
-          validateSubFieldValue(column, point[column.id]),
-        ))
+        for (const error of prefixRowErrors(index, column.label, cells[column.id]))
           errors.add(error);
       }
     });

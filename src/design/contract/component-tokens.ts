@@ -74,7 +74,8 @@ export const componentTokenDefaults: Record<ComponentKey, ComponentTokenManifest
   input: {
     tokens: {
       "--mlf-input-bg": "var(--mlf-color-surface-elevated)",
-      "--mlf-input-bg-disabled": "var(--mlf-color-surface-muted)",
+      "--mlf-input-bg-disabled":
+        "color-mix(in srgb, var(--mlf-color-surface) 92%, var(--mlf-color-text) 8%)",
       "--mlf-input-border": "var(--mlf-color-border)",
       "--mlf-input-border-focus": "var(--mlf-color-accent)",
       "--mlf-input-text": "var(--mlf-color-text)",

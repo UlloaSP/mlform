@@ -20,7 +20,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         padding: 0;
         border: var(--mlf-border-width, 1px) solid var(--mlf-toggle-border, var(--mlf-color-border));
         border-radius: var(--mlf-input-radius, 8px);
-        overflow: hidden;
+        overflow: visible;
       }
 
       input[type="radio"] {
@@ -48,9 +48,9 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         cursor: pointer;
         user-select: none;
         transition:
-          background 0.2s ease,
-          color 0.2s ease,
-          border-color 0.2s ease;
+          background var(--mlf-motion-fast, 140ms ease),
+          color var(--mlf-motion-fast, 140ms ease),
+          border-color var(--mlf-motion-fast, 140ms ease);
         margin: 0;
       }
 
@@ -61,7 +61,7 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
 
       input[type="radio"]:focus-visible + .opt {
         outline: 2px solid var(--mlf-color-accent, #2456c7);
-        outline-offset: -3px;
+        outline-offset: 3px;
       }
 
       .opt:hover {
@@ -75,6 +75,28 @@ export class PrimitiveBooleanFieldElement extends PrimitiveFieldElement {
         background: var(--mlf-toggle-bg-active, var(--mlf-color-accent, #2456c7));
         border-color: var(--mlf-toggle-border-active, var(--mlf-color-accent, #2456c7));
         color: var(--mlf-toggle-text-active, var(--mlf-color-text-inverse, #ffffff));
+      }
+
+      .opt:first-of-type {
+        border-radius: var(--mlf-input-radius, 8px) 0 0 var(--mlf-input-radius, 8px);
+      }
+      .opt:last-of-type {
+        border-radius: 0 var(--mlf-input-radius, 8px) var(--mlf-input-radius, 8px) 0;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .opt {
+          transition: none;
+        }
+      }
+      @media (forced-colors: active) {
+        input[type="radio"]:checked + label.opt {
+          forced-color-adjust: none;
+          background: Highlight;
+          color: HighlightText;
+        }
+        input[type="radio"]:focus-visible + .opt {
+          outline-color: Highlight;
+        }
       }
 
       input[type="radio"]:disabled + label.opt {

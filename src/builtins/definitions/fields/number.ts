@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
+import { normalizeNumericValue } from "./numeric-value";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
@@ -32,28 +33,7 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
   getDefaultValue(config) {
     return typeof config.defaultValue === "number" ? config.defaultValue : null;
   },
-  normalizeValue(value) {
-    if (value === null || value === undefined || value === "") {
-      return null;
-    }
-
-    if (typeof value === "number") {
-      return Number.isNaN(value) ? null : value;
-    }
-
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      if (trimmed.length === 0) {
-        return null;
-      }
-
-      const parsed = Number(trimmed);
-      return Number.isNaN(parsed) ? value : parsed;
-    }
-
-    const parsed = Number(value);
-    return Number.isNaN(parsed) ? null : parsed;
-  },
+  normalizeValue: normalizeNumericValue,
   validateConfig(config, context) {
     if (config.min !== undefined && config.max !== undefined && config.min > config.max) {
       context.fail(builtinValidationMessages.invalidNumericRange, ["min"]);
@@ -64,7 +44,7 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
     if (value === null) {
       return errors;
     }
-    if (typeof value !== "number") {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
       errors.push(builtinValidationMessages.invalidNumber);
       return errors;
     }

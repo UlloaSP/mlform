@@ -6,11 +6,13 @@ import { ifDefined } from "lit/directives/if-defined.js";
 import type { PrimitiveText } from "../constants";
 import type { PrimitiveFieldRenderContext } from "../types";
 import { toText } from "../utils";
+import { stepNumericDraft } from "./numeric-draft";
 import { seriesNumberUnit, type SeriesColumnConfig } from "./series-field-helpers";
 
 export type RenderSeriesCellOptions = {
   config: SeriesColumnConfig;
   value: unknown;
+  numericValue?: unknown;
   index: number;
   id: string;
   disabled: boolean;
@@ -58,6 +60,7 @@ const renderSelectChevron = () => html`
 export const renderSeriesCell = ({
   config,
   value,
+  numericValue,
   index,
   id,
   disabled,
@@ -95,6 +98,11 @@ export const renderSeriesCell = ({
     case "category": {
       const options = Array.isArray(config.options) ? config.options : [];
       const selected = typeof value === "string" ? value : "";
+      const unavailable =
+        selected !== "" &&
+        !options.some(
+          (option) => (typeof option === "string" ? option : option.value) === selected,
+        );
       return html`
         <div class="select-wrap">
           <select
@@ -113,6 +121,7 @@ export const renderSeriesCell = ({
             <option value="" ?selected=${selected === ""}>
               &#8212; ${text.categoryPlaceholder} &#8212;
             </option>
+            ${unavailable ? html`<option value=${selected} selected disabled>${selected}</option>` : html``}
             ${options.map((option) => renderSeriesSelectOption(option, selected))}
           </select>
           ${renderSelectChevron()}
@@ -155,11 +164,18 @@ export const renderSeriesCell = ({
         <div
           class="value-wrap ${disabled ? "is-disabled" : readOnly ? "is-readonly" : ""}"
           style=${`--mlf-series-unit-width: ${unitWidth};`}
+          title=${ifDefined(unit || undefined)}
         >
           <input
             class="control"
             id=${id}
-            type="number"
+            type="text"
+            role="spinbutton"
+            aria-valuenow=${ifDefined(typeof numericValue === "number" ? numericValue : undefined)}
+            aria-valuetext=${ifDefined(unit && typeof numericValue === "number" ? `${numericValue} ${unit}` : undefined)}
+            aria-valuemin=${ifDefined(typeof config.min === "number" ? config.min : undefined)}
+            aria-valuemax=${ifDefined(typeof config.max === "number" ? config.max : undefined)}
+            @keydown=${(event: KeyboardEvent) => stepNumericDraft(event, numericValue)}
             inputmode="decimal"
             spellcheck="false"
             autocomplete="off"

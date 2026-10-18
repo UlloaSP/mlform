@@ -21,7 +21,7 @@ export const graphiteTheme: ThemeManifest = {
         "--mlf-color-accent": "#375a7f",
         "--mlf-color-accent-hover": "#27445f",
         "--mlf-color-accent-soft": "rgba(55, 90, 127, 0.12)",
-        "--mlf-color-success": "#1f8a5b",
+        "--mlf-color-success": "#176c47",
         "--mlf-color-warning": "#c17c1f",
         "--mlf-color-danger": "#be3a34",
         "--mlf-color-danger-soft": "rgba(190, 58, 52, 0.12)",

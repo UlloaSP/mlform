@@ -20,14 +20,15 @@ interface BundleResult {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as PackageManifest;
+// Includes the brand palettes, lossless numeric drafts and measured feedback transitions.
 const budgets: Record<string, number> = {
-  ".": 80,
-  "./kit": 80,
-  "./view": 59,
-  "./primitives": 28,
+  ".": 83,
+  "./kit": 83,
+  "./view": 61,
+  "./primitives": 29.5,
   "./design": 15,
   "./runtime": 22,
-  "./builtins": 11,
+  "./builtins": 11.5,
   "./schema": 6,
   "./transport": 2,
 };

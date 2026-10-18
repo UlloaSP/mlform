@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2025 Pablo Ulloa Santin
+
+import type { ThemeManifest } from "../types";
+
+export const dosetailorTheme: ThemeManifest = {
+  id: "dosetailor",
+  label: "DoseTailor",
+  sharedTokens: {
+    "--mlf-font-family-body": '"Quicksand", ui-sans-serif, system-ui, sans-serif',
+    "--mlf-font-family-heading": '"Quicksand", ui-sans-serif, system-ui, sans-serif',
+    "--mlf-font-family-ui": '"Quicksand", ui-sans-serif, system-ui, sans-serif',
+    "--mlf-radius-sm": "6px",
+    "--mlf-radius-md": "8px",
+    "--mlf-radius-lg": "8px",
+    "--mlf-radius-xl": "12px",
+    "--mlf-ring-width": "3px",
+    "--mlf-submit-radius": "23px",
+  },
+  schemes: {
+    light: {
+      colorScheme: "light",
+      tokens: {
+        "--mlf-color-bg": "#a9a4e3",
+        "--mlf-color-surface": "#ffffff",
+        "--mlf-color-surface-muted": "#f5f4fa",
+        "--mlf-color-surface-elevated": "#ffffff",
+        "--mlf-color-text": "#212529",
+        "--mlf-color-text-muted": "#5e5975",
+        "--mlf-color-text-inverse": "#ffffff",
+        "--mlf-color-border": "#dfdceb",
+        "--mlf-color-border-strong": "#beb8d4",
+        "--mlf-color-accent": "#655dc6",
+        "--mlf-color-accent-hover": "#4a43a8",
+        "--mlf-color-accent-soft": "rgba(101, 93, 198, 0.10)",
+        "--mlf-color-success": "#246549",
+        "--mlf-color-warning": "#805907",
+        "--mlf-color-danger": "#a73342",
+        "--mlf-color-danger-soft": "rgba(167, 51, 66, 0.08)",
+        "--mlf-color-focus-ring": "rgba(101, 93, 198, 0.24)",
+        "--mlf-color-overlay": "rgba(245, 244, 250, 0.90)",
+        "--mlf-color-hover-surface": "#eeecfa",
+        "--mlf-color-chart-track": "rgba(94, 89, 117, 0.14)",
+      },
+    },
+    dark: {
+      colorScheme: "dark",
+      tokens: {
+        "--mlf-color-bg": "#191626",
+        "--mlf-color-surface": "#221e33",
+        "--mlf-color-surface-muted": "#2b2540",
+        "--mlf-color-surface-elevated": "#322b48",
+        "--mlf-color-text": "#f6f3ff",
+        "--mlf-color-text-muted": "#c9c0de",
+        "--mlf-color-text-inverse": "#191626",
+        "--mlf-color-border": "#463c5e",
+        "--mlf-color-border-strong": "#625578",
+        "--mlf-color-accent": "#b7aaf7",
+        "--mlf-color-accent-hover": "#cfc4ff",
+        "--mlf-color-accent-soft": "rgba(183, 170, 247, 0.14)",
+        "--mlf-color-success": "#80d6a9",
+        "--mlf-color-warning": "#efc475",
+        "--mlf-color-danger": "#ffa2ad",
+        "--mlf-color-danger-soft": "rgba(255, 162, 173, 0.12)",
+        "--mlf-color-focus-ring": "rgba(183, 170, 247, 0.30)",
+        "--mlf-color-overlay": "rgba(25, 22, 38, 0.90)",
+        "--mlf-color-hover-surface": "#403657",
+        "--mlf-color-chart-track": "rgba(201, 192, 222, 0.18)",
+      },
+    },
+  },
+};

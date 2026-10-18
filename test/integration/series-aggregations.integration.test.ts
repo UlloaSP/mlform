@@ -63,7 +63,7 @@ describe("series aggregation rendering", () => {
       [...shadow.querySelectorAll(".aggregation-result dd")].map((node) =>
         node.textContent?.trim().replace(/\s+/gu, " "),
       );
-    const controls = () => shadow.querySelectorAll<HTMLInputElement>('input[type="number"]');
+    const controls = () => shadow.querySelectorAll<HTMLInputElement>('input[role="spinbutton"]');
     const edit = async (index: number, value: string) => {
       controls().item(index).value = value;
       controls()
@@ -129,7 +129,7 @@ describe("series aggregation rendering", () => {
       const shadow = getShadow(getShadow(frame).querySelector("mlf-series-field"));
       expect(shadow.querySelector(".aggregation-summary")).toBeNull();
       expect(shadow.textContent).not.toContain("Maximum systolic");
-      const input = shadow.querySelector<HTMLInputElement>('input[type="number"]')!;
+      const input = shadow.querySelector<HTMLInputElement>('input[role="spinbutton"]')!;
       input.value = "160";
       input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
       await flush();

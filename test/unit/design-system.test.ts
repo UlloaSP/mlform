@@ -32,6 +32,9 @@ describe("design", () => {
     };
 
     for (const theme of [
+      "eshkra",
+      "m3diseen",
+      "dosetailor",
       "neutral",
       "cobalt",
       "graphite",

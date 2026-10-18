@@ -4,3 +4,4 @@
 export { builtinThemes } from "./collections";
 export { cobaltTheme } from "./cobalt";
 export { neutralTheme } from "./neutral";
+export { eshkraTheme } from "./eshkra";

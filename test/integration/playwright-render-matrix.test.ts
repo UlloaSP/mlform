@@ -399,6 +399,7 @@ type MatrixSubmit = {
 
 const startServer = async (): Promise<string> => {
   server = await createServer({
+    cacheDir: resolve(process.cwd(), "node_modules/.vite/render-matrix-probe"),
     configFile: false,
     root: process.cwd(),
     resolve: {
@@ -511,7 +512,8 @@ describe("Playwright render matrix", () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      expect(await series.locator(".cell-label").first().isVisible()).toBe(true);
+      expect(await series.locator(".cell-label").first().isVisible()).toBe(count > 1);
+      if (count === 1) expect(await series.locator(".header").isVisible()).toBe(true);
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.emulateMedia({ forcedColors: "none" });
     },
@@ -565,8 +567,9 @@ describe("Playwright render matrix", () => {
       });
     expect(colors.background).not.toBe("rgb(255, 255, 255)");
     expect(colors.color).not.toBe(colors.background);
-    expect(colors.readonlyBackground).toBe("rgb(22, 35, 59)");
-    expect(colors.readonlyColor).toBe(colors.color);
+    expect(colors.readonlyBackground).not.toBe(colors.background);
+    expect(colors.readonlyColor).not.toBe(colors.color);
+    expect(colors.readonlyColor).not.toBe(colors.readonlyBackground);
     expect(autofillColors.shadow).toContain(colors.background);
     expect(autofillColors.fill).toBe(colors.color);
 

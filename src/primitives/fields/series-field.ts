@@ -25,6 +25,7 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
 
   @state() private accessor rows: DraftRow[] = [];
   #rowsDirtySinceCommit = false;
+  #committedKey = "";
   #pendingFocus:
     | { kind: "row"; index: number }
     | { kind: "remove"; index: number; target: "remove" | "add" | "control" }
@@ -79,6 +80,7 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
             ? html`
                 <div
                   class="grid"
+                  data-columns=${columns.length}
                   tabindex="0"
                   role="group"
                   aria-label=${context?.label ?? toText(this.props.label)}
@@ -146,6 +148,9 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
   }
 
   #syncRowsFromDescriptor(): void {
+    const key = JSON.stringify(this.controller?.state.value ?? this.props.value);
+    if (key === this.#committedKey) return;
+    this.#committedKey = key;
     this.rows = normalizeRows(this.props.value, this.#columns);
     this.#rowsDirtySinceCommit = false;
   }
@@ -234,6 +239,7 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
         ),
       ),
     );
+    this.#committedKey = JSON.stringify(this.controller?.state.value ?? this.props.value);
     this.#rowsDirtySinceCommit = false;
   }
 
@@ -255,7 +261,19 @@ export class PrimitiveSeriesFieldElement extends PrimitiveFieldElement {
       disabled,
       readOnly,
       columnId: config.id,
-      context,
+      context: context
+        ? {
+            ...context,
+            invalid: Boolean(
+              (this.props.cellErrors as Record<string, string[]>[] | undefined)?.[index]?.[
+                config.id
+              ]?.length,
+            ),
+          }
+        : undefined,
+      numericValue: (this.controller?.state.value as Record<string, unknown>[] | undefined)?.[
+        index
+      ]?.[config.id],
       text: this.text,
       onInput: (rowIndex, targetField, nextValue) =>
         this.#handleCellInput(rowIndex, targetField, nextValue),

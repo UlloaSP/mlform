@@ -13,6 +13,10 @@ export class PrimitiveFormErrorsElement extends LitElement {
       display: block;
     }
 
+    :host([hidden]) {
+      display: none;
+    }
+
     .card {
       padding: 1rem 1.25rem;
       border-radius: 12px;
@@ -54,6 +58,7 @@ export class PrimitiveFormErrorsElement extends LitElement {
     if (changedProperties.has("form")) {
       this.#attachForm();
     }
+    this.hidden = this.formErrors.length === 0;
   }
 
   connectedCallback(): void {

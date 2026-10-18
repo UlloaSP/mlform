@@ -11,6 +11,7 @@ export { multiChoiceFieldDefinition } from "./fields/multi-choice";
 export { numberFieldDefinition } from "./fields/number";
 export { ratingFieldDefinition } from "./fields/rating";
 export { seriesFieldDefinition } from "./fields/series";
+export { getSeriesCellErrors } from "./fields/series-validation";
 export { calculateSeriesAggregation } from "./fields/series-aggregations";
 export type { SeriesAggregation } from "./fields/series-aggregations";
 export { singleChoiceFieldDefinition } from "./fields/single-choice";

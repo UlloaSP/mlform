@@ -16,10 +16,15 @@ const isHTMLElement = (element: Element): element is HTMLElement => {
 
 const isFocusable = (element: Element): element is HTMLElement =>
   isHTMLElement(element) &&
-  (element.matches("input, select, textarea, button, [tabindex]") ||
+  !element.matches(":disabled, [hidden], [aria-hidden=true]") &&
+  (element.matches('input, select, textarea, button, [tabindex]:not([role="group"])') ||
     element.getAttribute("role") === "textbox");
 
 const findFocusable = (root: ParentNode): HTMLElement | null => {
+  const invalid = root.querySelector<HTMLElement>(
+    'input[aria-invalid="true"]:not(:disabled), select[aria-invalid="true"]:not(:disabled), textarea[aria-invalid="true"]:not(:disabled)',
+  );
+  if (invalid) return invalid;
   for (const element of root.querySelectorAll("*")) {
     if (isFocusable(element)) {
       return element;
@@ -46,10 +51,17 @@ export const scrollFieldFrameIntoView = async (frame: HTMLElement | null): Promi
     return false;
   }
 
-  frame.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "nearest" });
+  const reduced = frame.ownerDocument.defaultView?.matchMedia?.(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  frame.scrollIntoView?.({
+    behavior: reduced ? "instant" : "smooth",
+    block: "center",
+    inline: "nearest",
+  });
   await nextFrame();
   const controlRoot = frame.shadowRoot?.querySelector(".control-slot") ?? frame.shadowRoot ?? frame;
-  findFocusable(controlRoot)?.focus();
+  findFocusable(controlRoot)?.focus({ preventScroll: true });
   return true;
 };
 

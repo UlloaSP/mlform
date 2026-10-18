@@ -14,14 +14,6 @@ const normalizeOption = (option: Option): { label: string; value: string } => {
   return typeof option === "string" ? { label: option, value: option } : option;
 };
 
-const resolveSelectedValue = (value: unknown, options: Option[]): string => {
-  if (typeof value !== "string" || value.length === 0) {
-    return "";
-  }
-
-  return options.some((option) => normalizeOption(option).value === value) ? value : "";
-};
-
 @customElement(primitiveTagNames.categoryField)
 export class PrimitiveCategoryFieldElement extends PrimitiveFieldElement {
   static styles = [
@@ -62,7 +54,9 @@ export class PrimitiveCategoryFieldElement extends PrimitiveFieldElement {
     const context = this.fieldContext;
     const rawValue = typeof props.value === "string" ? props.value : "";
     const options = Array.isArray(props.options) ? (props.options as Option[]) : [];
-    const value = resolveSelectedValue(rawValue, options);
+    const value = rawValue;
+    const unavailable =
+      value !== "" && !options.some((option) => normalizeOption(option).value === value);
     const text = this.text;
 
     return html`
@@ -82,6 +76,7 @@ export class PrimitiveCategoryFieldElement extends PrimitiveFieldElement {
           <option value="" ?selected=${value === ""}>
             &#8212; ${text.categoryPlaceholder} &#8212;
           </option>
+          ${unavailable ? html`<option value=${value} selected disabled>${value}</option>` : html``}
           ${options.map((option) => {
             const normalized = normalizeOption(option);
             return html`

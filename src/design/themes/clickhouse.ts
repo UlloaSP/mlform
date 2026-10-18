@@ -41,9 +41,9 @@ export const clickHouseTheme: ThemeManifest = {
         "--mlf-color-accent-hover": "#d6dc3f",
         "--mlf-color-accent-soft": "rgba(230, 235, 82, 0.28)",
 
-        "--mlf-color-success": "#16803a",
+        "--mlf-color-success": "#126d31",
         "--mlf-color-warning": "#9a7b00",
-        "--mlf-color-danger": "#c73939",
+        "--mlf-color-danger": "#b32d2d",
         "--mlf-color-danger-soft": "rgba(199, 57, 57, 0.12)",
 
         "--mlf-color-focus-ring": "rgba(230, 235, 82, 0.42)",
@@ -92,7 +92,7 @@ export const clickHouseTheme: ThemeManifest = {
 
         "--mlf-color-success": "#22c55e",
         "--mlf-color-warning": "#facc15",
-        "--mlf-color-danger": "#ef4444",
+        "--mlf-color-danger": "#ff7770",
         "--mlf-color-danger-soft": "rgba(239, 68, 68, 0.16)",
 
         "--mlf-color-focus-ring": "rgba(250, 255, 105, 0.42)",

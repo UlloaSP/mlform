@@ -20,7 +20,7 @@ export const helpButtonStyles = css`
     font-size: 0.76rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background var(--mlf-motion-fast, 140ms ease);
   }
 
   .help-btn:hover:not(:disabled) {

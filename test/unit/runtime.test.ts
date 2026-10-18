@@ -2048,7 +2048,7 @@ describe("runtime", () => {
     expect(form.state.submitCount).toBe(0);
   });
 
-  it("surfaces transport failures as SubmitError and resets reports", async () => {
+  it("surfaces transport failures as SubmitError and report errors", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -2080,7 +2080,7 @@ describe("runtime", () => {
     await expect(form.submit()).rejects.toBeInstanceOf(SubmitError);
     expect(form.state.submissionStatus).toBe("failed");
     expect(form.state.errors.form).toEqual(["backend offline"]);
-    expect(form.reports[0]?.state.status).toBe("idle");
+    expect(form.reports[0]?.state).toMatchObject({ status: "error", error: "backend offline" });
   });
 
   it("surfaces report payload failures as report-local error state without failing submit", async () => {

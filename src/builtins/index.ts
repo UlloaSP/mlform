@@ -16,6 +16,7 @@ export {
   regressorReportDefinition,
   seriesFieldDefinition,
   calculateSeriesAggregation,
+  getSeriesCellErrors,
   singleChoiceFieldDefinition,
   textFieldDefinition,
   builtinFieldDefinitions,

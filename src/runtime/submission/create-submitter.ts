@@ -10,7 +10,7 @@ import { createSubmissionLifecycle } from "./lifecycle";
 import { buildSubmissionValueRecords, cloneSubmissionValueRecords } from "./request";
 import { normalizeTransportResponse } from "./transport-response";
 import { cloneSubmissionResult, createSubmissionResult } from "./result";
-import { commitReportStates, prepareReportStates } from "./reports";
+import { commitReportStates, failReportStates, prepareReportStates } from "./reports";
 import { createSubmissionErrorFlow } from "./error-flow";
 import { createTransportRequest } from "./transport-request";
 import type { CreateFormSubmitterOptions, FormSubmitter } from "./types";
@@ -48,6 +48,7 @@ export const createFormSubmitter = ({
   const lifecycle = createSubmissionLifecycle({
     store,
     resetReports,
+    failReports: (message) => failReportStates(reports, message),
     syncAfterSubmissionTransition,
   });
   const { notifySubmitError, handleSubmissionAbort, handleSubmissionError } =

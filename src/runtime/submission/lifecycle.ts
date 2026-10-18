@@ -7,12 +7,14 @@ import type { SubmitResult } from "../types";
 type SubmissionTransitionOptions = {
   store: EngineStore;
   resetReports: () => void;
+  failReports: (message: string) => void;
   syncAfterSubmissionTransition: () => void;
 };
 
 export const createSubmissionLifecycle = ({
   store,
   resetReports,
+  failReports,
   syncAfterSubmissionTransition,
 }: SubmissionTransitionOptions) => {
   return {
@@ -55,7 +57,7 @@ export const createSubmissionLifecycle = ({
     },
     fail(message: string) {
       store.batch(() => {
-        resetReports();
+        failReports(message);
         store.update((current) =>
           transitionEngineState(current, {
             type: "submission-error",

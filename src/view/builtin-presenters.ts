@@ -4,6 +4,7 @@
 import {
   builtinReportLabels,
   calculateSeriesAggregation,
+  getSeriesCellErrors,
   seriesFieldDefinition,
   type SeriesAggregation,
   type SeriesFieldConfig,
@@ -118,7 +119,7 @@ const builtinFieldPresenters: readonly FieldPresenter<BuiltinFieldConfig, unknow
       config.min !== undefined &&
       config.max !== undefined &&
       !config.required &&
-      context.state.value !== null
+      typeof config.defaultValue === "number"
         ? "range"
         : "text",
   })),
@@ -162,6 +163,7 @@ const builtinFieldPresenters: readonly FieldPresenter<BuiltinFieldConfig, unknow
         ...column,
         required: column.required || sources.has(column.id),
       })),
+      cellErrors: getSeriesCellErrors(points, series),
       minPoints: config.minPoints,
       maxPoints: config.maxPoints,
       aggregationResults: series.showAggregationSummary

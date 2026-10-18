@@ -217,9 +217,11 @@ describe("primitives", () => {
 
     await flush();
 
+    const formErrors = getShadow(mounted.host).querySelector("mlf-form-errors");
+    expect(formErrors?.hasAttribute("hidden")).toBe(true);
     await form.validate();
     await flush();
-    const formErrors = getShadow(mounted.host).querySelector("mlf-form-errors");
+    expect(formErrors?.hasAttribute("hidden")).toBe(false);
     expect(getShadow(formErrors).textContent).toContain("Form errors");
     expect(getShadow(formErrors).textContent).toContain("Form-level warning.");
 
@@ -436,7 +438,7 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("suppresses number validation errors for partial drafts until blur", async () => {
+  it("preserves incomplete numeric drafts while preventing their submission", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -465,10 +467,11 @@ describe("primitives", () => {
     await flush();
 
     expect(numberInput.value).toBe("-");
-    expect(form.getField("training-epochs")?.state.errors).toEqual([]);
+    expect(form.getField("training-epochs")?.state.value).toBe("-");
+    expect(form.getField("training-epochs")?.state.valid).toBe(false);
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
-    expect(getShadow(fieldFrame).textContent).not.toContain("Value must be a valid number.");
+    expect(getShadow(fieldFrame).textContent).toContain("Value must be a valid number.");
 
     numberInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
     await flush();
@@ -560,7 +563,9 @@ describe("primitives", () => {
     timestampInput.value = "2026-01-05";
     timestampInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
 
-    const valueInput = timeSeriesShadow.querySelector('input[type="number"]') as HTMLInputElement;
+    const valueInput = timeSeriesShadow.querySelector(
+      'input[role="spinbutton"]',
+    ) as HTMLInputElement;
     valueInput.value = "50";
     valueInput.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     valueInput.dispatchEvent(new Event("blur", { bubbles: true, composed: true }));
@@ -593,7 +598,7 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("treats explicit default values as introduced and shows success styling immediately", async () => {
+  it("shows valid loaded values before any interaction", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -617,6 +622,7 @@ describe("primitives", () => {
     await flush();
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(form.fields[0].state.touched).toBe(false);
     expect(getShadow(fieldFrame).textContent).toContain("Text recorded (5 characters).");
 
     mounted.unmount();
@@ -653,6 +659,7 @@ describe("primitives", () => {
 
     expect(select.value).toBe("Internal");
     expect(select.selectedOptions[0]?.textContent).toContain("Internal");
+    expect(form.fields[0].state.touched).toBe(false);
     expect(getShadow(fieldFrame).textContent).toContain("Category selected: Internal.");
 
     mounted.unmount();
@@ -687,15 +694,17 @@ describe("primitives", () => {
     const renderer = getShadow(fieldFrame).querySelector("mlf-category-field") as HTMLElement;
     const select = getShadow(renderer).querySelector("select") as HTMLSelectElement;
 
-    expect(select.value).toBe("");
-    expect(select.selectedOptions[0]?.textContent).toContain("Select");
+    expect(select.value).toBe("Ghost");
+    expect(select.selectedOptions[0]?.textContent).toContain("Ghost");
+    expect(select.selectedOptions[0]?.disabled).toBe(true);
+    expect(getShadow(fieldFrame).querySelector(".tile.error")).not.toBeNull();
     expect(getShadow(fieldFrame).textContent).not.toContain("Category selected:");
 
     mounted.unmount();
     container.remove();
   });
 
-  it("shows success feedback for date fields when a real date value is already present", async () => {
+  it("shows date success feedback for an initial value", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -719,6 +728,7 @@ describe("primitives", () => {
     await flush();
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(form.fields[0].state.touched).toBe(false);
     expect(getShadow(fieldFrame).textContent).toContain("Selected date: 2026-07-10.");
 
     mounted.unmount();
@@ -810,7 +820,7 @@ describe("primitives", () => {
     container.remove();
   });
 
-  it("shows success feedback for boolean fields when false is an explicit configured value", async () => {
+  it("shows boolean success feedback for an explicit false default", async () => {
     const form = createForm({
       schema: {
         fields: [
@@ -834,6 +844,7 @@ describe("primitives", () => {
     await flush();
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame");
+    expect(form.fields[0].state.touched).toBe(false);
     expect(getShadow(fieldFrame).textContent).toContain("Selection recorded: False.");
 
     mounted.unmount();
@@ -871,6 +882,7 @@ describe("primitives", () => {
 
     expect(labels[0]?.textContent).toContain("On");
     expect(labels[1]?.textContent).toContain("Off");
+    expect(form.fields[0].state.touched).toBe(false);
     expect(getShadow(fieldFrame).textContent).toContain("Selection recorded: Off.");
 
     mounted.unmount();
@@ -908,12 +920,13 @@ describe("primitives", () => {
     await flush();
 
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
+    expect(form.fields[0].state.touched).toBe(false);
     expect(getShadow(fieldFrame).textContent).toContain("Series ready (2 points).");
 
     const renderer = getShadow(fieldFrame).querySelector("mlf-series-field") as HTMLElement;
     const rendererShadow = getShadow(renderer);
     const valueInputs = rendererShadow.querySelectorAll(
-      'input[type="number"]',
+      'input[role="spinbutton"]',
     ) as NodeListOf<HTMLInputElement>;
 
     valueInputs[1].value = "14.5";
@@ -987,7 +1000,7 @@ describe("primitives", () => {
     const fieldFrame = getShadow(mounted.host).querySelector("mlf-field-frame") as HTMLElement;
     const renderer = getShadow(fieldFrame).querySelector("mlf-series-field") as HTMLElement;
     const valueInput = getShadow(renderer).querySelector(
-      'input[type="number"]',
+      'input[role="spinbutton"]',
     ) as HTMLInputElement;
 
     valueInput.value = "12";

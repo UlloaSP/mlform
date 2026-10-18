@@ -217,7 +217,7 @@ describe("series rendered conformance", () => {
     const frame = getShadow(mounted.host).querySelector("mlf-field-frame");
     const renderer = getShadow(frame).querySelector("mlf-series-field");
     const shadow = getShadow(renderer);
-    const number = shadow.querySelector('input[type="number"]') as HTMLInputElement;
+    const number = shadow.querySelector('input[role="spinbutton"]') as HTMLInputElement;
 
     expect(number.min).toBe("1");
     expect(number.max).toBe("5");

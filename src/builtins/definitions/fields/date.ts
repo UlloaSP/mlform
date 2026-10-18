@@ -32,6 +32,9 @@ export const dateFieldDefinition: BuiltinFieldDefinition<DateFieldConfig, Date |
   serializeValue(value) {
     return value instanceof Date ? value.toISOString() : value;
   },
+  serializeSnapshotValue(value) {
+    return value?.toISOString() ?? null;
+  },
   validateConfig(config, context) {
     const minDate = toDate(config.min);
     const maxDate = toDate(config.max);

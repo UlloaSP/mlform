@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import { FieldDetailsMotion } from "./field-details-motion";
+import { scrollFieldFrameIntoView } from "./error-focus";
 import { LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { html, unsafeStatic } from "lit/static-html.js";
@@ -38,6 +40,11 @@ export class PrimitiveFieldFrameElement extends LitElement {
   @state() private accessor fieldState: PrimitiveFieldStateSnapshot | null = null;
   @state() private accessor descriptionVisibilityOverride: boolean | null = null;
 
+  constructor() {
+    super();
+    new FieldDetailsMotion(this);
+  }
+
   readonly #instanceId = ++fieldFrameSequence;
   #memoizedContext: PrimitiveFieldRenderContext | undefined;
   #memoizedDescriptor: FieldDescriptor | null = null;
@@ -74,6 +81,7 @@ export class PrimitiveFieldFrameElement extends LitElement {
   render() {
     const descriptor = this.resolvedDescriptor;
     const state = this.fieldState;
+    this.toggleAttribute("data-state-hidden", !descriptor || !state?.visible);
 
     if (!descriptor || !state || !state.visible) {
       return html``;
@@ -84,21 +92,16 @@ export class PrimitiveFieldFrameElement extends LitElement {
     const label = toText(props.label, this.controller?.config.label ?? "");
     const description = toText(props.description);
     const descriptionVisible = this.#isDescriptionVisible(description);
-    const hasValue = hasIntroducedValue(
-      descriptor.component,
-      props,
-      state,
-      this.controller?.config.defaultValue,
-    );
+    const hasValue = hasIntroducedValue(descriptor.component, props, state);
     const errorLabel = joinMessages(state.errors);
     const successLabel = createFieldSuccessMessage(descriptor.component, props, state, this.text);
     const showError = errorLabel.length > 0 && (state.touched || hasValue);
     const feedback = showError
       ? { tone: "error", message: errorLabel }
-      : hasValue && state.valid
+      : hasValue && state.status === "valid" && !state.disabled && !state.readOnly
         ? { tone: "success", message: successLabel }
         : null;
-    const toneClass = showError ? "error" : hasValue && state.valid ? "success" : "";
+    const toneClass = feedback?.tone ?? "";
 
     // errorId is stable (always present per field instance) so aria-describedby
     // never flickers — the aria-live on the sr-only span handles announcements.
@@ -113,7 +116,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
         aria-invalid=${String(!state.valid)}
       >
         <div class="header">
-          <div class="label">${label}</div>
+          <label class="label" for=${controlId} @click=${() => void scrollFieldFrameIntoView(this)}
+            >${label}${feedback?.tone === "success" ? html`<svg class="success-mark" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-8" /></svg>` : html``}</label
+          >
           <button
             class="help-btn"
             type="button"
@@ -130,8 +135,12 @@ export class PrimitiveFieldFrameElement extends LitElement {
         ${
           description
             ? html`
-                <div id=${detailsId} class="description ${descriptionVisible ? "show" : ""}">
-                  ${description}
+                <div
+                  id=${detailsId}
+                  class="description ${descriptionVisible ? "show" : ""}"
+                  aria-hidden=${String(!descriptionVisible)}
+                >
+                  <div class="details-content">${description}</div>
                 </div>
               `
             : html``
@@ -151,19 +160,9 @@ export class PrimitiveFieldFrameElement extends LitElement {
           }
         </div>
 
-        ${
-          feedback
-            ? html`
-                <div
-                  class="feedback ${feedback.tone}"
-                  role=${feedback.tone === "error" ? "alert" : "status"}
-                  aria-live="polite"
-                >
-                  ${feedback.message}
-                </div>
-              `
-            : html``
-        }
+        <div class="feedback ${feedback?.tone ?? ""}" aria-live="polite" role="status">
+          <div class="details-content">${feedback?.message ?? ""}</div>
+        </div>
       </section>
     `;
   }

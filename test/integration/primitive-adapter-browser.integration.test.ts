@@ -20,6 +20,7 @@ describe("primitive adapter in a browser", () => {
   it("preserves the input element, focus and cursor across view updates", async () => {
     server = await createServer({
       configFile: false,
+      cacheDir: resolve(process.cwd(), "node_modules/.vite/primitive-adapter-probe"),
       root: process.cwd(),
       resolve: { alias: { "@": resolve(process.cwd(), "src") } },
       server: { host: "127.0.0.1", port: 0 },

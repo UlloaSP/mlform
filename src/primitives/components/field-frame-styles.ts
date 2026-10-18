@@ -9,7 +9,8 @@ export const fieldFrameStyles = css`
     align-self: start;
   }
 
-  :host([hidden]) {
+  :host([hidden]),
+  :host([data-state-hidden]) {
     display: none;
   }
 
@@ -25,23 +26,27 @@ export const fieldFrameStyles = css`
     transition: border-color var(--mlf-motion-fast, 140ms ease);
   }
 
-  .tile.success,
   .tile.error {
-    border-inline-start-width: 4px;
-    padding-inline-start: calc(1.1rem + var(--mlf-border-width, 1px) - 4px);
-  }
-
-  .tile:focus-within {
-    border-color: var(--mlf-color-accent, #2456c7);
-    background: color-mix(in srgb, var(--mlf-color-accent, #2456c7) 3%, var(--mlf-field-bg, #fff));
+    border-color: var(--mlf-field-border-invalid, var(--mlf-color-danger, #b93636));
   }
 
   .tile.success {
-    border-inline-start-color: var(--mlf-color-success, #16704f);
+    border-color: color-mix(
+      in srgb,
+      var(--mlf-color-success, #16704f) 55%,
+      var(--mlf-field-border, #e2e8f0)
+    );
   }
 
-  .tile.error {
-    border-inline-start-color: var(--mlf-field-border-invalid, var(--mlf-color-danger, #b93636));
+  .success-mark {
+    width: 1em;
+    height: 1em;
+    margin-inline-start: 0.5em;
+    vertical-align: -0.1em;
+    stroke: var(--mlf-color-success, #16704f);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .header {
@@ -63,7 +68,13 @@ export const fieldFrameStyles = css`
   }
 
   .description {
-    display: none;
+    height: 0;
+    margin-top: -0.7rem;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      opacity var(--mlf-motion-base, 180ms ease),
+      margin-top var(--mlf-motion-base, 180ms ease);
     min-width: 0;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -73,7 +84,9 @@ export const fieldFrameStyles = css`
   }
 
   .description.show {
-    display: block;
+    height: auto;
+    margin-top: 0;
+    opacity: 1;
   }
 
   .control-slot {
@@ -81,8 +94,10 @@ export const fieldFrameStyles = css`
   }
 
   .feedback {
+    min-height: 1.5em;
+    overflow: hidden;
     min-width: 0;
-    font-size: 0.78rem;
+    font-size: 0.875rem;
     line-height: 1.5;
     white-space: normal;
     overflow-wrap: anywhere;
@@ -96,9 +111,16 @@ export const fieldFrameStyles = css`
     color: var(--mlf-field-feedback-error, var(--mlf-color-danger, #dc2626));
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .tile,
+    .description {
+      transition: none;
+    }
+  }
+
   @media (forced-colors: active) {
     .tile.error {
-      border-inline-start-style: dashed;
+      border-style: dashed;
     }
   }
 `;

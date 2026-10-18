@@ -3,6 +3,9 @@
 
 import { attachDesignSystem, type DesignSystemConfig, type ResolvedDesignSystem } from "@/design";
 import { createFormView, flattenLayoutNodes } from "@/view";
+import { ValidationError } from "@/runtime";
+import { focusPrimitiveField } from "@/primitives";
+import { revealFirstInvalidField } from "./shared/error-navigation";
 import { kitErrorMessages } from "./constants";
 import {
   resolveDesignSystemRegistry,
@@ -148,8 +151,15 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     primitiveRegistry,
     designSystemRegistry,
     designSystem,
-    submit(options?: Parameters<MountedForm["submit"]>[0]) {
-      return view.submit(options);
+    async submit(options?: Parameters<MountedForm["submit"]>[0]) {
+      try {
+        return await view.submit(options);
+      } catch (error) {
+        if (error instanceof ValidationError && host.isConnected) {
+          await revealFirstInvalidField(host, view, focusPrimitiveField);
+        }
+        throw error;
+      }
     },
     updateDesignSystem(config: DesignSystemConfig) {
       designSystem.update(config);
@@ -181,9 +191,9 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
       throwCleanupErrors(
         runCleanup([
           disconnectHostLifecycle,
-          () => view.dispose(),
           () => designSystem.disconnect(),
           unmountHost,
+          () => view.dispose(),
           () => restoreHostContent(container, originalContent),
         ]),
       );

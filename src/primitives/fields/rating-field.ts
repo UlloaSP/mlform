@@ -50,7 +50,7 @@ export class PrimitiveRatingFieldElement extends PrimitiveFieldElement {
       .rating-btn.selected {
         border-color: var(--mlf-color-accent, #1e40af);
         background: var(--mlf-color-accent, #1e40af);
-        color: #ffffff;
+        color: var(--mlf-color-text-inverse, #ffffff);
       }
 
       .rating-btn:disabled {
