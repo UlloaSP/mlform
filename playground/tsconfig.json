@@ -1,16 +1,13 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2024",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "lib": ["DOM", "DOM.Iterable", "ES2024"],
+    "rootDir": "..",
     "types": ["vite/client", "node"],
-    "strict": true,
+    "declaration": false,
+    "emitDeclarationOnly": false,
     "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    "incremental": false,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "server/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts", "*.ts"]
 }

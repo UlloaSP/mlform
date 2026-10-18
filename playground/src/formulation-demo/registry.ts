@@ -24,7 +24,7 @@ const formulationPredictionReportDefinition = defineReportDefinition({
     kind: z.literal("formulation-prediction"),
     ...baseReportSchema,
   }),
-  resolvePayload(config, context) {
+  resolvePayload(_config, context) {
     return resolveMappedReportPayload(context.report, context.result);
   },
 });

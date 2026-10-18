@@ -19,7 +19,7 @@ const escapeHtml = (value: unknown) =>
     .replaceAll("'", "&#39;");
 
 class FormulationPredictionReportElement extends HTMLElement {
-  private _controller: PrimitiveReportController | undefined;
+  controller: PrimitiveReportController | undefined;
   private _descriptor: ReportDescriptor | null = null;
   private _context: PrimitiveReportRenderContext | undefined;
   constructor() {
@@ -27,10 +27,6 @@ class FormulationPredictionReportElement extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._descriptor = null;
     this._context = undefined;
-  }
-
-  set controller(value: PrimitiveReportController | undefined) {
-    this._controller = value;
   }
 
   set descriptor(value: ReportDescriptor | null) {
