@@ -1,0 +1,183 @@
+---
+title: Schema
+description: The FormSchema contract, how MLForm normalizes it, shared field and report options, and tooling for schemas served from a backend.
+---
+
+import Identity from "../../../components/diagrams/Identity.astro";
+
+A `FormSchema` is the contract every layer reads: the runtime validates and submits from it, the
+view renders from it, and your backend agrees with it through `mappedTo`. It has exactly two
+properties; any other top-level property is rejected.
+
+```ts
+import type { FormSchema } from "mlform/schema";
+
+const schema: FormSchema = {
+  fields: [
+    {
+      id: "temperature",
+      kind: "number",
+      label: "Temperature",
+      unit: "°C",
+      min: -40,
+      max: 60,
+      required: true,
+      mappedTo: "temperature",
+    },
+    {
+      id: "location",
+      kind: "category",
+      label: "Sensor location",
+      options: ["Indoor", "Outdoor"],
+      mappedTo: "location",
+    },
+  ],
+  reports: [
+    { id: "forecast", kind: "regressor", label: "Next-hour estimate", unit: "°C", mappedTo: "forecast" },
+  ],
+};
+```
+
+`fields` lists the inputs in order. `reports` is optional and lists the model outputs to show.
+Arrangement on screen is not part of the schema; it lives in [layout](/view/layouts/).
+
+## Normalization
+
+Before a form exists, MLForm normalizes the schema against its registry. Normalization:
+
+- looks up each `kind` in the registry and parses the config with that kind's Zod schema, applying
+  defaults such as `required: false`;
+- resolves ids, rejects duplicates, and checks that every reference to another field exists, in
+  conditions, mapped-category mappings, and custom definitions;
+- rejects incoherent constraints such as `min` greater than `max` on number and date fields, an
+  invalid text `pattern`, or `minPoints` greater than `maxPoints`;
+- rejects ambiguous outputs: duplicate `displayKey` values and overlapping submission paths.
+
+Failures throw `SchemaNormalizationError` (with a `path` into the schema), or `RegistryError` for an
+unknown kind, from `mountForm`, `createFormView`, or `createForm`. Nothing renders from an invalid
+schema.
+
+### Ids
+
+Every id is normalized to lowercase kebab case: letters are lowercased, accents removed, and any
+run of other characters becomes one `-`. `"Customer Age"`, `"customer_age"`, and `"customer-age"`
+all become `customer-age`.
+
+- Lookups do not normalize their argument. `form.getField("customer_age")` returns `undefined`
+  when the field's id became `customer-age`, and a layout node `{ kind: "field", field: "customer_age" }`
+  fails. Write ids in their normalized form.
+- A field without `id` gets one from its `label`; a report without `id` gets one from its `label`,
+  then its `kind`. Generated ids that collide get a numeric suffix (`temperature-2`).
+- Two explicit ids that normalize to the same value are an error. Field ids and report ids are
+  separate namespaces.
+
+Set explicit ids for anything your code, layout, or tests reference. Generated ids change when
+someone edits a label.
+
+## Identities
+
+<Identity />
+
+`id`, `displayKey`, and `mappedTo` are independent. MLForm never infers one from another, and it
+never matches backend results by id or label.
+[Mental model](/getting-started/mental-model/#three-identities) explains the reasoning;
+[Backend contract](/guides/backend-contract/) shows the request built from them.
+
+Lookups follow the same split:
+
+| You have | Use |
+| --- | --- |
+| A runtime id | `form.getField(id)`, `form.getReport(id)`, layout nodes |
+| A display key | `form.getFieldByDisplayKey(key)` |
+| A backend target | `form.getFieldByMappedTo(target, { backend })` |
+
+## Shared field options
+
+Every field kind accepts these options in addition to its own. [Field kinds](/schema/fields/)
+lists the kind-specific ones.
+
+| Option | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `id` | `string` | from `label` | Runtime id, normalized as described above. |
+| `kind` | `string` | required | Registered field kind. |
+| `label` | `string` | required | Visible label and accessible name. Copy, not a key. |
+| `description` | `string` | none | Help text behind the field's help button. |
+| `showDescriptionInline` | `boolean` | `false` | Show `description` without opening the help button. |
+| `required` | `boolean` | `false` | Requires a value before submission. |
+| `defaultValue` | depends on kind | kind default | Initial value owned by the schema. |
+| `hidden`, `disabled`, `readOnly` | `boolean` | `false` | Static states; see [Conditions](/schema/conditions/). |
+| `hiddenWhen`, `disabledWhen`, `readOnlyWhen` | condition | none | Dynamic states from other values. |
+| `inactiveFieldPolicy` | `"omit"`, `"include"`, `"reset-on-hide"` | form policy | Whether hidden or disabled values are submitted. |
+| `includeInSubmission` | `boolean` | `true` | `false` keeps the field out of every submission record. |
+| `displayKey` | `string` | none | Key in `displayValues`. Must be unique. |
+| `mappedTo` | target or per-backend map | none | Key in `modelValues`. See below. |
+| `valuePath` | `string` or `string[]` | none | Nested `modelValues` path, used when there is no `mappedTo`. |
+| `asyncValidationDebounceMs` | `number` | none | Debounce for asynchronous validation of this field. |
+| `ui` | `Record<string, unknown>` | none | Renderer hints passed to the presenter, such as `{ input: "range" }`. |
+
+### `mappedTo`
+
+`mappedTo` accepts three forms:
+
+```ts
+{ mappedTo: "age_years" }                          // a key in modelValues
+{ mappedTo: "station.temperature" }                // dots write a nested object
+{ mappedTo: { forecast: "temp_c", alerts: "t" } }  // one target per named backend
+```
+
+A non-negative integer is also accepted (`mappedTo: 0`); it is written as the key `"0"` of
+`modelValues`, so a positional model still needs the transport to build its array. In a
+per-backend map, a backend whose entry is missing or `null` uses the `default` entry; without a
+`default` entry the field sends nothing to that backend. Path segments `__proto__`, `prototype`, and `constructor` are
+rejected. Paths must not overlap: `profile` and `profile.name` in one schema is an error, even when
+they belong to different backends, because a submission without a backend includes every target.
+
+## Shared report options
+
+| Option | Type | Purpose |
+| --- | --- | --- |
+| `id` | `string` | Runtime id, normalized like field ids. Defaults to `label`, then `kind`. |
+| `kind` | `string` | Registered report kind. |
+| `label` | `string` | Report heading. |
+| `description` | `string` | Help text for the report. |
+| `mappedTo` | target or per-backend map | Selects the backend output this report shows. |
+| `ui` | `Record<string, unknown>` | Renderer hints; `{ showDescriptionInline: true }` expands the description. |
+
+## Schemas from a backend
+
+A schema is plain data as long as it uses declarative conditions; function conditions cannot be
+serialized. Validate data from outside your code with the same registry the form will use:
+
+```ts
+import { createBuiltinMlRegistry } from "mlform/builtins";
+import { findUnknownKinds, toSchemaJsonSchema, validateSchema } from "mlform/schema";
+
+const registry = createBuiltinMlRegistry();
+const input: unknown = await (await fetch("/api/forecast/schema")).json();
+
+const result = validateSchema(input, registry);
+if (result.success) {
+  console.log(result.data.fields.map((field) => field.id)); // the normalized schema
+} else {
+  console.error(result.issues); // [{ path: ["fields", 2, "max"], message: "…", code: "invalid-config" }]
+}
+
+const unknownKinds = findUnknownKinds(input, registry); // [{ section, index, kind, path }]
+const jsonSchema = toSchemaJsonSchema(registry); // for editors and API documentation
+```
+
+`validateSchema` does not throw; its issues use the codes `invalid-schema`, `invalid-config`, and
+`unknown-kind`. `toSchemaJsonSchema` covers every kind in the registry. To include kinds added by
+[plugins](/extend/plugins/), pass the registry of a view created with those plugins
+(`view.engineRegistry`).
+
+## Design guidance
+
+- Write ids in kebab case and keep them stable. Saved drafts, layouts, and tests depend on them.
+- Write labels for people. Change them freely; nothing should depend on them.
+- Map every model input explicitly with `mappedTo`. When a model renames a feature, change
+  `mappedTo`, not the id.
+- Use `required` for what the user must answer, not to work around backend defaults.
+- Put business defaults in `defaultValue` and session data in `initialValues`; see
+  [Initial values and drafts](/schema/initial-values/).
+- Version schemas at your API boundary when a model's required inputs change.

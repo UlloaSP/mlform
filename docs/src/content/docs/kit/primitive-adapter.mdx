@@ -1,0 +1,74 @@
+---
+title: Built-in controls in your layout
+description: Keep MLForm's field and report controls while your application owns the page around them, with createPrimitiveAdapter.
+---
+
+import { Code } from "@astrojs/starlight/components";
+import Capture from "../../../components/Capture.astro";
+import { headlessShell } from "../../../lib/examples";
+
+`createPrimitiveAdapter` from `mlform` mounts individual built-in controls into elements you choose.
+Your application draws the page, the navigation, and the buttons; MLForm draws each field and
+report, with its validation feedback, keyboard behavior, and theme.
+
+<Capture
+  name="headless-shell"
+  width={762}
+  alt="An application card titled North station, Live readings updated 09:40, with Temperature and Humidity controls on the left, a Next-hour estimate report of 22.66 °C on the right, and a Run forecast button."
+  caption="The card, heading, and button are application markup. The two fields and the report are MLForm controls in its slots."
+/>
+
+<Code code={headlessShell} lang="ts" title="station-card.ts" />
+
+## How it works
+
+- Create the view with [`createFormView`](/view/overview/), then the adapter from it.
+- `mountField(slot, id)` and `mountReport(slot, id)` put one control into an empty element and
+  return the control's frame element. Each id can be mounted once per adapter, and each slot holds
+  one control. Unknown ids and second mounts throw.
+- The adapter subscribes to the view and keeps every control in its slot while values, errors, and
+  navigation change. Controls outside the active step or tab, inside closed sections, or hidden by
+  conditions are hidden in place.
+- Build the shell once. Recreating it on every change replaces the controls and loses focus and
+  caret position.
+
+## Options
+
+```ts
+const ui = createPrimitiveAdapter(view, {
+  primitiveRegistry, // custom elements for plugin kinds
+  primitiveText,     // control text overrides
+  reportTransport,   // the Details panel of built-in reports
+});
+```
+
+These mean the same as in [`mountForm`](/kit/mount-form/). Reports follow the view's
+`reportFetchMode`.
+
+## Styling and cleanup
+
+The adapter does not attach a design system: call `attachDesignSystem` on the element that contains
+the slots, as above, or style the controls through [tokens](/design/tokens/) from your own CSS.
+
+`ui.dispose()` unsubscribes and removes the controls it created. It does not dispose the view, the
+design attachment, or your markup; dispose those separately when the host goes away.
+
+## Regions you render entirely
+
+When part of the form needs an interface the controls cannot provide, such as a drag-and-drop
+material picker, declare a `custom` layout node for the fields it owns:
+
+```ts
+layout: {
+  kind: "tabs",
+  tabs: [
+    { title: "Materials", children: [{ kind: "custom", id: "materials", fields: ["material-a", "material-b"] }] },
+    { title: "Process", children: [{ kind: "field", field: "speed" }] },
+  ],
+}
+```
+
+The view validates those field references, counts the fields as placed, and applies tab, step, and
+section visibility to them, so `visibleInLayout` stays correct. Your code renders the region and
+writes values through the field controllers. `mountForm` cannot render custom nodes and rejects such
+layouts.

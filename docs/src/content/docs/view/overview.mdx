@@ -1,0 +1,175 @@
+---
+title: Headless view
+description: Use createFormView to render MLForm in your own markup or framework while it keeps layout, navigation, validation, and submission.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+`createFormView` from `mlform/view` is everything `mountForm` does except touching the DOM. It
+resolves the [layout](/view/layouts/), tracks wizard steps, tabs, and open sections, produces a
+render descriptor for every field and report, and exposes the runtime form. You render.
+
+```ts
+import { createFormView } from "mlform/view";
+
+const view = createFormView({ schema, transport, layout, plugins });
+
+const snapshot = view.getSnapshot();
+snapshot.layout;   // resolved layout tree with ids
+snapshot.fields;   // one item per field: id, config, controller, state, descriptor, position
+snapshot.reports;  // the same for reports
+snapshot.wizard;   // step index and canNext/canPrev, or null
+snapshot.tabs;     // active tab, or null
+snapshot.disclosure; // open section ids, or null
+
+const unsubscribe = view.subscribe((next) => render(next));
+// later
+unsubscribe();
+view.dispose();
+```
+
+`subscribe` notifies on every change and does not emit immediately: render the first snapshot
+yourself. `getSnapshot()` returns the same object until something changes, so it works directly
+with framework stores.
+
+## Two ways to render
+
+**Your chrome, MLForm's controls.** Build navigation, cards, and buttons yourself, and mount the
+built-in field and report controls into slots with
+[`createPrimitiveAdapter`](/kit/primitive-adapter/). You keep MLForm's validation feedback,
+keyboard behavior, and theming for each control. This is the right choice for most product shells.
+
+**Everything yours.** Render each field from `field.state` and write values with
+`field.controller.setValue()`. You own labels, errors, focus, and accessibility.
+
+```ts
+const renderField = (item: FormViewFieldItem): HTMLElement => {
+  const label = document.createElement("label");
+  label.textContent = item.config.label;
+  const input = label.appendChild(document.createElement("input"));
+  input.value = item.state.value == null ? "" : String(item.state.value);
+  input.disabled = item.state.disabled;
+  input.readOnly = item.state.readOnly;
+  input.setAttribute("aria-invalid", String(item.state.errors.length > 0));
+  input.addEventListener("input", () => item.controller.setValue(input.value));
+  input.addEventListener("blur", () => {
+    item.controller.blur();
+    void item.controller.validate();
+  });
+  return label;
+};
+```
+
+Update existing elements on each snapshot instead of recreating them, or the focused input and
+caret are lost while the user types.
+
+## Walk the layout
+
+`snapshot.layout` is the resolved tree. Each node has an id; fields and reports are referenced by
+runtime id.
+
+```ts
+const renderNode = (node: ResolvedFormLayoutNode, snapshot: FormViewSnapshot): Node | null => {
+  switch (node.kind) {
+    case "section":   // node.title, node.description, node.defaultOpen, node.children
+    case "group":     // node.columns, node.children
+      return renderContainer(node, node.children.map((child) => renderNode(child, snapshot)));
+    case "field":
+      return renderField(snapshot.fields.find((field) => field.id === node.field)!);
+    case "report":
+      return renderReport(snapshot.reports.find((report) => report.id === node.report)!);
+    case "custom":    // your own region for node.fields
+      return renderRegion(node.id, node.fields);
+  }
+};
+```
+
+`view.navigation.getActiveNodes()` returns only the nodes of the current step or tab.
+`walkLayoutNodes`, `flattenLayoutNodes`, and `collectLayoutReferences` from `mlform/view` help with
+trees.
+
+## Visibility
+
+Render a field when both are true:
+
+- `field.state.visible`: its [conditions](/schema/conditions/) allow it;
+- `field.visibleInLayout`: it is in the active step or tab and every enclosing section is open.
+
+`view.getVisibleFields()` and `view.getVisibleReports()` apply both. Each item also carries its
+`stepId`, `tabId`, innermost `sectionId`, and all enclosing `sectionIds`.
+
+## Navigation
+
+| Call | Behavior |
+| --- | --- |
+| `await navigation.next()` | Wizard: validates the current step, then advances. Tabs: advances. Returns `false` when it did not move. On the last valid wizard step it returns `true` without moving. |
+| `navigation.previous()` | Moves back one step or tab. Never validates. |
+| `await navigation.activate(id)` | Opens a tab, or a wizard step: backward freely, forward validating each step in between. Throws for an unknown id; returns `false` in stacked and split layouts. |
+| `navigation.disclosure.toggle(id)`, `.open(id)`, `.close(id)`, `.openAll()`, `.closeAll()` | Control sections in any layout. Unknown ids throw. Never validates. |
+
+Give steps and tabs explicit `id`s when your code activates them; generated ids come from titles.
+
+## Submit
+
+- `view.submit()` validates and submits, honoring `reportFetchMode`
+  ([Report fetches](/guides/report-fetches/)).
+- `view.submitPipeline()` also returns the report fetch outcomes.
+- `view.validate()`, `view.reset()`, `view.suspend()`, `view.resume()`, and `view.dispose()` forward
+  to the form; `view.form` is the full [form controller](/runtime/form-controller/).
+
+Unlike `mounted.submit()`, these do not focus the first invalid field: read `field.state.errors`
+and move focus yourself.
+
+## In a framework
+
+<Tabs syncKey="framework">
+<TabItem label="React">
+
+```tsx
+import { useEffect, useState } from "react";
+import { createFormView } from "mlform/view";
+import type { CreateFormViewOptions, FormViewController, FormViewSnapshot } from "mlform/view";
+
+// Pass options that keep their identity (module constant or useMemo); a new object recreates the view.
+export function useFormView(options: CreateFormViewOptions) {
+  const [current, setCurrent] = useState<{ view: FormViewController; snapshot: FormViewSnapshot }>();
+  useEffect(() => {
+    const view = createFormView(options);
+    setCurrent({ view, snapshot: view.getSnapshot() });
+    const unsubscribe = view.subscribe((snapshot) => setCurrent({ view, snapshot }));
+    return () => {
+      unsubscribe();
+      view.dispose();
+    };
+  }, [options]);
+  return current; // undefined until the effect has run
+}
+```
+
+</TabItem>
+<TabItem label="Vue">
+
+```ts
+import { onBeforeUnmount, shallowRef } from "vue";
+import { createFormView } from "mlform/view";
+
+const view = createFormView({ schema, transport, layout });
+const snapshot = shallowRef(view.getSnapshot()); // shallow: snapshots are frozen
+const unsubscribe = view.subscribe((next) => (snapshot.value = next));
+onBeforeUnmount(() => {
+  unsubscribe();
+  view.dispose();
+});
+```
+
+</TabItem>
+</Tabs>
+
+Keep the view outside deep reactivity: it holds controllers and frozen snapshots, not plain state.
+
+## Options
+
+`createFormView` takes `schema` and `transport`, plus `layout`, `plugins`, `initialValues`,
+`initialSnapshot`, `validators`, `hooks`, `inactiveFieldPolicy`, `reportFetchMode`, and lower-level
+`registry`, `descriptorRegistry`, and `behaviors`. Every option is listed in
+[createFormView](/view/create-form-view/).

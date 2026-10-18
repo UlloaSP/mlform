@@ -1,0 +1,151 @@
+---
+title: Layouts
+description: Arrange one schema as a stacked page, a split view, a wizard, or tabs, with titled collapsible sections and column groups.
+---
+
+import { Code } from "@astrojs/starlight/components";
+import Capture from "../../../components/Capture.astro";
+import LayoutTree from "../../../components/diagrams/LayoutTree.astro";
+import { layouts, sectionsLayout } from "../../../../../playground/scripts/landing/layouts.ts";
+import { toLiteral } from "../../../lib/literal";
+
+The schema says what a form means; the layout says where each part appears. A layout is a separate
+`layout` option on `mountForm` or `createFormView`, so the same fields, validation, and submission
+work in any arrangement, and the same layout object works with the built-in UI or your own.
+
+All captures on this page use one schema: temperature, humidity, a sensor location, and two
+reports. Only `layout` changes.
+
+## Four layouts
+
+| `kind` | Navigation | Use it when |
+| --- | --- | --- |
+| `"stacked"` (default) | One page. | People compare fields or the form is short. |
+| `"split"` | One page, reports beside the inputs. | Results are central and the screen is wide. |
+| `"wizard"` | Steps; **Next** validates the current step. | A linear task where later steps depend on earlier answers. |
+| `"tabs"` | Free switching between tabs. | People jump between independent groups. |
+
+### Stacked
+
+With no `layout`, MLForm places every field in schema order, then every report. Add `children` to
+arrange them yourself.
+
+<Capture
+  name="layout-stacked"
+  width={602}
+  alt="A stacked form with a Measurements section holding Temperature and Humidity side by side and Sensor location below, a Results section with the two reports side by side, and a footer reading 2 sections open with a Run prediction button."
+/>
+
+<Code code={`layout: ${toLiteral(layouts.stacked)}`} lang="ts" />
+
+### Split
+
+`"split"` without `children` puts inputs and reports in two columns that stack on narrow screens.
+With `children`, it renders the nodes you give it, like `"stacked"`.
+
+<Capture
+  name="layout-split"
+  width={760}
+  alt="A wide form with an Inputs panel on the left holding Temperature, Humidity and Sensor location, and a Reports panel on the right with the next-hour estimate and the expected conditions."
+/>
+
+<Code code={`layout: ${toLiteral(layouts.split)}`} lang="ts" />
+
+### Wizard
+
+Each step has a `title` and `children`. **Next** validates only the current step's fields and stays
+put if any are invalid. **Previous** never validates. Submission is available on the last step.
+
+<Capture
+  name="layout-wizard"
+  width={602}
+  alt="Step 2 of 3, Measurements, with Temperature and Humidity side by side, a progress bar two thirds full, and Previous and Next buttons."
+/>
+
+<Code code={`layout: ${toLiteral(layouts.wizard)}`} lang="ts" />
+
+When a step is invalid, its errors appear in place:
+
+<Capture
+  name="wizard-blocked"
+  width={562}
+  alt="Step 1 of 2, Station, after pressing Next: Station name and Sensor location both show This field is required, and the wizard stays on step 1."
+/>
+
+### Tabs
+
+Tabs share the wizard's shape (`tabs` instead of `steps`) but never validate when switching.
+Submission is available from every tab; invalid fields in other tabs are revealed on submit.
+
+<Capture
+  name="layout-tabs"
+  width={602}
+  alt="A tab list with Measurements, Location and Results; the Measurements tab is active and shows Temperature and Humidity, with Previous, Next and Run prediction below."
+/>
+
+<Code code={`layout: ${toLiteral(layouts.tabs)}`} lang="ts" />
+
+## Sections and groups
+
+Inside any layout, two nodes organize fields without changing their meaning:
+
+- **`section`** has a `title`, an optional `description`, and a toggle. Sections start open; set
+  `defaultOpen: false` to start collapsed. The footer counts open sections.
+- **`group`** arranges its children in `columns: 1`, `2`, or `3`, with no title and no toggle.
+  Groups collapse to one column when the viewport is 900 px wide or less.
+
+Sections and groups nest in each other and inside steps and tabs. A field inside nested sections is
+visible only while every enclosing section is open.
+
+<Capture
+  name="sections"
+  width={762}
+  alt="Three sections: Station with name and date in two columns, Measurements with temperature, humidity and wind speed in three columns, and a collapsed Maintenance section. The footer reads 2 sections open."
+/>
+
+<Code code={`layout: ${toLiteral(sectionsLayout)}`} lang="ts" />
+
+Opening or closing a section never validates. When `mounted.submit()` finds an invalid field in a
+closed section, step, or tab, it opens that container and focuses the field.
+
+## The layout tree
+
+<LayoutTree />
+
+| Node | Shape | Notes |
+| --- | --- | --- |
+| field | `{ kind: "field", field: id }` | Every field appears exactly once, directly or in a custom node. |
+| report | `{ kind: "report", report: id }` | Each report appears at most once; omitted reports are not shown. |
+| group | `{ kind: "group", id?, columns?, children }` | `columns` is `1`, `2`, or `3`. |
+| section | `{ kind: "section", id?, title, description?, defaultOpen?, children }` | `title` must not be empty: it names the toggle. |
+| custom | `{ kind: "custom", id, fields }` | A region your code renders. Only with `createFormView`; `mountForm` rejects it. |
+
+References use runtime ids, which are [normalized](/schema/overview/#ids). An explicit layout that
+misses a field, places one twice, or names an unknown id fails when the form is created.
+[Layout config](/view/layout-schema/) lists every error message.
+
+## Layout and conditions
+
+A field is shown only when two independent things allow it:
+
+- its **condition state** (`field.state.visible`), from `hiddenWhen` in the schema;
+- its **layout position** (`visibleInLayout` in the view), from the active step or tab and open
+  sections.
+
+Use layout to stage work (steps, tabs, collapsed sections) and conditions to remove what does not
+apply. A collapsed section still submits its fields; a hidden field does not, unless its
+[policy](/schema/conditions/#inactive-fields-and-submission) says so.
+
+## Built-in or your own markup
+
+Every layout above is also available headless. Pass the same object to `createFormView` and render
+`snapshot.layout` yourself; navigation, validation gating, and section state come with it. Choose:
+
+- **`mountForm`** when the built-in chrome fits. It renders the tablist, step indicator, section
+  toggles, and a footer with the submit button.
+- **`createFormView`** when your product owns the chrome: a sidebar wizard, tabs with badges, a
+  dashboard card. See [Headless view](/view/overview/), and
+  [Built-in controls in your layout](/kit/primitive-adapter/) to keep MLForm's field controls.
+
+[Layout showcase](/view/layout-showcase/) mounts each layout live, side by side, with the same
+schema and transport.

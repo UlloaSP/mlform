@@ -1,0 +1,144 @@
+---
+title: Field kinds
+description: The twelve built-in field kinds, the value each one holds, its options, and how it renders.
+---
+
+import Capture from "../../../components/Capture.astro";
+import FieldSpecimen from "../../../components/FieldSpecimen.astro";
+import Encodings from "../../../components/diagrams/Encodings.astro";
+
+Every field has a `kind`. The kind decides which options the field accepts, what value it holds at
+runtime, how that value is serialized for the model, and which control renders it. All kinds also
+accept the [shared field options](/schema/overview/#shared-field-options).
+
+| Kind | Runtime value | Renders as | Kind options |
+| --- | --- | --- | --- |
+| [`text`](#text-and-long-text) | `string` | single-line input | `placeholder`, `minLength`, `maxLength`, `pattern` |
+| [`long-text`](#text-and-long-text) | `string` | multi-line text area | `placeholder`, `minLength`, `maxLength`, `rows` |
+| [`number`](#number) | `number`, draft `string`, or `null` | numeric input or slider | `min`, `max`, `step`, `unit`, `placeholder` |
+| [`boolean`](#boolean) | `boolean` or `null` | two-option radio group | `trueLabel`, `falseLabel` |
+| [`category`](#category-single-choice-multi-choice) | `string` or `null` | select | `options` |
+| [`single-choice`](#category-single-choice-multi-choice) | `string` or `null` | radio group | `options`, `layout` |
+| [`multi-choice`](#category-single-choice-multi-choice) | `string[]` | checkbox group | `options`, `layout` |
+| [`rating`](#rating) | `number` or `null` | row of score buttons | `max`, `min`, `step` |
+| [`date`](#date) | `Date` or `null` | date input | `min`, `max`, `step` |
+| [`mapped-category`](/schema/mapped-category/) | `string` or `null` | select | `options` with `mapping` |
+| [`onehot-category`](/schema/onehot-category/) | `string` or `null` | select | `options` with `mappedTo` |
+| [`series`](/schema/series/) | array of row objects | editable table | `columns`, `minPoints`, `maxPoints`, `aggregations` |
+
+The screenshots on this page are the built-in controls with the `eshkra` theme. Each code block is
+the exact configuration that produced the screenshot beside it.
+
+## Text and long text
+
+`text` and `long-text` hold a string; an empty field is `""`. `minLength`, `maxLength`, and
+`pattern` (a regular expression source, `text` only) apply to non-empty values, so combine them
+with `required` when the field must be filled. Use `rows` to set the visible height of a
+`long-text` area.
+
+<FieldSpecimen id="text" alt="A Station name text field containing North station, marked valid." />
+<FieldSpecimen id="long-text" alt="An Observation notes text area with three lines of text." />
+
+## Number
+
+`number` holds a number, or `null` when empty. While the user types something that is not yet a
+number, such as `-` or `1e`, the field keeps the text as a draft string, shows it as invalid, and
+blocks submission; it never coerces the draft to a number or to empty. `min`, `max`, and `step`
+are validated, with `step` counted from `min` (or from `0` without `min`). `unit` is displayed
+next to the value and never submitted.
+
+<FieldSpecimen id="invalid" alt="A Humidity field showing 140 % with the error Maximum value is 100." />
+
+An optional number with both `min` and `max` and a numeric `defaultValue` renders as a slider;
+`required` numbers and numbers without both bounds render as a text input. Override the choice
+with `ui: { input: "range" }` or `ui: { input: "text" }`. The choice does not change while the
+user edits.
+
+<FieldSpecimen id="range" alt="A Confidence threshold slider set to 75 %." />
+
+### Numeric text
+
+Number fields and numeric series cells share one parsing rule:
+
+- Empty input becomes `null`.
+- A decimal may use a dot or a single comma, with an optional exponent such as `1e-8`. Grouping
+  separators, hexadecimal, and binary notation are not accepted.
+- Non-finite results, overflow, non-zero values that underflow to zero, and integer strings that
+  would round to a different integer are invalid.
+- The editor keeps the text as typed, including trailing zeros and caret position; runtime values
+  and payloads contain normalized numbers. Arrow keys step by `step`.
+
+MLForm uses JavaScript numbers, not arbitrary-precision decimals. Invalid drafts survive
+[draft snapshots](/schema/initial-values/#save-and-restore-drafts) so unfinished input is not lost.
+
+## Boolean
+
+`boolean` holds `true`, `false`, or `null` before the user chooses. `false` is a value: `required`
+asks for a choice, not for agreement. Rename the two options with `trueLabel` and `falseLabel`.
+
+<FieldSpecimen id="boolean" alt="An Enable alerts switch with Enabled selected and Disabled unselected." />
+
+## Category, single choice, multi choice
+
+All three take `options` as strings or `{ label, value }` objects; the value is what the model
+receives, the label is what people read. A value outside `options` is invalid.
+
+- `category` renders a select and holds one value or `null`.
+- `single-choice` renders the options as a radio group. Use it for a few options that people
+  should see at once.
+- `multi-choice` renders checkboxes and holds an array of selected values, without duplicates.
+  An empty array counts as empty for `required`.
+
+`layout: "horizontal"` lays the choices of `single-choice` and `multi-choice` out in a row; the
+default is `"vertical"`.
+
+<FieldSpecimen id="category" alt="A Sensor location select with Outdoor selected." />
+<FieldSpecimen id="single-choice" alt="A Prediction window radio group with Next hour, Next day selected, and Next week." />
+<FieldSpecimen id="multi-choice" alt="A Signals to include checkbox group with Temperature and Humidity checked and Wind unchecked." />
+
+## Rating
+
+`rating` holds an integer score from `min` (default `1`) to `max` (required), in increments of
+`step` (default `1`). Scores render as a radio group of buttons; arrow keys, Home, and End move the selection.
+
+<FieldSpecimen id="rating" alt="An Observation quality rating with buttons 1 to 5 and 4 selected." />
+
+## Date
+
+`date` holds a `Date`, or `null`. It accepts ISO strings and `Date` objects as `defaultValue` and
+`initialValues`, and submits a full ISO timestamp such as `"2026-06-15T00:00:00.000Z"`. `min` and
+`max` are date strings; `step` is a number of days counted from `min`, or from 1 January 1970
+without `min`.
+
+<FieldSpecimen id="date" alt="An Observation date field showing 15 June 2026." />
+
+## States every kind shares
+
+Required, constraint errors, read-only, disabled, and inline descriptions come from shared options
+and look the same across kinds.
+
+<Capture
+  name="field-states"
+  width={440}
+  alt="Five fields: an empty required Station name with an inline description and the error This field is required; a valid Temperature; Humidity 140 with Maximum value is 100; a read-only Calibration offset with a muted background; and a disabled Sensor location select."
+  caption="After form.validate(): required and constraint errors, a valid value, readOnly, and disabled."
+/>
+
+- Errors for non-empty values appear as soon as the value is set, including defaults and loaded
+  values. Empty fields stay quiet until edited, blurred, or validated.
+- A read-only field shows its value and still validates; its text remains selectable.
+- A disabled or hidden field is inactive: it skips validation and, by default, is not submitted.
+  See [Conditions](/schema/conditions/).
+
+## Fields that send several model values
+
+Three kinds turn one visible control into more than one model input. Each has its own page.
+
+<Encodings />
+
+- [`onehot-category`](/schema/onehot-category/) sends one `0`/`1` column per option.
+- [`mapped-category`](/schema/mapped-category/) writes a preset of values into other fields.
+- [`series`](/schema/series/) collects rows and can send statistics calculated from them.
+
+Need a kind that is not here? [Custom fields](/extend/custom-fields/) use the same registration,
+validation, and submission path as these built-ins.

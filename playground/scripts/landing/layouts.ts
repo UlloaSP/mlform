@@ -22,7 +22,7 @@ const results: FormLayoutNode = {
   columns: 2,
   children: [report("forecast"), report("condition")],
 };
-const layouts: Record<string, FormLayoutConfig> = {
+export const layouts: Record<string, FormLayoutConfig> = {
   stacked: {
     kind: "stacked",
     children: [
@@ -98,35 +98,36 @@ const sectionsSchema: FormSchema = {
     { id: "calibrated", kind: "boolean", label: "Calibrated", defaultValue: true },
   ],
 };
+export const sectionsLayout: FormLayoutConfig = {
+  kind: "stacked",
+  children: [
+    {
+      kind: "section",
+      title: "Station",
+      children: [{ kind: "group", columns: 2, children: [field("station"), field("observed")] }],
+    },
+    {
+      kind: "section",
+      title: "Measurements",
+      children: [
+        {
+          kind: "group",
+          columns: 3,
+          children: [field("temperature"), field("humidity"), field("wind")],
+        },
+      ],
+    },
+    {
+      kind: "section",
+      title: "Maintenance",
+      defaultOpen: false,
+      children: [field("notes"), field("calibrated")],
+    },
+  ],
+};
 export const sectionsCode = mountCode({
   schema: sectionsSchema,
-  layout: {
-    kind: "stacked",
-    children: [
-      {
-        kind: "section",
-        title: "Station",
-        children: [{ kind: "group", columns: 2, children: [field("station"), field("observed")] }],
-      },
-      {
-        kind: "section",
-        title: "Measurements",
-        children: [
-          {
-            kind: "group",
-            columns: 3,
-            children: [field("temperature"), field("humidity"), field("wind")],
-          },
-        ],
-      },
-      {
-        kind: "section",
-        title: "Maintenance",
-        defaultOpen: false,
-        children: [field("notes"), field("calibrated")],
-      },
-    ],
-  },
+  layout: sectionsLayout,
   width: 760,
   submit: "Save observation",
 });

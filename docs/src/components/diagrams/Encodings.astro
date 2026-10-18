@@ -1,0 +1,65 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "encodings";
+const a = `url(#${id}-a)`;
+const lanes = [
+  {
+    y: 20,
+    kind: "onehot-category",
+    value: 'selected: "rain"',
+    via: "one 0/1 column per option",
+    out: ["weather_clear: 0", "weather_cloudy: 0", "weather_rain: 1"],
+  },
+  {
+    y: 128,
+    kind: "mapped-category",
+    value: 'selected: "detailed"',
+    via: "writes its mapping into fields",
+    target: "readings field = 30",
+    out: ["readings_per_hour: 30"],
+    note: "via the target field's mappedTo",
+  },
+  {
+    y: 236,
+    kind: "series",
+    value: "rows: 21, 22, 23",
+    via: "aggregations compute features",
+    out: ["mean: 22", "minimum: 21", "maximum: 23"],
+  },
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 336"
+  title="One visible field, several model values"
+  description="A one-hot category selected as rain sends weather_clear 0, weather_cloudy 0 and weather_rain 1. A mapped category selected as detailed writes 30 into the readings field, which submits through its own mappedTo. A series with rows 21, 22 and 23 sends mean 22, minimum 21 and maximum 23 through its aggregations."
+>
+  <text class="eyebrow" x="20" y="14">VISIBLE FIELD</text>
+  <text class="eyebrow" x="440" y="14">MODELVALUES</text>
+  {
+    lanes.map((lane) => (
+      <g>
+        <rect class="box" x="20" y={lane.y + 8} width="196" height="80" rx="10" />
+        <text class="mono accent-text" x="36" y={lane.y + 38}>{lane.kind}</text>
+        <text class="small" x="36" y={lane.y + 60}>{lane.value}</text>
+        <text class="small" x="232" y={lane.y + 36}>{lane.via}</text>
+        {lane.target ? (
+          <>
+            <path class="edge" d={`M216 ${lane.y + 48} L250 ${lane.y + 48}`} marker-end={a} />
+            <rect class="box-subtle" x="252" y={lane.y + 44} width="150" height="34" rx="8" />
+            <text class="mono" x="264" y={lane.y + 66}>{lane.target}</text>
+            <path class="edge" d={`M402 ${lane.y + 61} L436 ${lane.y + 61}`} marker-end={a} />
+            <text class="small" x="440" y={lane.y + 100}>{lane.note}</text>
+          </>
+        ) : (
+          <path class="edge" d={`M216 ${lane.y + 48} L436 ${lane.y + 48}`} marker-end={a} />
+        )}
+        <rect class="box-accent" x="438" y={lane.y + 8} width="262" height="80" rx="10" />
+        {lane.out.map((line, index) => (
+          <text class="mono" x="456" y={lane.y + 32 + index * 20 + (lane.out.length === 1 ? 20 : 0)}>{line}</text>
+        ))}
+      </g>
+    ))
+  }
+</Diagram>

@@ -1,0 +1,67 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "multi-backend";
+const a = `url(#${id}-a)`;
+const aa = `url(#${id}-aa)`;
+const panels = [
+  {
+    x: 20,
+    eyebrow: "ONE SUBMIT, SEVERAL TARGETS",
+    api: "createFanoutTransport",
+    steps: ["form.submit()", "one request, all targets"],
+    targets: ["submit(forecast)", "submit(alerts)"],
+    join: "merge(outcomes)",
+    result: "{ reports: [ …both ] }",
+    notes: ["targets run concurrently", "collect or fail-fast"],
+  },
+  {
+    x: 372,
+    eyebrow: "ONE RUN PER BACKEND",
+    api: "executeMultiBackendPipeline",
+    steps: ['backends: ["forecast", "alerts"]', "form.submit({ backend }) for each, in order"],
+    targets: ['backend: "forecast"', 'backend: "alerts"'],
+    join: "per-backend snapshots",
+    result: "{ runs: { forecast, alerts } }",
+    notes: ["modelValues resolved per backend", "continueOnError (default true)"],
+  },
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 420"
+  title="Two ways to reach several backends"
+  description="Left: createFanoutTransport sends one submission request to named targets concurrently and merges their outcomes into one response. Right: executeMultiBackendPipeline submits the form once per backend in order, resolving modelValues with each backend's mappedTo, and returns one run result per backend. Both rely on mappedTo maps such as forecast: estimate and alerts: condition."
+  minWidth="40rem"
+>
+  {
+    panels.map((panel) => (
+      <g>
+        <rect class="box-subtle" x={panel.x} y="20" width="328" height="330" rx="14" />
+        <text class="eyebrow" x={panel.x + 18} y="46">{panel.eyebrow}</text>
+        <text class="mono accent-text" x={panel.x + 18} y="68">{panel.api}</text>
+        <rect class="box" x={panel.x + 18} y="84" width="292" height="50" rx="8" />
+        <text class="mono" x={panel.x + 34} y="105">{panel.steps[0]}</text>
+        <text class="small" x={panel.x + 34} y="124">{panel.steps[1]}</text>
+        <path class="edge" d={`M${panel.x + 90} 134 L${panel.x + 90} 162`} marker-end={a} />
+        <path class="edge" d={`M${panel.x + 238} 134 L${panel.x + 238} 162`} marker-end={a} />
+        {panel.targets.map((target, index) => (
+          <g>
+            <rect class="box-accent" x={panel.x + 18 + index * 150} y="164" width="142" height="46" rx="8" />
+            <text class="mono" x={panel.x + 89 + index * 150} y="192" text-anchor="middle" style="font-size: 10.5px">{target}</text>
+          </g>
+        ))}
+        <path class="edge-accent" d={`M${panel.x + 90} 210 L${panel.x + 90} 238`} marker-end={aa} />
+        <path class="edge-accent" d={`M${panel.x + 238} 210 L${panel.x + 238} 238`} marker-end={aa} />
+        <rect class="box" x={panel.x + 18} y="240" width="292" height="56" rx="8" />
+        <text class="small" x={panel.x + 34} y="262">{panel.join}</text>
+        <text class="mono" x={panel.x + 34} y="283">{panel.result}</text>
+        {panel.notes.map((note, index) => (
+          <text class="small" x={panel.x + 18} y={318 + index * 18}>{note}</text>
+        ))}
+      </g>
+    ))
+  }
+  <text class="eyebrow" x="20" y="380">SAME FORM, DIFFERENT NAMES PER BACKEND</text>
+  <text class="mono" x="20" y="404">mappedTo: {"{"} forecast: "estimate", alerts: "condition" {"}"}</text>
+</Diagram>

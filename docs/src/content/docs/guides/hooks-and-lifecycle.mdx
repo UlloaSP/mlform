@@ -1,0 +1,103 @@
+---
+title: Lifecycle and hooks
+description: The form's state axes, the order hooks run in, transitions for telemetry, suspension, and cleanup.
+---
+
+import Lifecycle from "../../../components/diagrams/Lifecycle.astro";
+
+<Lifecycle />
+
+## State axes
+
+A form's state has three independent axes, plus per-field flags:
+
+| Axis | Values | Meaning |
+| --- | --- | --- |
+| `state.lifecycle` | `active`, `suspended`, `disposed` | Whether the form accepts work. `disposed` is final. |
+| `state.operation` | `idle`, `validating`, `submitting` | Work in progress right now. |
+| `state.submissionStatus` | `idle`, `succeeded`, `failed`, `aborted` | Outcome of the latest submission. |
+
+Editing is tracked separately with `dirty` and `touched`, so a `succeeded` status stays visible while
+the user edits again; it changes when the next submission starts or on `reset()`.
+
+## Hooks
+
+Pass `hooks` to `mountForm`, `createFormView`, or `createForm`:
+
+```ts
+mountForm(container, {
+  schema,
+  transport,
+  hooks: {
+    beforeValidate: ({ values, submitCount }) => {},
+    afterValidate: ({ result }) => {},
+    beforeSubmit: ({ backend, modelValues, displayValues, inputs, submitCount, signal }) => {},
+    afterSubmit: ({ result }) => analytics.track("forecast", result.meta),
+    onSubmitError: ({ error }) => console.error(error),
+    afterReportFetch: ({ reportId, payload }) => {},
+    onReportFetchError: ({ reportId, error }) => {},
+  },
+});
+```
+
+| Hook | Runs | If it throws |
+| --- | --- | --- |
+| `beforeValidate`, `afterValidate` | Around every validation, including the one inside a submission. | The validation fails. |
+| `beforeSubmit` | After validation, before the transport. Receives copies of the records. | The submission fails before the transport. |
+| `afterSubmit` | After reports are updated. | The submission fails, unless `hookFailurePolicy: { afterSubmit: "preserve-success" }`, which keeps the success and calls `onSubmitError`. |
+| `onSubmitError` | After a failed submission. | The original error is kept; the hook's error goes to `onListenerError`. |
+| `afterReportFetch`, `onReportFetchError` | After each [report fetch](/guides/report-fetches/). | The report keeps its outcome; the error goes to `onListenerError`. |
+
+Hooks may return promises, and the operation waits for them; `beforeSubmit` also receives the
+submission's `signal`. Use hooks
+for analytics, logging, and side effects you own. To change what is submitted, use a
+[behavior](/extend/plugins/#behaviors); hooks receive copies.
+
+`listenerErrorPolicy` decides what happens when a `subscribe` listener or an observer hook throws:
+`"ignore"` (isolate it and report it to `onListenerError`) or `"throw-aggregate"` (collect the
+failures and throw them together after the state change is committed).
+
+## Transitions
+
+For telemetry or debugging, `subscribeTransitions` reports each change of the axes in order, without
+values or payloads:
+
+```ts
+const stop = mounted.form.subscribeTransitions(({ sequence, type, from, to, reason }) => {
+  telemetry.record(type, { sequence, from, to, reason });
+});
+```
+
+`type` is one of `validation-started`, `validation-finished`, `validation-failed`,
+`submission-started`, `submission-succeeded`, `submission-failed`, `submission-aborted`, `reset`,
+`restored`, `suspended`, `resumed`, and `disposed`. Sequence numbers increase for the lifetime of the
+form. Earlier transitions are not replayed to new subscribers; store them yourself if you need a
+history.
+
+## Suspend and resume
+
+`suspend(reason?)` pauses a form without losing it: pending validation, submission, behaviors, and
+report fetches are aborted, while values, interaction state, completed results, and subscriptions
+stay. While suspended, the state and snapshots stay readable and changes are rejected. `resume()`
+makes the same form active again; aborted work is not restarted. Both are idempotent.
+
+```ts
+router.beforeLeave(() => mounted.suspend("route hidden"));
+router.afterEnter(() => mounted.resume());
+```
+
+`mountForm(container, { hostLifecycle: "document" })` suspends on `visibilitychange` to hidden and on
+`pagehide`, and resumes when the page is shown again. The default, `"manual"`, leaves this to you.
+
+## Reset, abort, and cleanup
+
+| Call | Effect |
+| --- | --- |
+| `form.reset()` | Values return to their initial values; errors, reports, and the submission outcome are cleared. |
+| `form.abortSubmit(reason?)` | Aborts a running validation or submission; it ends as `aborted`. |
+| `mounted.unmount()` | Disposes the form, aborts all pending work, disconnects the design system, removes the host, and restores replaced content. |
+| `view.dispose()`, `form.dispose()` | Disposes a headless form. Publishes `lifecycle: "disposed"` before releasing subscriptions. |
+
+Changing values or resetting while a submission is still validating aborts that submission; a value
+change during `afterSubmit` makes the finished submission obsolete, and it rejects with
+`SubmissionAbortedError`.

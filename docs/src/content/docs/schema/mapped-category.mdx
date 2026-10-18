@@ -1,0 +1,86 @@
+---
+title: Mapped category
+description: A select whose options write preset values into other fields, for model inputs people should not edit one by one.
+---
+
+import FieldSpecimen from "../../../components/FieldSpecimen.astro";
+
+`mapped-category` renders a select. Choosing an option writes that option's `mapping` into other
+fields of the same form. Use it when one human decision sets several model inputs at once, such as
+a sampling preset that fixes a rate and a window. If each option only switches one `0`/`1` column,
+use [`onehot-category`](/schema/onehot-category/) instead.
+
+<FieldSpecimen
+  id="mapped-category"
+  with="readings"
+  alt="A Sampling preset select showing Detailed · 30 readings, and below it a read-only Readings per hour field showing 30."
+/>
+
+Selecting **Detailed** wrote `30` into the read-only `readings` field below it. The preset itself is
+a UI choice; the values the model needs live in the target fields.
+
+## How values reach the model
+
+The master field is excluded from submission by default (`includeInSubmission: false`). The
+targets submit through their own `mappedTo`, exactly like fields the user edits:
+
+```ts
+const schema = {
+  fields: [
+    {
+      id: "sampling",
+      kind: "mapped-category",
+      label: "Sampling preset",
+      required: true,
+      options: [
+        { label: "Quick", value: "quick", mapping: { "readings-per-hour": 10, "window-minutes": 15 } },
+        { label: "Detailed", value: "detailed", mapping: { "readings-per-hour": 30, "window-minutes": 60 } },
+      ],
+    },
+    { id: "readings-per-hour", kind: "number", label: "Readings per hour", readOnly: true, mappedTo: "rate" },
+    { id: "window-minutes", kind: "number", label: "Window", unit: "min", readOnly: true, mappedTo: "window" },
+  ],
+};
+```
+
+Choosing **Detailed** submits `{ rate: 30, window: 60 }`. Set `includeInSubmission: true` and a
+`mappedTo` on the master field only when the model also needs the preset name.
+
+### Visible or hidden targets
+
+- **Read-only targets**, as above, show people what the preset did and are submitted normally.
+- **Hidden targets** keep the form compact. Hidden fields are inactive and omitted by default, so
+  give each one `inactiveFieldPolicy: "include"`:
+
+```ts
+{ id: "readings-per-hour", kind: "number", label: "Readings per hour", hidden: true, inactiveFieldPolicy: "include", mappedTo: "rate" }
+```
+
+## Options
+
+Every option is an object; plain strings are not accepted.
+
+| Property | Type | Meaning |
+| --- | --- | --- |
+| `label` | `string` | Text in the select. |
+| `value` | `string` | The master field's value. |
+| `mapping` | `Record<string, unknown>` | Target field ids and the values to write into them. |
+
+## Rules
+
+- **Targets are field ids.** Mapping keys are normalized like ids, and every key must name a field
+  in the schema; an unknown target fails schema normalization.
+- **One direction.** Changing the master writes the targets. Editing a target does not change the
+  master, and nothing is written when the master becomes empty.
+- **Normal values.** Written values go through the target's normalization and validation. An
+  invalid value shows as an error on a visible target and blocks submission. Hidden targets skip
+  validation, so keep their mapped values valid for the target kind.
+- **Any compatible kind.** A target can be any field kind that accepts the value, such as a hidden
+  `category` whose `options` include it.
+- **Code writes too.** `form.setValues({ sampling: "quick" })` updates the targets the same way.
+- **No chains.** Do not map one `mapped-category` into another.
+
+## Related
+
+- [`onehot-category`](/schema/onehot-category/) for strict `0`/`1` encodings without target fields.
+- [`series` aggregations](/schema/series/#aggregations) for features computed from entered data.

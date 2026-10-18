@@ -1,59 +1,65 @@
 ---
 title: Installation
-description: Install MLForm and prepare the documentation workspace.
+description: Install MLForm, choose an entry point, and know what the package needs at runtime.
 ---
-
-Install the runtime package in an application:
 
 ```bash
 npm install mlform
 ```
 
-To pin the installed release instead of accepting a version range:
+MLForm is an ES module package written in TypeScript. Its types ship with it. The built-in UI uses
+[Lit](https://lit.dev/) Web Components and the schema contract uses [Zod](https://zod.dev/); both are
+installed as dependencies. Install them in your application too when your own code imports them,
+for example to write a [custom field](/extend/custom-fields/) or a Zod schema for a custom kind.
 
-```bash
-npm install --save-exact mlform
-```
+The library runs in browsers that support Web Components. Node.js consumers, such as tests or
+tooling that imports the headless layers, need Node.js 20.19 or later.
 
-Import from the kit for normal application use:
+## Choose an entry point
+
+Most applications import the kit from the package root:
 
 ```ts
 import { mountForm } from "mlform";
 ```
 
-Use subpath imports only when you need a specific layer:
+`mlform` and `mlform/kit` are the same module. Import a layer directly when you only need that
+layer, for example headless state in a worker or a custom renderer:
 
 ```ts
+import { createFormView } from "mlform/view";
 import { createForm } from "mlform/runtime";
-import { createPrimitiveRegistry } from "mlform/primitives";
-import { defineTheme } from "mlform/design";
+import { createBuiltinMlRegistry } from "mlform/builtins";
 ```
 
-For this repository, use Vite+:
+[Package exports](/reference/package-exports/) lists every surface and what it contains.
+[Mental model](/getting-started/mental-model/) explains how the layers fit together.
+
+## Fonts
+
+MLForm does not download fonts. Themes name their font families and fall back to system fonts. The
+`eshkra` theme used in these pages expects Mona Sans and JetBrains Mono; load them in your
+application if you use it. See [Themes and recipes](/design/themes-and-recipes/).
+
+## Working on MLForm itself
+
+The repository uses Vite+ (`vp`) for installs, checks, tests, and builds.
+Library and playground CI runs on Node.js 24; this documentation site requires Node.js 22.18 or
+later.
 
 ```bash
 vp install
 vp check
-vp test
+vp run typecheck
+vp test run
 vp build
 ```
 
-The package supports Node.js `>=20.19.0` for Node-based consumers. The docs workspace requires
-Node.js `>=22.18.0`; repository CI uses Node.js 24 for library and playground checks and Node.js
-22.18 for docs. The Astro Starlight app under `docs/` uses the same `vp` workflow:
+The documentation is a separate Astro Starlight project under `docs/`:
 
 ```bash
 cd docs
 vp install
-vp run typecheck
-vp run build
 vp run dev
+vp run build
 ```
-
-Common mistakes:
-
-| Mistake                                              | Fix                          |
-| ---------------------------------------------------- | ---------------------------- |
-| Installing the docs dependencies with `npm` directly | Use `vp install`.            |
-| Importing test utilities from `vitest`               | Use this repo's Vite+ setup. |
-| Using legacy examples with a class constructor       | Use `mountForm`.             |

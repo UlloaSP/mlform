@@ -1,22 +1,48 @@
 ---
 title: Troubleshooting
-description: Common MLForm integration problems and fixes.
+description: Symptoms, causes, and fixes for the problems MLForm integrations run into most often.
 ---
 
-| Problem                         | Likely cause                                | Fix                                                                      |
-| ------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------ |
-| Missing container               | `querySelector` returned `null`.            | Check the selector and mount after the element exists.                   |
-| Missing transport               | `mountForm` needs a submit path.            | Pass `transport`.                                                        |
-| Invalid transport config        | `transport.submit` is missing or invalid.   | Pass an object with an async `submit(request)` method.                   |
-| Backend response cannot be read | The application adapter parsed the wrong shape. | Fix the adapter parser and return the expected report contract.      |
-| Missing model inputs | A field has no backend target or is omitted as inactive. | Check `mappedTo`, `includeInSubmission`, and the inactive field policy. |
-| Report stays idle | No matching backend output was routed to it. | Match the report's `mappedTo` and the envelope's `backend`; ids are not backend targets. |
-| Loaded data already shows errors | Synchronous constraints run during initialization. | Correct the values or constraints; blur is not required for nonempty values. |
-| Unknown field kind              | Registry does not include the field.        | Use built-ins or register a custom field.                                |
-| Unknown report kind             | Registry does not include the report.       | Use `classifier`, `regressor`, or register a custom report.              |
-| Duplicate id                    | Two fields or reports share an explicit id. | Give each item a stable unique id.                                       |
-| Custom element name invalid     | Custom renderer tag lacks a hyphen.         | Use a valid custom element name such as `risk-band-field`.               |
-| Form not updating after remount | Host reused stale schema/state.             | Keep schema creation intentional and unmount on route changes.           |
-| Styles not inherited            | Design system uses its own mode.            | Use `mode: "inherit"` or override tokens at the container.               |
+## The form does not appear
 
-Start with the browser console and the network tab. Most integration failures are either schema validation, missing DOM container, or backend response shape.
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `mountForm` throws about the container | The element already has content. | Mount into an empty element, or pass `containerStrategy: "replace"`. |
+| `Cannot read properties of null` | `querySelector` ran before the element existed. | Mount from a lifecycle hook or after the element is in the document. |
+| `Unknown field kind "x".` | The kind is not registered. | Use a [built-in kind](/schema/fields/) or pass the [plugin](/extend/plugins/) that defines it. |
+| `Duplicate explicit id "x" in schema.` | Two ids normalize to the same value, such as `max_temp` and `max-temp`. | Give every field a distinct kebab-case id. |
+| `Layout references unknown field "customer_age".` | Ids are normalized: the field's id is `customer-age`. | Use normalized ids in layouts and code; see [Ids](/schema/overview/#ids). |
+| `Field "x" is missing from layout.` | An explicit layout must place every field. | Add it, or place it in a `custom` node. See [Layout config](/view/layout-schema/#errors). |
+| A custom field renders `Missing primitive mapping…` | The presenter names a component without an element. | Register it with `primitiveRegistry`; see [Registries and renderers](/extend/renderers/). |
+| Fonts look different from these docs | MLForm does not load fonts. | Load the theme's fonts in your app; see [Themes](/design/themes-and-recipes/#themes). |
+
+## Values and submission
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| A model input is missing from the request | The field has no `mappedTo`, is hidden or disabled, or has `includeInSubmission: false`. | Add `mappedTo`; for inactive fields see [inactive field policy](/schema/conditions/#inactive-fields-and-submission). |
+| `form.getField("x")` returns `undefined` | The id was normalized. | Look the id up in `form.fields.map((field) => field.id)`. |
+| Loaded data shows errors immediately | Synchronous constraints run on initial values. | Fix the data or the constraints; errors for non-empty values do not wait for blur. |
+| `Form submission is already in progress.` | `submit()` was called while another submission ran. | Wait for the first, or `abortSubmit()` it. |
+| A field cannot be changed from code | Hidden, disabled, and read-only fields reject `setValue`. | Give them values through `defaultValue`, `initialValues`, or a mapped category. |
+
+## Reports
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| A report stays "Awaiting submission" after submitting | No envelope matched its `backend` and `mappedTo`. | Return `{ backend: "default", mappedTo: <report's mappedTo>, status: "ready", payload }`. Ids and labels are never used. |
+| `Invalid report result at index n: …` | An envelope breaks the [contract](/guides/backend-contract/#envelopes). | Fix the shape the transport returns. |
+| `Duplicate report result for backend…` | Two envelopes for one report. | Return one envelope per backend output. |
+| Every report shows the same error | The transport threw. | See [Errors](/guides/error-handling/#transport-failures). |
+| A per-backend report is idle after `executeMultiBackendPipeline` | The form shows the last run only. | Read `runs`, or use a [fan-out transport](/guides/multiple-backends/#one-submission-several-services). |
+
+## Events and styling
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `mlf-submit-success` never fires | The layout is a wizard, tabs, or has explicit nodes; only `mlf-form` dispatches submit events. | Use hooks or `subscribeTransitions`; see [Submit events](/primitives/overview/#submit-events). |
+| The form ignores the page's dark mode | `mode` is `auto` or fixed. | Use `mode: "inherit"` and, if needed, `hostSchemeResolver`. |
+| A custom theme does not apply | It was registered after mounting, or on a registry the form did not copy. | Register before mounting, or on `mounted.designSystem.registry`. |
+
+When nothing here matches, check the browser console for the error MLForm threw and the network
+panel for what your transport sent and received.

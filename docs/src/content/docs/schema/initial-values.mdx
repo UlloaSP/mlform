@@ -1,0 +1,113 @@
+---
+title: Initial values and drafts
+description: Start a form with schema defaults or host values, and save and restore drafts with versioned snapshots.
+---
+
+## Initial values
+
+A field starts from one of three sources, highest first:
+
+| Source | Use it for | Example |
+| --- | --- | --- |
+| `initialSnapshot` option | A saved draft, restored as one state update. | A half-finished form from yesterday |
+| `initialValues` option | Host or user data for this session. | The station selected in a dashboard |
+| `defaultValue` on the field | Business defaults that travel with the schema. | A default threshold of 75 % |
+
+Without any of these, a field starts empty: `""` for text, `null` for most kinds, `[]` for
+multi-choice and series.
+
+```ts
+mountForm(container, {
+  schema: {
+    fields: [
+      { id: "threshold", kind: "number", label: "Threshold", unit: "%", defaultValue: 75, mappedTo: "threshold" },
+      { id: "station", kind: "text", label: "Station", mappedTo: "station" },
+    ],
+  },
+  transport,
+  initialValues: { station: "North station", threshold: 80 },
+});
+```
+
+`initialValues` is keyed by runtime id. Values are normalized by each field's kind, so
+`initialValues: { observed: "2026-06-15" }` gives a date field a `Date`.
+
+### Validation of initial values
+
+Synchronous checks run immediately, before the first render. A non-empty invalid value, such as
+`humidity: 140` with `max: 100`, shows its error at once; empty required fields stay quiet until
+the user interacts or the form is validated. Asynchronous field validators and form validators do
+not run on initial values. Call `await mounted.form.validate()` after mounting when loaded data
+needs them. See [Validation](/guides/validation/).
+
+To check the final starting values in a test, read `mounted.form.getValues()`.
+
+## Save and restore drafts
+
+`form.createSnapshot()` returns a frozen, versioned, JSON-compatible draft: each field's value and
+whether it was touched, plus the ids and kinds of the schema it came from.
+
+```ts
+const key = "forecast-draft";
+
+// Save, for example on every change or before the page unloads.
+localStorage.setItem(key, JSON.stringify(mounted.form.createSnapshot()));
+
+// Restore later into the same schema.
+const saved = localStorage.getItem(key);
+if (saved) mounted.form.restoreSnapshot(JSON.parse(saved));
+```
+
+To restore before the first render, pass the parsed draft as `initialSnapshot`:
+
+```ts
+const saved = localStorage.getItem("forecast-draft");
+
+const mounted = mountForm(container, {
+  schema,
+  transport,
+  initialSnapshot: saved ? JSON.parse(saved) : undefined,
+});
+```
+
+### What restoration does
+
+- It checks the snapshot first: an unknown version, missing or extra fields, or ids and kinds that
+  do not match the current schema reject the snapshot without changing anything. Remove or replace
+  a rejected draft.
+- It applies every value in one state update, then recalculates conditions and synchronous
+  validation from the restored values.
+- It cancels pending validation and submission, and resets reports, the submission outcome, the
+  submit count, and errors set by validators or the backend.
+
+### Value formats
+
+Snapshots store runtime values, not what the editor displayed. Dates, including date columns in a
+series, are stored as ISO timestamps and restored as `Date` objects. Unfinished numeric text such
+as `-` stays a string, so a draft never loses what someone was typing.
+
+A [custom field](/extend/custom-fields/) whose value is not JSON-compatible must define both
+`serializeSnapshotValue` and `restoreSnapshotValue` in its definition.
+
+### Asynchronous storage
+
+`mlform/runtime` exports helpers for storage that returns promises, through a
+`FormPersistenceAdapter` with `load`, `save`, and `remove`:
+
+```ts
+import { removeFormSnapshot, restoreFormSnapshot, saveFormSnapshot } from "mlform/runtime";
+import type { FormPersistenceAdapter } from "mlform/runtime";
+
+const drafts: FormPersistenceAdapter = {
+  load: async (key) => (await db.get("drafts", key)) ?? null,
+  save: (key, snapshot) => db.put("drafts", snapshot, key),
+  remove: (key) => db.delete("drafts", key),
+};
+
+await saveFormSnapshot(mounted.form, drafts, "forecast-draft");
+const restored = await restoreFormSnapshot(mounted.form, drafts, "forecast-draft"); // false when load returned null
+await removeFormSnapshot(drafts, "forecast-draft");
+```
+
+`load` must return `null` when there is no draft. `db` stands for your storage client, such as an
+IndexedDB wrapper.

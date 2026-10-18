@@ -1,0 +1,129 @@
+---
+title: Custom reports
+description: Show model outputs that are not a class or a number, with descriptor content or your own DOM such as an SVG chart.
+---
+
+import { Code } from "@astrojs/starlight/components";
+import Capture from "../../../components/Capture.astro";
+import { forecastChart } from "../../../lib/examples";
+
+`defineReportKind` from `mlform/view` creates a report kind: a config schema, optional payload
+validation, and one of two renderers. Register it with a [plugin](/extend/plugins/).
+
+## Descriptor content
+
+For summaries, tables, and lists, return descriptor nodes; MLForm renders them with the theme:
+
+```ts
+import { defineMLFormPlugin, defineReportKind } from "mlform/view";
+import { baseReportConfigSchema } from "mlform/schema";
+import { z } from "zod";
+
+const payloadSchema = z.object({
+  level: z.enum(["low", "moderate", "high"]),
+  score: z.number(),
+  drivers: z.array(z.string()),
+});
+
+export const riskSummary = defineReportKind({
+  kind: "risk-summary",
+  schema: baseReportConfigSchema.extend({ kind: z.literal("risk-summary") }),
+  payloadSchema,
+  render: {
+    summary: ({ payload }) => {
+      const { level, score } = payload as z.infer<typeof payloadSchema>;
+      return { title: "Frost risk", value: score, badge: level, tone: level === "high" ? "danger" : "neutral" };
+    },
+    content: ({ payload }) => {
+      const { score, drivers } = payload as z.infer<typeof payloadSchema>;
+      return [
+        { type: "metric", label: "Score", value: score.toFixed(2) },
+        { type: "list", label: "Main drivers", items: drivers },
+      ];
+    },
+  },
+});
+
+export const riskPlugin = defineMLFormPlugin({ reports: [riskSummary] });
+```
+
+| Node `type` | Shape |
+| --- | --- |
+| `text` | `{ label?, value, tone? }` |
+| `metric` | `{ label, value, hint?, tone? }` |
+| `kv` | `{ label?, entries: [{ label, value }] }` or an object |
+| `list` | `{ label?, items, ordered? }` |
+| `table` | `{ label?, columns: string[], rows: object[] or unknown[][] }` |
+| `badge` | `{ label, tone? }` |
+| `notice` | `{ title?, body, tone? }` |
+| `json` | `{ label?, value }` |
+
+`tone` is `neutral`, `info`, `success`, `warning`, or `danger`. `summary` returns
+`{ title?, description?, value?, badge?, tone? }` for the report's header.
+
+## Your own DOM: `render.mount`
+
+For charts and anything else, `render.mount` receives an element and draws into it. The chart in
+the [Plugins](/extend/plugins/) screenshot is this complete file:
+
+<Capture
+  name="plugin"
+  width={562}
+  alt="A line chart titled Next six hours with six labelled points from +1h to +6h, rising from 22.7° to 24.1° and falling to 22.2°."
+/>
+
+<Code code={forecastChart} lang="ts" title="forecast-chart.ts" />
+
+The mount context contains:
+
+| Property | Meaning |
+| --- | --- |
+| `element` | An empty element inside the report frame. Draw here. |
+| `payload` | The payload, already validated by `payloadSchema`. |
+| `report`, `config` | The normalized report config (here `report.unit` and `report.label`). |
+| `reportId`, `state`, `result` | The report id, its state snapshot, and the submission result. |
+| `signal` | Aborts when the report is re-rendered or removed. Use it for listeners and fetches. |
+
+The lifecycle:
+
+- `mount` runs when the report becomes `ready`, and again when its descriptor changes, for example
+  after the next submission.
+  Before each run MLForm calls the previous cleanup, aborts the previous `signal`, and empties
+  `element`.
+- Return a cleanup function to stop timers, observers, or chart instances.
+- If `mount` throws, the report shows `Report render failed:` and the message.
+- Skipped, error, and empty states are rendered by the frame; `mount` is not called for them.
+- `render.content` is ignored when `mount` is present.
+
+The element lives in a shadow root: page styles do not reach it, but CSS custom properties do. Use
+the `--mlf-*` tokens, as the chart does with `var(--mlf-color-accent)`, so the drawing follows the
+active theme and mode.
+
+Two habits from the example are worth keeping:
+
+- **Validate before you interpolate.** `payloadSchema` guarantees numbers before they go into
+  markup, so `innerHTML` never receives backend strings. Use `textContent` for any text from the
+  payload.
+- **Describe the graphic.** The SVG has `role="img"` and an `aria-label` with the values, so screen
+  readers get the data the chart shows.
+
+## Payload rules
+
+| Option | Effect |
+| --- | --- |
+| `payloadSchema` | Zod schema the payload must pass. Its parsed output becomes the payload. |
+| `payloadValidationPolicy` | `"report-error"` (default) puts only this report in `error`; `"fail-submit"` fails the submission with `ReportPayloadError`. |
+| `resolve({ report, result, signal })` | Builds the payload from the whole submission result instead of the matching envelope. If it throws, only this report fails. |
+| `clonePayload` | Copies payloads that are not plain data. |
+| `fetch` | Loads the payload after submission. See [Report fetches](/guides/report-fetches/). |
+
+Without `resolve`, the payload is the matching envelope's `payload`, routed by `backend` and
+`mappedTo` like any [built-in report](/schema/reports/#envelopes-and-states). Use `resolve` only
+when the payload combines several outputs; it receives `result.reports` and `result.reportContexts`.
+
+## Lower level
+
+`defineReportDefinition` from `mlform/schema`, together with your own presenter and a custom
+element extending `PrimitiveReportElement` or `PrimitiveAsyncReportElement`, gives full control over
+the visual contract. Most kinds do not need it: `render.mount` already hands you the DOM. See
+[Registries and renderers](/extend/renderers/).

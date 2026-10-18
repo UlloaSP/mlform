@@ -1,0 +1,42 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "layout-tree";
+const rows = [
+  { depth: 0, kind: "layout", arg: 'kind: "wizard"', note: "stacked · split · wizard · tabs" },
+  { depth: 1, kind: "step", arg: '"Station"', note: "wizard steps and tabs: id?, title, children" },
+  { depth: 2, kind: "section", arg: '"Location"', note: "titled, collapsible; defaultOpen: false to start closed" },
+  { depth: 3, kind: "field", arg: '"location"', note: "references a field by runtime id, exactly once" },
+  { depth: 2, kind: "group", arg: "columns: 2", note: "1, 2, or 3 columns; no title or toggle" },
+  { depth: 3, kind: "field", arg: '"temperature"' },
+  { depth: 3, kind: "field", arg: '"humidity"' },
+  { depth: 1, kind: "step", arg: '"Results"' },
+  { depth: 2, kind: "report", arg: '"forecast"', note: "reports may be placed once or omitted" },
+  { depth: 2, kind: "custom", arg: 'id, fields: [ … ]', note: "your own region; createFormView only" },
+];
+const y = (index: number) => 24 + index * 34;
+const x = (depth: number) => 24 + depth * 30;
+// Each connector starts under the nearest earlier row one level up: the node's parent.
+const parentRow = (index: number) =>
+  rows.findLastIndex((row, candidate) => candidate < index && row.depth === rows[index].depth - 1);
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 370"
+  title="A layout is a tree of nodes"
+  description="A wizard layout with two steps. The Station step holds a Location section containing the location field, and a two-column group with temperature and humidity. The Results step holds the forecast report and a custom region. Sections are titled and collapsible, groups only arrange columns, field and report nodes reference runtime ids, and custom regions are rendered by the application through createFormView."
+>
+  {
+    rows.map((row, index) => (
+      <g>
+        {row.depth > 0 && (
+          <path class="edge" d={`M${x(row.depth - 1) + 10} ${y(parentRow(index)) + 28} L${x(row.depth - 1) + 10} ${y(index) + 14} L${x(row.depth)} ${y(index) + 14}`} />
+        )}
+        <rect class={row.depth === 0 ? "box-accent" : "box"} x={x(row.depth)} y={y(index)} width={86 + row.arg.length * 7.2} height="28" rx="7" />
+        <text class="mono accent-text" x={x(row.depth) + 10} y={y(index) + 19}>{row.kind}</text>
+        <text class="mono" x={x(row.depth) + 18 + row.kind.length * 7.4} y={y(index) + 19}>{row.arg}</text>
+        {row.note && <text class="small" x="380" y={y(index) + 19}>{row.note}</text>}
+      </g>
+    ))
+  }
+</Diagram>

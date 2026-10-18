@@ -1,9 +1,5 @@
-import { mountLayoutShowcase } from "./layout-showcase-live.ts";
+import { mountLayoutShowcase } from "./layout-showcase-live";
 
-for (const root of document.querySelectorAll("[data-layout-showcase]")) {
-  if (!(root instanceof HTMLElement)) {
-    continue;
-  }
-
+for (const root of document.querySelectorAll<HTMLElement>("[data-layout-showcase]")) {
   mountLayoutShowcase(root);
 }

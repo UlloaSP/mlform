@@ -1,0 +1,64 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "lifecycle";
+const a = `url(#${id}-a)`;
+const aa = `url(#${id}-aa)`;
+const chipX = (index: number) => 14 + index * 118;
+const hooks = [
+  { name: "beforeValidate" },
+  { name: "afterValidate" },
+  { name: "beforeSubmit" },
+  { name: "transport", accent: true },
+  { name: "afterSubmit", alt: "onSubmitError" },
+  { name: "afterReportFetch", alt: "onReportFetchError" },
+].map((hook, index) => ({ ...hook, x: chipX(index) }));
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 330"
+  title="Submission lifecycle and form state axes"
+  description="Hooks run in order: beforeValidate, afterValidate, beforeSubmit, the transport, then afterSubmit or onSubmitError, then report fetches with afterReportFetch or onReportFetchError. During this the operation axis moves from idle to validating to submitting and back to idle, and submissionStatus ends as succeeded, failed, or aborted. Separately, lifecycle moves between active and suspended through suspend and resume, and ends at disposed."
+  minWidth="40rem"
+>
+  <text class="eyebrow" x="20" y="16">HOOKS, IN ORDER</text>
+  {
+    hooks.map((hook, index) => (
+      <g>
+        <rect class={hook.accent ? "box-accent" : "box"} x={hook.x} y="26" width="108" height="40" rx="8" />
+        <text class="mono" x={hook.x + 54} y="50" text-anchor="middle" style="font-size: 10.5px">{hook.name}</text>
+        {hook.alt && (
+          <text class="mono-muted" x={hook.x + 54} y="84" text-anchor="middle" style="font-size: 10px">
+            <tspan x={hook.x + 54}>or</tspan>
+            <tspan x={hook.x + 54} dy="13">{hook.alt}</tspan>
+          </text>
+        )}
+        {index < hooks.length - 1 && <path class="edge" d={`M${hook.x + 108} 46 L${hook.x + 116} 46`} marker-end={a} />}
+      </g>
+    ))
+  }
+  <text class="eyebrow" x="14" y="124">STATE.OPERATION</text>
+  <rect class="box-subtle" x="14" y="134" width="226" height="30" rx="6"></rect>
+  <text class="mono" x="127" y="154" text-anchor="middle">validating</text>
+  <rect class="box-accent" x="250" y="134" width="344" height="30" rx="6"></rect>
+  <text class="mono" x="422" y="154" text-anchor="middle">submitting</text>
+  <rect class="box-subtle" x="604" y="134" width="108" height="30" rx="6"></rect>
+  <text class="mono" x="658" y="154" text-anchor="middle">idle</text>
+  <text class="eyebrow" x="20" y="196">STATE.SUBMISSIONSTATUS</text>
+  <text class="mono-muted" x="20" y="220">previous outcome is kept while editing</text>
+  <path class="edge" d="M380 216 L470 216" marker-end={a}></path>
+  <text class="mono" x="480" y="220">succeeded · failed · aborted</text>
+  <text class="eyebrow" x="20" y="258">STATE.LIFECYCLE</text>
+  <rect class="box" x="20" y="268" width="110" height="40" rx="20"></rect>
+  <text class="mono" x="75" y="293" text-anchor="middle">active</text>
+  <rect class="box" x="250" y="268" width="120" height="40" rx="20"></rect>
+  <text class="mono" x="310" y="293" text-anchor="middle">suspended</text>
+  <rect class="box-subtle" x="510" y="268" width="120" height="40" rx="20"></rect>
+  <text class="mono" x="570" y="293" text-anchor="middle">disposed</text>
+  <path class="edge" d="M130 280 L248 280" marker-end={a}></path>
+  <text class="small" x="189" y="273" text-anchor="middle">suspend()</text>
+  <path class="edge" d="M250 298 L132 298" marker-end={a}></path>
+  <text class="small" x="189" y="320" text-anchor="middle">resume()</text>
+  <path class="edge-accent" d="M370 288 L508 288" marker-end={aa}></path>
+  <text class="small" x="439" y="280" text-anchor="middle">dispose() · unmount()</text>
+</Diagram>

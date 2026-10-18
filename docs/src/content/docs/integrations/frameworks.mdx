@@ -1,0 +1,154 @@
+---
+title: Frameworks
+description: Mount and unmount MLForm from vanilla JavaScript, React, Vue, Angular, or Astro.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+MLForm renders standard Web Components into an element you own, so every framework integration has
+the same three steps: render an empty element, call `mountForm` once it is in the document, and call
+`unmount()` when the component goes away.
+
+<Tabs syncKey="framework">
+<TabItem label="Vanilla">
+
+```ts
+import { mountForm } from "mlform";
+import { schema } from "./forecast-schema";
+import { transport } from "./transport";
+
+const host = document.querySelector<HTMLElement>("#forecast-form");
+if (!host) throw new Error("Missing #forecast-form.");
+
+const mounted = mountForm(host, { schema, transport });
+// When this view is removed, for example by your router:
+// mounted.unmount();
+```
+
+</TabItem>
+<TabItem label="React">
+
+```tsx
+import { useEffect, useRef } from "react";
+import { mountForm } from "mlform";
+import { schema } from "./forecast-schema";
+import { transport } from "./transport";
+
+export function ForecastForm() {
+  const host = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!host.current) return;
+    const mounted = mountForm(host.current, { schema, transport });
+    return () => mounted.unmount();
+  }, []);
+
+  return <div ref={host} />;
+}
+```
+
+Keep `schema` and `transport` stable (module constants or `useMemo`). If they are effect
+dependencies, a new object on every render remounts the form and discards the user's input.
+
+</TabItem>
+<TabItem label="Vue">
+
+```vue
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import { mountForm, type MountedForm } from "mlform";
+import { schema } from "./forecast-schema";
+import { transport } from "./transport";
+
+const host = ref<HTMLElement | null>(null);
+let mounted: MountedForm | undefined;
+
+onMounted(() => {
+  if (host.value) mounted = mountForm(host.value, { schema, transport });
+});
+onBeforeUnmount(() => mounted?.unmount());
+</script>
+
+<template>
+  <div ref="host" />
+</template>
+```
+
+</TabItem>
+<TabItem label="Angular">
+
+```ts
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from "@angular/core";
+import { mountForm, type MountedForm } from "mlform";
+import { schema } from "./forecast-schema";
+import { transport } from "./transport";
+
+@Component({
+  selector: "app-forecast-form",
+  template: `<div #host></div>`,
+})
+export class ForecastFormComponent implements AfterViewInit, OnDestroy {
+  @ViewChild("host", { static: true }) host!: ElementRef<HTMLElement>;
+  private mounted?: MountedForm;
+
+  ngAfterViewInit() {
+    this.mounted = mountForm(this.host.nativeElement, { schema, transport });
+  }
+
+  ngOnDestroy() {
+    this.mounted?.unmount();
+  }
+}
+```
+
+</TabItem>
+<TabItem label="Astro">
+
+```astro
+<div id="forecast-form"></div>
+
+<script>
+  import { mountForm } from "mlform";
+  import { schema } from "../forms/forecast-schema";
+  import { transport } from "../forms/transport";
+
+  const host = document.querySelector<HTMLElement>("#forecast-form");
+  if (host) mountForm(host, { schema, transport });
+</script>
+```
+
+Astro runs `<script>` tags in the browser once per page. Inside a framework island, use that
+framework's lifecycle instead.
+
+</TabItem>
+</Tabs>
+
+## Rules for every framework
+
+- **Mount in the browser.** Importing MLForm on the server is safe; mounting needs a DOM. Call
+  `mountForm` from a client-side lifecycle hook.
+- **Hand MLForm an empty element** and do not render children into it from the framework. To
+  mount over existing content intentionally, pass `containerStrategy: "replace"`; the content
+  returns on `unmount()`.
+- **Mount once per element.** Mounting again into the same element replaces the previous form once
+  the new one is ready.
+- **Always unmount.** `unmount()` aborts pending work, disconnects the design system, and removes
+  the host. Without it, listeners outlive the component.
+- **Read state through subscriptions,** not by remounting: `mounted.form.subscribeSelector(...)`
+  feeds framework state. See [Live preview](/cookbook/live-preview/).
+
+For pages where the framework should own every element, use the
+[headless view](/view/overview/#in-a-framework) instead of `mountForm`.
+
+## Behind a router or in tabs
+
+When the framework keeps a hidden view alive instead of unmounting it, call `mounted.suspend()`
+on hide and `mounted.resume()` on show; pending work stops and the draft stays. For pages that only
+care about browser visibility, mount with `hostLifecycle: "document"` to do this automatically on
+`visibilitychange` and `pagehide`. See [Lifecycle and hooks](/guides/hooks-and-lifecycle/#suspend-and-resume).
+
+## Iframes
+
+Load MLForm inside the iframe first so its Web Components are registered there. A same-origin parent
+can then call `mountForm` with a container from the iframe; theme media queries and focus use the
+iframe's window.

@@ -1,0 +1,50 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "identity";
+const a = `url(#${id}-a)`;
+const lines = [
+  { text: "{", key: false },
+  { text: '  id: "customer-age",', key: true },
+  { text: '  displayKey: "Customer age",', key: true },
+  { text: '  mappedTo: "age_years",', key: true },
+  { text: '  label: "Age",', key: false },
+  { text: '  kind: "number",', key: false },
+  { text: "}", key: false },
+];
+const targets = [
+  { y: 20, title: "Runtime id", code: 'form.getField("customer-age")', note: "layout refs, errors, focus, state, tests" },
+  { y: 102, title: "Display key", code: 'displayValues["Customer age"] = 42', note: "review, persistence, export; omitted if unset" },
+  { y: 184, title: "Mapped target", code: "modelValues.age_years = 42", note: "what the transport sends to the model" },
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 300"
+  title="Three identities on one field"
+  description="A field config with id customer-age, displayKey Customer age and mappedTo age_years. The id addresses runtime state and layout, the display key names the value in displayValues, and the mapped target names it in modelValues. The label is user-facing copy and is never used as a key."
+  caption="MLForm never derives one identity from another. A field without mappedTo or valuePath sends no model value."
+>
+  <rect class="box-subtle" x="20" y="20" width="262" height="246" rx="12"></rect>
+  <text class="eyebrow" x="38" y="46">FIELD CONFIG</text>
+  {
+    lines.map((line, index) => (
+      <g>
+        {line.key && <circle class="dot" cx="34" cy={74 + index * 26} r="3.5" />}
+        <text class={line.key ? "mono" : "mono-muted"} x="42" y={78 + index * 26}>{line.text}</text>
+      </g>
+    ))
+  }
+  {
+    targets.map((target, index) => (
+      <g>
+        <path class="edge" d={`M262 ${100 + index * 26} C 300 ${100 + index * 26}, 300 ${target.y + 34}, 338 ${target.y + 34}`} marker-end={a} />
+        <rect class="box" x="340" y={target.y} width="360" height="68" rx="10" />
+        <text class="title" x="356" y={target.y + 24}>{target.title}</text>
+        <text class="mono" x="356" y={target.y + 44}>{target.code}</text>
+        <text class="small" x="356" y={target.y + 60}>{target.note}</text>
+      </g>
+    ))
+  }
+  <text class="small" x="340" y="284">label is copy for people. It can change without touching any contract.</text>
+</Diagram>

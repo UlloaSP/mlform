@@ -1,0 +1,113 @@
+---
+title: Tokens and host styling
+description: Override individual design tokens globally or per component, style MLForm from host CSS, and apply tokens without the kit.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import TokenTable from "../../../components/TokenTable.astro";
+
+Every color, size, radius, shadow, and timing in the built-in UI is a CSS custom property named
+`--mlf-*`. Themes and recipes set them; you can override any of them.
+
+## Override tokens
+
+```ts
+mountForm(container, {
+  schema,
+  transport,
+  designSystem: {
+    theme: "eshkra",
+    overrides: {
+      tokens: { "--mlf-radius-md": "6px" },
+      components: {
+        submit: { tokens: { "--mlf-submit-radius": "999px" } },
+        report: { tokens: { "--mlf-report-border": "1px solid var(--mlf-color-border-strong)" } },
+      },
+    },
+  },
+});
+```
+
+- **Global tokens** (`overrides.tokens`) are the shared palette and scale: colors, radii, spacing,
+  shadows, fonts, and motion. Prefer them for brand color and spacing.
+- **Component tokens** (`overrides.components.<key>.tokens`) style one family of controls and
+  usually default to a global token. The keys are `shell`, `hero`, `field`, `report`, `input`,
+  `submit`, `error`, `toggle`, `status`, and `chart`.
+
+Resolution order, last wins: built-in defaults, the theme's shared tokens, the theme's scheme
+tokens (light or dark), the recipe's tokens and component tokens, and finally `overrides`. A theme
+without dark tokens uses its light tokens in dark mode and reports `theme-fallback` as the mode
+source.
+
+## Style from host CSS
+
+When your application already owns its tokens, point MLForm's tokens at them in CSS:
+
+```css
+#forecast-form mlf-form {
+  --mlf-color-accent: var(--brand-action);
+  --mlf-color-text: var(--app-text);
+}
+```
+
+For forms embedded in an existing dashboard, `mode: "inherit"` follows the host's light or dark
+scheme ([Modes](/design/themes-and-recipes/#modes)), and the `minimal` recipe avoids duplicating
+card chrome.
+
+## Without the kit
+
+`mlform/design` works on any element, for example a host rendered with
+[`createFormView`](/view/overview/) or [`createPrimitiveAdapter`](/kit/primitive-adapter/):
+
+```ts
+import { attachDesignSystem, resolveDesignSystem, writeDesignSystemTokenDeclarations } from "mlform/design";
+
+// Live: watches the system scheme and updates the element.
+const design = attachDesignSystem(host, { config: { theme: "eshkra", mode: "auto" } });
+design.update({ mode: "dark" });
+design.disconnect(); // when the host goes away
+
+// One-off: resolve once and write the declarations yourself.
+const resolved = resolveDesignSystem({ theme: "eshkra", recipe: "minimal" });
+writeDesignSystemTokenDeclarations(host.style, resolved);
+```
+
+Prefer `writeDesignSystemTokenDeclarations` when you have an element. `createDesignSystemStylesheet(resolved, selector)`
+produces CSS text for a stylesheet; use it only with trusted configuration.
+
+`attachDesignSystem` and `mountForm` copy the registry they receive when they attach. Registering a
+theme in the original registry later does not affect mounted forms; register before mounting, or
+register on `attached.registry` and refresh with `update({})`.
+
+## Token reference
+
+These are the defaults, read from the library. Themes and recipes replace many of them.
+
+<Tabs>
+<TabItem label="Global">
+<TokenTable group="global" />
+</TabItem>
+<TabItem label="field">
+<TokenTable group="field" />
+</TabItem>
+<TabItem label="input">
+<TokenTable group="input" />
+</TabItem>
+<TabItem label="submit">
+<TokenTable group="submit" />
+</TabItem>
+<TabItem label="report">
+<TokenTable group="report" />
+</TabItem>
+<TabItem label="Other">
+<TokenTable group="shell" />
+<TokenTable group="hero" />
+<TokenTable group="error" />
+<TokenTable group="toggle" />
+<TokenTable group="status" />
+<TokenTable group="chart" />
+</TabItem>
+</Tabs>
+
+`mlfTokenKeys` lists every key, and `defineGlobalTokens` and `defineComponentTokens` type-check token
+maps when you write [custom themes and recipes](/design/custom-themes/).

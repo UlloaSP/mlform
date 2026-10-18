@@ -1,0 +1,41 @@
+---
+import { componentKeys, componentTokenDefaults, globalTokenDefaults } from "mlform/design";
+
+interface Props {
+  /** `global`, or a component key such as `submit`. */
+  group: string;
+}
+const { group } = Astro.props;
+// Read from the library itself, so the reference cannot drift from the shipped defaults.
+const tokens =
+  group === "global"
+    ? globalTokenDefaults
+    : componentTokenDefaults[group as (typeof componentKeys)[number]]?.tokens;
+if (!tokens) throw new Error(`Unknown token group "${group}".`);
+---
+
+<div class="token-table">
+  <table>
+    <caption>{group === "global" ? "Global tokens" : `${group} component tokens`}</caption>
+    <thead>
+      <tr><th>Token</th><th>Default</th></tr>
+    </thead>
+    <tbody>
+      {
+        Object.entries(tokens).map(([key, value]) => (
+          <tr>
+            <td><code>{key}</code></td>
+            <td><code>{value}</code></td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .token-table :global(td:last-child code) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+</style>

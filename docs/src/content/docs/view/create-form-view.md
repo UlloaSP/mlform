@@ -1,158 +1,67 @@
 ---
 title: createFormView
-description: Compose schema, state, descriptors, and layout without mounting DOM.
+description: Reference for createFormView options, the FormViewController, and the snapshot it produces.
 ---
 
-## Signature
-
 ```ts
+import { createFormView } from "mlform/view";
+
 const view = createFormView(options);
 ```
 
-Import `createFormView` from `mlform/view`. It composes runtime state, layout, navigation, and
-presenter descriptors without mounting DOM. Primitive renderer and design system options stay on
-`mountForm()`.
+Creates the runtime form, resolves registries, plugins, and layout, and returns a controller with
+render descriptors and navigation. It creates no DOM and attaches no styles. The guide is
+[Headless view](/view/overview/).
 
-## Input options
+## Options
 
-Required:
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `schema` | required | [Form schema](/schema/overview/). |
+| `transport` | required | [Transport](/guides/transports/). |
+| `layout` | stacked | [Layout config](/view/layout-schema/). |
+| `plugins` | none | [Plugins](/extend/plugins/): kinds and behaviors registered together. |
+| `initialValues` | none | Values by runtime id. |
+| `initialSnapshot` | none | A draft from `createSnapshot()`, restored before the first state. |
+| `validators` | none | [Form validators](/guides/validation/#cross-field-rules). |
+| `hooks` | none | [Hooks](/guides/hooks-and-lifecycle/#hooks). |
+| `hookFailurePolicy` | fail | `{ afterSubmit: "preserve-success" }` keeps a success when `afterSubmit` throws. |
+| `inactiveFieldPolicy` | `"omit"` | `"omit"`, `"include"`, or `"reset-on-hide"`. |
+| `reportFetchMode` | `"lazy"` | `"lazy"`, `"all"`, or `"none"`; see [Report fetches](/guides/report-fetches/). |
+| `listenerErrorPolicy` | `"ignore"` | `"ignore"` or `"throw-aggregate"` for throwing listeners. |
+| `onListenerError` | none | Receives listener and observer-hook errors. |
+| `registry` | built-ins | Engine registry; copied. |
+| `descriptorRegistry` | built-ins | Presenter registry; copied. |
+| `behaviors` | none | [Runtime behaviors](/extend/plugins/#behaviors). |
 
-- `schema`
-- `transport`
+## Controller
 
-Common optional inputs:
+| Member | Purpose |
+| --- | --- |
+| `form` | The [form controller](/runtime/form-controller/). |
+| `state` | `{ form, wizard, tabs, disclosure }`. |
+| `getSnapshot()` | The current snapshot; the same object until something changes. |
+| `subscribe(listener)` | Called with each new snapshot. Returns an unsubscribe function. |
+| `navigation` | `next()`, `previous()`, `activate(id)`, `getActiveNodes()`, `kind`, and `disclosure` with `toggle`, `open`, `close`, `openAll`, `closeAll`. See [Navigation](/view/overview/#navigation). |
+| `getField(id)`, `getReport(id)` | One item from the snapshot. |
+| `getVisibleFields()`, `getVisibleReports()` | Items visible by condition and layout position. |
+| `getNodeById(id)` | A resolved layout node. |
+| `getLayoutReferences()` | Which fields and reports each step, tab, and section contains. |
+| `validate()`, `submit(options?)`, `submitPipeline(options?)` | Validation and submission; `submit` honors `reportFetchMode`. |
+| `reset()`, `suspend(reason?)`, `resume()`, `dispose()` | Forwarded to the form; `dispose` also releases view subscriptions. |
+| `engineRegistry`, `descriptorRegistry`, `reportFetchMode` | What this view resolved. |
 
-- `layout`
-- `plugins`
-- `registry`
-- `initialValues`
-- `validators`
-- `hooks`
-- `inactiveFieldPolicy`
-- `listenerErrorPolicy`
-- `onListenerError`
+## Snapshot
 
-Use `plugins` for custom field and report kinds. A plugin carries its schema definition, presenter, and optional runtime behaviors through one interface; direct registry options remain available for low-level integrations.
+| Property | Contents |
+| --- | --- |
+| `form` | The form state. |
+| `layout` | The resolved layout: `kind` plus `children`, `steps`, or `tabs`, with every node id filled in. |
+| `fields`, `reports` | One item per field or report. |
+| `wizard` | `{ stepIndex, stepCount, currentStepId, canNext, canPrev, isLastStep }`, or `null` unless the layout is a wizard. |
+| `tabs` | `{ activeTabIndex, tabCount, currentTabId, canGoNext, canGoPrev }`, or `null` unless the layout is tabs. |
+| `disclosure` | `{ openSectionIds, sectionCount }`, or `null` when the layout has no sections. |
 
-## Returned controller
-
-```ts
-interface FormViewController {
-  form: FormController;
-  reportFetchMode: ReportFetchMode;
-  engineRegistry: Registry;
-  descriptorRegistry: PrimitiveDescriptorRegistry;
-  navigation: FormViewNavigationController;
-  state: FormViewState;
-  getSnapshot(): FormViewSnapshot;
-  getNodeById(id: string): ResolvedFormLayoutNode | undefined;
-  getField(id: string): FormViewFieldItem | undefined;
-  getReport(id: string): FormViewReportItem | undefined;
-  getVisibleFields(): FormViewFieldItem[];
-  getVisibleReports(): FormViewReportItem[];
-  validate(): Promise<FormValidationResult>;
-  submit(options?: SubmitOptions): Promise<SubmitResult>;
-  submitPipeline(options?: SubmitOptions): Promise<PipelineResult>;
-  reset(): void;
-  dispose(): void;
-  subscribe(listener): () => void;
-}
-```
-
-## Snapshot shape
-
-`getSnapshot()` returns:
-
-- `form`
-- `layout`
-- `fields`
-- `reports`
-- `wizard`
-- `tabs`
-- `disclosure`
-
-`wizard` is `null` unless `layout.kind === "wizard"`.
-`tabs` is `null` unless `layout.kind === "tabs"`.
-`disclosure` is `null` when the active layout contains no disclosure sections.
-
-## Item collections
-
-Each field item contains:
-
-- `id`
-- `kind`
-- `config`
-- `controller`
-- `state`
-- `descriptor`
-- `stepId`
-- `tabId`
-- `sectionId` (the innermost section, if any)
-- `sectionIds` (all enclosing sections, outermost first)
-- `visibleInLayout`
-
-The report collection follows the same pattern.
-
-## Navigation semantics
-
-### `navigation.next()`
-
-- in a wizard, validates the current step before advancing
-- in tabs, advances without validation
-- returns `false` when validation fails or movement is not available
-- a valid final wizard step returns `true` without moving past the end
-
-### `navigation.previous()`
-
-- never validates
-- moves back one wizard step or tab
-- returns whether navigation changed
-
-### `navigation.activate(id)`
-
-- activates a tab directly
-- allows free backward wizard navigation
-- validates wizard steps incrementally when moving forward
-- returns `false` for stacked and split layouts
-- throws when the current wizard or tabs layout does not contain `id`
-
-### `navigation.getActiveNodes()`
-
-- returns the currently active layout nodes after wizard, tab, and disclosure state is applied
-
-### Disclosure controls
-
-- `navigation.disclosure.toggle(sectionId)` opens or closes one section
-- `open(sectionId)` and `close(sectionId)` are explicit variants
-- `openAll()` and `closeAll()` manage every section in the layout
-- section controls work inside stacked, split, wizard, and tabs layouts
-- an unknown section id throws
-
-## Subscription model
-
-Use `subscribe()` for host rendering:
-
-```ts
-const unsubscribe = view.subscribe((snapshot) => {
-  render(snapshot);
-});
-```
-
-Typical host pattern:
-
-1. create the view once
-2. render initial snapshot
-3. subscribe
-4. on teardown, unsubscribe and call `view.dispose()`
-
-## Design system note
-
-`createFormView()` does not resolve primitive renderers, attach stylesheets, or mutate DOM. Use:
-
-- `mountForm()` for built-in one-page DOM
-- `mountForm()` for built-in wizard DOM
-- `mountForm()` for built-in tabs DOM
-- `mountForm()` for built-in disclosure DOM
-- `attachDesignSystem()` yourself when your custom host needs it
-- `createPrimitiveAdapter()` from `mlform/kit` when your host owns the layout but uses built-in
-  controls
+Each field item has `id`, `kind`, `config`, `controller`, `state`, `descriptor`, `stepId`, `tabId`,
+`sectionId` (innermost), `sectionIds` (outermost first), and `visibleInLayout`. Report items have
+the same, with a `descriptor` that is `null` while the kind has nothing to show.

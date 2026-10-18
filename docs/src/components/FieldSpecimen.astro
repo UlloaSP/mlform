@@ -1,0 +1,50 @@
+---
+import { Code } from "@astrojs/starlight/components";
+import { overviewFields } from "../../../playground/scripts/landing/fields.ts";
+import { toLiteral } from "../lib/literal";
+import Capture from "./Capture.astro";
+
+interface Props {
+  /** Field id in the landing's field overview; also names its capture. */
+  id: string;
+  alt: string;
+  /** Extra captured field shown under the specimen, such as a mapped-category target. */
+  with?: string;
+}
+const { id, alt, with: companion } = Astro.props;
+const configs = [id, companion].flatMap((key) => overviewFields.filter((field) => field.id === key));
+if (configs.length === 0) throw new Error(`Unknown field specimen "${id}".`);
+
+// The exact configs that produced the capture.
+const code = configs.map((config) => toLiteral(config)).join(",\n");
+---
+
+<div class="specimen">
+  <Capture name={`field-${id}`} {alt} width={360} />
+  <Code {code} lang="ts" />
+</div>
+
+<style>
+  .specimen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin-block: 1.25rem 2rem;
+  }
+  .specimen :global(.capture) {
+    margin-block: 0 0.75rem;
+  }
+  @media (min-width: 72rem) {
+    .specimen {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+    .specimen :global(.capture) {
+      margin: 0;
+    }
+    .specimen :global(.expressive-code) {
+      margin: 0;
+    }
+  }
+</style>

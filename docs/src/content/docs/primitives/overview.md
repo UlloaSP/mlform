@@ -1,32 +1,86 @@
 ---
-title: Primitives Overview
-description: Renderer primitives that connect primitive descriptors to Web Components.
+title: Primitives and events
+description: Reference for MLForm's Web Components, low-level mounting with mountPrimitiveForm, and the submit events of mlf-form.
 ---
 
-Primitives are the DOM layer below the kit. They read primitive descriptors and mount Web Components for fields, reports, form layout, errors, and submit controls.
+`mlform/primitives` contains the Web Components every built-in control is made of. The kit and the
+primitive adapter use them for you; this page is for code that mounts them directly or listens to
+their events.
 
-Use primitives directly when:
+## Elements
 
-- you use the MLForm engine but want your own kit wrapper
-- you need to register custom Web Component renderers
-- you want to embed MLForm in a host that manages its own design system attachment
+| Element | Renders |
+| --- | --- |
+| `mlf-form` | The default form: inputs panel, reports panel, submit button. |
+| `mlf-field-frame`, `mlf-report-frame` | The frame around one field or report: label, help, feedback, report states. |
+| `mlf-submit-button`, `mlf-form-errors` | Submit control and form-level errors. |
+| `mlf-text-field`, `mlf-long-text-field`, `mlf-number-field`, `mlf-boolean-field`, `mlf-category-field`, `mlf-single-choice-field`, `mlf-multi-choice-field`, `mlf-rating-field`, `mlf-date-field`, `mlf-series-field` | Built-in field controls. `mapped-category` and `onehot-category` use `mlf-category-field`. |
+| `mlf-classifier-report`, `mlf-regressor-report` | Built-in reports. |
+| `mlf-declarative-field`, `mlf-declarative-report`, `mlf-mounted-report` | Renderers for `defineFieldKind` and `defineReportKind` kinds. |
+| `mlf-unsupported-component` | Placeholder naming a descriptor component without a registered element. |
 
-Most applications should use `mountForm` from `mlform/kit`.
+`primitiveTagNames` exports these names. The elements register themselves when `mlform` or
+`mlform/primitives` is imported.
 
-When rendering built-in ML field and report kinds directly, pair the headless registry from `mlform/builtins` with the presenter registry from `mlform/view`:
+## Mount a runtime form
+
+`mountPrimitiveForm` renders a [runtime form](/runtime/overview/) with `mlf-form`, for code that
+creates the form itself:
 
 ```ts
 import { createBuiltinMlRegistry } from "mlform/builtins";
-import { createBuiltinDescriptorRegistry } from "mlform/view";
 import { mountPrimitiveForm } from "mlform/primitives";
 import { createForm } from "mlform/runtime";
+import { createBuiltinDescriptorRegistry } from "mlform/view";
 
 const form = createForm({ schema, transport, registry: createBuiltinMlRegistry() });
-mountPrimitiveForm(container, form, {
+const mounted = mountPrimitiveForm(container, form, {
   descriptorRegistry: createBuiltinDescriptorRegistry(),
+  layout: "split",
+  submitLabel: "Run forecast",
+});
+
+// later
+mounted.unmount();
+form.dispose();
+```
+
+Options: `descriptorRegistry` (required to render the built-in kinds), `registry` (a primitive
+registry), `layout` (`"stacked"` or `"split"`), `reportPane`, `containerStrategy`, the labels
+`formLabel`, `reportsLabel`, `submitLabel`, `validatingLabel`, `submittingLabel`, `text`
+(primitive text), `reportTransport`, and `reportFetchMode`. It does not attach a design system; use
+[`attachDesignSystem`](/design/tokens/#without-the-kit). Prefer `mountForm` unless you need this
+level of control.
+
+## Submit events
+
+`mlf-form` dispatches these events. They bubble and cross shadow boundaries.
+
+| Event | Detail |
+| --- | --- |
+| `mlf-submit-request` | None. Sent by `mlf-submit-button` when clicked. |
+| `mlf-submit-start` | `{ form, state }` |
+| `mlf-submit-success` | `{ form, state, result, pipelineResult? }` |
+| `mlf-submit-error` | `{ form, state, error, status }` |
+| `mlf-submit-abort` | `{ form, state, error, status }` |
+
+```ts
+import type { PrimitiveSubmitSuccessDetail } from "mlform/primitives";
+
+mounted.host.addEventListener("mlf-submit-success", (event) => {
+  const { result } = (event as CustomEvent<PrimitiveSubmitSuccessDetail>).detail;
+  console.log(result.reportStates);
 });
 ```
 
-`mountPrimitiveForm` expects an empty container by default. Pass `containerStrategy: "replace"` only when you explicitly want to replace existing host content and restore it on `unmount()`.
+`mlf-form` renders the default layout: `mountForm` without `layout`, or a stacked or split layout
+without `children`, and `mountPrimitiveForm`. Wizards, tabs, and layouts with explicit nodes do
+not dispatch these events. For behavior that must work with any layout, use
+[hooks](/guides/hooks-and-lifecycle/#hooks) or `form.subscribeTransitions()`.
 
-For an iframe container, load MLForm and call `mountPrimitiveForm` inside the iframe so its Web Components are registered in that document.
+## Report frames
+
+While every report is idle or loading, `mlf-form` shows one summary for the report area. Once
+reports settle, each `mlf-report-frame` shows its own skipped or error state, or mounts the
+report's renderer. The texts come from primitive text (`reportsEmptyTitle`, `reportsEmptyBody`,
+`reportStateTitle`, `reportStateMessage`).

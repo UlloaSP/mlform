@@ -1,27 +1,41 @@
 ---
-title: Layout From Backend Metadata
-description: Transform server-provided metadata into a FormLayoutConfig without mixing it into schema semantics.
+title: Layout from backend metadata
+description: Turn server-provided grouping metadata into a validated layout without mixing it into the schema.
 ---
 
-Recommended shape:
-
-- backend returns schema
-- backend optionally returns layout metadata
-- frontend converts metadata to `FormLayoutConfig`
-
-Avoid embedding app-specific view rules into the raw field schema unless the rule is genuinely semantic.
-
-Pseudo-transform:
+When a backend describes how fields are grouped, keep that description separate from the schema and
+translate it into a layout in the client:
 
 ```ts
-const layout = {
+import type { FormLayoutConfig } from "mlform/view";
+
+type ApiLayout = { steps: { id: string; title: string; fields: string[] }[] };
+
+const toLayout = (api: ApiLayout): FormLayoutConfig => ({
   kind: "wizard",
-  steps: apiLayout.steps.map((step) => ({
+  steps: api.steps.map((step) => ({
     id: step.id,
     title: step.title,
-    children: step.fields.map((fieldId) => ({ kind: "field", field: fieldId })),
+    children: step.fields.map((field) => ({ kind: "field", field })),
   })),
-};
+});
 ```
 
-Validate immediately by passing it to `createFormView()`.
+The layout is validated when the form is created. A step that names an unknown field, misses a
+field, or repeats one throws, so creating the view is the check:
+
+```ts
+let layout: FormLayoutConfig | undefined;
+try {
+  layout = toLayout(apiLayout);
+  createFormView({ schema, transport, layout }).dispose();
+} catch (error) {
+  console.warn("Ignoring invalid layout metadata", error);
+  layout = undefined; // fall back to the default stacked layout
+}
+mountForm(container, { schema, transport, layout });
+```
+
+Field references are runtime ids, which MLForm normalizes to kebab case; make sure the backend uses
+the same ids as the schema. See [Layout config](/view/layout-schema/) for every rule and error
+message.

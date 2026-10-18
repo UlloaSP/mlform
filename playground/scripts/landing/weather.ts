@@ -85,8 +85,17 @@ interface MountOptions {
   height?: number;
   submit?: string;
   results?: string;
+  after?: string;
 }
-export const mountCode = ({ schema, layout, width, height, submit, results }: MountOptions) =>
+export const mountCode = ({
+  schema,
+  layout,
+  width,
+  height,
+  submit,
+  results,
+  after,
+}: MountOptions) =>
   `import { mountForm } from "mlform";
 const container = document.querySelector<HTMLElement>("#form")!;
 container.style.width = "${width}px";
@@ -97,4 +106,5 @@ const mounted = mountForm(container, {
   ${submit ? `labels: { submit: ${JSON.stringify(submit)} },` : ""}
   transport: { async submit() { return { reports: ${results ?? "[]"} }; } },
 });
-${results ? "await mounted.form.submit();" : ""}`;
+${results ? "await mounted.form.submit();" : ""}
+${after ?? ""}`;

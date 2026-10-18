@@ -1,0 +1,130 @@
+---
+title: Transports
+description: Write the one function between MLForm and your model, for HTTP, authenticated APIs, workers, or in-browser models.
+---
+
+A transport is an object with one method:
+
+```ts
+import type { Transport } from "mlform/transport";
+
+const transport: Transport = {
+  async submit(request) {
+    // request.modelValues, request.displayValues, request.inputs, request.signal, …
+    return { reports: [/* envelopes */] };
+  },
+};
+```
+
+`submit` receives the frozen [request](/guides/backend-contract/#the-request) after validation and
+returns the [response](/guides/backend-contract/#the-response). Everything about the protocol stays
+in your code: the URL, body shape, headers, authentication, retries, caching, and how errors are
+read. MLForm ships no HTTP, GraphQL, streaming, or retry layer, so none of those decisions are made
+for you or hidden from you.
+
+Pass the transport to `mountForm`, `createFormView`, or `createForm`.
+
+## Three rules
+
+1. **Pass `request.signal`.** MLForm aborts it on `form.abortSubmit()`, `reset()`, `suspend()`,
+   `dispose()`, or `unmount()`, and when a signal you passed to `submit({ signal })` aborts. An
+   aborted submission ends as `submissionStatus: "aborted"`, not as a failure. Only one submission
+   runs at a time; calling `submit()` again meanwhile throws `EngineError`.
+2. **Throw on failure.** A rejected promise fails the submission; the error's message is shown as
+   a form error and on every report. See [Errors](/guides/error-handling/).
+3. **Return envelopes, not raw output.** Translate your model's response into
+   `{ backend, mappedTo, status, payload }` items inside the transport.
+
+## HTTP
+
+```ts
+import type { Transport } from "mlform/transport";
+
+export const transport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/forecast", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ inputs: request.modelValues }),
+      signal: request.signal,
+    });
+    if (!response.ok) throw new Error(`Forecast failed with status ${response.status}.`);
+
+    const output: { estimate: number; model: string } = await response.json();
+    return {
+      reports: [{ backend: "default", mappedTo: "forecast", status: "ready", payload: { value: output.estimate } }],
+      meta: { model: output.model },
+    };
+  },
+};
+```
+
+When your backend already returns envelopes, as in [First backend](/getting-started/first-backend/),
+return `response.json()` directly.
+
+## Authentication
+
+Credentials belong to the transport, read at the moment of each request:
+
+```ts
+import type { Transport } from "mlform/transport";
+
+const transport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/forecast", {
+      method: "POST",
+      credentials: "include", // cookies; configure CORS on the server for other origins
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${await auth.getAccessToken()}`, // your auth client refreshes it
+      },
+      body: JSON.stringify(request.modelValues),
+      signal: request.signal,
+    });
+    if (response.status === 401) throw new Error("Your session expired. Sign in and try again.");
+    if (!response.ok) throw new Error(`Forecast failed with status ${response.status}.`);
+    return response.json();
+  },
+};
+```
+
+Reading the token inside `submit` means a refreshed token is used without remounting the form.
+
+## Local and in-browser models
+
+A transport does not have to use the network. Call a model in the page, in a worker, or in WASM,
+and build the envelopes yourself:
+
+```ts
+import type { Transport } from "mlform/transport";
+
+const transport: Transport = {
+  async submit(request) {
+    const estimate = await model.predict(request.modelValues, { signal: request.signal });
+    return {
+      reports: [{ backend: "default", mappedTo: "forecast", status: "ready", payload: { value: estimate } }],
+      meta: { runtime: "browser" },
+    };
+  },
+};
+```
+
+Stop long computations when `request.signal` aborts. Keep local transports deterministic in tests.
+
+## Helpers in `mlform/transport`
+
+| Export | Use |
+| --- | --- |
+| `Transport`, `SubmitRequest`, `TransportResponse` | Types for the contract. |
+| `createFanoutTransport` | Send one submission to several named targets and merge their results. See [Multiple backends](/guides/multiple-backends/#one-submission-several-services). |
+| `createTransportRequestRunner` | Latest-wins execution for your own requests: each `run(submit, signals)` aborts the previous one and returns `{ status: "completed" \| "aborted" \| "failed", stale }`. Used by the built-in report details panel. |
+| `extractErrorMessage(error)` | A readable message from an `Error`, a string, or an object with `message`. |
+| `TransportError`, `transportErrorCodes` | The error MLForm's helpers throw, with `code` such as `"ABORTED"`. |
+
+## Not a middleware chain
+
+Transports do one call per submission. Report fetches after submission are separate transports
+owned by report kinds ([Report fetches](/guides/report-fetches/)), and pipelines such as
+`executeFormPipeline` compose a finished submission with those fetches; none of them wrap or
+intercept each other. If you need retries, logging, or tracing around the call, wrap your own
+function inside `submit`.

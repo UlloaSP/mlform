@@ -1,0 +1,50 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "layers";
+const a = `url(#${id}-a)`;
+const sides = [
+  { y: 30, name: "mlform/builtins", body: "12 field kinds, 2 report kinds", edge: "definitions" },
+  { y: 118, name: "mlform/primitives", body: "Web Components for descriptors", edge: "renderers" },
+  { y: 206, name: "mlform/design", body: "themes, recipes, tokens", edge: "styles" },
+  { y: 294, name: "mlform/transport", body: "contract, fanout, errors", edge: "submit()" },
+];
+const targets = [
+  "M488 62 C 450 62, 440 180, 402 180",
+  "M488 150 L 442 150",
+  "M488 238 L 442 238",
+  "M488 326 C 450 326, 440 280, 402 280",
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 392"
+  title="MLForm package layers"
+  description="Nested rings: mlform/kit contains mlform/view, which contains mlform/runtime, which contains mlform/schema. Side packages: builtins supplies definitions to the runtime, primitives and design are used by the kit, and transport receives submissions from the runtime."
+  caption="Each ring builds on the rings inside it. Start at the outermost ring that still gives you the control you need."
+>
+  <rect class="box-subtle" x="20" y="20" width="422" height="350" rx="16"></rect>
+  <text class="title" x="40" y="48">mlform · mlform/kit</text>
+  <text class="label" x="40" y="67">mountForm(): built-in UI, layout hosts, lifecycle, design</text>
+  <rect class="box" x="40" y="86" width="382" height="264" rx="14"></rect>
+  <text class="title" x="60" y="114">mlform/view</text>
+  <text class="label" x="60" y="133">createFormView(): layout, navigation, descriptors, plugins</text>
+  <rect class="box-subtle" x="60" y="152" width="342" height="178" rx="12"></rect>
+  <text class="title" x="80" y="180">mlform/runtime</text>
+  <text class="label" x="80" y="199">createForm(): state, validation, conditions, submit</text>
+  <rect class="box-accent" x="80" y="218" width="302" height="92" rx="10"></rect>
+  <text class="title" x="100" y="246">mlform/schema</text>
+  <text class="label" x="100" y="265">FormSchema, ids, mappedTo, registry</text>
+  <text class="small accent-text" x="100" y="288">The contract every other layer reads</text>
+  {
+    sides.map((side, index) => (
+      <g>
+        <rect class="box" x="488" y={side.y} width="212" height="64" rx="10" />
+        <text class="mono" x="504" y={side.y + 26}>{side.name}</text>
+        <text class="small" x="504" y={side.y + 46}>{side.body}</text>
+        <path class="edge" d={targets[index]} marker-end={a} />
+        <text class="small" x="452" y={side.y - 6}>{side.edge}</text>
+      </g>
+    ))
+  }
+</Diagram>

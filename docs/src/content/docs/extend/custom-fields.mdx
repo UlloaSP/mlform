@@ -1,0 +1,139 @@
+---
+title: Custom fields
+description: Add a field kind declaratively with a built-in widget, or with your own Web Component when the interaction is new.
+---
+
+import { Code } from "@astrojs/starlight/components";
+import Capture from "../../../components/Capture.astro";
+import { windDirection } from "../../../lib/examples";
+
+A field kind is a **definition** (config schema, value handling, validation, serialization) plus a
+**presenter** that describes how to render it. You can write both declaratively with
+`defineFieldKind`, or write the definition and point the presenter at your own custom element.
+
+## Declarative: `defineFieldKind`
+
+Use this when one of the built-in widgets (`text`, `number`, `boolean`, `select`, `date`,
+`series`) fits and only the meaning differs. This kind lets people type a percentage and sends the
+model a fraction:
+
+```ts
+import { defineFieldKind, defineMLFormPlugin } from "mlform/view";
+import { baseFieldConfigSchema } from "mlform/schema";
+import { z } from "zod";
+
+export const probabilityField = defineFieldKind({
+  kind: "probability",
+  schema: baseFieldConfigSchema.extend({
+    kind: z.literal("probability"),
+    decimals: z.number().int().min(0).max(4).default(1),
+  }),
+  value: {
+    default: () => null,
+    normalize: (value) => (value === null || value === undefined || value === "" ? null : Number(value)),
+    serialize: (value) => (value === null ? null : value / 100),
+  },
+  validateSync: ({ value }) =>
+    value === null || (Number.isFinite(value) && value >= 0 && value <= 100)
+      ? []
+      : ["Enter a percentage between 0 and 100."],
+  render: {
+    widget: "number",
+    hints: ({ config }) => ({ min: 0, max: 100, step: 10 ** -config.decimals, unit: "%" }),
+  },
+});
+
+export const probabilityPlugin = defineMLFormPlugin({ fields: [probabilityField] });
+```
+
+```ts
+mountForm(container, {
+  schema: { fields: [{ id: "rain-chance", kind: "probability", label: "Chance of rain", mappedTo: "p_rain" }] },
+  transport,
+  plugins: [probabilityPlugin],
+});
+// typing 35 submits { p_rain: 0.35 }
+```
+
+| Option | Purpose |
+| --- | --- |
+| `kind` | The name used in schemas. Must not collide with another registered kind. |
+| `schema` | Zod schema for the config. Extend `baseFieldConfigSchema` so shared options (`id`, `label`, conditions, `mappedTo`, `ui`…) keep one definition. |
+| `value.default` | Value when the schema and host give none. |
+| `value.normalize` | Turns any incoming value (defaults, `initialValues`, user input) into the runtime value. Must be idempotent. |
+| `value.clone`, `value.isEqual` | For values that are objects or arrays. |
+| `value.serialize` | Runtime value to model value. |
+| `validateSync` | Synchronous errors, run on every change. |
+| `validate` | Errors that may be asynchronous, run on blur, `field.validate()`, and submission. Receives `signal`. |
+| `render.widget` | The built-in control to use. |
+| `render.hints` | Props for that control, as an object or a function of `{ config, fieldId, state, value }`. Schema `ui` values are applied on top. |
+| `definition` | Advanced hooks, below. |
+
+`normalize` must return an equal value when given its own output: the runtime may normalize several
+times while it settles conditional state, and it fails early if a value keeps changing.
+
+### Advanced definition hooks
+
+`definition` accepts lower-level hooks without leaving the declarative path. The kind, schema,
+value adapter, and validators stay owned by `defineFieldKind`.
+
+| Hook | Use it to |
+| --- | --- |
+| `validateConfig(config, { fail })` | Reject incoherent configs during schema normalization, like `min > max`. |
+| `getFieldReferences(config)` | Declare other field ids the config names, so missing ones fail normalization. |
+| `getNestedFieldReferences(config)` | Declare nested kinds, as series columns do. |
+| `validateRuntime(config, context)` | Check the assembled form when it is created. |
+| `onValueChanged(value, config, context)` | Write derived values into other fields, as mapped categories do. |
+| `getMappedTargets(config, { backend })` | Declare every model key the field can write. |
+| `getSubmissionEntries(value, serialized, config, { backend })` | Write several model values, as one-hot categories do. |
+
+A field that implements `getSubmissionEntries` must declare each possible target in
+`getMappedTargets`; emitting an undeclared target fails the submission. Return `undefined` to fall
+back to ordinary serialization and mapping, or `[]` to send nothing.
+
+When a value is not JSON-compatible, add `serializeSnapshotValue` and `restoreSnapshotValue` so
+[drafts](/schema/initial-values/#save-and-restore-drafts) can store it.
+
+## Your own element
+
+When no widget fits, render the field with your own Web Component. The compass below is the
+complete implementation used in the [Plugins](/extend/plugins/) screenshot.
+
+<Capture
+  name="plugin"
+  width={562}
+  alt="A Wind direction compass with eight buttons around a centre arrow, SW selected."
+/>
+
+<Code code={windDirection} lang="ts" title="wind-direction.ts" />
+
+The file has three parts:
+
+1. **The element** extends `PrimitiveFieldElement` from `mlform/primitives`, a Lit element that
+   receives the field's descriptor and render context. It reads `this.props.value`, uses
+   `getControlAttributes()` for the control id and `aria-describedby`, and reports changes with
+   `commitValue(value)` and focus loss with `commitBlur()`. `commitValue` is ignored while the field
+   is disabled or read-only. Including `PrimitiveFieldElement.styles` keeps theme tokens and the
+   `sr-only` class available.
+2. **The definition** is written with `defineFieldDefinition` from `mlform/schema`: the same
+   hooks as above, without the declarative wrapper. Here `serializeValue` turns `"SW"` into `225`
+   for the model.
+3. **The registration** is an `MLFormFieldKind` whose `register` adds the definition to the engine
+   registry and a presenter to the descriptor registry. The presenter's `describe` returns
+   `component: "wind-direction-field"`.
+
+Finally the component name is mapped to the element's tag, which is passed to `mountForm` as
+`primitiveRegistry` (see `weather-plugin.ts` in [Plugins](/extend/plugins/)):
+
+```ts
+import { createBuiltinPrimitiveRegistry } from "mlform/primitives";
+
+export const primitiveRegistry = createBuiltinPrimitiveRegistry().registerField(
+  "wind-direction-field", // descriptor component
+  "wind-direction-field", // custom element tag
+);
+```
+
+Your element owns its accessibility: give the control a name (here a visually hidden `legend`),
+keyboard operation (native radios provide arrow keys), a visible focus style, and the disabled and
+read-only states from `this.context`.

@@ -1,5 +1,5 @@
 ---
-title: From Legacy MLForm
+title: From legacy MLForm
 description: Map the old MLForm class examples to the current mountForm API.
 ---
 
@@ -14,10 +14,10 @@ Use `mountForm` instead:
 
 ```ts
 import { mountForm } from "mlform/kit";
-import { predictionTransport } from "../examples/prediction-transport";
+import { transport } from "./transport";
 
 const mounted = mountForm(container, {
-  transport: predictionTransport,
+  transport,
   schema,
 });
 ```
@@ -32,7 +32,7 @@ Migration map:
 | `outputs` collection           | `reports` collection                                                  |
 | field `type`                   | field `kind`                                                          |
 | field `title`                  | field `label`                                                         |
-| `onSubmit` callback            | Hooks or `mounted.form.submit()`                                      |
+| `onSubmit` callback            | `hooks.afterSubmit` or `await mounted.submit()`                       |
 | `mlform/extensions` strategies | Definitions and presenters packaged through `defineMLFormPlugin(...)` |
 
 Legacy schema:
@@ -48,12 +48,14 @@ Current schema:
 
 ```ts
 const schema = {
-  fields: [{ kind: "text", label: "Prompt", mappedTo: "prompt" }],
-  reports: [{ kind: "classifier", label: "Prediction", mappedTo: "prediction" }],
+  fields: [{ id: "prompt", kind: "text", label: "Prompt", mappedTo: "prompt" }],
+  reports: [{ id: "prediction", kind: "classifier", label: "Prediction", mappedTo: "prediction" }],
 };
 ```
 
-The current transport contract is deliberately small:
+The legacy class posted to a URL itself. Now that request lives in an application-owned
+[transport](/guides/transports/), and the response must contain
+[report envelopes](/guides/backend-contract/#the-response):
 
 ```ts
 const transport = {

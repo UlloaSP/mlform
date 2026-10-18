@@ -1,0 +1,17 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import LayoutShowcasePage from "../../components/LayoutShowcasePage.astro";
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "Layout showcase",
+    description:
+      "One schema mounted live as stacked, split, wizard, tabs, sections, and a custom headless shell.",
+    editUrl: false,
+    tableOfContents: false,
+  }}
+  headings={[]}
+>
+  <LayoutShowcasePage />
+</StarlightPage>

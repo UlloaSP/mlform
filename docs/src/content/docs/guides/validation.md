@@ -1,63 +1,102 @@
 ---
 title: Validation
-description: Combine built-in constraints, custom validators, and hooks.
+description: When MLForm validates, the four sources of errors, cross-field rules, and errors returned by your backend.
 ---
 
-Built-in constraints are checked when values are initialized or changed, and again before submit.
-They cover text length, number ranges and steps, category membership, date bounds, and Series
-cell and point-count constraints. Series preserves row order; it does not sort observations.
+Errors come from four places, and all of them land on the same field or form state:
+
+| Source | Where it is declared | Runs |
+| --- | --- | --- |
+| Kind constraints | Schema: `required`, `min`, `maxLength`, `options`… | Whenever a value is set |
+| Field validator | The kind's definition (`validate`), for custom kinds | On blur and on `field.validate()` |
+| Form validators | `validators` option of `mountForm`, `createFormView`, `createForm` | On `form.validate()` and submission |
+| External errors | `form.setExternalErrors()` from your code | When you call it |
+
+The built-in constraints cover required values, text length and pattern, number range and step,
+option membership, date bounds and step, rating range, and series cells and row counts. Each kind's
+options are listed in [Field kinds](/schema/fields/).
 
 ## When validation runs
 
 | Trigger | What runs |
 | --- | --- |
-| Defaults, `initialValues`, restored snapshots, or value changes | Required checks and the field definition's synchronous validation. |
-| A built-in control loses focus, or `field.validate()` is called | Synchronous checks and the field definition's `validate` hook, which may be asynchronous. |
-| `form.validate()` or submission | Field validation followed by form validators and validation hooks. |
+| Defaults, `initialValues`, restored drafts, value changes | Required check and kind constraints. |
+| A built-in control loses focus, or `field.validate()` | The above plus the field validator, which may be asynchronous. |
+| `form.validate()` or a submission | Every active field, then form validators and the validation hooks. |
+| Wizard **Next** | The fields of the current step only. |
 
-Initial values do not automatically run asynchronous field checks or cross-field form validators.
-Call `await mounted.form.validate()` after mounting when loaded data needs those checks too.
+Non-empty invalid values show their error immediately, including defaults and loaded data. Empty
+fields stay quiet until edited, blurred, or validated. Valid populated editable fields show a short success
+message and a check mark.
 
-The built-in UI shows errors for nonempty invalid values immediately, including loaded examples.
-Empty untouched fields remain quiet until edited, blurred, or explicitly validated. A boolean
-`false` is a populated value: `required` requires a choice, not agreement. Valid populated editable
-fields show a success message and check mark.
+Hidden and disabled fields are not validated, even when they are
+[submitted](/schema/conditions/#inactive-fields-and-submission). Read-only fields are.
 
-Hidden and disabled fields skip field validation. Read-only fields still validate. Including an
-inactive field in the submission does not enable its field validation; see [Inactive Fields](/schema/inactive-fields/).
+A submission validates first. If anything is invalid, the transport is not called and
+`form.submit()` rejects with `ValidationError`, whose `result` lists the errors. `mounted.submit()`
+also reveals the first invalid field: it opens the section, tab, or wizard step that contains it,
+and focuses it. The headless `form.submit()` does not touch the DOM.
 
-`mounted.submit()` reveals and focuses the first invalid field, opening its containing layout
-when needed. Headless `form.submit()` rejects with `ValidationError` without moving DOM focus.
+## Cross-field rules
 
-## Cross-field validation
-
-Use form validators for cross-field rules:
+Form validators receive the current values and return issues:
 
 ```ts
-validators: [
-  ({ values }) => {
-    if (typeof values.min === "number" && typeof values.max === "number" && values.min > values.max) {
-      return { fields: { max: ["Max must be greater than min."] } };
-    }
-  },
-];
+mountForm(container, {
+  schema,
+  transport,
+  validators: [
+    ({ values }) => {
+      const { min, max } = values;
+      if (typeof min === "number" && typeof max === "number" && min > max) {
+        return { fields: { max: ["Maximum must be greater than minimum."] } };
+      }
+    },
+  ],
+});
 ```
 
-Validators can return:
+| Return value | Meaning |
+| --- | --- |
+| nothing | No issue. |
+| `string[]` | Form-level errors, shown above the fields. |
+| `{ form?, fields? }` | Form errors and field errors keyed by runtime id. |
 
-| Return value       | Meaning                |
-| ------------------ | ---------------------- |
-| `void`             | No issue.              |
-| `string[]`         | Form-level errors.     |
-| `{ form, fields }` | Form and field errors. |
+Validators may be asynchronous. They also receive `submitCount`, `formOperation`,
+`submissionStatus`, the field states, and the normalized schema. An issue for an unknown field id
+throws instead of being dropped.
 
-Hooks can observe validation:
+## Asynchronous field checks
+
+A custom kind's `validate` hook may call a service. Set `asyncValidationDebounceMs` on the field to
+wait for a pause in typing; a newer check aborts the previous one through the `signal` in its
+context. Only one explicit validation or submission runs at a time: calling `form.validate()` while
+a submission is running, or the reverse, throws `EngineError`.
+
+## Errors from your backend
+
+When the server rejects specific values, show its messages on the fields with
+`setExternalErrors`. Field keys are runtime ids:
 
 ```ts
-hooks: {
-  beforeValidate({ values }) {},
-  afterValidate({ result }) {},
+try {
+  await mounted.submit();
+} catch (error) {
+  const issues = await readServerIssues(error); // your parsing
+  if (issues) {
+    mounted.form.setExternalErrors({
+      form: issues.form,
+      fields: { humidity: ["The sensor reported humidity above 100 %."] },
+    });
+  }
 }
 ```
 
-If a validator reports an unknown field id, MLForm throws instead of silently dropping the error.
+External errors make the form invalid until the user edits the field, you call
+`clearExternalErrors()`, the form is reset, or a draft is restored. An unknown field id throws
+without applying any error. [Errors](/guides/error-handling/) covers transport failures.
+
+## Hooks
+
+`beforeValidate` and `afterValidate` observe each validation; `afterValidate` receives the result.
+See [Lifecycle and hooks](/guides/hooks-and-lifecycle/).

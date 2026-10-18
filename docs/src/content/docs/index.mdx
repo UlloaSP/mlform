@@ -1,0 +1,93 @@
+---
+title: MLForm documentation
+description: Schema-driven forms and model reports for machine-learning backends, as headless TypeScript or ready-made Web Components.
+tableOfContents: false
+hero:
+  title: Give your model an interface.
+  tagline: Describe the inputs a model needs and the reports it returns. MLForm validates the inputs, sends the values your backend expects, and renders the results, with or without its built-in UI.
+  actions:
+    - text: Quick start
+      link: /getting-started/quick-start/
+      variant: primary
+    - text: How it works
+      link: /getting-started/mental-model/
+      variant: secondary
+    - text: Open the playground
+      link: https://playground.mlform.eshkra.dev/
+      variant: minimal
+      icon: external
+---
+
+import Capture from "../../components/Capture.astro";
+
+
+<Capture
+  name="hero"
+  width={720}
+  alt="A weather-station form rendered by MLForm: temperature, humidity and wind speed in three columns, a sensor location select, and two reports below, a next-hour temperature estimate and a classifier with Stable 92% and Changing 8%."
+  caption="One schema, rendered by mountForm with the eshkra theme. Sections, column groups and both reports come from configuration."
+/>
+
+```ts title="main.ts"
+import { mountForm } from "mlform";
+
+mountForm(document.querySelector<HTMLElement>("#forecast")!, {
+  schema: {
+    fields: [
+      { id: "temperature", kind: "number", label: "Temperature", mappedTo: "temperature" },
+      { id: "humidity", kind: "number", label: "Humidity", mappedTo: "humidity" },
+    ],
+    reports: [
+      { id: "forecast", kind: "regressor", label: "Next-hour estimate", mappedTo: "forecast" },
+    ],
+  },
+  transport: {
+    async submit(request) {
+      const response = await fetch("/api/forecast", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(request.modelValues),
+        signal: request.signal,
+      });
+      if (!response.ok) throw new Error(`Forecast failed: ${response.status}`);
+      // Expected: { reports: [{ backend: "default", mappedTo: "forecast",
+      //                         status: "ready", payload: { value: 22.7 } }] }
+      return response.json();
+    },
+  },
+});
+```
+
+## Find your path
+
+<div class="path-grid not-content">
+  <a class="path-card" href="/schema/fields/">
+    <strong>Build a form</strong>
+    <span>Twelve field kinds, conditions, validation and four layouts.</span>
+  </a>
+  <a class="path-card" href="/guides/backend-contract/">
+    <strong>Connect a backend</strong>
+    <span>What the transport receives, what it returns, and how results reach each report.</span>
+  </a>
+  <a class="path-card" href="/extend/plugins/">
+    <strong>Add your own kinds</strong>
+    <span>Custom inputs and reports through <code>defineMLFormPlugin</code>, the same path as built-ins.</span>
+  </a>
+  <a class="path-card" href="/view/overview/">
+    <strong>Render it yourself</strong>
+    <span>Use <code>createFormView</code> for headless layout and navigation in any framework.</span>
+  </a>
+  <a class="path-card" href="/design/themes-and-recipes/">
+    <strong>Match your product</strong>
+    <span>Themes, recipes, density, motion and CSS tokens.</span>
+  </a>
+  <a class="path-card" href="/reference/package-exports/">
+    <strong>Look something up</strong>
+    <span>Package surfaces, <code>mountForm</code>, controllers, layout config and events.</span>
+  </a>
+</div>
+
+MLForm is open source under the MIT license and part of [eshkra](https://eshkra.dev). Install it from
+[npm](https://www.npmjs.com/package/mlform), try every example in the
+[playground](https://playground.mlform.eshkra.dev/), or read the source on
+[GitHub](https://github.com/UlloaSP/mlform).

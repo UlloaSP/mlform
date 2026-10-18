@@ -1,0 +1,98 @@
+---
+title: Package exports
+description: Every public entry point of the mlform package, what it is for, and the values and main types it exports.
+---
+
+import ExportList from "../../../components/ExportList.astro";
+
+`mlform` has nine entry points. Import from the root unless you need one layer on its own; internal
+paths are not part of the public API. The value lists below are read from the modules when these
+docs are built.
+
+| Entry point | Use it for |
+| --- | --- |
+| `mlform`, `mlform/kit` | The complete form: `mountForm`, built-in UI, lifecycle, design attachment. Both resolve to the same module. |
+| `mlform/view` | Headless layout, navigation, descriptors, and declarative extensions. |
+| `mlform/runtime` | Form state, validation, conditions, submission, pipelines, and errors without UI. |
+| `mlform/schema` | Schema types, normalization and validation, `mappedTo` helpers, registries, JSON Schema. |
+| `mlform/builtins` | Built-in field and report definitions, their registry, and series helpers. |
+| `mlform/transport` | The transport contract, fan-out, request runner, and transport errors. |
+| `mlform/primitives` | The Web Components, their base classes, registries, and low-level mounting. |
+| `mlform/design` | Themes, recipes, tokens, resolution, and attachment to any element. |
+
+## `mlform` and `mlform/kit`
+
+<ExportList surface="kit" />
+
+Types: `MountFormOptions`, `MountedForm`, `KitLabels`, `KitDesignSystemSnapshot`,
+`PrimitiveAdapter`, `PrimitiveAdapterOptions`. See [mountForm](/kit/mount-form/).
+
+## `mlform/view`
+
+<ExportList surface="view" />
+
+Types: `CreateFormViewOptions`, `FormViewController`, `FormViewSnapshot`, `FormViewState`,
+`FormViewFieldItem`, `FormViewReportItem`, `FormViewNavigationController`,
+`FormViewDisclosureController`, `WizardState`, `TabsState`, `DisclosureState`, `PanelState`,
+`ReportFetchMode`, the layout types (`FormLayoutConfig`, `WizardLayoutConfig`, `TabsLayoutConfig`,
+`FormLayoutNode` and each node type, and their `Resolved…` forms), `LayoutReferences`, and the
+extension types (`MLFormPlugin`, `MLFormFieldKind`, `MLFormReportKind`, `DeclarativeFieldKind`,
+`DeclarativeReportKind`, `DefinedFieldKind`, `DefinedReportKind`, `ReportRenderSpec`,
+`ReportRenderSpecContext`, `ReportMountContext`, `ReportMountCleanup`). See
+[createFormView](/view/create-form-view/).
+
+## `mlform/runtime`
+
+<ExportList surface="runtime" />
+
+Types include `CreateFormConfig`, `FormController`, `FieldController`, `ReportController`,
+`FormState`, `FieldStateSnapshot`, `ReportStateSnapshot`, `FormHooks` and the hook contexts,
+`FormValidator`, `FormValidationResult`, `SubmitOptions`, `SubmitRequest`, `SubmitResult`,
+`Transport`, `TransportResponse`, `ReportResult`, `ReportContext`, `FormSnapshot`,
+`FormPersistenceAdapter`, `FormTransition`, `RuntimeBehavior`, the condition types, and the
+pipeline and multi-backend option and result types. See [Form controller](/runtime/form-controller/).
+
+## `mlform/schema`
+
+<ExportList surface="schema" />
+
+Types: `FormSchema`, `NormalizedFormSchema`, `FieldConfig`, `BaseFieldConfig`, `ReportConfig`,
+`BaseReportConfig`, `FieldDefinition`, `ReportDefinition`, `Registry`, `MappedTo`,
+`MappedToTarget`, `SubmissionInputRecord`, `ReportResult`, `ReportContext`, `SubmitResult`,
+`SchemaValidationResult`, `SchemaValidationIssue`, `UnknownSchemaKind`, and the condition and
+definition context types. See [Schema](/schema/overview/).
+
+## `mlform/builtins`
+
+<ExportList surface="builtins" />
+
+Types: `BuiltinFieldConfig`, `BuiltinReportConfig`, `SeriesFieldConfig`, `SeriesColumnConfig`,
+`SeriesPoint`, `SeriesAggregation`, `OneHotCategoryFieldConfig`, `OneHotCategoryOption`. See
+[Field kinds](/schema/fields/) and [Series](/schema/series/).
+
+## `mlform/transport`
+
+<ExportList surface="transport" />
+
+Types: `Transport`, `SubmitRequest`, `TransportResponse`, `CreateFanoutTransportOptions`,
+`FanoutOutcome`. See [Transports](/guides/transports/).
+
+## `mlform/primitives`
+
+<ExportList surface="primitives" />
+
+Types: `PrimitiveRegistry`, `PrimitiveText`, `PrimitiveTextOverrides`, `PrimitiveLayout`,
+`PrimitiveContainerStrategy`, the render contexts, the submit event details, `PrimitiveReportRequest`,
+`PrimitiveReportTransport`, and the descriptor types (`FieldDescriptor`, `ReportDescriptor`,
+`FieldPresenter`, `ReportPresenter`, `DescriptorNode`…). See
+[Primitives and events](/primitives/overview/).
+
+## `mlform/design`
+
+<ExportList surface="design" />
+
+Types: `DesignSystemConfig`, `ThemeManifest`, `RecipeManifest`, `ThemeVariant`,
+`ResolvedDesignSystem`, `DesignSystemWarning`, `DesignSystemRegistry`, `AttachedDesignSystem`,
+`AttachDesignSystemOptions`, `Density`, `Motion`, `DesignSystemMode`, `TokenMap`,
+`GlobalTokenMap`, `ComponentTokenMap`, `ComponentKey`, `MlfTokenKey`. See
+[Themes and recipes](/design/themes-and-recipes/).

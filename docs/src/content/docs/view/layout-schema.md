@@ -1,60 +1,64 @@
 ---
-title: Layout Schema
-description: Arrange schema fields and reports for a custom view or the mounted kit.
+title: Layout config
+description: Reference for FormLayoutConfig, its node types, the validation rules, and every layout error message.
 ---
 
-Pass the same `FormLayoutConfig` to `createFormView()` from `mlform/view` or `mountForm()` from
-`mlform/kit`. Field and report references use normalized runtime ids from the schema.
+The same `FormLayoutConfig` works in `mountForm` and `createFormView`. The guide with screenshots is
+[Layouts](/view/layouts/).
 
-## Layouts
-
-| Kind | Config | Navigation |
-| --- | --- | --- |
-| `"stacked"` (default) | `children?: FormLayoutNode[]` | Single page. |
-| `"split"` | `children?: FormLayoutNode[]` | Single page with a split built-in shell when no children are specified. |
-| `"wizard"` | `steps: { id?, title, description?, children }[]` | Validates the current step before moving forward. |
-| `"tabs"` | `tabs: { id?, title, description?, children }[]` | Switches freely between tabs. |
-
-With no layout, view places each field once, followed by each report. A single-page layout with
-`children` uses exactly the nodes you provide.
+## Types
 
 ```ts
-import type { FormLayoutConfig } from "mlform/view";
+type FormLayoutConfig =
+  | { kind?: "stacked" | "split"; children?: FormLayoutNode[] }
+  | { kind: "wizard"; steps: { id?: string; title: string; description?: string; children: FormLayoutNode[] }[] }
+  | { kind: "tabs"; tabs: { id?: string; title: string; description?: string; children: FormLayoutNode[] }[] };
 
-const layout: FormLayoutConfig = {
-  kind: "wizard",
-  steps: [
-    { id: "inputs", title: "Inputs", children: [{ kind: "field", field: "prompt" }] },
-    { id: "results", title: "Results", children: [{ kind: "report", report: "prediction" }] },
-  ],
-};
+type FormLayoutNode =
+  | { kind: "field"; field: string }
+  | { kind: "report"; report: string }
+  | { kind: "group"; id?: string; columns?: 1 | 2 | 3; children: FormLayoutNode[] }
+  | { kind: "section"; id?: string; title: string; description?: string; defaultOpen?: boolean; children: FormLayoutNode[] }
+  | { kind: "custom"; id: string; fields: readonly string[] };
 ```
 
-Wizard and tabs layouts require at least one step or tab, and each must contain a node. Ids are
-optional; view derives them from titles and makes duplicates unique. Set ids explicitly when the
-host refers to them through `navigation.activate(id)`.
+All types are exported from `mlform/view`, together with their resolved forms
+(`ResolvedFormLayout`, `ResolvedFormLayoutNode`…) in which every id is filled in and `defaultOpen`
+is a boolean.
 
-## Nodes
+## Rules
 
-- `{ kind: "field", field: "prompt" }` places a field by runtime id.
-- `{ kind: "report", report: "prediction" }` places a report by runtime id.
-- `{ kind: "custom", id: "materials", fields: ["material-a", "material-b"] }` reserves a
-  region rendered by the application. Its fields count as placed in the layout and inherit the
-  enclosing tab, wizard step, and disclosure sections. Use `createFormView()` to render it;
-  `mountForm()` rejects layouts containing custom regions.
-- `{ kind: "group", id?, columns?, children }` groups nodes in one, two, or three columns.
-- `{ kind: "section", id?, title, description?, defaultOpen?, children }` creates a disclosure
-  section. `title` must be non-empty so the built-in toggle has an accessible name. Every section
-  opens by default unless `defaultOpen: false` is set.
+- Without `layout`, or with a stacked or split layout without `children`, every field is placed in
+  schema order, followed by every report.
+- An explicit layout places every field exactly once, directly or through a `custom` node's `fields`.
+- A report is placed at most once; reports left out are not rendered.
+- `field`, `report`, and `custom` references use normalized runtime ids.
+- Wizards and tabs need at least one step or tab, and each needs at least one node.
+- Sections need a non-empty `title`; they start open unless `defaultOpen: false`.
+- Steps, tabs, sections, and groups without `id` get one from their title (or kind), made unique
+  with a numeric suffix.
+- Custom nodes need at least one field and are rendered only by your code through
+  `createFormView`; `mountForm` rejects them.
 
-Sections and groups can contain other sections and groups. A field inside nested sections is
-visible only when **all** enclosing sections are open. To create a grouping without a disclosure
-control, use `group`.
+## Errors
 
-## Validation
+Layout errors are `TypeError`s thrown when the form is created, or by navigation calls.
 
-An explicit layout must reference every field exactly once, either directly or in a custom region.
-A custom region must declare at least one field. A report may be omitted or placed
-once. Unknown field or report ids, duplicate references, missing fields, untitled sections, and
-empty wizard steps or tabs fail when the view is created. View resolves ids before returning its
-snapshot; the kit uses that same resolved layout when mounting custom sections, tabs, or steps.
+| Message | Cause |
+| --- | --- |
+| `Layout references unknown field "x".` | A node names a field id that is not in the normalized schema. |
+| `Layout references unknown report "x".` | The same for a report. |
+| `Field "x" appears multiple times in layout.` | A field is placed twice, including through custom nodes. |
+| `Report "x" appears multiple times in layout.` | A report is placed twice. |
+| `Field "x" is missing from layout.` | An explicit layout leaves a field out. |
+| `Disclosure sections require a non-empty title.` | A section without `title`. |
+| `Custom region "x" must declare at least one field.` | A custom node with empty `fields`. |
+| `Wizard layout must define at least one step.` | `steps: []`. |
+| `Wizard step "x" must contain at least one layout node.` | An empty step. |
+| `Tabs layout must define at least one tab.` | `tabs: []`. |
+| `Tab "x" must contain at least one layout node.` | An empty tab. |
+| `Unknown wizard step "x".`, `Unknown tab "x".` | `navigation.activate(id)` with an id the layout does not have. |
+| `Unknown disclosure section "x".` | A disclosure call with an unknown section id. |
+
+When a reference fails, compare it with the normalized ids (`view.form.fields.map((f) => f.id)`):
+`customer_age` in a schema becomes `customer-age`.

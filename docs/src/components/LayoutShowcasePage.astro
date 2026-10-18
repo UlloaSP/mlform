@@ -1,82 +1,131 @@
 ---
-const copy = {
-  routeId: "layout-showcase-live-en",
-  intro:
-    "The page below mounts all five variants live with the same schema, the same report, and the same deterministic mock transport.",
-  noteTitle: "What this proves",
-  noteBody:
-    "In MLForm, schema defines semantics and layout defines Descriptor. The engine and transport stay the same while the host experience changes.",
-  cards: [
-    ["One-page", "Fast default path with no extra layout contract.", "one-page"],
-    ["Wizard", "Guided step flow with validation gates between sections.", "wizard"],
-    ["Tabs", "Free navigation with a built-in application-style shell.", "tabs"],
-    ["Accordion", "Dense progressive disclosure with multi-open sections.", "accordion"],
-    [
-      "Custom headless shell",
-      "Host-owned chrome built from `createFormView()` and primitive frames.",
-      "custom",
-    ],
-  ] as const,
-  usageTitle: "When to use each",
-  fitLabel: "Best fit",
-  usage: [
-    ["`mountForm()`", "Simple one-page submission flow."],
-    ["`mountForm({ layout: wizard })`", "Linear onboarding, compliance, or review gates."],
-    ["`mountForm({ layout: tabs })`", "App-style forms where the user can jump around freely."],
-    ["`mountForm({ layout: sections })`", "Dense or mobile-first layouts with progressive disclosure."],
-    ["`createFormView()`", "Product-specific shells, sidebars, dashboards, or embedded workflows."],
-  ] as const,
-};
+const variants = [
+  ["stacked", "Stacked", "The default: every field, then every report.", "mountForm(host, { schema, transport })"],
+  ["split", "Split", "Reports beside the inputs on wide screens.", 'layout: { kind: "split" }'],
+  ["wizard", "Wizard", "Next validates the current step before moving on.", 'layout: { kind: "wizard", steps }'],
+  ["tabs", "Tabs", "Free switching; submission from any tab.", 'layout: { kind: "tabs", tabs }'],
+  ["sections", "Sections", "Collapsible sections; Assessment starts closed.", 'layout: { kind: "stacked", children: [section, section] }'],
+  ["custom", "Custom shell", "Your own navigation and footer around MLForm's controls.", "createFormView + createPrimitiveAdapter"],
+] as const;
 ---
 
-<p>{copy.intro}</p>
+<p>
+  Every form below uses the same schema and the same demo transport, and they run independently:
+  fill one in and press its submit button to see validation, loading, and the classifier report. The
+  configuration for each layout is explained in <a href="/view/layouts/">Layouts</a>; the custom shell
+  is described in <a href="/kit/primitive-adapter/">Built-in controls in your layout</a>.
+</p>
 
-<div class="surface-note">
-  <strong>{copy.noteTitle}</strong><br />
-  {copy.noteBody}
-</div>
-
-<div
-  id={copy.routeId}
-  class="layout-showcase-live"
-  data-layout-showcase
->
-  <div class="layout-showcase-grid">
-    {
-      copy.cards.map(([title, body, host]) => (
-        <section class="layout-showcase-card">
-          <div class="layout-showcase-copy">
-            <h3>{title}</h3>
-            <p>{body}</p>
-          </div>
-          <div data-layout-showcase-host={host} class="layout-showcase-host"></div>
-        </section>
-      ))
-    }
-  </div>
+<div class="showcase not-content" data-layout-showcase>
+  {
+    variants.map(([id, title, body, code]) => (
+      <section class="showcase-card" aria-labelledby={`showcase-${id}`}>
+        <header>
+          <h2 id={`showcase-${id}`}>{title}</h2>
+          <p>{body}</p>
+          <code>{code}</code>
+        </header>
+        <div class="showcase-host" data-layout-showcase-host={id} />
+      </section>
+    ))
+  }
 </div>
 
 <script>
   import "../lib/layout-showcase-entry";
 </script>
 
-<h2 id="when-to-use-each">{copy.usageTitle}</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>Surface</th>
-      <th>{copy.fitLabel}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {
-      copy.usage.map(([surface, fit]) => (
-        <tr>
-          <td set:html={surface}></td>
-          <td>{fit}</td>
-        </tr>
-      ))
+<style is:global>
+  .showcase {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .showcase-card {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(0.75rem, 2.5vw, 1.25rem);
+    border: 1px solid var(--mf-border);
+    border-radius: 14px;
+    background: var(--mf-subtle);
+  }
+  .showcase-card header {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .showcase-card h2 {
+    margin: 0;
+    font-size: 1.125rem;
+  }
+  .showcase-card p {
+    margin: 0;
+    color: var(--mf-text-2);
+    font-size: 0.9rem;
+  }
+  .showcase-card code {
+    justify-self: start;
+    color: var(--mf-ember-ink);
+    font-size: 0.8rem;
+  }
+  .custom-shell {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: 1rem;
+    font-family: var(--brand-font-sans);
+  }
+  .custom-nav {
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+  }
+  .custom-nav button,
+  .custom-submit {
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--mf-border-strong);
+    border-radius: 999px;
+    background: var(--mf-bg);
+    color: var(--mf-text);
+    font: 600 0.875rem var(--brand-font-sans);
+    text-align: start;
+    cursor: pointer;
+  }
+  .custom-nav button[aria-current="true"] {
+    border-color: var(--mf-ember);
+    background: var(--mf-ember-soft);
+    color: var(--mf-ember-ink);
+  }
+  .custom-main,
+  .custom-slots {
+    display: grid;
+    gap: 0.9rem;
+    min-width: 0;
+  }
+  .custom-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  .custom-status {
+    color: var(--mf-text-3);
+    font-size: 0.875rem;
+  }
+  .custom-submit {
+    border-color: transparent;
+    background: var(--mf-text);
+    color: var(--mf-bg);
+  }
+  .custom-submit:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+  @media (max-width: 40rem) {
+    .custom-shell {
+      grid-template-columns: minmax(0, 1fr);
     }
-  </tbody>
-</table>
+    .custom-nav {
+      grid-auto-flow: column;
+      justify-content: start;
+    }
+  }
+</style>

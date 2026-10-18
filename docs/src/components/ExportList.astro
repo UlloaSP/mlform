@@ -1,0 +1,36 @@
+---
+import * as builtins from "mlform/builtins";
+import * as design from "mlform/design";
+import * as kit from "mlform/kit";
+import * as primitives from "mlform/primitives";
+import * as runtime from "mlform/runtime";
+import * as schema from "mlform/schema";
+import * as transport from "mlform/transport";
+import * as view from "mlform/view";
+
+interface Props {
+  surface: "kit" | "view" | "runtime" | "schema" | "builtins" | "transport" | "primitives" | "design";
+}
+// Read from the modules the docs are built from, so the list matches what the package exports.
+const modules = { kit, view, runtime, schema, builtins, transport, primitives, design };
+const names = Object.keys(modules[Astro.props.surface]).sort((a, b) => a.localeCompare(b));
+---
+
+<p class="export-list">
+  {
+    names.map((name, index) => (
+      <>
+        <code>{name}</code>
+        {index < names.length - 1 ? " " : ""}
+      </>
+    ))
+  }
+</p>
+
+<style>
+  .export-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+</style>

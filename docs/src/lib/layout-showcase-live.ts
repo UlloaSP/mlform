@@ -1,82 +1,25 @@
-import { mountForm } from "@/kit";
-
-import {
-  cleanupSymbol,
-  createDemoTransport,
-  disclosureLayout,
-  schema,
-  tabsLayout,
-  type Cleanup,
-  wizardLayout,
-} from "./layout-showcase-config";
+import { mountForm } from "mlform";
+import { createDemoTransport, layouts, schema, type Cleanup } from "./layout-showcase-config";
 import { mountCustomHeadless } from "./layout-showcase-custom";
 
-type ShowcaseRoot = HTMLElement & {
-  [cleanupSymbol]?: Cleanup;
+type Variant = keyof typeof layouts | "custom";
+
+const mountVariant = (host: HTMLElement, variant: Variant): Cleanup => {
+  if (variant === "custom") return mountCustomHeadless(host);
+  const mounted = mountForm(host, {
+    schema,
+    transport: createDemoTransport(),
+    layout: layouts[variant],
+    designSystem: { theme: "eshkra" },
+  });
+  return () => mounted.unmount();
 };
 
-const resolveHost = (root: HTMLElement, id: string): HTMLElement | null =>
-  root.querySelector<HTMLElement>(`[data-layout-showcase-host="${id}"]`);
-
 export const mountLayoutShowcase = (root: HTMLElement): Cleanup => {
-  const showcaseRoot = root as ShowcaseRoot;
-  showcaseRoot[cleanupSymbol]?.();
-
-  const cleanups: Cleanup[] = [];
-
-  const onePageHost = resolveHost(root, "one-page");
-  if (onePageHost) {
-    const mounted = mountForm(onePageHost, {
-      schema,
-      transport: createDemoTransport(),
-    });
-    cleanups.push(() => mounted.unmount());
-  }
-
-  const wizardHost = resolveHost(root, "wizard");
-  if (wizardHost) {
-    const mounted = mountForm(wizardHost, {
-      schema,
-      transport: createDemoTransport(),
-      layout: wizardLayout,
-    });
-    cleanups.push(() => mounted.unmount());
-  }
-
-  const tabsHost = resolveHost(root, "tabs");
-  if (tabsHost) {
-    const mounted = mountForm(tabsHost, {
-      schema,
-      transport: createDemoTransport(),
-      layout: tabsLayout,
-    });
-    cleanups.push(() => mounted.unmount());
-  }
-
-  const disclosureHost = resolveHost(root, "disclosure");
-  if (disclosureHost) {
-    const mounted = mountForm(disclosureHost, {
-      schema,
-      transport: createDemoTransport(),
-      layout: disclosureLayout,
-    });
-    cleanups.push(() => mounted.unmount());
-  }
-
-  const customHost = resolveHost(root, "custom");
-  if (customHost) {
-    cleanups.push(mountCustomHeadless(customHost));
-  }
-
-  const cleanup = (): void => {
-    while (cleanups.length > 0) {
-      cleanups.pop()?.();
-    }
-    if (showcaseRoot[cleanupSymbol] === cleanup) {
-      delete showcaseRoot[cleanupSymbol];
-    }
+  const cleanups = [...root.querySelectorAll<HTMLElement>("[data-layout-showcase-host]")].map(
+    (host) => mountVariant(host, host.dataset.layoutShowcaseHost as Variant),
+  );
+  return () => {
+    for (const cleanup of cleanups) cleanup();
   };
-
-  showcaseRoot[cleanupSymbol] = cleanup;
-  return cleanup;
 };

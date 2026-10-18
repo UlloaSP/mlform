@@ -1,0 +1,89 @@
+---
+title: Errors
+description: What each MLForm error means, where it appears in the UI, and how to report backend failures and server-side field errors.
+---
+
+import Capture from "../../../components/Capture.astro";
+
+Errors belong to the stage that produced them. Setup errors stop a form from existing; validation
+errors stay on fields; submission errors fail one attempt; report errors stay in one report.
+
+| Stage | Error | Where it shows |
+| --- | --- | --- |
+| Setup | `SchemaNormalizationError` (with `path`), `RegistryError`, layout `TypeError` | Thrown by `mountForm`, `createFormView`, `createForm`. |
+| Validation | `ValidationError` (with `result`) | Field and form messages; `submit()` rejects. |
+| Transport | `SubmitError` (with `cause`) | Form error and every report; `submit()` rejects. |
+| Cancellation | `SubmissionAbortedError` | Reports return to idle; `submit()` rejects. |
+| One report | message in `report.state.error` | That report only. |
+| Misuse | `EngineError` | Thrown by the call, such as a second `submit()` while one is running. |
+
+`ValidationError`, `SubmitError`, `SubmissionAbortedError`, `ReportPayloadError`, `EngineError`,
+`RegistryError`, and `TransportError` are exported from `mlform/runtime`;
+`SchemaNormalizationError` from `mlform/schema`. All extend `Error`; `SubmissionAbortedError` and
+`ReportPayloadError` extend `SubmitError`, so test for them first.
+
+```ts
+import { SubmissionAbortedError, SubmitError, ValidationError } from "mlform/runtime";
+
+try {
+  await mounted.submit();
+} catch (error) {
+  if (error instanceof ValidationError) return; // the form already shows the field errors
+  if (error instanceof SubmissionAbortedError) return; // the user or your code cancelled
+  if (error instanceof SubmitError) return notify(error.message); // "Form submission failed: …"; see error.cause
+  throw error;
+}
+```
+
+The built-in submit button handles these itself; catch them when you call `submit()` from code.
+
+## Transport failures
+
+When the transport throws, the submission fails. The message of the thrown error appears in the
+form's error list and in every report of that submission:
+
+<Capture
+  name="submit-error"
+  width={522}
+  alt="A form whose Form errors box reads The model is warming up. Try again in a few seconds. Below, both reports show Report unavailable with the same message."
+  caption="A transport that throws new Error(&quot;The model is warming up. Try again in a few seconds.&quot;)."
+/>
+
+MLForm never parses HTTP responses, so write the message people should read when you throw.
+[First backend](/getting-started/first-backend/#show-backend-error-messages) shows how to read
+`message` or `detail` from a JSON error body. A retry moves reports through `loading` again and
+replaces the error with the new outcome.
+
+The response itself can also fail the submission: a `reports` value that is not an array, a
+malformed envelope, or two envelopes for the same report. See
+[Backend contract](/guides/backend-contract/#envelopes).
+
+## Errors for specific fields
+
+When the server rejects particular values, put its messages on the fields instead of the form:
+
+```ts
+const response = await fetch("/api/forecast", { method: "POST", body, signal });
+if (response.status === 422) {
+  const { fields } = await response.json(); // { humidity: ["Above the sensor's range."] }
+  mounted.form.setExternalErrors({ fields });
+  throw new Error("Some values were rejected.");
+}
+```
+
+Field keys are runtime ids. The errors clear when the user edits the field, or when you call
+`clearExternalErrors()`. See [Validation](/guides/validation/#errors-from-your-backend).
+
+## Report errors
+
+A report enters `error` on its own when its kind's resolver throws or its payload fails the kind's
+`payloadSchema`; the other reports and the submission are unaffected. A kind can opt into failing
+the whole submission with `payloadValidationPolicy: "fail-submit"`, which raises
+`ReportPayloadError` with the `reportId`. Report fetch failures stay in the report as well.
+
+## Observing errors
+
+`hooks.onSubmitError({ error, modelValues, … })` runs for every failed submission and is the place
+for notifications and logging. It cannot change the outcome; if the hook itself throws, the
+original error is kept and `onListenerError` receives the hook's error. See
+[Lifecycle and hooks](/guides/hooks-and-lifecycle/).

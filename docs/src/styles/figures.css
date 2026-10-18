@@ -1,0 +1,229 @@
+/* Captures sit on the landing's subtle plate, framed so transparent screenshots keep an edge. */
+.capture {
+  margin: 1.75rem 0;
+}
+
+.capture-frame {
+  display: grid;
+  place-items: center;
+  padding: clamp(0.75rem, 3vw, 1.75rem);
+  border: 1px solid var(--mf-border);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 1px 1px, var(--mf-border) 1px, transparent 0) 0 0 / 18px 18px,
+    var(--mf-subtle);
+}
+
+.capture-frame img {
+  width: 100%;
+  max-width: var(--capture-width);
+  height: auto;
+}
+
+.capture figcaption,
+.diagram figcaption {
+  margin-top: 0.65rem;
+  color: var(--mf-text-3);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Diagrams: inline SVG coloured by the documentation theme. */
+.diagram {
+  margin: 1.75rem 0;
+}
+
+.diagram-scroll {
+  overflow-x: auto;
+  padding: clamp(0.75rem, 2.5vw, 1.5rem);
+  border: 1px solid var(--mf-border);
+  border-radius: 14px;
+  background: var(--mf-bg);
+}
+
+.diagram svg {
+  display: block;
+  width: 100%;
+  min-width: var(--diagram-min, 34rem);
+  height: auto;
+  margin-inline: auto;
+  font-family: var(--brand-font-sans);
+}
+
+.diagram .box {
+  fill: var(--mf-surface);
+  stroke: var(--mf-border-strong);
+  stroke-width: 1;
+}
+
+.diagram .box-subtle {
+  fill: var(--mf-subtle);
+  stroke: var(--mf-border);
+  stroke-width: 1;
+}
+
+.diagram .box-accent {
+  fill: var(--mf-ember-soft);
+  stroke: var(--mf-ember);
+  stroke-width: 1.25;
+}
+
+.diagram .title {
+  fill: var(--mf-text);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.diagram .label {
+  fill: var(--mf-text-2);
+  font-size: 12.5px;
+}
+
+.diagram .small {
+  fill: var(--mf-text-3);
+  font-size: 11.5px;
+}
+
+.diagram .mono {
+  fill: var(--mf-text);
+  font-family: var(--brand-font-mono);
+  font-size: 12px;
+}
+
+.diagram .mono-muted {
+  fill: var(--mf-text-3);
+  font-family: var(--brand-font-mono);
+  font-size: 11.5px;
+}
+
+.diagram .accent-text {
+  fill: var(--mf-ember-ink);
+}
+
+.diagram .eyebrow {
+  fill: var(--mf-text-3);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+
+.diagram .edge {
+  fill: none;
+  stroke: var(--mf-text-3);
+  stroke-width: 1.4;
+}
+
+.diagram .edge-accent {
+  fill: none;
+  stroke: var(--mf-ember);
+  stroke-width: 1.6;
+}
+
+.diagram .edge-dashed {
+  fill: none;
+  stroke: var(--mf-text-3);
+  stroke-width: 1.3;
+  stroke-dasharray: 4 4;
+}
+
+.diagram .arrow-head {
+  fill: var(--mf-text-3);
+}
+
+.diagram .arrow-head-accent {
+  fill: var(--mf-ember);
+}
+
+.diagram .dot {
+  fill: var(--mf-ember);
+}
+
+@media (forced-colors: active) {
+  .diagram :is(.box, .box-subtle, .box-accent) {
+    stroke: CanvasText;
+  }
+  .diagram :is(.edge, .edge-accent, .edge-dashed) {
+    stroke: CanvasText;
+  }
+  .diagram :is(.arrow-head, .arrow-head-accent, .dot) {
+    fill: CanvasText;
+  }
+}
+
+/* Home hero: the landing's headline scale inside the documentation column. */
+.hero {
+  gap: 1.5rem;
+  padding-block: 1.5rem 2rem;
+  border-bottom: 0;
+}
+
+.hero h1 {
+  font-size: clamp(2.25rem, 1.5rem + 2.8vw, 3.25rem);
+  font-weight: 700;
+  font-stretch: 104%;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+}
+
+.hero .tagline {
+  max-width: 40rem;
+  color: var(--mf-text-2);
+  font-size: 1.125rem;
+}
+
+.hero .sl-link-button {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.hero .sl-link-button.primary {
+  border-color: transparent;
+  background: var(--mf-text);
+  color: var(--mf-bg);
+}
+
+.hero .sl-link-button.secondary {
+  border-color: var(--mf-border-strong);
+  background: transparent;
+  color: var(--mf-text);
+}
+
+/* Path cards: three-column index of the documentation groups. */
+.path-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
+  gap: 0.875rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.path-card {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--mf-border);
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.path-card:hover {
+  border-color: var(--mf-border-strong);
+  background: var(--mf-subtle);
+}
+
+.path-card strong {
+  color: var(--mf-text);
+  font-size: 1rem;
+}
+
+.path-card span {
+  color: var(--mf-text-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.path-card code {
+  color: var(--mf-ember-ink);
+  font-size: 0.8125rem;
+}

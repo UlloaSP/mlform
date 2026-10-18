@@ -1,0 +1,50 @@
+---
+import { Image } from "astro:assets";
+import { capture } from "../lib/captures";
+
+interface Props {
+  /** Capture name without the `-light`/`-dark` suffix. */
+  name: string;
+  alt: string;
+  /** Displayed CSS width; captures are taken at 2x. Defaults to the capture's natural width. */
+  width?: number;
+  caption?: string;
+}
+const { name, alt, width, caption } = Astro.props;
+const light = capture(name, "light");
+const dark = capture(name, "dark");
+const display = Math.min(width ?? light.width / 2, 768);
+const widths = [display, display * 2].map((value) => Math.min(Math.round(value), light.width));
+const sizes = `(max-width: 50rem) 92vw, ${display}px`;
+---
+
+<figure class="capture not-content" style={`--capture-width: ${display}px`}>
+  <div class="capture-frame">
+    <Image
+      class="dark:sl-hidden"
+      src={light}
+      alt={alt}
+      widths={widths}
+      sizes={sizes}
+      format="webp"
+      quality={88}
+      loading="lazy"
+    />
+    <Image
+      class="light:sl-hidden"
+      src={dark}
+      alt={alt}
+      widths={widths}
+      sizes={sizes}
+      format="webp"
+      quality={88}
+      loading="lazy"
+    />
+  </div>
+  {(caption || Astro.slots.has("default")) && (
+    <figcaption>
+      {caption}
+      <slot />
+    </figcaption>
+  )}
+</figure>

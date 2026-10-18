@@ -1,0 +1,88 @@
+---
+title: Mental model
+description: How MLForm's layers, submission flow, and identities fit together before you read any API detail.
+---
+
+import Layers from "../../../components/diagrams/Layers.astro";
+import SubmitFlow from "../../../components/diagrams/SubmitFlow.astro";
+import Identity from "../../../components/diagrams/Identity.astro";
+
+MLForm keeps four questions apart. **What does the form mean?** is answered by the schema.
+**Where does each part appear?** by the layout. **Where do submitted values go?** by the
+transport. **What does it look like?** by the design system. Changing one answer does not
+require changing the others: the same schema can render as one page or a wizard, submit to a test
+stub or a production model, and use any theme.
+
+## Layers
+
+<Layers />
+
+| Surface | Start here when you want | Main entry |
+| --- | --- | --- |
+| `mlform` (`mlform/kit`) | A complete form in an element, with built-in UI and lifecycle. | `mountForm()` |
+| `mlform/view` | Your own markup or framework, with MLForm's layout, navigation, and descriptors. | `createFormView()` |
+| `mlform/runtime` | State, validation, and submission with no UI at all. | `createForm()` |
+| `mlform/schema` | Schema types, normalization, JSON Schema, and registries for tooling. | `validateSchema()` |
+| `mlform/builtins` | The built-in field and report definitions as a registry. | `createBuiltinMlRegistry()` |
+| `mlform/primitives` | MLForm's Web Components inside your own mounting code. | `mountPrimitiveForm()` |
+| `mlform/design` | Themes, recipes, and tokens applied to any element. | `attachDesignSystem()` |
+| `mlform/transport` | The transport contract and helpers such as fan-out. | `createFanoutTransport()` |
+
+The kit is built from the view, which is built from the runtime. Moving inward never changes field
+meaning, validation, or submitted values; you only take over more of the rendering. The
+[Headless view](/view/overview/) and [Runtime without UI](/runtime/overview/) pages show the
+inner rings.
+
+## What happens on submit
+
+<SubmitFlow />
+
+1. **Values** live in field controllers, keyed by runtime id and normalized by each kind's
+   definition: a number field holds a number, a date field a `Date`.
+2. **Validation** runs required checks, kind constraints, field validators, and form validators.
+   Invalid forms stop here and the transport is never called.
+3. **Submission records** are built for active fields: `inputs` (one record per field),
+   `displayValues` (keyed by `displayKey`), and `modelValues` (keyed by `mappedTo`).
+4. **The transport** receives those records in a frozen request and returns a response. It is the
+   only part that talks to your backend.
+5. **Routing** gives each report the envelope whose `backend` and `mappedTo` match its own
+   configuration. Ids and labels are never used to guess a match.
+6. **Report states** settle independently: one report can be `ready` while another is `skipped`.
+   [Reports](/schema/reports/) covers the full state model.
+
+## Three identities
+
+<Identity />
+
+Each field can carry three names, and each has one job:
+
+- **Runtime id** (`id`): the handle inside MLForm. Layout nodes, validation errors, focus,
+  `form.getField(id)`, and tests use it. MLForm normalizes every id to lowercase kebab case and
+  derives one from the label when you omit it, so write ids such as `customer-age` and set them
+  explicitly for anything you reference. See [Schema](/schema/overview/#ids).
+- **Display key** (`displayKey`): the name of the value in `displayValues`, for review screens,
+  persistence, or export. Fields without one are left out of `displayValues`.
+- **Mapped target** (`mappedTo`): the name, numeric position, or per-backend map the model expects.
+  Fields without `mappedTo` or `valuePath` send no model value.
+
+Reports follow the same rule: a report's `id` addresses it in MLForm, and its `mappedTo` selects
+the backend output it shows. Renaming a model feature means changing `mappedTo`, not the id that
+your layout and tests depend on.
+
+## Vocabulary
+
+| Term | Meaning |
+| --- | --- |
+| Schema | The declarative description of fields, reports, conditions, and mappings. |
+| Kind | The registry key, such as `number` or `classifier`, that selects a definition. |
+| Definition | Registered behavior for one kind: config schema, value normalization, validation, serialization. |
+| Registry | The set of definitions a form can use. Built-ins and plugins register into it the same way. |
+| Runtime | Headless state, validation, conditions, report state, and submission. |
+| View | Headless layout, navigation, visibility, and render descriptors. |
+| Descriptor | A render-ready description of one field or report, produced by a presenter. |
+| Primitive | A built-in Web Component that renders a descriptor. |
+| Kit | `mountForm`: the view rendered with primitives, plus design system and lifecycle. |
+| Transport | The `submit(request)` boundary between MLForm and your backend. |
+| Envelope | One report result: `{ backend, mappedTo, status, payload? }`. |
+
+Next, connect a real service in [First backend](/getting-started/first-backend/).

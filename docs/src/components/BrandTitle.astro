@@ -4,16 +4,32 @@ import mark from "../../../brand/mlform.png";
 const { siteTitleHref } = Astro.locals.starlightRoute;
 ---
 
-<a href={siteTitleHref} class="mlform-brand" aria-label="MLForm documentation home">
-  <Image src={mark} width={64} alt="" loading="eager" />
-  <span class="mlform-wordmark" translate="no">
-    <span class="ml">ML</span><span class="rest">form</span>
-  </span>
-</a>
+<span class="brand-title">
+  <a href={siteTitleHref} class="mlform-brand" aria-label="MLForm documentation home">
+    <Image src={mark} width={64} alt="" loading="eager" />
+    <span class="mlform-wordmark" translate="no">
+      <span class="ml">ML</span><span class="rest">form</span>
+    </span>
+  </a>
+  <a class="parent-brand" href="https://eshkra.dev">by eshkra</a>
+</span>
 
 <style>
+  .brand-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
   .mlform-brand {
-    font-size: 1.625rem;
-    color: var(--sl-color-white);
+    font-size: 1.55rem;
+  }
+  .mlform-brand :global(img) {
+    width: 1.85rem;
+    height: 2.1rem;
+  }
+  @media (max-width: 40rem) {
+    .parent-brand {
+      display: none;
+    }
   }
 </style>

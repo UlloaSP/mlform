@@ -1,0 +1,145 @@
+---
+title: First backend
+description: Implement the endpoint the quick-start transport calls, in Express or FastAPI, and return report envelopes.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+The [quick-start transport](/getting-started/quick-start/#connect-your-backend) posts the model
+values under `inputs`. That body shape is your choice, not MLForm's: the transport is application
+code, so you decide what goes over the wire. MLForm only fixes what the transport returns.
+
+## Request
+
+With the quick-start form, the backend receives:
+
+```json
+{ "inputs": { "temperature": 21.5, "humidity": 58 } }
+```
+
+The keys are the fields' `mappedTo` values. Inactive fields are omitted by default; see
+[Conditions](/schema/conditions/#inactive-fields-and-submission).
+
+## Response
+
+Return one envelope per report output. `mappedTo` must match the report's `mappedTo`, and
+`backend` must be `"default"` unless you [submit to named backends](/guides/multiple-backends/).
+
+```json
+{
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "forecast",
+      "status": "ready",
+      "payload": { "value": 22.1 }
+    }
+  ],
+  "meta": { "model": "station-forecast-v3" }
+}
+```
+
+`meta` is optional free-form data, available to hooks and report fetches as `result.meta`.
+[Backend contract](/guides/backend-contract/) describes `skipped` and `pending` envelopes and every
+validation rule.
+
+## Implement the endpoint
+
+<Tabs syncKey="backend">
+<TabItem label="Express">
+
+```ts title="server.ts"
+import express from "express";
+
+const app = express();
+app.use(express.json());
+
+app.post("/api/forecast", (req, res) => {
+  const { temperature, humidity } = req.body.inputs ?? {};
+  if (typeof temperature !== "number" || typeof humidity !== "number") {
+    res.status(400).json({ message: "Temperature and humidity are required numbers." });
+    return;
+  }
+
+  const estimate = predictNextHour(temperature, humidity); // your model
+  res.json({
+    reports: [{ backend: "default", mappedTo: "forecast", status: "ready", payload: { value: estimate } }],
+    meta: { model: "station-forecast-v3" },
+  });
+});
+
+app.listen(3000);
+```
+
+</TabItem>
+<TabItem label="FastAPI">
+
+```py title="main.py"
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+app = FastAPI()
+
+# Only needed when the page and the API are served from different origins.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["POST"],
+    allow_headers=["content-type"],
+)
+
+class Inputs(BaseModel):
+    temperature: float
+    humidity: float
+
+class ForecastRequest(BaseModel):
+    inputs: Inputs
+
+@app.post("/api/forecast")
+def forecast(request: ForecastRequest):
+    if not -40 <= request.inputs.temperature <= 60:
+        raise HTTPException(status_code=422, detail="Temperature is out of range.")
+
+    estimate = predict_next_hour(request.inputs.temperature, request.inputs.humidity)  # your model
+    return {
+        "reports": [
+            {"backend": "default", "mappedTo": "forecast", "status": "ready", "payload": {"value": estimate}}
+        ],
+        "meta": {"model": "station-forecast-v3"},
+    }
+```
+
+</TabItem>
+</Tabs>
+
+Validate on the server as well. MLForm's checks protect the user experience, not your API.
+
+## Show backend error messages
+
+MLForm does not parse HTTP error bodies. The transport decides what a failure means and throws an
+`Error`; its message becomes the form error. Read the field your framework uses: Express code
+above sends `message`, FastAPI's `HTTPException` sends `detail`.
+
+```ts title="transport.ts"
+import type { Transport } from "mlform/transport";
+
+export const transport: Transport = {
+  async submit(request) {
+    const response = await fetch("/api/forecast", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ inputs: request.modelValues }),
+      signal: request.signal,
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.message ?? body.detail ?? `Forecast failed with status ${response.status}.`);
+    }
+    return response.json();
+  },
+};
+```
+
+[Errors](/guides/error-handling/) shows how that failure appears in the form and how to map
+server-side field errors back onto individual fields.

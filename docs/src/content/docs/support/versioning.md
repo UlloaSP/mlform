@@ -17,9 +17,12 @@ MLForm is pre-1.0. Review release notes for changes to schemas, validation, seri
 rendering before upgrading. Compatibility is an explicit product decision; a new version should
 make any changed contract visible rather than keeping an undocumented fallback.
 
-The API reference is curated manually. The docs build checks Astro and TypeScript components,
-but does not execute Markdown code examples. Contributors should also verify affected examples
-against the public package.
+Most reference pages are written by hand. Some parts are generated from the code when the docs are
+built: the export lists in [Package exports](/reference/package-exports/), the token tables in
+[Tokens](/design/tokens/#token-reference), and the configurations shown next to screenshots. The
+screenshots are produced by running the code they show (`playground/scripts/capture-docs.ts` and
+`capture-landing.ts`). Other Markdown examples are not executed by the docs build, so contributors
+verify changed examples against the public package.
 
 - [npm package and versions](https://www.npmjs.com/package/mlform)
 - [GitHub releases](https://github.com/UlloaSP/mlform/releases)

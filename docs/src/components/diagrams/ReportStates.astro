@@ -1,0 +1,39 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "report-states";
+const a = `url(#${id}-a)`;
+const aa = `url(#${id}-aa)`;
+const outcomes = [
+  { y: 24, name: "ready", note: "ready envelope with payload" },
+  { y: 122, name: "skipped", note: "skipped envelope; never fetched" },
+  { y: 220, name: "error", note: "failed submit, resolver, or payload" },
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 300"
+  title="Report states"
+  description="A report starts idle and becomes loading when a submission or report fetch starts. From loading it becomes ready, skipped, or error. An aborted submission, a pending envelope, or no matching envelope returns it to idle, from where a fetch-backed report can load again."
+>
+  <rect class="box" x="20" y="122" width="120" height="52" rx="26"></rect>
+  <text class="mono" x="80" y="153" text-anchor="middle">idle</text>
+  <rect class="box-accent" x="250" y="122" width="132" height="52" rx="26"></rect>
+  <text class="mono" x="316" y="153" text-anchor="middle">loading</text>
+  <path class="edge-accent" d="M140 148 L248 148" marker-end={aa}></path>
+  <text class="small" x="194" y="140" text-anchor="middle">submit()</text>
+  <path class="edge" d="M80 122 C 80 70, 316 70, 316 120" marker-end={a}></path>
+  <text class="small" x="198" y="76" text-anchor="middle">report fetch (kinds that define fetch)</text>
+  <path class="edge-dashed" d="M316 174 C 316 236, 80 236, 80 176" marker-end={a}></path>
+  <text class="small" x="198" y="250" text-anchor="middle">abort · pending · no matching envelope</text>
+  {
+    outcomes.map((outcome) => (
+      <g>
+        <path class="edge" d={`M382 148 C 420 148, 420 ${outcome.y + 26}, 458 ${outcome.y + 26}`} marker-end={a} />
+        <rect class="box" x="460" y={outcome.y} width="240" height="52" rx="26" />
+        <text class="mono" x="482" y={outcome.y + 23}>{outcome.name}</text>
+        <text class="small" x="482" y={outcome.y + 40}>{outcome.note}</text>
+      </g>
+    ))
+  }
+</Diagram>

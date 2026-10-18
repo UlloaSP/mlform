@@ -1,0 +1,40 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "extension-paths";
+const a = `url(#${id}-a)`;
+const aa = `url(#${id}-aa)`;
+const routes = [
+  { x: 20, eyebrow: "FIELD · DECLARATIVE", api: "defineFieldKind", lines: ["built-in widget + hints:", "text · number · boolean", "select · date · series"] },
+  { x: 196, eyebrow: "FIELD · CUSTOM ELEMENT", api: "defineFieldDefinition", lines: ["+ presenter + element", "extends PrimitiveFieldElement", "+ primitiveRegistry"] },
+  { x: 372, eyebrow: "REPORT · DESCRIPTORS", api: "render.content", lines: ["defineReportKind nodes:", "text · metric · kv · list", "table · badge · notice · json"] },
+  { x: 548, eyebrow: "REPORT · OWN DOM", api: "render.mount", lines: ["defineReportKind gets", "element, payload, signal;", "returns cleanup"] },
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 330"
+  title="Four ways to add a kind, one way to register it"
+  description="Fields: defineFieldKind renders with a built-in widget and hints, or defineFieldDefinition with a presenter and a custom element that extends PrimitiveFieldElement, mapped through a primitive registry. Reports: defineReportKind renders descriptor nodes with render.content or its own DOM with render.mount. All four are bundled with defineMLFormPlugin and passed as plugins to mountForm or createFormView, so they use the same normalization, validation, and submission as built-ins."
+  minWidth="40rem"
+>
+  {
+    routes.map((route, index) => (
+      <g>
+        <rect class={index % 2 === 0 ? "box" : "box-subtle"} x={route.x} y="20" width="152" height="138" rx="10" />
+        <text class="eyebrow" x={route.x + 14} y="44" style="font-size: 9.5px">{route.eyebrow}</text>
+        <text class="mono accent-text" x={route.x + 14} y="68" style="font-size: 11px">{route.api}</text>
+        {route.lines.map((line, lineIndex) => (
+          <text class="small" x={route.x + 14} y={94 + lineIndex * 18} style="font-size: 11px">{line}</text>
+        ))}
+        <path class="edge" d={`M${route.x + 76} 158 C ${route.x + 76} 196, 360 180, 360 206`} marker-end={a} />
+      </g>
+    ))
+  }
+  <rect class="box-accent" x="170" y="208" width="380" height="44" rx="10"></rect>
+  <text class="mono" x="360" y="235" text-anchor="middle">defineMLFormPlugin({"{"} fields, reports, behaviors {"}"})</text>
+  <path class="edge-accent" d="M360 252 L360 272" marker-end={aa}></path>
+  <rect class="box" x="170" y="274" width="380" height="44" rx="10"></rect>
+  <text class="mono" x="360" y="294" text-anchor="middle">mountForm / createFormView({"{"} plugins {"}"})</text>
+  <text class="small" x="360" y="311" text-anchor="middle">same normalization, validation, submission as built-ins</text>
+</Diagram>

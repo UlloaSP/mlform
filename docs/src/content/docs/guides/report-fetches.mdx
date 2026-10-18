@@ -1,0 +1,130 @@
+---
+title: Report fetches
+description: Load a report's content in a second request after submission, for explanations, long-running jobs, or outputs from another service.
+---
+
+Some outputs are not ready when the main submission returns: an explanation computed on demand, a
+job that finishes later, or data from a different service. A report kind can fetch its own payload
+after the submission, using the submitted values and anything the backend handed over.
+
+## Declare a fetching kind
+
+A report kind with `fetch` gets a small transport of its own. This kind loads feature
+contributions and renders them as a table:
+
+```ts
+import { defineMLFormPlugin, defineReportKind } from "mlform/view";
+import { baseReportConfigSchema } from "mlform/schema";
+import { z } from "zod";
+
+const contributions = defineReportKind({
+  kind: "contributions",
+  schema: baseReportConfigSchema.extend({ kind: z.literal("contributions") }),
+  payloadSchema: z.array(z.object({ feature: z.string(), weight: z.number() })),
+  fetch: ({ reportId }) => ({
+    async submit(request) {
+      const response = await fetch(`/api/explain/${reportId}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ inputs: request.modelValues, job: request.reportContext?.meta.jobId }),
+        signal: request.signal,
+      });
+      if (!response.ok) throw new Error(`Explanation failed: ${response.status}`);
+      return response.json(); // [{ feature: "humidity", weight: -0.4 }, …]
+    },
+  }),
+  render: {
+    content: ({ payload }) => ({
+      type: "table",
+      columns: ["feature", "weight"],
+      rows: payload as { feature: string; weight: number }[],
+    }),
+  },
+});
+
+export const explainPlugin = defineMLFormPlugin({ reports: [contributions] });
+```
+
+```ts
+mountForm(container, {
+  schema: { fields, reports: [{ id: "why", kind: "contributions", label: "Why this estimate", mappedTo: "why" }] },
+  transport,
+  plugins: [explainPlugin],
+});
+```
+
+The value the fetch resolves to becomes the report's payload, validated by `payloadSchema` when the
+kind has one. A failure puts only this report in `error`.
+
+## When a fetch runs
+
+A report is fetched only when its kind defines `fetch` and the report is `idle` after a
+submission: the response had no envelope for it, or a `pending` one. `ready`, `skipped`, and
+`error` reports are never fetched.
+
+`reportFetchMode` on `mountForm` or `createFormView` decides who starts the fetches:
+
+| Mode | Behavior |
+| --- | --- |
+| `"lazy"` (default) | Each rendered report frame starts its own fetch. Reports that are not rendered, for example in a closed tab, wait until they are. |
+| `"all"` | The view fetches every eligible report after the submission and waits for all of them before the submission resolves and success events fire. |
+| `"none"` | Nothing is fetched automatically. |
+
+With `"all"`, `mounted.submit()` and `view.submit()` resolve after the fetches; fetch failures stay
+in their reports and do not reject the submission. `view.submitPipeline()` returns the fetch
+outcomes as well:
+
+```ts
+const { submitResult, reportFetchResults, reportFetchErrors } = await view.submitPipeline();
+```
+
+## Hand data from the backend to the fetch
+
+A `pending` envelope can carry `context`. The fetch sees it as `request.reportContext`, merged over
+the submission's values:
+
+```json
+{
+  "reports": [
+    { "backend": "default", "mappedTo": "why", "status": "pending", "context": { "meta": { "jobId": "a81f" } } }
+  ]
+}
+```
+
+`request.reportContext` contains `reportId`, `kind`, `label`, the resolved `target` and
+`targetKey`, `backend`, `displayValues`, `modelValues`, `meta`, `raw`, and the full `reports`
+list. Values in the envelope's `context` replace the submission's for this report only. Use
+`targetKey` instead of rebuilding the backend name from the report id.
+
+The rest of the fetch request repeats the submission result: `inputs`, `displayValues`,
+`modelValues`, `reports`, `reportContexts` for every report, `meta`, `raw`, `backend`, and a
+`signal`. Pass the signal on: MLForm aborts it when the report is refreshed or reset, when the form
+is suspended or disposed, and when a signal given to the fetch request aborts.
+
+## Control fetches yourself
+
+Each report controller exposes the operations directly:
+
+```ts
+import { createReportFetchRequest } from "mlform/schema";
+
+const report = mounted.form.getReport("why");
+const result = mounted.form.state.lastResult;
+if (report?.canFetch && result) {
+  await report.refresh(createReportFetchRequest(result, { reportId: "why" }));
+}
+```
+
+`fetch(request)` does nothing unless the report is idle; `refresh(request)` cancels a running fetch
+and starts again; `abort()` cancels. In the runtime alone, `executeFormPipeline({ form,
+reportFetchMode: "all" })` and `executeReportFetches({ reports, request })` do what the view does.
+
+`hooks.afterReportFetch({ reportId, kind, payload })` and `hooks.onReportFetchError({ reportId,
+kind, error })` observe outcomes. They are notifications: if they throw, the report keeps its
+outcome and `onListenerError` receives the error.
+
+## Details panel versus fetching kinds
+
+`reportTransport` on `mountForm` is different: it adds a JSON **Details** panel under the built-in
+classifier and regressor reports, without changing their payload. See
+[Reports](/schema/reports/#details-panel). Use a fetching kind when the fetched data is the report.

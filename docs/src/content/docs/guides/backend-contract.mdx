@@ -1,0 +1,149 @@
+---
+title: Backend contract
+description: The exact request a transport receives, the response it must return, and how envelopes reach reports.
+---
+
+import SubmitFlow from "../../../components/diagrams/SubmitFlow.astro";
+
+MLForm does not send HTTP requests. It calls your [transport](/guides/transports/) with a
+`SubmitRequest` and expects a response object back. What crosses the network is your decision; this
+page describes the two objects MLForm owns.
+
+<SubmitFlow />
+
+## The request
+
+This request was produced by the runtime for three fields: a temperature with a `displayKey`, a date
+mapped to a nested path, and a note with no `mappedTo`, holding `21.5`, `2026-06-15`, and
+`"Clear sky"`. The `observed` input record is left out below for brevity.
+
+```ts
+fields: [
+  { id: "temperature", kind: "number", label: "Temperature", displayKey: "Temperature (°C)", mappedTo: "temperature" },
+  { id: "observed", kind: "date", label: "Observed on", mappedTo: "station.observed" },
+  { id: "notes", kind: "text", label: "Notes" },
+]
+```
+
+```json
+{
+  "modelValues": {
+    "temperature": 21.5,
+    "station": { "observed": "2026-06-15T00:00:00.000Z" }
+  },
+  "displayValues": { "Temperature (°C)": 21.5 },
+  "inputs": [
+    {
+      "fieldId": "temperature",
+      "displayKey": "Temperature (°C)",
+      "label": "Temperature",
+      "value": 21.5,
+      "serializedValue": 21.5,
+      "mappedTo": "temperature",
+      "modelValues": { "temperature": 21.5 },
+      "visible": true,
+      "disabled": false
+    },
+    { "fieldId": "notes", "label": "Notes", "value": "Clear sky", "serializedValue": "Clear sky", "modelValues": {}, "visible": true, "disabled": false }
+  ]
+}
+```
+
+| Property | Contents |
+| --- | --- |
+| `modelValues` | Serialized values keyed by `mappedTo` or `valuePath`. What a model usually needs. |
+| `displayValues` | Runtime values of visible fields that have a `displayKey`, keyed by it. For review and audit. |
+| `inputs` | One record per submitted field, in schema order, with the runtime and serialized value. |
+| `fields`, `reports` | The normalized field and report configs. |
+| `backend` | The backend name passed to `submit({ backend })`, or `undefined`. |
+| `signal` | An `AbortSignal`. Pass it to `fetch` or your client. |
+
+Notes on the example:
+
+- `notes` has no `mappedTo`, so it is in `inputs` but contributes nothing to `modelValues`.
+- The date is a `Date` in `value` and an ISO string in `serializedValue` and `modelValues`.
+- Fields with `includeInSubmission: false` and inactive fields under the default
+  [policy](/schema/conditions/#inactive-fields-and-submission) are absent from all three.
+
+The request and everything in it are frozen. Dates, maps, sets, and binary values are isolated
+copies but keep their own mutation methods; build your own payload instead of mutating them.
+
+### Rules enforced before any request
+
+- Every model value has one explicit source. A field without `mappedTo` or `valuePath` sends
+  nothing; MLForm never falls back to the id or label.
+- Duplicate `displayKey` values and overlapping paths (`profile` with `profile.name`) fail
+  schema normalization, even across backends.
+- Kinds that send several values, such as [one-hot categories](/schema/onehot-category/) and
+  [series aggregations](/schema/series/#aggregations), declare their targets, and the same overlap
+  rules apply to them.
+
+## The response
+
+The transport resolves to an object. Every property is optional:
+
+```json
+{
+  "reports": [
+    { "backend": "default", "mappedTo": "forecast", "status": "ready", "payload": { "value": 22.1 } },
+    { "backend": "default", "mappedTo": "frost", "status": "skipped", "reason": "Above freezing" },
+    { "backend": "default", "mappedTo": "explanation", "status": "pending", "context": { "meta": { "jobId": "a81f" } } }
+  ],
+  "meta": { "model": "station-forecast-v3" },
+  "raw": { "anything": "kept for hooks and fetches" }
+}
+```
+
+| Property | Rule |
+| --- | --- |
+| `reports` | An array of envelopes. Anything else fails the submission. |
+| `meta` | An object. Available as `result.meta` and in report fetch requests. |
+| `raw` | Any value. When absent, `raw` is the whole response. |
+
+A response that is not an object, such as `null`, is accepted with no reports and kept as `raw`.
+
+### Envelopes
+
+| Property | Rule |
+| --- | --- |
+| `backend` | Non-empty string. `"default"` for submissions without a backend name. |
+| `mappedTo` | String or number, matched against each report's `mappedTo`. |
+| `status` | `"ready"` (requires `payload`), `"skipped"` (optional `reason` string, no `payload`), or `"pending"` (no `payload`). |
+| `context` | Optional object with `displayValues`, `modelValues`, `meta`, or `raw` for this output's report fetch. |
+
+An envelope that breaks these rules fails the whole submission with a message naming its index,
+such as `Invalid report result at index 1: "ready" requires "payload".` Envelopes in older
+shapes, without `backend` or `status`, or with output fields next to the routing fields instead of
+in `payload`, are rejected the same way. A response without a `reports` array, such as
+`{ "prediction": "rain" }`, is accepted but fills no report.
+
+## Routing results to reports
+
+For each report, MLForm resolves the report's `mappedTo` for the submitting backend and picks the
+envelope with the same `backend` and `mappedTo`:
+
+- No match leaves the report `idle`. That is not an error: a model may not produce every output.
+- Two matches fail the submission, since MLForm cannot choose between them.
+- Several reports may share one output.
+- `pending` leaves the report `idle` and passes `context` to its
+  [report fetch](/guides/report-fetches/); `skipped` is final and never fetched.
+
+The submission result keeps everything for later use: `result.reports` (the envelopes),
+`result.reportStates` (per report id), `result.reportContexts` (per report id, with the resolved
+`target`, `backend`, values, `meta`, and `raw`), and `result.meta`.
+
+## Preview the request without submitting
+
+`createSubmissionSnapshot` builds the same `inputs`, `displayValues`, and `modelValues` without
+validating or calling the transport, for review screens, persistence, or export:
+
+```ts
+import { createSubmissionSnapshot } from "mlform/runtime";
+
+const { modelValues, displayValues } = createSubmissionSnapshot(mounted.form);
+const forAlerts = createSubmissionSnapshot(mounted.form, { backend: "alerts" });
+```
+
+Snapshots are frozen like requests. For several backends at once, use
+`createMultiBackendSubmissionSnapshot(form, { backends })`; see
+[Multiple backends](/guides/multiple-backends/).

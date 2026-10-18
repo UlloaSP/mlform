@@ -164,7 +164,7 @@ Full documentation lives at [docs.mlform.eshkra.dev](https://docs.mlform.eshkra.
 - [Quick start](https://docs.mlform.eshkra.dev/getting-started/quick-start/)
 - [Backend contract](https://docs.mlform.eshkra.dev/guides/backend-contract/)
 - [Headless view](https://docs.mlform.eshkra.dev/view/overview/)
-- [Design system](https://docs.mlform.eshkra.dev/design/overview/)
+- [Themes and recipes](https://docs.mlform.eshkra.dev/design/themes-and-recipes/)
 - [Package exports](https://docs.mlform.eshkra.dev/reference/package-exports/)
 
 The current architecture is available as an [interactive diagram](./architecture/mlform-system.architecture.html).

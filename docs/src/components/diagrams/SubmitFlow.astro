@@ -1,0 +1,57 @@
+---
+import Diagram from "./Diagram.astro";
+const id = "submit-flow";
+const a = `url(#${id}-a)`;
+const aa = `url(#${id}-aa)`;
+const xs = [21, 197, 373, 549];
+type Step = { eyebrow: string; title: string; lines: string[]; mono?: boolean; accent?: boolean };
+const first: Step[] = [
+  { eyebrow: "RUNTIME", title: "Field values", lines: ["keyed by runtime id,", "normalized by definitions"] },
+  { eyebrow: "RUNTIME", title: "Validate", lines: ["constraints, field and", "form validators"] },
+  { eyebrow: "SNAPSHOT", title: "Records", lines: ["displayValues", "modelValues"], mono: true },
+  { eyebrow: "TRANSPORT", title: "submit(request)", lines: ["your HTTP client,", "worker, or local model"], accent: true },
+];
+// The second row reads right to left, continuing from the transport.
+const second: Step[] = [
+  { eyebrow: "VIEW · KIT", title: "Render", lines: ["built-in reports,", "plugins, or your UI"] },
+  { eyebrow: "RUNTIME", title: "Report states", lines: ["ready · skipped ·", "error, per report"] },
+  { eyebrow: "RUNTIME", title: "Route results", lines: ["exact backend and", "mappedTo, never ids"] },
+  { eyebrow: "BACKEND", title: "Response", lines: ["{ reports: [ … ] }", "explicit envelopes"], mono: true },
+];
+const rows = [
+  { y: 24, steps: first },
+  { y: 176, steps: second },
+];
+---
+
+<Diagram
+  {id}
+  viewBox="0 0 720 290"
+  title="What happens when a form is submitted"
+  description="Top row, left to right: field values keyed by runtime id are validated, turned into submission records with displayValues and modelValues, and passed to transport.submit. Bottom row, right to left: the backend response with report envelopes is routed by backend and mappedTo, report states settle, and reports render."
+  caption="A validation failure stops before the transport runs. A transport error puts every report of that submission in the error state."
+>
+  {
+    rows.map(({ y, steps }) =>
+      steps.map((step, index) => (
+        <g>
+          <rect class={step.accent ? "box-accent" : "box"} x={xs[index]} {y} width="150" height="92" rx="10" />
+          <text class="eyebrow" x={xs[index] + 14} y={y + 22}>{step.eyebrow}</text>
+          <text class="title" x={xs[index] + 14} y={y + 42}>{step.title}</text>
+          {step.lines.map((line, lineIndex) => (
+            <text class={step.mono && !(index === 3 && lineIndex === 1) ? "mono-muted" : "small"} x={xs[index] + 14} y={y + 62 + lineIndex * 16}>
+              {line}
+            </text>
+          ))}
+        </g>
+      )),
+    )
+  }
+  <path class="edge" d="M171 70 L195 70" marker-end={a}></path>
+  <path class="edge" d="M347 70 L371 70" marker-end={a}></path>
+  <path class="edge-accent" d="M523 70 L547 70" marker-end={aa}></path>
+  <path class="edge-accent" d="M624 116 L624 174" marker-end={aa}></path>
+  <path class="edge" d="M549 222 L525 222" marker-end={a}></path>
+  <path class="edge" d="M373 222 L349 222" marker-end={a}></path>
+  <path class="edge" d="M197 222 L173 222" marker-end={a}></path>
+</Diagram>
