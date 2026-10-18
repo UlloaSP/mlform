@@ -33,6 +33,11 @@ Return explicit report envelopes:
 
 Use `request.displayValues` for review/export data keyed by `displayKey`; fields without `displayKey` are omitted. Use `request.modelValues` for backend/model data keyed by `mappedTo`. Field `id` remains a runtime handle for UI state.
 
+Declare a mapping for each ordinary field the model needs. Without `mappedTo` or `valuePath`, it
+contributes no model value. Definitions such as one-hot categories and Series aggregations declare
+their own targets. Built-in reports also need `mappedTo` to consume an output envelope; MLForm
+does not match backend results by runtime id or label.
+
 These identities must be unambiguous. Schema normalization rejects duplicate `displayKey` values
 and overlapping submission paths produced by `mappedTo`, `valuePath`, or custom definition hooks.
 Both exact duplicates (`profile.name` twice) and parent/child overlaps (`profile` with

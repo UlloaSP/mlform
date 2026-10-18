@@ -7,7 +7,7 @@ Reports render model output after submit. `id` identifies the UI controller; `ma
 
 ```ts
 const schema = {
-  fields: [{ id: "prompt", kind: "text", label: "Prompt" }],
+  fields: [{ id: "prompt", mappedTo: "prompt", kind: "text", label: "Prompt" }],
   reports: [
     { id: "prediction", kind: "classifier", label: "Prediction", mappedTo: "prediction" },
     { id: "score", kind: "regressor", label: "Score", unit: "pts", mappedTo: "score" },

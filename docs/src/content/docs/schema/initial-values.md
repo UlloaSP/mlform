@@ -12,6 +12,11 @@ MLForm has two ways to set an initial field value.
 
 `initialValues` takes precedence over `defaultValue`.
 
+Both are normalized and checked against synchronous field constraints before the first render.
+Nonempty invalid values show their errors immediately; they do not need to lose focus first.
+Asynchronous field checks and form validators require an explicit validation or submission;
+see [Validation](/guides/validation/).
+
 ```ts
 import { predictionTransport } from "./prediction-transport";
 
@@ -19,8 +24,8 @@ mountForm(container, {
   transport: predictionTransport,
   schema: {
     fields: [
-      { id: "threshold", kind: "number", label: "Threshold", defaultValue: 0.7 },
-      { id: "prompt", kind: "text", label: "Prompt" },
+      { id: "threshold", mappedTo: "threshold", kind: "number", label: "Threshold", defaultValue: 0.7 },
+      { id: "prompt", mappedTo: "prompt", kind: "text", label: "Prompt" },
     ],
   },
   initialValues: {

@@ -10,10 +10,10 @@ import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [
-    { id: "prompt", kind: "text", label: "Prompt", required: true },
-    { id: "threshold", kind: "number", label: "Threshold", min: 0, max: 1 },
+    { id: "prompt", mappedTo: "prompt", kind: "text", label: "Prompt", required: true },
+    { id: "threshold", mappedTo: "threshold", kind: "number", label: "Threshold", min: 0, max: 1 },
   ],
-  reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+  reports: [{ id: "prediction", mappedTo: "prediction", kind: "classifier", label: "Prediction" }],
 };
 ```
 

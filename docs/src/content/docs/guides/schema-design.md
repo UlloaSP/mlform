@@ -3,13 +3,17 @@ title: Schema Design
 description: Design schemas that stay stable as models and products evolve.
 ---
 
-Prefer explicit `id` values for every field and report. Labels are user-facing copy; ids are integration contracts.
+Prefer explicit `id` values for every field and report. They identify runtime state, layout
+references, and validation errors. Labels are user-facing copy; `mappedTo` identifies backend
+inputs and outputs, and `displayKey` identifies review or export values.
 
 ```ts
 {
   id: "customer_age",
   kind: "number",
   label: "Customer age",
+  displayKey: "customer_age",
+  mappedTo: "age_years",
   min: 0,
   max: 120
 }
@@ -26,4 +30,6 @@ Guidelines:
 | UI metadata | Put renderer-specific hints in `ui`; do not make the backend depend on them.       |
 | Versioning  | Version schemas at your API boundary when models change required inputs.           |
 
-Avoid changing field ids after a backend is deployed. If a model changes, add a new field id and migrate deliberately.
+Keep ids stable when layouts or saved drafts depend on them. If a model renames a feature, update
+its `mappedTo` deliberately; a backend rename does not require a new runtime id. MLForm does not
+infer backend mappings from ids or labels.

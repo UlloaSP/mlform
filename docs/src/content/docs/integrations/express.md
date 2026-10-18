@@ -30,4 +30,5 @@ app.post("/api/predict", (req, res) => {
 });
 ```
 
-The default transport sends `Content-Type: application/json` and `Accept: application/json`.
+The application transport must send JSON with `Content-Type: application/json`. The
+[Quick Start](/getting-started/quick-start/) shows the matching request and response adapter.

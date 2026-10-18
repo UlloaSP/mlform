@@ -16,7 +16,9 @@ mountForm(container, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(request.modelValues),
+        signal: request.signal,
       });
+      if (!response.ok) throw new Error(`Prediction failed: ${response.status}`);
       const output = await response.json();
       return {
         reports: [

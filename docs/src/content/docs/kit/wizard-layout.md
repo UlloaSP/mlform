@@ -13,10 +13,10 @@ mountForm(container, {
   transport: predictionTransport,
   schema: {
     fields: [
-      { id: "name", kind: "text", label: "Name", required: true },
-      { id: "risk", kind: "number", label: "Risk", required: true },
+      { id: "name", mappedTo: "name", kind: "text", label: "Name", required: true },
+      { id: "risk", mappedTo: "risk", kind: "number", label: "Risk", required: true },
     ],
-    reports: [{ id: "score", kind: "classifier", label: "Score" }],
+    reports: [{ id: "score", mappedTo: "score", kind: "classifier", label: "Score" }],
   },
   layout: {
     kind: "wizard",

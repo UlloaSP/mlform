@@ -15,16 +15,17 @@ mountForm(document.querySelector("#lead-score") as HTMLElement, {
   transport: predictionTransport,
   schema: {
     fields: [
-      { id: "company", kind: "text", label: "Company", required: true },
-      { id: "employees", kind: "number", label: "Employees", min: 1 },
+      { id: "company", mappedTo: "company", kind: "text", label: "Company", required: true },
+      { id: "employees", mappedTo: "employees", kind: "number", label: "Employees", min: 1 },
       {
         id: "segment",
+        mappedTo: "segment",
         kind: "category",
         label: "Segment",
         options: ["startup", "mid_market", "enterprise"],
       },
     ],
-    reports: [{ id: "fit", kind: "classifier", label: "Fit" }],
+    reports: [{ id: "fit", mappedTo: "fit", kind: "classifier", label: "Fit" }],
   },
   labels: { submit: "Score lead" },
 });
@@ -42,14 +43,28 @@ Backend request:
 }
 ```
 
-Expected UI behavior: invalid required fields block submit, the submit button reflects submit status, and the classifier report appears after the backend returns `reports.fit`.
+Invalid required fields block submit, and the submit button reflects submit status. To display the
+classifier report, return an envelope whose `mappedTo` matches the report configuration:
+
+```json
+{
+  "reports": [
+    {
+      "backend": "default",
+      "mappedTo": "fit",
+      "status": "ready",
+      "payload": { "prediction": "good fit" }
+    }
+  ]
+}
+```
 
 Mistakes to avoid:
 
 | Mistake                               | Fix                                                    |
 | ------------------------------------- | ------------------------------------------------------ |
-| Omitting stable ids                   | Add ids when the backend depends on key names.         |
-| Returning a top-level prediction only | Return `reports.fit`.                                  |
+| Omitting backend mappings             | Set `mappedTo` for each model input and output.        |
+| Returning a top-level prediction only | Return a `reports` array with explicit envelopes.      |
 | Remounting on every state change      | Mount once and update through controllers when needed. |
 
 Next: [Classification Workflow](/tutorials/classification-workflow/).

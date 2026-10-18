@@ -38,4 +38,6 @@ def predict(request: PredictRequest):
     }
 ```
 
-Expose backend validation as an HTTP error. For a custom message, return a JSON body with `message`.
+Expose backend validation as an HTTP error. FastAPI's `HTTPException` uses a `detail` property;
+parse it in the application transport when the UI should show that message. MLForm does not
+parse HTTP error bodies itself.

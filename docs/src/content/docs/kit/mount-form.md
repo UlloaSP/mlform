@@ -41,7 +41,7 @@ Notes:
 - Pass `containerStrategy: "replace"` only when you want MLForm to replace existing host content and restore it on `unmount()`.
 - `reportFetchMode` controls async reports after submit: `"lazy"` keeps renderer-driven fetches, `"all"` waits for all fetch-backed reports before success events, and `"none"` skips report fetches.
 - `reportPane: "hidden"` hides reports in every layout. In explicit layouts, `"auto"` and `"always"` render the report nodes placed in the layout; in the default and split layouts they control the primitive report pane.
-- Use `mounted.submit()` for programmatic submission that follows this mode. `mounted.form.submit()` calls the lower-level runtime directly.
+- Use `mounted.submit()` for programmatic submission that follows this mode. On validation failure it reveals the first invalid field, opens its containing layout section and focuses its control before rejecting with `ValidationError`. `mounted.form.submit()` calls the headless runtime directly and does not move focus.
 - Pass custom field and report kinds through `plugins`; kit registers their definitions, presenters, and behaviors together.
 - Set `hostLifecycle: "document"` to suspend on hidden/pagehide and resume on visible/pageshow. The default `"manual"` leaves host lifecycle control to the application.
 - To mount inside an iframe, load MLForm in that iframe first so its Web Components are registered. A same-origin parent can then call `mountForm` with a container from the iframe; design media and field focus use the iframe's window.

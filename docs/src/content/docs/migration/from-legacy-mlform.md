@@ -48,8 +48,8 @@ Current schema:
 
 ```ts
 const schema = {
-  fields: [{ kind: "text", label: "Prompt" }],
-  reports: [{ kind: "classifier", label: "Prediction" }],
+  fields: [{ kind: "text", label: "Prompt", mappedTo: "prompt" }],
+  reports: [{ kind: "classifier", label: "Prediction", mappedTo: "prediction" }],
 };
 ```
 

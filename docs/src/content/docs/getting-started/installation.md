@@ -9,10 +9,10 @@ Install the runtime package in an application:
 npm install mlform
 ```
 
-If you want the exact release documented here, install `0.1.25` explicitly:
+To pin the installed release instead of accepting a version range:
 
 ```bash
-npm install mlform@0.1.25
+npm install --save-exact mlform
 ```
 
 Import from the kit for normal application use:
@@ -38,7 +38,9 @@ vp test
 vp build
 ```
 
-The package supports Node.js `>=20.19.0` for Node-based consumers and tooling. The docs workspace is an Astro Starlight app under `docs/` and uses the same `vp` workflow:
+The package supports Node.js `>=20.19.0` for Node-based consumers. The docs workspace requires
+Node.js `>=22.18.0`; repository CI uses Node.js 24 for library and playground checks and Node.js
+22.18 for docs. The Astro Starlight app under `docs/` uses the same `vp` workflow:
 
 ```bash
 cd docs

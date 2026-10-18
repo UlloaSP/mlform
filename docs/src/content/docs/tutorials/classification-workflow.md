@@ -52,7 +52,7 @@ Mistakes to avoid:
 
 | Mistake                                  | Fix                                                               |
 | ---------------------------------------- | ----------------------------------------------------------------- |
-| Using display labels as backend keys     | Use stable report ids.                                            |
+| Using display labels as backend keys     | Set `mappedTo` and return the matching `(backend, mappedTo)` envelope. |
 | Hiding class probabilities in the schema | Set `showClassProbabilities: true` or omit it to use the default. |
 
 Next: [Regression Workflow](/tutorials/regression-workflow/).

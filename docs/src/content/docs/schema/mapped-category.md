@@ -13,7 +13,7 @@ User selects "Red"
   -> subordinate fields update in one batch
 ```
 
-By default, the master `mapped-category` value is not submitted. The backend receives the subordinate fields through their own `mappedTo` values. Set `includeInSubmission: true` on the master only when the backend also needs the selected label/value.
+By default, the master `mapped-category` value is not submitted. The backend receives the subordinate fields through their own `mappedTo` values. Set `includeInSubmission: true` and an explicit `mappedTo` on the master only when the backend also needs the selected value.
 
 ## Schema
 
@@ -34,9 +34,9 @@ const schema = {
     { kind: "number", id: "is_red", label: "is_red", mappedTo: "is_red", hidden: true, inactiveFieldPolicy: "include" },
     { kind: "number", id: "is_green", label: "is_green", mappedTo: "is_green", hidden: true, inactiveFieldPolicy: "include" },
     { kind: "number", id: "is_blue", label: "is_blue", mappedTo: "is_blue", hidden: true, inactiveFieldPolicy: "include" },
-    { kind: "number", id: "size", label: "Size (cm)", min: 1, max: 100, required: true },
+    { kind: "number", id: "size", mappedTo: "size", label: "Size (cm)", min: 1, max: 100, required: true },
   ],
-  reports: [{ kind: "classifier" }],
+  reports: [{ kind: "classifier", mappedTo: "risk" }],
 };
 ```
 

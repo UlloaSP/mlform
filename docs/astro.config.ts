@@ -41,6 +41,9 @@ const sidebar = [
     items: [
       { label: "Schema Design", slug: "guides/schema-design" },
       { label: "Backend Contract", slug: "guides/backend-contract" },
+      { label: "Transport Architecture", slug: "guides/transport-architecture" },
+      { label: "Transport Capabilities", slug: "guides/transport-capabilities" },
+      { label: "Protocol Adapters", slug: "guides/transport-protocol-adapters" },
       { label: "Validation", slug: "guides/validation" },
       { label: "Hooks and Lifecycle", slug: "guides/hooks-and-lifecycle" },
       { label: "Error Handling", slug: "guides/error-handling" },
@@ -63,12 +66,24 @@ const sidebar = [
     ],
   },
   {
+    label: "Examples",
+    collapsed: true,
+    items: [
+      { label: "Basic Form", slug: "examples/basic-form" },
+      { label: "ML Classification", slug: "examples/ml-classification" },
+      { label: "Series", slug: "examples/series" },
+      { label: "React", slug: "examples/react" },
+      { label: "Custom Transport", slug: "examples/custom-transport" },
+    ],
+  },
+  {
     label: "Schema",
     collapsed: true,
     items: [
       { label: "Overview", slug: "schema/overview" },
       { label: "Fields", slug: "schema/fields" },
       { label: "Mapped Category", slug: "schema/mapped-category" },
+      { label: "OneHot Category", slug: "schema/onehot-category" },
       { label: "Reports", slug: "schema/reports" },
       { label: "Conditions", slug: "schema/conditions" },
       { label: "Initial Values", slug: "schema/initial-values" },
@@ -93,6 +108,7 @@ const sidebar = [
     collapsed: true,
     items: [
       { label: "mountForm", slug: "kit/mount-form" },
+      { label: "Primitive Adapter", slug: "kit/primitive-adapter" },
       { label: "Wizard Layout", slug: "kit/wizard-layout" },
       { label: "Tabs Layout", slug: "kit/tabs-layout" },
       { label: "Accordion Layout", slug: "kit/accordion-layout" },
@@ -171,7 +187,7 @@ const sidebar = [
       { label: "Package Exports", slug: "reference/package-exports" },
       { label: "View", slug: "reference/view" },
       { label: "Kit", slug: "reference/kit" },
-      { label: "Engine", slug: "reference/engine" },
+      { label: "Runtime", slug: "reference/engine" },
       { label: "Primitives", slug: "reference/primitives" },
       { label: "Design System", slug: "reference/design" },
       { label: "Errors", slug: "reference/errors" },

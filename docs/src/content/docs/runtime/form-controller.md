@@ -90,6 +90,10 @@ the same controller active again without restarting aborted work. Both methods a
 cannot complete. Resetting the form or changing values while submission is still waiting for
 validation aborts that submission.
 
+When submission fails after validation, reports enter `error` with the failure message instead
+of returning to an awaiting-submission placeholder. Aborting clears pending reports to `idle`.
+A retry moves reports through loading again and replaces their previous state with its result.
+
 ## Save and restore a draft
 
 `createSnapshot()` returns a frozen, versioned draft containing field values and interaction state.
@@ -112,6 +116,10 @@ Snapshot values must be JSON-compatible. A custom field with another value type 
 `serializeSnapshotValue` and `restoreSnapshotValue` on its field definition. Snapshot restoration
 rejects unknown versions, missing fields, extra fields, and schema signature mismatches before
 changing runtime state.
+
+Built-in date values, including date columns in Series, serialize as ISO timestamps and restore
+as dates. Invalid numeric drafts remain strings, so saving a draft does not discard unfinished
+input. Snapshots store runtime values rather than an editor's spelling of a valid number.
 
 Use `saveFormSnapshot`, `restoreFormSnapshot`, and `removeFormSnapshot` from `mlform/runtime` with a
 `FormPersistenceAdapter` when storage is asynchronous. Pass a previously loaded value as

@@ -18,8 +18,8 @@ MLForm needs browser APIs, so mount it from a client script.
     mountForm(host, {
       transport: predictionTransport,
       schema: {
-        fields: [{ id: "prompt", kind: "text", label: "Prompt", required: true }],
-        reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+        fields: [{ id: "prompt", mappedTo: "prompt", kind: "text", label: "Prompt", required: true }],
+        reports: [{ id: "prediction", mappedTo: "prediction", kind: "classifier", label: "Prediction" }],
       },
     });
   }

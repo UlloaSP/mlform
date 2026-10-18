@@ -24,7 +24,7 @@ import type { FormSchema } from "mlform/schema";
 import { predictionTransport } from "./prediction-transport";
 
 const schema: FormSchema = {
-  fields: [{ id: "prompt", kind: "text", label: "Prompt" }],
+  fields: [{ id: "prompt", mappedTo: "prompt", kind: "text", label: "Prompt" }],
 };
 
 mountForm(container, {

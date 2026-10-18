@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro check && astro build",
-    "check": "vp lint .",
+    "check": "astro check",
     "preview": "astro preview",
     "typecheck": "astro check"
   },

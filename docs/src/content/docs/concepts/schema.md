@@ -10,9 +10,9 @@ import type { FormSchema } from "mlform/schema";
 
 const schema: FormSchema = {
   fields: [
-    { id: "age", kind: "number", label: "Age", min: 0, max: 120, required: true },
+    { id: "age", mappedTo: "age", kind: "number", label: "Age", min: 0, max: 120, required: true },
   ],
-  reports: [{ id: "risk", kind: "classifier", label: "Risk" }],
+  reports: [{ id: "risk", mappedTo: "risk", kind: "classifier", label: "Risk" }],
 };
 ```
 

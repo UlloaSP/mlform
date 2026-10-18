@@ -26,7 +26,13 @@ import { predictionTransport } from "./prediction-transport";
 
 The kit default is `inactiveFieldPolicy: "omit"`. That keeps backend payloads focused on active user choices.
 
-Use `inactiveFieldPolicy: "include"` when the backend must receive the full state snapshot.
+Use `inactiveFieldPolicy: "include"` to retain mapped hidden or disabled values in submission.
+It does not add missing mappings or override `includeInSubmission: false`. Hidden and disabled
+fields skip field validation even under this policy; the backend must validate values it receives.
+
+Read-only and disabled controls use muted text and backgrounds and hide the editing caret.
+Read-only text and numeric controls remain focusable so users can select and copy their values.
+Hidden fields occupy no layout space. Read-only fields remain subject to validation.
 
 ```ts
 mountForm(container, {

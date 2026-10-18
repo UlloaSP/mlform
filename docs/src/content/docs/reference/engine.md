@@ -1,30 +1,20 @@
 ---
-title: Engine Reference
+title: Runtime Reference
 description: Form state, validation, submit flow, and registries.
 ---
 
-Important exports from `mlform/runtime` and related runtime-facing modules:
+Import each operation from its owning package surface:
 
-- `createForm`
-- `createRegistry`
-- `EngineError`
-- `RegistryError`
-- `ValidationError`
-- `SubmitError`
-- `SubmissionAbortedError`
-- `createBuiltinMlRegistry` from `mlform/builtins`
+| Import path | Exports |
+| --- | --- |
+| `mlform/runtime` | `createForm`, `EngineError`, `RegistryError`, `ValidationError`, `SubmitError`, `SubmissionAbortedError` |
+| `mlform/schema` | `createRegistry`, `normalizeSchema` |
+| `mlform/builtins` | `createBuiltinMlRegistry`, `calculateSeriesAggregation`, `getSeriesCellErrors` |
 
-Important types:
+Runtime types include `FormController`, `FieldController`, `ReportController`, `FormHooks`,
+`FormValidator`, and `SubmitResult`.
 
-- `FormSchema`
-- `FieldConfig`
-- `ReportConfig`
-- `FormController`
-- `FieldController`
-- `ReportController`
-- `Transport`
-- `FormHooks`
-- `FormValidator`
-- `SubmitResult`
+Import `FormSchema`, `FieldConfig`, and `ReportConfig` from `mlform/schema`, and `Transport` from
+`mlform/transport` when an integration needs those layer contracts directly.
 
 Use this layer when you need to drive form state without the default primitive UI.

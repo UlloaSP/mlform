@@ -28,7 +28,7 @@ mountForm(container, {
       },
     ],
     reports: [
-      { id: "forecast", kind: "regressor", label: "Next period", unit: "units", precision: 1 },
+      { id: "forecast", mappedTo: "forecast", kind: "regressor", label: "Next period", unit: "units", precision: 1 },
     ],
   },
 });

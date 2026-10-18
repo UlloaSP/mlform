@@ -20,8 +20,8 @@ export class PredictionFormComponent implements AfterViewInit, OnDestroy {
     this.mounted = mountForm(this.host.nativeElement, {
       transport: predictionTransport,
       schema: {
-        fields: [{ id: "prompt", kind: "text", label: "Prompt", required: true }],
-        reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+        fields: [{ id: "prompt", mappedTo: "prompt", kind: "text", label: "Prompt", required: true }],
+        reports: [{ id: "prediction", mappedTo: "prediction", kind: "classifier", label: "Prediction" }],
       },
     });
   }

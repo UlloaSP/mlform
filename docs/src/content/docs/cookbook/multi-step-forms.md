@@ -15,15 +15,16 @@ let step = "profile";
 
 const schema = {
   fields: [
-    { id: "name", kind: "text", label: "Name" },
+    { id: "name", mappedTo: "name", kind: "text", label: "Name" },
     {
       id: "risk_details",
+      mappedTo: "risk_details",
       kind: "text",
       label: "Risk details",
       hiddenWhen: () => step !== "risk",
     },
   ],
-  reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+  reports: [{ id: "prediction", mappedTo: "prediction", kind: "classifier", label: "Prediction" }],
 };
 ```
 

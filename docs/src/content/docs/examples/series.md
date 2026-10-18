@@ -28,7 +28,7 @@ mountForm(container, {
         maxPoints: 24,
       },
     ],
-    reports: [{ id: "forecast", kind: "regressor", label: "Next period", precision: 1 }],
+    reports: [{ id: "forecast", mappedTo: "forecast", kind: "regressor", label: "Next period", precision: 1 }],
   },
 });
 ```

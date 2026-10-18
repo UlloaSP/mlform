@@ -14,12 +14,13 @@ mountForm(container, {
     fields: [
       {
         id: "prompt",
+        mappedTo: "prompt",
         kind: "text",
         label: "Prompt",
         readOnlyWhen: () => reviewMode,
       },
     ],
-    reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+    reports: [{ id: "prediction", mappedTo: "prediction", kind: "classifier", label: "Prediction" }],
   },
   initialValues: { prompt: "Previously submitted text" },
 });

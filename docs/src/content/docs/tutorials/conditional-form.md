@@ -14,9 +14,10 @@ mountForm(container, {
   transport: predictionTransport,
   schema: {
     fields: [
-      { id: "advanced", kind: "boolean", label: "Use advanced options" },
+      { id: "advanced", includeInSubmission: false, kind: "boolean", label: "Use advanced options" },
       {
         id: "temperature",
+        mappedTo: "temperature",
         kind: "number",
         label: "Temperature",
         min: 0,
@@ -26,13 +27,14 @@ mountForm(container, {
       },
       {
         id: "model",
+        mappedTo: "model",
         kind: "category",
         label: "Model",
         options: ["stable", "experimental"],
         readOnlyWhen: { kind: "form-operation", equals: "submitting" },
       },
     ],
-    reports: [{ id: "prediction", kind: "classifier", label: "Prediction" }],
+    reports: [{ id: "prediction", mappedTo: "prediction", kind: "classifier", label: "Prediction" }],
   },
 });
 ```
