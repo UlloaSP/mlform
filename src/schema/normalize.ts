@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import { RegistryError } from "./registry";
-import { normalizeSchemaId } from "./ids";
+import { normalizeSchemaId, runtimeIdPattern } from "./ids";
 import type { FieldConfig, NormalizedFieldConfig } from "./types/field";
 import type { FormSchema, NormalizedFormSchema } from "./types/form";
 import type { Registry } from "./types/registry";
@@ -30,8 +30,9 @@ const resolveId = (
   usedIds: Set<string>,
   fallbackPrefix: string,
   path: readonly (string | number)[],
+  reservedIds: ReadonlySet<string>,
 ): string => {
-  const baseId = normalizeSchemaId((explicitId ?? fallbackLabel) || fallbackPrefix);
+  const baseId = explicitId ?? normalizeSchemaId(fallbackLabel || fallbackPrefix);
 
   if (explicitId) {
     if (usedIds.has(baseId)) {
@@ -44,7 +45,11 @@ const resolveId = (
 
   let candidate = baseId;
   let suffix = 2;
-  while (usedIds.has(candidate)) {
+  while (
+    !runtimeIdPattern.test(candidate) ||
+    usedIds.has(candidate) ||
+    reservedIds.has(candidate)
+  ) {
     candidate = `${baseId}-${suffix}`;
     suffix += 1;
   }
@@ -58,6 +63,7 @@ const normalizeField = (
   index: number,
   registry: Registry,
   usedIds: Set<string>,
+  reservedIds: ReadonlySet<string>,
 ): NormalizedFieldConfig => {
   const definition = registry.getField(field.kind);
   if (!definition) {
@@ -82,7 +88,14 @@ const normalizeField = (
   }
   return {
     ...parsed,
-    id: resolveId(parsed.id, parsed.label, usedIds, `field-${index + 1}`, ["fields", index, "id"]),
+    id: resolveId(
+      parsed.id,
+      parsed.label,
+      usedIds,
+      `field-${index + 1}`,
+      ["fields", index, "id"],
+      reservedIds,
+    ),
   };
 };
 
@@ -91,6 +104,7 @@ const normalizeReport = (
   index: number,
   registry: Registry,
   usedIds: Set<string>,
+  reservedIds: ReadonlySet<string>,
 ): NormalizedReportConfig => {
   const definition = registry.getReport(report.kind);
   if (!definition) {
@@ -98,11 +112,14 @@ const normalizeReport = (
   }
 
   const parsed = parseReportConfig(definition.schema, report);
-  const id = resolveId(parsed.id, parsed.label ?? parsed.kind, usedIds, `report-${index + 1}`, [
-    "reports",
-    index,
-    "id",
-  ]);
+  const id = resolveId(
+    parsed.id,
+    parsed.label ?? parsed.kind,
+    usedIds,
+    `report-${index + 1}`,
+    ["reports", index, "id"],
+    reservedIds,
+  );
   return {
     ...parsed,
     id,
@@ -115,14 +132,18 @@ export const normalizeSchema = (schema: FormSchema, registry: Registry): Normali
   }
   const usedFieldIds = new Set<string>();
   const usedReportIds = new Set<string>();
+  const explicitIds = (items: readonly { id?: string }[]) =>
+    new Set(items.flatMap(({ id }) => (typeof id === "string" ? [id] : [])));
+  const reservedFieldIds = explicitIds(schema.fields);
+  const reservedReportIds = explicitIds(schema.reports ?? []);
   const parsedFields = schema.fields.map((field, index) =>
-    normalizeField(field, index, registry, usedFieldIds),
+    normalizeField(field, index, registry, usedFieldIds, reservedFieldIds),
   );
   const fields = normalizeFieldContracts(parsedFields, registry, (message, path) => {
     throw new SchemaNormalizationError(message, path);
   });
   const reports = (schema.reports ?? []).map((report, index) =>
-    normalizeReport(report, index, registry, usedReportIds),
+    normalizeReport(report, index, registry, usedReportIds, reservedReportIds),
   );
   return {
     fields,

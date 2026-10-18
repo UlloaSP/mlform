@@ -63,8 +63,8 @@ operators in one condition must all hold. `equals` and `notEquals` compare runti
 `Object.is`, so compare numbers to numbers and booleans to booleans; `empty` treats `null`, blank
 strings, and empty arrays as empty.
 
-`field` and `otherField` are field ids, normalized like the ids themselves: `"Include Details"`
-refers to `include-details`. A reference to a field that does not exist, including inside `all`,
+`field` and `otherField` are exact runtime ids: `"include_details"` refers to a field whose
+explicit id is `include_details`. A reference to a field that does not exist, including inside `all`,
 `any`, or `not`, fails schema normalization.
 
 ### Function conditions

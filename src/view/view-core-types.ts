@@ -3,6 +3,7 @@
 
 import type { FieldDescriptor, PrimitiveDescriptorRegistry, ReportDescriptor } from "@/primitives";
 import type {
+  ValidationMessageFormatter,
   FieldController,
   FieldStateSnapshot,
   FormController,
@@ -104,6 +105,7 @@ export interface CreateFormViewOptions {
   initialValues?: Record<string, unknown>;
   initialSnapshot?: unknown;
   validators?: FormValidator[];
+  formatValidationMessage?: ValidationMessageFormatter;
   hooks?: FormHooks;
   hookFailurePolicy?: {
     afterSubmit?: "fail-submit" | "preserve-success";

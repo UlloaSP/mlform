@@ -4,6 +4,7 @@
 import { EngineError } from "../errors";
 import type { InternalFieldState } from "../state";
 import type {
+  ValidationMessageResolver,
   FieldDefinition,
   FormOperation,
   FormSubmissionStatus,
@@ -36,6 +37,7 @@ export const prepareFieldState = ({
   getSubmitCount,
   getFormOperation,
   getSubmissionStatus,
+  formatMessage,
 }: {
   config: NormalizedFieldConfig;
   definition: FieldDefinition;
@@ -45,6 +47,7 @@ export const prepareFieldState = ({
   getSubmitCount: () => number;
   getFormOperation: () => FormOperation;
   getSubmissionStatus: () => FormSubmissionStatus;
+  formatMessage?: ValidationMessageResolver;
 }): InternalFieldState => {
   const normalizedValue = normalizeValue(definition, config, value);
   const flags = resolveFlags(config, values, getSubmitCount, getFormOperation, getSubmissionStatus);
@@ -63,6 +66,7 @@ export const prepareFieldState = ({
     values,
     getSubmitCount(),
     flags,
+    formatMessage,
   );
 
   return toSnapshotState({
@@ -87,6 +91,7 @@ export const refreshFieldState = ({
   getSubmitCount,
   getFormOperation,
   getSubmissionStatus,
+  formatMessage,
   options,
 }: {
   config: NormalizedFieldConfig;
@@ -96,6 +101,7 @@ export const refreshFieldState = ({
   getSubmitCount: () => number;
   getFormOperation: () => FormOperation;
   getSubmissionStatus: () => FormSubmissionStatus;
+  formatMessage?: ValidationMessageResolver;
   options?: {
     preserveValidationErrors?: boolean;
     preserveExternalErrors?: boolean;
@@ -120,6 +126,7 @@ export const refreshFieldState = ({
     values,
     getSubmitCount(),
     flags,
+    formatMessage,
   );
 
   return toSnapshotState({

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type {
+  ValidationMessageFormatter,
   FieldConfig,
   FieldStateSnapshot,
   FormLifecycle,
@@ -116,6 +117,7 @@ export interface CreateFormConfig {
   behaviors?: RuntimeBehavior[];
   initialValues?: Record<string, unknown>;
   validators?: FormValidator[];
+  formatValidationMessage?: ValidationMessageFormatter;
   hooks?: FormHooks;
   hookFailurePolicy?: {
     afterSubmit?: "fail-submit" | "preserve-success";

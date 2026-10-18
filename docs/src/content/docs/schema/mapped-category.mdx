@@ -68,7 +68,7 @@ Every option is an object; plain strings are not accepted.
 
 ## Rules
 
-- **Targets are field ids.** Mapping keys are normalized like ids, and every key must name a field
+- **Targets are field ids.** Mapping keys use exact runtime ids, and every key must name a field
   in the schema; an unknown target fails schema normalization.
 - **One direction.** Changing the master writes the targets. Editing a target does not change the
   master, and nothing is written when the master becomes empty.

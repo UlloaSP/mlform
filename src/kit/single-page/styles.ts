@@ -5,6 +5,7 @@ import { css } from "lit";
 
 export const singlePageRootStyles = css`
   :host {
+    container: mlf-layout / inline-size;
     display: block;
     inline-size: 100%;
     block-size: 100%;
@@ -168,6 +169,9 @@ export const singlePageRootStyles = css`
     font-weight: 600;
     cursor: pointer;
   }
+  .footer > .btn-submit:only-child {
+    margin-inline-start: auto;
+  }
   .btn-submit {
     border-color: var(--mlf-submit-bg, var(--mlf-color-accent, #1e40af));
     background: var(--mlf-submit-bg, var(--mlf-color-accent, #1e40af));
@@ -177,7 +181,10 @@ export const singlePageRootStyles = css`
     cursor: not-allowed;
     opacity: 0.55;
   }
-  @media (max-width: 900px) {
+  @container mlf-layout (max-width: 900px) {
+    .footer > .btn-submit:only-child {
+      margin-inline-start: 0;
+    }
     .body {
       padding: 1rem;
     }

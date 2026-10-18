@@ -2,8 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
-import type { BaseFieldConfig, FieldDefinition } from "@/schema";
+import { builtinMessage } from "../../validation-message";
+import type { BaseFieldConfig, FieldDefinition, ValidationMessageResolver } from "@/schema";
 import { baseFieldShape } from "../shared";
 import { booleanFieldDefinition } from "./boolean";
 import { categoryFieldDefinition } from "./category";
@@ -102,9 +102,13 @@ const isSubFieldEmpty = (value: unknown): boolean => {
   return false;
 };
 
-export const validateSubFieldValue = (config: SeriesColumnConfig, value: unknown): string[] => {
+export const validateSubFieldValue = (
+  config: SeriesColumnConfig,
+  value: unknown,
+  formatMessage?: ValidationMessageResolver,
+): string[] => {
   if (config.required && isSubFieldEmpty(value)) {
-    return [requiredMessage];
+    return [formatMessage?.("required", requiredMessage) ?? requiredMessage];
   }
 
   const definition = getBuiltinSeriesSubFieldDefinition(config.kind);
@@ -117,6 +121,7 @@ export const validateSubFieldValue = (config: SeriesColumnConfig, value: unknown
     values: {},
     submitCount: 0,
     validationVersion: 0,
+    formatMessage,
     signal: undefined,
   });
 
@@ -156,8 +161,13 @@ export const validateSeriesSubFieldConfig = (
   return invalid;
 };
 
-export const prefixRowErrors = (index: number, label: string, errors: string[]): string[] => {
-  return errors.map((error) => `Row ${index + 1} (${label}): ${error}`);
+export const prefixRowErrors = (
+  index: number,
+  label: string,
+  errors: string[],
+  formatMessage?: ValidationMessageResolver,
+): string[] => {
+  return errors.map((error) => builtinMessage(formatMessage, "seriesRow", index + 1, label, error));
 };
 
 export const normalizeSeriesPoint = (value: unknown, config: SeriesFieldConfig): SeriesPoint =>
@@ -174,6 +184,7 @@ export const normalizeSeriesPoint = (value: unknown, config: SeriesFieldConfig):
 export const validateSeriesPointCount = (
   value: SeriesPoint[],
   config: SeriesFieldConfig,
+  formatMessage?: ValidationMessageResolver,
 ): Set<string> => {
   const errors = new Set<string>();
 
@@ -182,15 +193,15 @@ export const validateSeriesPointCount = (
     config.maxPoints !== undefined &&
     config.minPoints > config.maxPoints
   ) {
-    errors.add(builtinValidationMessages.invalidPointCountRange);
+    errors.add(builtinMessage(formatMessage, "invalidPointCountRange"));
   }
 
   if (config.minPoints !== undefined && value.length < config.minPoints) {
-    errors.add(builtinValidationMessages.minPoints(config.minPoints));
+    errors.add(builtinMessage(formatMessage, "minPoints", config.minPoints));
   }
 
   if (config.maxPoints !== undefined && value.length > config.maxPoints) {
-    errors.add(builtinValidationMessages.maxPoints(config.maxPoints));
+    errors.add(builtinMessage(formatMessage, "maxPoints", config.maxPoints));
   }
 
   return errors;

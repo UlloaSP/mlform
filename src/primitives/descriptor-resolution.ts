@@ -24,6 +24,7 @@ export const resolveFieldDescriptor = (
 ): FieldDescriptor =>
   descriptorRegistry?.getField(field.kind)?.describe(field.config, {
     fieldId: field.id,
+    formatMessage: field.formatValidationMessage,
     state: field.state,
     value: field.state.value,
   }) ?? fallbackFieldDescriptor(field);

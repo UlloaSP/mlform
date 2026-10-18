@@ -10,12 +10,11 @@ import {
   type InternalFieldState,
 } from "../state";
 import type {
-  FieldController,
+  ValidationMessageFormatter,
+  ValidationMessageResolver,
   FieldDefinition,
-  FieldValidationResult,
   FormOperation,
   FormSubmissionStatus,
-  InactiveFieldPolicy,
   NormalizedFieldConfig,
 } from "../types";
 import {
@@ -28,12 +27,11 @@ import { deepFreeze } from "../utils";
 import { cloneValue } from "../values";
 import { prepareFieldState, refreshFieldState } from "./state-calculations";
 import { setFieldState } from "./state";
-import { resolveMappedTargets, type FieldSubmissionEntry, type MappedToTarget } from "@/schema";
+import { resolveMappedTargets } from "@/schema";
 import {
   prepareRestoredFieldState,
   restoreFieldSnapshotValue,
   serializeFieldSnapshotValue,
-  type RestoredFieldOptions,
 } from "./snapshot";
 
 type CreateFieldControllerOptions = {
@@ -44,39 +42,12 @@ type CreateFieldControllerOptions = {
   getSubmitCount: () => number;
   getFormOperation: () => FormOperation;
   getSubmissionStatus: () => FormSubmissionStatus;
+  formatValidationMessage?: ValidationMessageFormatter;
   onValueChange?: (fieldId: string, values: Record<string, unknown>) => void;
 };
 
-export type RefreshOptions = {
-  values?: Record<string, unknown>;
-  preserveValidationErrors?: boolean;
-  preserveExternalErrors?: boolean;
-  resetInactiveToInitial?: boolean;
-  inactiveFieldPolicy?: InactiveFieldPolicy;
-};
-
-export type InternalFieldController = FieldController & {
-  serialize(): unknown;
-  refresh(options?: RefreshOptions): InternalFieldState;
-  applyValue(value: unknown, values: Record<string, unknown>): void;
-  prepareValue(value: unknown, values: Record<string, unknown>): InternalFieldState;
-  commitState(state: InternalFieldState): void;
-  setExternalErrors(errors: string[]): void;
-  coerceValue(value: unknown): unknown;
-  validate(validationVersion?: number): Promise<FieldValidationResult>;
-  abortValidation(reason?: string): void;
-  dispose(): void;
-  getMappedTargets(backend?: string): readonly MappedToTarget[];
-  getSubmissionEntries(backend?: string): readonly FieldSubmissionEntry[] | undefined;
-  serializeSnapshotValue(): import("@/schema").JsonValue;
-  restoreSnapshotValue(value: import("@/schema").JsonValue): unknown;
-  prepareRestoredState(
-    value: unknown,
-    values: Record<string, unknown>,
-    touched: boolean,
-    options?: RestoredFieldOptions,
-  ): InternalFieldState;
-};
+export type { InternalFieldController, RefreshOptions } from "./controller-types";
+import type { InternalFieldController } from "./controller-types";
 
 export const createFieldController = ({
   config,
@@ -87,6 +58,7 @@ export const createFieldController = ({
   getFormOperation,
   getSubmissionStatus,
   onValueChange,
+  formatValidationMessage,
 }: CreateFieldControllerOptions): InternalFieldController => {
   let disposed = false;
   const assertUsable = (): void => {
@@ -99,6 +71,9 @@ export const createFieldController = ({
     }
   };
   const readonlyConfig = deepFreeze(cloneValue(config));
+  const formatMessage: ValidationMessageResolver = (code, defaultMessage, args = []) =>
+    formatValidationMessage?.({ code, defaultMessage, args, field: readonlyConfig }) ??
+    defaultMessage;
   const initialValue =
     readonlyConfig.defaultValue !== undefined
       ? readonlyConfig.defaultValue
@@ -112,6 +87,7 @@ export const createFieldController = ({
     getSubmitCount(),
     getFormOperation(),
     getSubmissionStatus(),
+    formatMessage,
   );
   setFieldState(store, config.id, initialState);
 
@@ -124,10 +100,12 @@ export const createFieldController = ({
     getSubmitCount,
     getFormOperation,
     getSubmissionStatus,
+    formatMessage,
     commitState: (fieldId, nextState) => setFieldState(store, fieldId, nextState),
   });
 
   const controller: InternalFieldController = {
+    formatValidationMessage: formatMessage,
     get id() {
       return readonlyConfig.id;
     },
@@ -170,6 +148,7 @@ export const createFieldController = ({
       return prepareFieldState({
         config: readonlyConfig,
         definition,
+        formatMessage,
         value,
         values,
         currentState: getInternalState(),
@@ -237,6 +216,7 @@ export const createFieldController = ({
       return prepareRestoredFieldState({
         config: readonlyConfig,
         definition,
+        formatMessage,
         currentState: getInternalState(),
         value,
         values,
@@ -272,6 +252,7 @@ export const createFieldController = ({
       const nextState = refreshFieldState({
         config: readonlyConfig,
         definition,
+        formatMessage,
         currentState: getInternalState(),
         values: options?.values ?? getValues(),
         getSubmitCount,

@@ -5,6 +5,7 @@ import { LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { FormViewController, FormViewSnapshot } from "@/view";
 import type { MountFormOptions } from "../mount-types";
+import { executePrimitiveSubmit } from "@/primitives";
 
 export abstract class KitViewElement extends LitElement {
   @property({ attribute: false }) accessor view: FormViewController | undefined;
@@ -14,6 +15,16 @@ export abstract class KitViewElement extends LitElement {
 
   #boundView: FormViewController | undefined;
   #unsubscribe: (() => void) | undefined;
+
+  protected async submit(): Promise<void> {
+    const view = this.view;
+    if (!view) return;
+    await executePrimitiveSubmit(this, view.form, async () => {
+      if (view.reportFetchMode === "lazy") return { result: await view.submit() };
+      const pipelineResult = await view.submitPipeline();
+      return { result: pipelineResult.submitResult, pipelineResult };
+    });
+  }
 
   connectedCallback(): void {
     super.connectedCallback();

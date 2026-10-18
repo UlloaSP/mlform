@@ -33,7 +33,7 @@ describe("submission snapshot", () => {
       transport: { submit },
     });
 
-    form.setValues({ "ui-age": 42 });
+    form.setValues({ ui_age: 42 });
     const snapshot = createSubmissionSnapshot(form, {
       backend: "remote",
       inactiveFieldPolicy: "include",
@@ -43,8 +43,8 @@ describe("submission snapshot", () => {
     expect(snapshot.displayValues).toEqual({ patientAge: 42 });
     expect(snapshot.modelValues).toEqual({ actual_age: 42, note: "review" });
     expect(snapshot.inputs.map(({ fieldId, value }) => [fieldId, value])).toEqual([
-      ["ui-age", 42],
-      ["internal-note", "review"],
+      ["ui_age", 42],
+      ["internal_note", "review"],
     ]);
   });
 
@@ -76,7 +76,7 @@ describe("submission snapshot", () => {
       transport: { submit },
     });
 
-    form.setValues({ "ui-age": 42, "ui-sex": "M" });
+    form.setValues({ ui_age: 42, ui_sex: "M" });
     const result = await form.submit();
 
     expect(submit).toHaveBeenCalledWith(
@@ -87,13 +87,13 @@ describe("submission snapshot", () => {
     );
     expect(result.inputs).toEqual([
       expect.objectContaining({
-        fieldId: "ui-age",
+        fieldId: "ui_age",
         displayKey: "patientAge",
         mappedTo: "age_years",
         modelValues: { age_years: 42 },
       }),
       expect.objectContaining({
-        fieldId: "ui-sex",
+        fieldId: "ui_sex",
         displayKey: "sex",
         modelValues: { sex_m: 1, sex_f: 0 },
       }),
@@ -145,20 +145,20 @@ describe("submission snapshot", () => {
       transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
-    form.setValues({ "ui-age": 42, "ui-color": "green" });
+    form.setValues({ ui_age: 42, ui_color: "green" });
     const snapshot = createSubmissionSnapshot(form);
 
     expect(snapshot.displayValues).toEqual({ patientAge: 42, color: "green" });
     expect(snapshot.modelValues).toEqual({ "0": 42, "1": 0, "2": 1 });
     expect(snapshot.inputs).toEqual([
       expect.objectContaining({
-        fieldId: "ui-age",
+        fieldId: "ui_age",
         displayKey: "patientAge",
         mappedTo: 0,
         modelValues: { "0": 42 },
       }),
       expect.objectContaining({
-        fieldId: "ui-color",
+        fieldId: "ui_color",
         displayKey: "color",
         modelValues: { "1": 0, "2": 1 },
       }),
@@ -200,7 +200,7 @@ describe("submission snapshot", () => {
       transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
-    form.setValues({ "ui-age": 42, "ui-color": "green" });
+    form.setValues({ ui_age: 42, ui_color: "green" });
     const snapshot = createSubmissionSnapshot(form);
 
     expect(snapshot.displayValues).toEqual({ patientAge: 42, color: "green" });

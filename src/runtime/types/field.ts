@@ -2,6 +2,9 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 export type {
+  ValidationMessage,
+  ValidationMessageFormatter,
+  ValidationMessageResolver,
   AllConditions,
   AnyConditions,
   BaseFieldConfig,
@@ -28,6 +31,7 @@ export type {
 } from "@/schema";
 
 import type {
+  ValidationMessageResolver,
   FieldDefinition as SchemaFieldDefinition,
   FieldStateSnapshot,
   FieldValidationResult,
@@ -39,6 +43,7 @@ export interface FieldController {
   readonly kind: string;
   readonly config: NormalizedFieldConfig;
   readonly state: FieldStateSnapshot;
+  formatValidationMessage: ValidationMessageResolver;
   setValue(value: unknown): void;
   blur(): void;
   focus(): void;

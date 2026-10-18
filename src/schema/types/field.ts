@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import type { ValidationMessageResolver } from "./validation";
 import type { ZodType } from "zod";
 import type { MappedTo, MappedToTarget } from "./mapping";
 
@@ -72,6 +73,7 @@ export interface FieldValidationContext<TConfig extends FieldConfig = FieldConfi
   values: Record<string, unknown>;
   submitCount: number;
   validationVersion: number;
+  formatMessage?: ValidationMessageResolver;
   signal?: AbortSignal;
 }
 

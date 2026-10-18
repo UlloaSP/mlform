@@ -37,6 +37,43 @@ A submission validates first. If anything is invalid, the transport is not calle
 also reveals the first invalid field: it opens the section, tab, or wizard step that contains it,
 and focuses it. The headless `form.submit()` does not touch the DOM.
 
+## Translating validation errors
+
+Pass `formatValidationMessage` to `mountForm`, `createFormView`, or `createForm`. The formatter
+receives a stable `code`, the default English message, positional `args`, and the normalized
+`field` config. Return a string to replace the message or `undefined` to keep the default.
+
+```ts
+import type { ValidationMessageFormatter } from "mlform/schema";
+
+const formatValidationMessage: ValidationMessageFormatter = ({ code, args, field }) => {
+  if (code === "required") return `${field.label} is needed to continue.`;
+  if (code === "minValue") return `Please enter ${String(args[0])} or more.`;
+  // Look up other codes in your application's translation dictionary.
+  return undefined;
+};
+
+mountForm(container, { schema, transport, formatValidationMessage });
+```
+
+The same formatter applies to defaults, loaded values, edits, restored snapshots, and explicit
+validation. It is local to the form; it does not mutate the shared registry or other forms.
+The UI receives these runtime errors, including series cell errors, without translating them again.
+
+Built-in codes match keys in `builtinValidationMessages` from `mlform/builtins`, for example
+`minLength`, `maxValue`, `stepValue`, and `categoryOptionMismatch`. Runtime required checks use
+`required`. Arguments follow the exported message function's parameters. Series use `seriesRow`
+with `[rowNumber, columnLabel, translatedError]`, `seriesMeasurement` for invalid aggregate
+measurements, and `seriesAggregation` with `[columnLabel]` when an aggregate cannot be computed.
+The field config for a series message is the parent series field.
+
+Custom definitions can use `context.formatMessage?.(code, defaultMessage, args)` inside
+`validateSync` or `validate`; namespace your custom codes to avoid collisions. Custom renderers
+can use `field.formatValidationMessage(code, defaultMessage, args)` for matching diagnostics.
+Unrecognized codes keep their default message. Configuration errors, external errors, and strings
+returned directly by custom or form validators remain the caller's responsibility.
+For labels and success messages, use [UI text options](/kit/labels/).
+
 ## Cross-field rules
 
 Form validators receive the current values and return issues:

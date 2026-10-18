@@ -110,8 +110,9 @@ Your one transport receives `request.backend` and routes the call itself.
 | `continueOnError` | `true` | Keep going after a failed run. Cancellation always stops the remaining runs. |
 
 Each entry in `runs` has `snapshot` (the records sent), `submitResult`, `reportFetchResults`,
-`reportFetchErrors`, `skippedReportIds` (reports that were neither fetched nor failed to fetch in
-that run), and `error`.
+`reportFetchErrors`, `skippedReportFetchIds` (reports that were neither fetched nor failed to fetch in
+that run), and `error`. A report already returned ready by the submission belongs in
+`skippedReportFetchIds`: its additional fetch was skipped, not its result.
 
 The form shows one state at a time: after the loop, the mounted reports display the **last** run,
 so reports mapped only to earlier backends are back to `idle`. Use this API when your code consumes

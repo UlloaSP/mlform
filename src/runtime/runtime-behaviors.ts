@@ -2,7 +2,6 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import type { Registry } from "@/schema";
-import { normalizeSchemaId } from "@/schema";
 import { isPromiseLike, notifyListenerError } from "./utils";
 import type { InternalFieldController } from "./fields";
 import type {
@@ -46,7 +45,7 @@ export const createRuntimeBehaviors = ({
   let activeChangeCompletion: Promise<void> | null = null;
 
   const resolveField = (targetId: string): InternalFieldController | undefined => {
-    return fieldMap.get(targetId) ?? fieldMap.get(normalizeSchemaId(targetId));
+    return fieldMap.get(targetId);
   };
 
   const createBehaviorContext = (

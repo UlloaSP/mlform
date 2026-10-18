@@ -2,8 +2,8 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
-import { normalizeSchemaId, type BaseFieldConfig } from "@/schema";
+import { builtinMessage } from "../../validation-message";
+import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
 
 type MappedCategoryOption = {
@@ -51,14 +51,16 @@ export const mappedCategoryFieldDefinition: BuiltinFieldDefinition<
     }
     return null;
   },
-  validateSync(value, config) {
+  validateSync(value, config, context) {
     if (value === null) {
       return [];
     }
 
     const allowedValues = config.options.map((option) => option.value);
 
-    return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
+    return allowedValues.includes(value)
+      ? []
+      : [builtinMessage(context?.formatMessage, "categoryOptionMismatch")];
   },
   getFieldReferences(config) {
     return config.options.flatMap((option, optionIndex) =>
@@ -74,7 +76,7 @@ export const mappedCategoryFieldDefinition: BuiltinFieldDefinition<
     if (!selected) return;
 
     for (const [targetId, targetValue] of Object.entries(selected.mapping)) {
-      const target = context.getField(targetId) ?? context.getField(normalizeSchemaId(targetId));
+      const target = context.getField(targetId);
       if (!target) {
         throw new Error(
           `mapped-category "${config.id}": target field "${targetId}" not found in schema.`,

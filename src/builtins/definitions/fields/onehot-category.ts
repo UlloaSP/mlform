@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
+import { builtinMessage } from "../../validation-message";
 import { mappedToKey, resolveMappedTargets, type BaseFieldConfig, type MappedTo } from "@/schema";
 import { baseFieldShape, mappedToSchema, type BuiltinFieldDefinition } from "../shared";
 
@@ -51,14 +51,14 @@ export const oneHotCategoryFieldDefinition: BuiltinFieldDefinition<
     }
     return null;
   },
-  validateSync(value, config) {
+  validateSync(value, config, context) {
     if (value === null) {
       return [];
     }
 
     return config.options.some((option) => option.value === value)
       ? []
-      : [builtinValidationMessages.categoryOptionMismatch];
+      : [builtinMessage(context?.formatMessage, "categoryOptionMismatch")];
   },
   getMappedTargets(config, context) {
     return config.options.flatMap((option) =>

@@ -109,6 +109,12 @@ export interface PrimitiveFormState {
 }
 
 export interface PrimitiveFieldController {
+  formatValidationMessage?(
+    this: void,
+    code: string,
+    defaultMessage: string,
+    args?: readonly unknown[],
+  ): string;
   id: string;
   kind: string;
   config: { label?: string; defaultValue?: unknown; [key: string]: unknown };

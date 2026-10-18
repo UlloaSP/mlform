@@ -19,6 +19,7 @@ import { indexLayoutItems, renderLayoutNode } from "../shared/layout-node-render
 import { KitViewElement } from "../shared/view-element";
 import { singlePageRootStyles } from "./styles";
 import type { ReportFetchMode } from "@/view";
+import { defaultKitLabels } from "../defaults";
 
 @customElement(kitTagNames.disclosure)
 export class KitSinglePageElement extends KitViewElement {
@@ -31,8 +32,7 @@ export class KitSinglePageElement extends KitViewElement {
   @property({ type: String }) accessor submitLabel = "Submit";
   @property({ type: String }) accessor validatingLabel = "Validating...";
   @property({ type: String }) accessor submittingLabel = "Submitting...";
-  @property({ attribute: false }) accessor sectionsOpen = (count: number): string =>
-    `${count} sections open`;
+  @property({ attribute: false }) accessor sectionsOpen = defaultKitLabels.sectionsOpen;
 
   render() {
     const snapshot = this.snapshot;
@@ -86,7 +86,7 @@ export class KitSinglePageElement extends KitViewElement {
         </div>
 
         <footer class="footer" part="actions">
-          <span>${this.sectionsOpen(snapshot.disclosure?.openSectionIds.length ?? 0)}</span>
+          ${snapshot.disclosure ? html`<span>${this.sectionsOpen(snapshot.disclosure.openSectionIds.length)}</span>` : html``}
           <button
             type="button"
             class="btn btn-submit"
@@ -106,7 +106,7 @@ export class KitSinglePageElement extends KitViewElement {
     }
 
     try {
-      await this.view.submit();
+      await this.submit();
     } catch {
       await revealFirstInvalidField(this, this.view, focusPrimitiveField);
     }

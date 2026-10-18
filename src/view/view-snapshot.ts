@@ -59,6 +59,7 @@ const buildFieldItem = (
     descriptor:
       presenter?.describe(field.config, {
         fieldId: field.id,
+        formatMessage: field.formatValidationMessage,
         state,
         value: state.value,
       }) ?? fallbackFieldDescriptor(field),

@@ -32,6 +32,11 @@ export const builtinReportFallbacks = {
 } as const;
 
 export const builtinValidationMessages = {
+  seriesMeasurement: "Enter a finite number in every measurement.",
+  seriesRow: (row: number, label: string, error: string): string =>
+    `Row ${row} (${label}): ${error}`,
+  seriesAggregation: (label: string): string =>
+    `${label}: Check the measurements and ensure there are enough values to calculate a result.`,
   invalidNumber: "Value must be a valid number.",
   textPatternMismatch: "Value does not match the expected pattern.",
   categoryOptionMismatch: "Value must match one of the available options.",
@@ -53,7 +58,4 @@ export const builtinValidationMessages = {
     `Date must fall on a step of ${value} day(s) from the minimum date.`,
   minPoints: (value: number): string => `Minimum number of points is ${value}.`,
   maxPoints: (value: number): string => `Maximum number of points is ${value}.`,
-  timestampsUnique: "Timestamps must be unique.",
-  timestampsAscending: "Timestamps must be sorted in ascending order.",
-  timestampsDescending: "Timestamps must be sorted in descending order.",
 } as const;

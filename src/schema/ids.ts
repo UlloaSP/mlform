@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+export const runtimeIdPattern = /^(?!__proto__$|constructor$|prototype$)\S+$/u;
+
 export const normalizeSchemaId = (value: string): string => {
   const normalized = value
     .trim()

@@ -163,7 +163,7 @@ const builtinFieldPresenters: readonly FieldPresenter<BuiltinFieldConfig, unknow
         ...column,
         required: column.required || sources.has(column.id),
       })),
-      cellErrors: getSeriesCellErrors(points, series),
+      cellErrors: getSeriesCellErrors(points, series, context.formatMessage),
       minPoints: config.minPoints,
       maxPoints: config.maxPoints,
       aggregationResults: series.showAggregationSummary

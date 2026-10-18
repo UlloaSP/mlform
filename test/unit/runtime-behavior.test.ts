@@ -61,7 +61,7 @@ describe("runtime behaviors", () => {
 
     form.setValues({ color: "red" });
 
-    expect(form.getValues()).toMatchObject({ color: "red", "is-red": 1 });
+    expect(form.getValues()).toMatchObject({ color: "red", is_red: 1 });
   });
 
   it("prevents an obsolete asynchronous behavior from committing derived values", async () => {

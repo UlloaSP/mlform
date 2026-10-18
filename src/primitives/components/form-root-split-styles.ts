@@ -140,7 +140,7 @@ export const formRootSplitStyles = css`
     background: var(--mlf-shell-action-bg, var(--mlf-color-surface-muted, #f5f7fa));
   }
 
-  @media (max-width: 900px) {
+  @container mlf-layout (max-width: 900px) {
     .root.split {
       display: grid;
     }

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
+import { builtinMessage } from "../../validation-message";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
@@ -48,7 +49,7 @@ export const dateFieldDefinition: BuiltinFieldDefinition<DateFieldConfig, Date |
       context.fail(builtinValidationMessages.invalidDateRange, ["min"]);
     }
   },
-  validateSync(value, config) {
+  validateSync(value, config, context) {
     const errors: string[] = [];
     const minDate = toDate(config.min);
     const maxDate = toDate(config.max);
@@ -58,16 +59,16 @@ export const dateFieldDefinition: BuiltinFieldDefinition<DateFieldConfig, Date |
     }
 
     if (minDate && value.getTime() < minDate.getTime()) {
-      errors.push(builtinValidationMessages.dateOnOrAfter(String(config.min)));
+      errors.push(builtinMessage(context?.formatMessage, "dateOnOrAfter", String(config.min)));
     }
     if (maxDate && value.getTime() > maxDate.getTime()) {
-      errors.push(builtinValidationMessages.dateOnOrBefore(String(config.max)));
+      errors.push(builtinMessage(context?.formatMessage, "dateOnOrBefore", String(config.max)));
     }
     if (config.step !== undefined) {
       const stepBase = minDate ?? new Date("1970-01-01T00:00:00Z");
       const diffDays = Math.round(Math.abs(value.getTime() - stepBase.getTime()) / 86400000);
       if (diffDays % config.step !== 0) {
-        errors.push(builtinValidationMessages.stepDate(config.step));
+        errors.push(builtinMessage(context?.formatMessage, "stepDate", config.step));
       }
     }
 

@@ -32,7 +32,7 @@ is a boolean.
   schema order, followed by every report.
 - An explicit layout places every field exactly once, directly or through a `custom` node's `fields`.
 - A report is placed at most once; reports left out are not rendered.
-- `field`, `report`, and `custom` references use normalized runtime ids.
+- `field`, `report`, and `custom` references use exact runtime ids.
 - Wizards and tabs need at least one step or tab, and each needs at least one node.
 - Sections need a non-empty `title`; they start open unless `defaultOpen: false`.
 - Steps, tabs, sections, and groups without `id` get one from their title (or kind), made unique
@@ -60,5 +60,5 @@ Layout errors are `TypeError`s thrown when the form is created, or by navigation
 | `Unknown wizard step "x".`, `Unknown tab "x".` | `navigation.activate(id)` with an id the layout does not have. |
 | `Unknown disclosure section "x".` | A disclosure call with an unknown section id. |
 
-When a reference fails, compare it with the normalized ids (`view.form.fields.map((f) => f.id)`):
-`customer_age` in a schema becomes `customer-age`.
+When a reference fails, compare it with `view.form.fields.map((field) => field.id)`.
+An explicit `customer_age` stays `customer_age`; only omitted ids are generated from labels.

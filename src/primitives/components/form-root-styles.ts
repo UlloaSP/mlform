@@ -6,6 +6,7 @@ import { formRootSplitStyles } from "./form-root-split-styles";
 
 export const formRootStyles = css`
   :host {
+    container: mlf-layout / inline-size;
     display: block;
     flex: 1 1 auto;
     align-self: stretch;

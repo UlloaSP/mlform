@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import {
-  builtinDesignSystemRegistry,
-  type DesignSystemConfig,
-  type DesignSystemRegistry,
-  mergeDesignSystemConfig,
-} from "@/design";
+import { type DesignSystemConfig, mergeDesignSystemConfig } from "@/design";
 import {
   createBuiltinPrimitiveRegistry,
   primitiveDefaultLabels,
@@ -20,7 +15,7 @@ export const defaultKitLabels: Required<KitLabels> = {
   next: "Next",
   step: "Step",
   tabs: "Form sections",
-  sectionsOpen: (count) => `${count} sections open`,
+  sectionsOpen: (count) => `${count} ${count === 1 ? "section" : "sections"} open`,
   stepLabel: (current, total) => `Step ${current} of ${total}`,
 };
 
@@ -32,12 +27,6 @@ export const defaultKitDesignSystem: DesignSystemConfig = {
 
 export const resolvePrimitiveRegistry = (registry?: PrimitiveRegistry): PrimitiveRegistry => {
   return registry?.clone() ?? createBuiltinPrimitiveRegistry();
-};
-
-export const resolveDesignSystemRegistry = (
-  registry?: DesignSystemRegistry,
-): DesignSystemRegistry => {
-  return registry?.clone() ?? builtinDesignSystemRegistry.clone();
 };
 
 export const resolveKitLabels = (labels: KitLabels = {}): Required<KitLabels> => {

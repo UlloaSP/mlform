@@ -4,6 +4,7 @@
 import type { InternalFieldState } from "../state";
 import { EngineError } from "../errors";
 import type {
+  ValidationMessageResolver,
   FieldDefinition,
   FormOperation,
   FormSubmissionStatus,
@@ -36,9 +37,15 @@ export const toValidatingState = (state: InternalFieldState): InternalFieldState
   status: "validating",
 });
 
-export const requiredErrors = (config: NormalizedFieldConfig, value: unknown): string[] => {
+export const requiredErrors = (
+  config: NormalizedFieldConfig,
+  value: unknown,
+  formatMessage?: ValidationMessageResolver,
+): string[] => {
   if (!config.required) return [];
-  return isEmptyValue(value) ? ["This field is required."] : [];
+  return isEmptyValue(value)
+    ? [formatMessage?.("required", "This field is required.") ?? "This field is required."]
+    : [];
 };
 
 export const cloneFieldValue = (
@@ -87,6 +94,7 @@ export const runSyncValidation = (
   value: unknown,
   values: Record<string, unknown>,
   submitCount: number,
+  formatMessage?: ValidationMessageResolver,
 ): string[] => {
   if (!definition.validateSync) return [];
 
@@ -95,6 +103,7 @@ export const runSyncValidation = (
     values,
     submitCount,
     validationVersion: 0,
+    formatMessage,
     signal: undefined,
   });
 };
@@ -106,12 +115,13 @@ export const computeSyncErrors = (
   values: Record<string, unknown>,
   submitCount: number,
   flags: DerivedFieldFlags,
+  formatMessage?: ValidationMessageResolver,
 ): string[] => {
   if (!flags.visible || flags.disabled) return [];
-  const errors = requiredErrors(config, value);
+  const errors = requiredErrors(config, value, formatMessage);
   return errors.length > 0
     ? errors
-    : runSyncValidation(definition, config, value, values, submitCount);
+    : runSyncValidation(definition, config, value, values, submitCount, formatMessage);
 };
 
 export const makeFieldState = (
@@ -122,6 +132,7 @@ export const makeFieldState = (
   submitCount: number,
   formOperation: FormOperation,
   submissionStatus: FormSubmissionStatus,
+  formatMessage?: ValidationMessageResolver,
 ): InternalFieldState => {
   const normalizedValue = normalizeValue(definition, config, initialValue);
   const flags = resolveDerivedFlags(config, values, submitCount, formOperation, submissionStatus);
@@ -132,6 +143,7 @@ export const makeFieldState = (
     values,
     submitCount,
     flags,
+    formatMessage,
   );
   return toSnapshotState({
     value: normalizedValue,

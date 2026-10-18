@@ -189,7 +189,7 @@ export class KitTabsElement extends KitViewElement {
     }
 
     try {
-      await this.view.submit();
+      await this.submit();
     } catch {
       await revealFirstInvalidField(this, this.view, focusPrimitiveField);
     }

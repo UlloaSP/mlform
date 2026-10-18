@@ -7,6 +7,7 @@ export { PrimitiveReportElement } from "./base-report-element";
 export { PrimitiveFormElement } from "./components/form-root";
 export { mountPrimitiveForm, unmountPrimitiveForm } from "./mount-form";
 export { focusPrimitiveField } from "./components/error-focus";
+export { executePrimitiveSubmit } from "./submit";
 export { createBuiltinPrimitiveRegistry, createPrimitiveRegistry } from "./registry";
 export { createPrimitiveDescriptorRegistry, PrimitiveDescriptorRegistry } from "./descriptors";
 export { toDescriptorNodes } from "./descriptors";

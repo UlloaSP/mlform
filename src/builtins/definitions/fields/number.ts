@@ -3,6 +3,7 @@
 
 import * as z from "zod";
 import { normalizeNumericValue } from "./numeric-value";
+import { builtinMessage } from "../../validation-message";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
@@ -39,20 +40,20 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
       context.fail(builtinValidationMessages.invalidNumericRange, ["min"]);
     }
   },
-  validateSync(value, config) {
+  validateSync(value, config, context) {
     const errors: string[] = [];
     if (value === null) {
       return errors;
     }
     if (typeof value !== "number" || !Number.isFinite(value)) {
-      errors.push(builtinValidationMessages.invalidNumber);
+      errors.push(builtinMessage(context?.formatMessage, "invalidNumber"));
       return errors;
     }
     if (config.min !== undefined && value < config.min) {
-      errors.push(builtinValidationMessages.minValue(config.min));
+      errors.push(builtinMessage(context?.formatMessage, "minValue", config.min));
     }
     if (config.max !== undefined && value > config.max) {
-      errors.push(builtinValidationMessages.maxValue(config.max));
+      errors.push(builtinMessage(context?.formatMessage, "maxValue", config.max));
     }
     if (config.step !== undefined) {
       const origin = config.min ?? 0;
@@ -71,7 +72,7 @@ export const numberFieldDefinition: BuiltinFieldDefinition<
         ),
       );
       if (distance > tolerance) {
-        errors.push(builtinValidationMessages.stepValue(config.step, origin));
+        errors.push(builtinMessage(context?.formatMessage, "stepValue", config.step, origin));
       }
     }
     return errors;

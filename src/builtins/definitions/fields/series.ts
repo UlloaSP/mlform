@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import { builtinMessage } from "../../validation-message";
 import type { BuiltinFieldDefinition } from "../shared";
 import { resolveMappedTargets } from "@/schema";
 import { getSeriesCellErrors } from "./series-validation";
@@ -161,11 +162,16 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
       );
     }
   },
-  validateSync(value, config) {
-    const errors = validateSeriesPointCount(value, config);
-    getSeriesCellErrors(value, config).forEach((cells, index) => {
+  validateSync(value, config, context) {
+    const errors = validateSeriesPointCount(value, config, context?.formatMessage);
+    getSeriesCellErrors(value, config, context?.formatMessage).forEach((cells, index) => {
       for (const column of config.columns) {
-        for (const error of prefixRowErrors(index, column.label, cells[column.id]))
+        for (const error of prefixRowErrors(
+          index,
+          column.label,
+          cells[column.id],
+          context?.formatMessage,
+        ))
           errors.add(error);
       }
     });
@@ -174,7 +180,11 @@ export const seriesFieldDefinition: BuiltinFieldDefinition<SeriesFieldConfig, Se
       for (const aggregation of config.aggregations ?? []) {
         if (calculateSeriesAggregation(value, aggregation) === null) {
           errors.add(
-            `${config.columns.find((column) => column.id === aggregation.source)?.label}: Check the measurements and ensure there are enough values to calculate a result.`,
+            builtinMessage(
+              context?.formatMessage,
+              "seriesAggregation",
+              config.columns.find((column) => column.id === aggregation.source)!.label,
+            ),
           );
         }
       }

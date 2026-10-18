@@ -4,23 +4,23 @@ import { createBuiltinMlRegistry } from "@/builtins";
 import { createRegistry, normalizeSchema, validateSchema } from "@/schema";
 
 describe("normalized schema contracts", () => {
-  it("normalizes and validates declarative condition field references", () => {
+  it("preserves and validates exact declarative condition field references", () => {
     const normalized = normalizeSchema(
       {
         fields: [
-          { id: "Advanced Mode", kind: "boolean", label: "Advanced" },
+          { id: "Advanced_Mode", kind: "boolean", label: "Advanced" },
           {
             id: "details",
             kind: "text",
             label: "Details",
-            hiddenWhen: { kind: "field-value", field: "Advanced Mode", falsy: true },
+            hiddenWhen: { kind: "field-value", field: "Advanced_Mode", falsy: true },
           },
         ],
       },
       createBuiltinMlRegistry(),
     );
 
-    expect(normalized.fields[1]?.hiddenWhen).toMatchObject({ field: "advanced-mode" });
+    expect(normalized.fields[1]?.hiddenWhen).toMatchObject({ field: "Advanced_Mode" });
     expect(() =>
       normalizeSchema(
         {

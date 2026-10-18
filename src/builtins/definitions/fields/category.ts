@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
+import { builtinMessage } from "../../validation-message";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, optionSchema, type BuiltinFieldDefinition } from "../shared";
 
@@ -37,7 +37,7 @@ export const categoryFieldDefinition: BuiltinFieldDefinition<CategoryFieldConfig
     }
     return null;
   },
-  validateSync(value, config) {
+  validateSync(value, config, context) {
     if (value === null) {
       return [];
     }
@@ -46,6 +46,8 @@ export const categoryFieldDefinition: BuiltinFieldDefinition<CategoryFieldConfig
       typeof option === "string" ? option : option.value,
     );
 
-    return allowedValues.includes(value) ? [] : [builtinValidationMessages.categoryOptionMismatch];
+    return allowedValues.includes(value)
+      ? []
+      : [builtinMessage(context?.formatMessage, "categoryOptionMismatch")];
   },
 };

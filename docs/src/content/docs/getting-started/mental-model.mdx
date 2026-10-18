@@ -57,9 +57,8 @@ inner rings.
 Each field can carry three names, and each has one job:
 
 - **Runtime id** (`id`): the handle inside MLForm. Layout nodes, validation errors, focus,
-  `form.getField(id)`, and tests use it. MLForm normalizes every id to lowercase kebab case and
-  derives one from the label when you omit it, so write ids such as `customer-age` and set them
-  explicitly for anything you reference. See [Schema](/schema/overview/#ids).
+  `form.getField(id)`, and tests use it. Explicit ids are preserved exactly; when omitted, MLForm
+  generates a lowercase kebab-case id from the label. Set explicit ids for anything you reference. See [Schema](/schema/overview/#ids).
 - **Display key** (`displayKey`): the name of the value in `displayValues`, for review screens,
   persistence, or export. Fields without one are left out of `displayValues`.
 - **Mapped target** (`mappedTo`): the name, numeric position, or per-backend map the model expects.

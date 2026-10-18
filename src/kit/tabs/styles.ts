@@ -5,6 +5,7 @@ import { css } from "lit";
 
 export const tabsRootStyles = css`
   :host {
+    container: mlf-layout / inline-size;
     display: block;
     flex: 1 1 auto;
     align-self: stretch;
@@ -216,7 +217,7 @@ export const tabsRootStyles = css`
     background: var(--mlf-submit-bg, var(--mlf-color-accent, #1e40af));
     color: var(--mlf-submit-color, #ffffff);
   }
-  @media (max-width: 900px) {
+  @container mlf-layout (max-width: 900px) {
     .group.columns-2,
     .group.columns-3 {
       grid-template-columns: minmax(0, 1fr);

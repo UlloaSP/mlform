@@ -7,7 +7,6 @@ import type { PrimitiveDescriptorRegistry } from "../descriptors";
 import type { PrimitiveFormController } from "../controller-types";
 import {
   primitiveDefaultLabels,
-  primitiveEventNames,
   primitiveStaticText,
   primitiveTagNames,
   type PrimitiveText,
@@ -15,6 +14,7 @@ import {
 import type { PrimitiveLayout, PrimitiveRegistry, PrimitiveReportTransport } from "../types";
 import type { PrimitiveReportFetchMode, PrimitiveSubmitExecutionResult } from "../types";
 import { findFieldFrame, findFirstInvalidField, scrollFieldFrameIntoView } from "./error-focus";
+import { executePrimitiveSubmit } from "../submit";
 import { formRootStyles } from "./form-root-styles";
 import { presentVisibleFields, presentVisibleReports } from "./form-root-presenters";
 import { renderSplitLayout, renderStackedLayout } from "./form-root-templates";
@@ -154,57 +154,13 @@ export class PrimitiveFormElement extends LitElement {
       return;
     }
 
-    this.dispatchEvent(
-      new CustomEvent(primitiveEventNames.submitStart, {
-        detail: {
-          form: this.form,
-          state: this.form.state,
-        },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-
     try {
-      const execution = this.submitHandler
-        ? await this.submitHandler()
-        : { result: await this.form.submit() };
-
-      this.dispatchEvent(
-        new CustomEvent(primitiveEventNames.submitSuccess, {
-          detail: {
-            form: this.form,
-            state: this.form.state,
-            result: execution.result,
-            pipelineResult: execution.pipelineResult,
-          },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-    } catch (error) {
-      const invalidField = this.form ? findFirstInvalidField(this.form.fields) : null;
+      await executePrimitiveSubmit(this, this.form, this.submitHandler);
+    } catch {
+      const invalidField = findFirstInvalidField(this.form.fields);
       if (invalidField) {
         await scrollFieldFrameIntoView(findFieldFrame(this.shadowRoot ?? this, invalidField.id));
       }
-
-      this.dispatchEvent(
-        new CustomEvent(
-          isSubmissionAbortedError(error)
-            ? primitiveEventNames.submitAbort
-            : primitiveEventNames.submitError,
-          {
-            detail: {
-              form: this.form,
-              state: this.form.state,
-              status: this.form.state.submissionStatus,
-              error,
-            },
-            bubbles: true,
-            composed: true,
-          },
-        ),
-      );
     }
   };
 
@@ -239,9 +195,6 @@ export class PrimitiveFormElement extends LitElement {
     );
   }
 }
-
-const isSubmissionAbortedError = (error: unknown): boolean =>
-  error instanceof Error && error.name === "SubmissionAbortedError";
 
 declare global {
   interface HTMLElementTagNameMap {

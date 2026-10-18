@@ -4099,18 +4099,21 @@ describe("runtime", () => {
             },
             {
               kind: "number",
+              id: "is_red",
               label: "is_red",
               hidden: true,
               inactiveFieldPolicy: "include",
             },
             {
               kind: "number",
+              id: "is_green",
               label: "is_green",
               hidden: true,
               inactiveFieldPolicy: "include",
             },
             {
               kind: "number",
+              id: "is_blue",
               label: "is_blue",
               hidden: true,
               inactiveFieldPolicy: "include",
@@ -4125,9 +4128,9 @@ describe("runtime", () => {
 
       form.getField("color")!.setValue("red");
 
-      expect(form.getField("is-red")!.state.value).toBe(1);
-      expect(form.getField("is-green")!.state.value).toBe(0);
-      expect(form.getField("is-blue")!.state.value).toBe(0);
+      expect(form.getField("is_red")!.state.value).toBe(1);
+      expect(form.getField("is_green")!.state.value).toBe(0);
+      expect(form.getField("is_blue")!.state.value).toBe(0);
     });
 
     it("descriptor uses category-field component", () => {

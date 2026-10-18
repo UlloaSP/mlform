@@ -36,6 +36,6 @@ try {
 mountForm(container, { schema, transport, layout });
 ```
 
-Field references are runtime ids, which MLForm normalizes to kebab case; make sure the backend uses
-the same ids as the schema. See [Layout config](/view/layout-schema/) for every rule and error
+Field references use exact runtime ids. Explicit ids stay unchanged; make sure the backend uses
+the same strings as the schema. See [Layout config](/view/layout-schema/) for every rule and error
 message.

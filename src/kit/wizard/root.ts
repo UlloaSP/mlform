@@ -145,14 +145,8 @@ export class KitWizardElement extends KitViewElement {
       return;
     }
 
-    const valid = await this.view.navigation.next();
-    if (!valid) {
-      await revealFirstInvalidField(this, this.view, focusPrimitiveField);
-      return;
-    }
-
     try {
-      await this.view.submit();
+      await this.submit();
     } catch {
       await revealFirstInvalidField(this, this.view, focusPrimitiveField);
     }

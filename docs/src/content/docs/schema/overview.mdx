@@ -49,7 +49,7 @@ Before a form exists, MLForm normalizes the schema against its registry. Normali
   defaults such as `required: false`;
 - resolves ids, rejects duplicates, and checks that every reference to another field exists, in
   conditions, mapped-category mappings, and custom definitions;
-- rejects incoherent constraints such as `min` greater than `max` on number and date fields, an
+- rejects incoherent constraints such as `min` greater than `max` on number, rating, and date fields, invalid text length bounds, an
   invalid text `pattern`, or `minPoints` greater than `maxPoints`;
 - rejects ambiguous outputs: duplicate `displayKey` values and overlapping submission paths.
 
@@ -59,17 +59,17 @@ schema.
 
 ### Ids
 
-Every id is normalized to lowercase kebab case: letters are lowercased, accents removed, and any
-run of other characters becomes one `-`. `"Customer Age"`, `"customer_age"`, and `"customer-age"`
-all become `customer-age`.
+Explicit field and report ids are preserved exactly: `customer_age`, `CustomerAge`, and
+`customer-age` are different ids. Use the same string in lookups, initial values, conditions,
+mapped-category targets, and layout field/report references.
 
-- Lookups do not normalize their argument. `form.getField("customer_age")` returns `undefined`
-  when the field's id became `customer-age`, and a layout node `{ kind: "field", field: "customer_age" }`
-  fails. Write ids in their normalized form.
-- A field without `id` gets one from its `label`; a report without `id` gets one from its `label`,
-  then its `kind`. Generated ids that collide get a numeric suffix (`temperature-2`).
-- Two explicit ids that normalize to the same value are an error. Field ids and report ids are
-  separate namespaces.
+- Explicit ids must be non-empty and contain no whitespace. The object keys `__proto__`,
+  `constructor`, and `prototype` are reserved.
+- A field without `id` gets a lowercase kebab-case id from its `label`; a report without `id`
+  gets one from its `label`, then its `kind`. Generated ids avoid explicit ids and receive a
+  numeric suffix when needed (`temperature-2`), regardless of declaration order.
+- Duplicate explicit ids are an error. Field ids and report ids are separate namespaces.
+- Lookups and references use exact ids; there are no label or slug aliases.
 
 Set explicit ids for anything your code, layout, or tests reference. Generated ids change when
 someone edits a label.
@@ -98,7 +98,7 @@ lists the kind-specific ones.
 
 | Option | Type | Default | Purpose |
 | --- | --- | --- | --- |
-| `id` | `string` | from `label` | Runtime id, normalized as described above. |
+| `id` | `string` | from `label` | Exact runtime id; see the rules above. |
 | `kind` | `string` | required | Registered field kind. |
 | `label` | `string` | required | Visible label and accessible name. Copy, not a key. |
 | `description` | `string` | none | Help text behind the field's help button. |
@@ -136,7 +136,7 @@ they belong to different backends, because a submission without a backend includ
 
 | Option | Type | Purpose |
 | --- | --- | --- |
-| `id` | `string` | Runtime id, normalized like field ids. Defaults to `label`, then `kind`. |
+| `id` | `string` | Exact runtime id, with the same rules as field ids. Defaults to `label`, then `kind`. |
 | `kind` | `string` | Registered report kind. |
 | `label` | `string` | Report heading. |
 | `description` | `string` | Help text for the report. |
@@ -173,7 +173,7 @@ const jsonSchema = toSchemaJsonSchema(registry); // for editors and API document
 
 ## Design guidance
 
-- Write ids in kebab case and keep them stable. Saved drafts, layouts, and tests depend on them.
+- Set explicit ids and keep them stable. Saved drafts, layouts, and tests depend on them.
 - Write labels for people. Change them freely; nothing should depend on them.
 - Map every model input explicitly with `mappedTo`. When a model renames a feature, change
   `mappedTo`, not the id.

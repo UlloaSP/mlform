@@ -38,7 +38,7 @@ describe("onehot-category inactive submission policy", () => {
     expect(snapshot.modelValues).toEqual({ is_red: 0, is_green: 1 });
     expect(snapshot.inputs).toEqual([
       expect.objectContaining({
-        fieldId: "ui-color",
+        fieldId: "ui_color",
         displayKey: "color",
         value: "green",
         modelValues: { is_red: 0, is_green: 1 },

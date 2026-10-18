@@ -26,6 +26,9 @@ export { createForm } from "./form";
 export { shallowEquality } from "./equality";
 export { removeFormSnapshot, restoreFormSnapshot, saveFormSnapshot } from "./snapshots";
 export type {
+  ValidationMessage,
+  ValidationMessageFormatter,
+  ValidationMessageResolver,
   AllConditions,
   AfterSubmitContext,
   AfterValidateContext,

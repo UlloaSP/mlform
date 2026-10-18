@@ -10,8 +10,8 @@ description: Symptoms, causes, and fixes for the problems MLForm integrations ru
 | `mountForm` throws about the container | The element already has content. | Mount into an empty element, or pass `containerStrategy: "replace"`. |
 | `Cannot read properties of null` | `querySelector` ran before the element existed. | Mount from a lifecycle hook or after the element is in the document. |
 | `Unknown field kind "x".` | The kind is not registered. | Use a [built-in kind](/schema/fields/) or pass the [plugin](/extend/plugins/) that defines it. |
-| `Duplicate explicit id "x" in schema.` | Two ids normalize to the same value, such as `max_temp` and `max-temp`. | Give every field a distinct kebab-case id. |
-| `Layout references unknown field "customer_age".` | Ids are normalized: the field's id is `customer-age`. | Use normalized ids in layouts and code; see [Ids](/schema/overview/#ids). |
+| `Duplicate explicit id "x" in schema.` | Two explicit ids are identical. | Give every field a distinct id; `max_temp` and `max-temp` are different ids. |
+| `Layout references unknown field "customer_age".` | The reference does not match an exact runtime id. | Match the schema id exactly in layouts and code; see [Ids](/schema/overview/#ids). |
 | `Field "x" is missing from layout.` | An explicit layout must place every field. | Add it, or place it in a `custom` node. See [Layout config](/view/layout-schema/#errors). |
 | A custom field renders `Missing primitive mapping…` | The presenter names a component without an element. | Register it with `primitiveRegistry`; see [Registries and renderers](/extend/renderers/). |
 | Fonts look different from these docs | MLForm does not load fonts. | Load the theme's fonts in your app; see [Themes](/design/themes-and-recipes/#themes). |
@@ -21,7 +21,7 @@ description: Symptoms, causes, and fixes for the problems MLForm integrations ru
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | A model input is missing from the request | The field has no `mappedTo`, is hidden or disabled, or has `includeInSubmission: false`. | Add `mappedTo`; for inactive fields see [inactive field policy](/schema/conditions/#inactive-fields-and-submission). |
-| `form.getField("x")` returns `undefined` | The id was normalized. | Look the id up in `form.fields.map((field) => field.id)`. |
+| `form.getField("x")` returns `undefined` | The id is missing or differs in spelling or case. | Explicit ids stay unchanged. Inspect `form.fields.map((field) => field.id)` for generated ids. |
 | Loaded data shows errors immediately | Synchronous constraints run on initial values. | Fix the data or the constraints; errors for non-empty values do not wait for blur. |
 | `Form submission is already in progress.` | `submit()` was called while another submission ran. | Wait for the first, or `abortSubmit()` it. |
 | A field cannot be changed from code | Hidden, disabled, and read-only fields reject `setValue`. | Give them values through `defaultValue`, `initialValues`, or a mapped category. |
@@ -40,7 +40,7 @@ description: Symptoms, causes, and fixes for the problems MLForm integrations ru
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `mlf-submit-success` never fires | The layout is a wizard, tabs, or has explicit nodes; only `mlf-form` dispatches submit events. | Use hooks or `subscribeTransitions`; see [Submit events](/primitives/overview/#submit-events). |
+| `mlf-submit-success` never fires | The submission was called programmatically rather than from a built-in submit control. | Use hooks or `subscribeTransitions` to observe both UI and programmatic submissions; see [Submit events](/primitives/overview/#submit-events). |
 | The form ignores the page's dark mode | `mode` is `auto` or fixed. | Use `mode: "inherit"` and, if needed, `hostSchemeResolver`. |
 | A custom theme does not apply | It was registered after mounting, or on a registry the form did not copy. | Register before mounting, or on `mounted.designSystem.registry`. |
 

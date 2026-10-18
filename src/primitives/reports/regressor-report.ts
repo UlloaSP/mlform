@@ -114,6 +114,7 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
       .bar-wrapper {
         position: relative;
         height: 16px;
+        margin-top: 12px;
         border-radius: 5px;
       }
 
@@ -148,16 +149,23 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
         opacity: 0.6;
       }
 
+      .interval-labels {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        text-align: center;
+      }
+
       .limit-label {
         margin-top: 4px;
         font-size: 0.75rem;
-        color: var(--mlf-color-secondary, #475569);
-        white-space: nowrap;
+        color: var(--mlf-color-text-muted, #475569);
+        overflow-wrap: anywhere;
       }
 
       .meta {
         margin-top: 1rem;
-        color: var(--mlf-color-secondary, #475569);
+        color: var(--mlf-color-text-muted, #475569);
         font-size: 0.82rem;
       }
 
@@ -219,9 +227,6 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
                                 style=${`left: ${clampPercent(interval[0], interval[0], interval[1])}%;`}
                               >
                                 <div class="limit-line"></div>
-                                <div class="limit-label">
-                                  ${formatValue(interval[0], precision, unit)}
-                                </div>
                               </div>
 
                               <div
@@ -229,15 +234,20 @@ export class PrimitiveRegressorReportElement extends PrimitiveAsyncReportElement
                                 style=${`left: ${clampPercent(interval[1], interval[0], interval[1])}%;`}
                               >
                                 <div class="limit-line"></div>
-                                <div class="limit-label">
-                                  ${formatValue(interval[1], precision, unit)}
-                                </div>
                               </div>
 
                               <span
                                 class="value-marker"
                                 style=${`left: ${clampPercent(value, interval[0], interval[1])}%;`}
                               ></span>
+                            </div>
+                            <div class="interval-labels">
+                              <span class="limit-label"
+                                >${formatValue(interval[0], precision, unit)}</span
+                              >
+                              <span class="limit-label"
+                                >${formatValue(interval[1], precision, unit)}</span
+                              >
                             </div>
                           `
                         : html``

@@ -29,6 +29,7 @@ export const createFormView = (options: CreateFormViewOptions): FormViewControll
     initialValues: options.initialValues,
     initialSnapshot: options.initialSnapshot,
     validators: options.validators,
+    formatValidationMessage: options.formatValidationMessage,
     hooks: options.hooks,
     hookFailurePolicy: options.hookFailurePolicy,
     inactiveFieldPolicy: options.inactiveFieldPolicy,

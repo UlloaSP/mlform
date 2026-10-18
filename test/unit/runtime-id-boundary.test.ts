@@ -43,25 +43,25 @@ describe("runtime id boundary", () => {
       transport: { submit: submitB },
     });
 
-    formA.setValues({ "ui-age-a": 42 });
-    formB.setValues({ "ui-age-b": 42 });
+    formA.setValues({ ui_age_a: 42 });
+    formB.setValues({ ui_age_b: 42 });
     const resultA = await formA.submit();
     const resultB = await formB.submit();
 
-    expect(formA.getField("ui-age-a")?.state.value).toBe(42);
-    expect(formB.getField("ui-age-b")?.state.value).toBe(42);
-    expect(resultA.inputs?.[0]?.fieldId).toBe("ui-age-a");
-    expect(resultB.inputs?.[0]?.fieldId).toBe("ui-age-b");
-    expect(resultA.inputs[0]?.fieldId).toBe("ui-age-a");
-    expect(resultB.inputs[0]?.fieldId).toBe("ui-age-b");
+    expect(formA.getField("ui_age_a")?.state.value).toBe(42);
+    expect(formB.getField("ui_age_b")?.state.value).toBe(42);
+    expect(resultA.inputs?.[0]?.fieldId).toBe("ui_age_a");
+    expect(resultB.inputs?.[0]?.fieldId).toBe("ui_age_b");
+    expect(resultA.inputs[0]?.fieldId).toBe("ui_age_a");
+    expect(resultB.inputs[0]?.fieldId).toBe("ui_age_b");
     expect(resultA.displayValues).toEqual(resultB.displayValues);
     expect(resultA.modelValues).toEqual(resultB.modelValues);
     expect(resultA.displayValues).toEqual({ patientAge: 42 });
     expect(resultA.modelValues).toEqual({ age_years: 42 });
-    expect(resultA.displayValues).not.toHaveProperty("ui-age-a");
-    expect(resultA.modelValues).not.toHaveProperty("ui-age-a");
-    expect(resultB.displayValues).not.toHaveProperty("ui-age-b");
-    expect(resultB.modelValues).not.toHaveProperty("ui-age-b");
+    expect(resultA.displayValues).not.toHaveProperty("ui_age_a");
+    expect(resultA.modelValues).not.toHaveProperty("ui_age_a");
+    expect(resultB.displayValues).not.toHaveProperty("ui_age_b");
+    expect(resultB.modelValues).not.toHaveProperty("ui_age_b");
   });
 
   it("looks up fields by external display and model contracts without id fallback", () => {
@@ -91,13 +91,13 @@ describe("runtime id boundary", () => {
       transport: { submit: vi.fn().mockResolvedValue({ reports: [] }) },
     });
 
-    expect(form.getField("ui-age")?.config.label).toBe("Edited Age Label");
-    expect(form.getFieldByDisplayKey("patientAge")?.id).toBe("ui-age");
-    expect(form.getFieldByMappedTo("risk_age", { backend: "risk" })?.id).toBe("ui-age");
-    expect(form.getFieldByMappedTo("cost_age", { backend: "cost" })?.id).toBe("ui-age");
-    expect(form.getFieldByMappedTo("risk_m", { backend: "risk" })?.id).toBe("ui-sex");
+    expect(form.getField("ui_age")?.config.label).toBe("Edited Age Label");
+    expect(form.getFieldByDisplayKey("patientAge")?.id).toBe("ui_age");
+    expect(form.getFieldByMappedTo("risk_age", { backend: "risk" })?.id).toBe("ui_age");
+    expect(form.getFieldByMappedTo("cost_age", { backend: "cost" })?.id).toBe("ui_age");
+    expect(form.getFieldByMappedTo("risk_m", { backend: "risk" })?.id).toBe("ui_sex");
     expect(form.getFieldByDisplayKey("Edited Age Label")).toBeUndefined();
-    expect(form.getFieldByMappedTo("ui-age")).toBeUndefined();
+    expect(form.getFieldByMappedTo("ui_age")).toBeUndefined();
   });
 
   it("keeps report ids as runtime handles, not external output keys", async () => {
@@ -129,20 +129,20 @@ describe("runtime id boundary", () => {
     const resultA = await formA.submit();
     const resultB = await formB.submit();
 
-    expect(formA.getReport("ui-risk-a")?.state).toMatchObject({
+    expect(formA.getReport("ui_risk_a")?.state).toMatchObject({
       status: "ready",
       payload: { prediction: "high" },
     });
-    expect(formB.getReport("ui-risk-b")?.state).toMatchObject({
+    expect(formB.getReport("ui_risk_b")?.state).toMatchObject({
       status: "ready",
       payload: { prediction: "high" },
     });
-    expect(resultA.reportStates["ui-risk-a"]?.payload).toEqual(
-      resultB.reportStates["ui-risk-b"]?.payload,
+    expect(resultA.reportStates["ui_risk_a"]?.payload).toEqual(
+      resultB.reportStates["ui_risk_b"]?.payload,
     );
     expect(resultA.reports).toEqual(resultB.reports);
     expect(resultA.reports).toEqual([readyReport("risk_score", { prediction: "high" })]);
-    expect(resultA.reports).not.toHaveProperty("ui-risk-a");
-    expect(resultB.reports).not.toHaveProperty("ui-risk-b");
+    expect(resultA.reports).not.toHaveProperty("ui_risk_a");
+    expect(resultB.reports).not.toHaveProperty("ui_risk_b");
   });
 });

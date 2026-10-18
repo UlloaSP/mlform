@@ -40,7 +40,7 @@ arrange them yourself.
 
 ### Split
 
-`"split"` without `children` puts inputs and reports in two columns that stack on narrow screens.
+`"split"` without `children` puts inputs and reports in two columns that stack on narrow form containers.
 With `children`, it renders the nodes you give it, like `"stacked"`.
 
 <Capture
@@ -92,7 +92,7 @@ Inside any layout, two nodes organize fields without changing their meaning:
 - **`section`** has a `title`, an optional `description`, and a toggle. Sections start open; set
   `defaultOpen: false` to start collapsed. The footer counts open sections.
 - **`group`** arranges its children in `columns: 1`, `2`, or `3`, with no title and no toggle.
-  Groups collapse to one column when the viewport is 900 px wide or less.
+  Groups collapse to one column when the form container is 900 px wide or less.
 
 Sections and groups nest in each other and inside steps and tabs. A field inside nested sections is
 visible only while every enclosing section is open.
@@ -116,11 +116,11 @@ closed section, step, or tab, it opens that container and focuses the field.
 | --- | --- | --- |
 | field | `{ kind: "field", field: id }` | Every field appears exactly once, directly or in a custom node. |
 | report | `{ kind: "report", report: id }` | Each report appears at most once; omitted reports are not shown. |
-| group | `{ kind: "group", id?, columns?, children }` | `columns` is `1`, `2`, or `3`. |
+| group | `{ kind: "group", id?, columns?, children }` | `columns` is `1`, `2`, or `3`; collapses to one when the form container is at most 900 px wide. |
 | section | `{ kind: "section", id?, title, description?, defaultOpen?, children }` | `title` must not be empty: it names the toggle. |
 | custom | `{ kind: "custom", id, fields }` | A region your code renders. Only with `createFormView`; `mountForm` rejects it. |
 
-References use runtime ids, which are [normalized](/schema/overview/#ids). An explicit layout that
+References use exact [runtime ids](/schema/overview/#ids). An explicit layout that
 misses a field, places one twice, or names an unknown id fails when the form is created.
 [Layout config](/view/layout-schema/) lists every error message.
 

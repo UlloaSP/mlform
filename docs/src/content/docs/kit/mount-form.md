@@ -26,10 +26,11 @@ the rendering options below.
 | `plugins` | none | [Plugins](/extend/plugins/) with custom kinds and behaviors. |
 | `initialValues`, `initialSnapshot` | none | [Starting values or a draft](/schema/initial-values/). |
 | `validators`, `hooks`, `hookFailurePolicy` | none | [Validation](/guides/validation/) and [hooks](/guides/hooks-and-lifecycle/). |
+| `formatValidationMessage` | default English messages | [Translate validation errors](/guides/validation/#translating-validation-errors) by code, arguments, and field. |
 | `inactiveFieldPolicy` | `"omit"` | [Submission of hidden and disabled fields](/schema/conditions/#inactive-fields-and-submission). |
 | `reportFetchMode` | `"lazy"` | When [report fetches](/guides/report-fetches/) run. |
 | `designSystem` | `neutral`, `default`, `auto` | [Theme, recipe, mode, overrides](/design/themes-and-recipes/). |
-| `designSystemRegistry` | built-ins | Registry with [custom themes and recipes](/design/custom-themes/). |
+| `designSystemRegistry` | built-ins | Registry with [custom themes and recipes](/design/custom-themes/); cloned when attached. |
 | `onDesignSystemChange` | none | Called with each resolved design system. |
 | `labels` | English defaults | [Shell labels](/kit/labels/). |
 | `primitiveText` | English defaults | [Control text](/kit/labels/#control-text). |
@@ -70,3 +71,7 @@ fetch mode; prefer `mounted.submit()` from UI code.
 - `unmountForm(mounted)` is the same as `mounted.unmount()`, for code that prefers a function.
 - To mount inside an iframe, load MLForm in the iframe first; see
   [Frameworks](/integrations/frameworks/#iframes).
+
+`mounted.designSystemRegistry` is the same registry as `mounted.designSystem.registry`. Register
+a theme or recipe there, then select it with `updateDesignSystem`. The supplied registry and
+other mounted forms remain independent.

@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
+import { runtimeIdPattern } from "./ids";
 import type { DeclarativeFieldCondition, FieldConfig } from "./types/field";
 import type { ReportConfig } from "./types/report";
 
@@ -75,8 +76,15 @@ const fieldConditionSchema = z.union([
 
 const uiSchema = z.record(z.string(), z.unknown()).optional();
 
+const runtimeIdSchema = z
+  .string()
+  .regex(
+    runtimeIdPattern,
+    "Id must be non-empty, contain no whitespace and not be a reserved object key.",
+  );
+
 export const baseFieldConfigSchema = z.object({
-  id: z.string().optional(),
+  id: runtimeIdSchema.optional(),
   kind: z.string().min(1),
   label: z.string().min(1),
   description: z.string().optional(),
@@ -99,7 +107,7 @@ export const baseFieldConfigSchema = z.object({
 });
 
 export const baseReportConfigSchema = z.object({
-  id: z.string().optional(),
+  id: runtimeIdSchema.optional(),
   kind: z.string().min(1),
   label: z.string().optional(),
   description: z.string().optional(),

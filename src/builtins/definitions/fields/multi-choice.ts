@@ -2,7 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
-import { builtinValidationMessages } from "../../constants";
+import { builtinMessage } from "../../validation-message";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, optionSchema, type BuiltinFieldDefinition } from "../shared";
 
@@ -56,7 +56,7 @@ export const multiChoiceFieldDefinition: BuiltinFieldDefinition<MultiChoiceField
       if (previous.length !== next.length) return false;
       return previous.every((v, i) => v === next[i]);
     },
-    validateSync(value, config) {
+    validateSync(value, config, context) {
       if (value.length === 0) {
         return [];
       }
@@ -66,6 +66,8 @@ export const multiChoiceFieldDefinition: BuiltinFieldDefinition<MultiChoiceField
       );
 
       const invalid = value.filter((v) => !allowedValues.includes(v));
-      return invalid.length > 0 ? [builtinValidationMessages.categoryOptionMismatch] : [];
+      return invalid.length > 0
+        ? [builtinMessage(context?.formatMessage, "categoryOptionMismatch")]
+        : [];
     },
   };

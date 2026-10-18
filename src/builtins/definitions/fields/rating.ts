@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
+import { builtinMessage } from "../../validation-message";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
@@ -32,7 +33,12 @@ export const ratingFieldDefinition: BuiltinFieldDefinition<RatingFieldConfig, nu
     const parsed = typeof value === "number" ? value : Number(value);
     return Number.isNaN(parsed) ? null : parsed;
   },
-  validateSync(value, config) {
+  validateConfig(config, context) {
+    if ((config.min ?? 1) > config.max) {
+      context.fail(builtinValidationMessages.invalidNumericRange, ["min"]);
+    }
+  },
+  validateSync(value, config, context) {
     if (value === null) {
       return [];
     }
@@ -41,23 +47,18 @@ export const ratingFieldDefinition: BuiltinFieldDefinition<RatingFieldConfig, nu
     const min = config.min ?? 1;
     const max = config.max;
 
-    if (min > max) {
-      errors.push(builtinValidationMessages.invalidNumericRange);
-      return errors;
-    }
-
     if (value < min) {
-      errors.push(builtinValidationMessages.minValue(min));
+      errors.push(builtinMessage(context?.formatMessage, "minValue", min));
     }
     if (value > max) {
-      errors.push(builtinValidationMessages.maxValue(max));
+      errors.push(builtinMessage(context?.formatMessage, "maxValue", max));
     }
     if (config.step !== undefined) {
       const difference = Math.abs(value - min);
       const remainder = difference % config.step;
       const tolerance = config.step * 1e-9;
       if (remainder > tolerance && Math.abs(remainder - config.step) > tolerance) {
-        errors.push(builtinValidationMessages.stepValue(config.step, min));
+        errors.push(builtinMessage(context?.formatMessage, "stepValue", config.step, min));
       }
     }
 

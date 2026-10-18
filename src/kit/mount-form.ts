@@ -7,12 +7,7 @@ import { ValidationError } from "@/runtime";
 import { focusPrimitiveField } from "@/primitives";
 import { revealFirstInvalidField } from "./shared/error-navigation";
 import { kitErrorMessages } from "./constants";
-import {
-  resolveDesignSystemRegistry,
-  resolveKitDesignSystem,
-  resolveKitLabels,
-  resolvePrimitiveRegistry,
-} from "./defaults";
+import { resolveKitDesignSystem, resolveKitLabels, resolvePrimitiveRegistry } from "./defaults";
 import type { KitDesignSystemSnapshot, MountFormOptions, MountedForm } from "./mount-types";
 import { bindDocumentLifecycle } from "./document-lifecycle";
 import { captureHostContent, restoreHostContent } from "./host-container";
@@ -58,7 +53,6 @@ const hasLayoutChildren = (options: MountFormOptions): boolean => {
 export const mountForm = (container: HTMLElement, options: MountFormOptions): MountedForm => {
   const hostContainer = container as KitContainer;
   const primitiveRegistry = resolvePrimitiveRegistry(options.primitiveRegistry);
-  const designSystemRegistry = resolveDesignSystemRegistry(options.designSystemRegistry);
   const labels = resolveKitLabels(options.labels);
   const initialDesignSystem = resolveKitDesignSystem(options.designSystem);
 
@@ -115,7 +109,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     container.append(host);
     designSystem = attachDesignSystem(host, {
       config: initialDesignSystem,
-      registry: designSystemRegistry,
+      registry: options.designSystemRegistry,
       onChange: options.onDesignSystemChange
         ? (resolved) => {
             if (committed) options.onDesignSystemChange?.(resolved);
@@ -149,7 +143,7 @@ export const mountForm = (container: HTMLElement, options: MountFormOptions): Mo
     engineRegistry: view.engineRegistry,
     descriptorRegistry: view.descriptorRegistry,
     primitiveRegistry,
-    designSystemRegistry,
+    designSystemRegistry: designSystem.registry,
     designSystem,
     async submit(options?: Parameters<MountedForm["submit"]>[0]) {
       try {

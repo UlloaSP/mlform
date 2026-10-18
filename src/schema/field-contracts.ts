@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import { normalizeSchemaId } from "./ids";
 import { resolveMappedTargets } from "./mapped-to";
 import { normalizeSubmissionPath } from "./submission-path";
 import type {
@@ -13,17 +12,16 @@ import type { Registry } from "./types/registry";
 
 type ContractFailure = (message: string, path: readonly (string | number)[]) => never;
 
-const normalizeReference = (
+const requireFieldReference = (
   reference: string,
   fieldIds: ReadonlySet<string>,
   path: readonly (string | number)[],
   fail: ContractFailure,
 ): string => {
-  const normalized = normalizeSchemaId(reference);
-  if (!fieldIds.has(normalized)) {
+  if (!fieldIds.has(reference)) {
     fail(`Field condition references unknown field "${reference}".`, path);
   }
-  return normalized;
+  return reference;
 };
 
 const normalizeDeclarativeCondition = (
@@ -36,13 +34,13 @@ const normalizeDeclarativeCondition = (
     case "field-value":
       return {
         ...condition,
-        field: normalizeReference(condition.field, fieldIds, [...path, "field"], fail),
+        field: requireFieldReference(condition.field, fieldIds, [...path, "field"], fail),
       };
     case "field-comparison":
       return {
         ...condition,
-        field: normalizeReference(condition.field, fieldIds, [...path, "field"], fail),
-        otherField: normalizeReference(
+        field: requireFieldReference(condition.field, fieldIds, [...path, "field"], fail),
+        otherField: requireFieldReference(
           condition.otherField,
           fieldIds,
           [...path, "otherField"],
@@ -155,7 +153,7 @@ export const normalizeFieldContracts = (
   const normalized = fields.map((field, index): NormalizedFieldConfig => {
     const definition = registry.getField(field.kind);
     for (const reference of definition?.getFieldReferences?.(field) ?? []) {
-      const id = normalizeSchemaId(reference.id);
+      const id = reference.id;
       if (!fieldIds.has(id)) {
         fail(
           reference.unknownFieldMessage ??

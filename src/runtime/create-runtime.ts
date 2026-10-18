@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { Registry } from "@/schema";
-import { normalizeSchema } from "@/schema";
+import { normalizeSchema, type Registry } from "@/schema";
 import { createFieldController, type InternalFieldController } from "./fields";
 import { createReportController, type InternalReportController } from "./reports";
 import {
@@ -78,6 +77,7 @@ export const createForm = (config: CreateFormConfig): FormController => {
             : fieldConfig.defaultValue,
       },
       definition,
+      formatValidationMessage: config.formatValidationMessage,
       store,
       getValues: () => getInternalValues(),
       getSubmitCount,

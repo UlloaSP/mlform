@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
-import type { JsonValue } from "@/schema";
+import type { JsonValue, ValidationMessageResolver } from "@/schema";
 import { cloneJsonValue } from "../snapshots/json-value";
 import type { InternalFieldState } from "../state";
 import type { FieldDefinition, InactiveFieldPolicy, NormalizedFieldConfig } from "../types";
@@ -43,10 +43,12 @@ export const prepareRestoredFieldState = (options: {
   values: Record<string, unknown>;
   touched: boolean;
   refreshOptions?: RestoredFieldOptions;
+  formatMessage?: ValidationMessageResolver;
 }): InternalFieldState =>
   refreshFieldState({
     config: options.config,
     definition: options.definition,
+    formatMessage: options.formatMessage,
     currentState: {
       ...options.currentState,
       value: options.value,

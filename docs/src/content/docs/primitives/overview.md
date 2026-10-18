@@ -54,7 +54,8 @@ level of control.
 
 ## Submit events
 
-`mlf-form` dispatches these events. They bubble and cross shadow boundaries.
+Built-in submit controls dispatch these events from their form host in every layout: default,
+explicit stacked or split, tabs, and wizard. They bubble and cross shadow boundaries.
 
 | Event | Detail |
 | --- | --- |
@@ -73,10 +74,14 @@ mounted.host.addEventListener("mlf-submit-success", (event) => {
 });
 ```
 
-`mlf-form` renders the default layout: `mountForm` without `layout`, or a stacked or split layout
-without `children`, and `mountPrimitiveForm`. Wizards, tabs, and layouts with explicit nodes do
-not dispatch these events. For behavior that must work with any layout, use
-[hooks](/guides/hooks-and-lifecycle/#hooks) or `form.subscribeTransitions()`.
+A UI submission emits one start event, followed by success, error, or abort. Validation failures
+emit error without calling the transport. Programmatic calls to `form.submit()` or
+`mounted.submit()` do not dispatch DOM events; use [hooks](/guides/hooks-and-lifecycle/#hooks) or
+`form.subscribeTransitions()` to observe every submission.
+
+Application-owned submit controls can call `executePrimitiveSubmit(host, form)` from
+`mlform/primitives` to emit the same lifecycle. An optional third argument supplies an async
+execution function returning `{ result, pipelineResult? }`; errors are emitted and rethrown.
 
 ## Report frames
 

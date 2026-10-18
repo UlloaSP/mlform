@@ -1,11 +1,11 @@
 ---
 title: Labels and text
-description: Change the words the mounted form uses, from the submit button to field status messages, and know which messages are fixed.
+description: Change the words the mounted form uses, from the submit button to field status messages, including validation errors.
 ---
 
 Field and report copy comes from the schema (`label`, `description`, option labels). Everything
-else the built-in UI says comes from two options of `mountForm`: `labels` for the layout shell and
-`primitiveText` for the controls inside it.
+else is configured through `labels` for the layout shell, `primitiveText` for the controls, and
+`formatValidationMessage` for runtime validation errors.
 
 ## Shell labels
 
@@ -39,7 +39,7 @@ mountForm(container, {
 | `step` | `"Step"` | Wizard progress eyebrow. |
 | `stepLabel` | `` `Step ${current} of ${total}` `` | Wizard progress announcement. |
 | `tabs` | `"Form sections"` | Accessible name of the tab list. |
-| `sectionsOpen` | `` `${count} sections open` `` | Footer summary in layouts with sections. |
+| `sectionsOpen` | `1 section open` / `N sections open` | Footer summary, omitted when there are no sections. |
 
 `defaultKitLabels` from `mlform` holds the defaults if you want to extend them.
 
@@ -70,8 +70,6 @@ The full list, with defaults, is `primitiveStaticText` in `mlform/primitives`; i
 Pass translated `labels`, `primitiveText`, and schema copy together. API names (`kind`, `fields`,
 `mountForm`) stay in English.
 
-The validation messages of built-in kinds, such as `This field is required.` and
-`Maximum value is 100.`, are fixed English strings in this version; neither option changes them.
-When a form must be fully translated, add a [form validator](/guides/validation/#cross-field-rules)
-or custom kind that returns your own messages for the rules that matter, and keep the built-in
-constraint off for those fields.
+Translate built-in validation errors with [`formatValidationMessage`](/guides/validation/#translating-validation-errors).
+It applies in the headless runtime as well as the UI, including series cells. Keep schema
+constraints enabled; translating their messages does not require duplicating validation rules.

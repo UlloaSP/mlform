@@ -132,12 +132,12 @@ describe("multi-backend runtime pipeline", () => {
         modelValues: { good_age: 42 },
       },
     });
-    expect(result.runs.good.skippedReportIds).toEqual([]);
+    expect(result.runs.good.skippedReportFetchIds).toEqual([]);
 
     expect(result.runs.bad.snapshot.modelValues).toEqual({ bad_age: 42 });
     expect(result.runs.bad.submitResult).toBeUndefined();
     expect(result.runs.bad.error).toBeInstanceOf(Error);
-    expect(result.runs.bad.skippedReportIds).toEqual(["risk-tree"]);
+    expect(result.runs.bad.skippedReportFetchIds).toEqual(["risk-tree"]);
     expect(fetchReport).toHaveBeenCalledTimes(1);
   });
 });

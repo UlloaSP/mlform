@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Pablo Ulloa Santin
 
 import * as z from "zod";
+import { builtinMessage } from "../../validation-message";
 import { builtinValidationMessages } from "../../constants";
 import type { BaseFieldConfig } from "@/schema";
 import { baseFieldShape, type BuiltinFieldDefinition } from "../shared";
@@ -54,19 +55,19 @@ export const textFieldDefinition: BuiltinFieldDefinition<TextFieldConfig, string
       }
     }
   },
-  validateSync(value, config) {
+  validateSync(value, config, context) {
     const errors: string[] = [];
     if (value.length === 0) {
       return errors;
     }
     if (config.minLength !== undefined && value.length < config.minLength) {
-      errors.push(builtinValidationMessages.minLength(config.minLength));
+      errors.push(builtinMessage(context?.formatMessage, "minLength", config.minLength));
     }
     if (config.maxLength !== undefined && value.length > config.maxLength) {
-      errors.push(builtinValidationMessages.maxLength(config.maxLength));
+      errors.push(builtinMessage(context?.formatMessage, "maxLength", config.maxLength));
     }
     if (config.pattern && !new RegExp(config.pattern).test(value)) {
-      errors.push(builtinValidationMessages.textPatternMismatch);
+      errors.push(builtinMessage(context?.formatMessage, "textPatternMismatch"));
     }
     return errors;
   },

@@ -5,6 +5,7 @@ import { css } from "lit";
 
 export const wizardRootStyles = css`
   :host {
+    container: mlf-layout / inline-size;
     display: block;
     flex: 1 1 auto;
     align-self: stretch;
@@ -190,7 +191,7 @@ export const wizardRootStyles = css`
   .spacer {
     flex: 1 1 auto;
   }
-  @media (max-width: 900px) {
+  @container mlf-layout (max-width: 900px) {
     .group.columns-2,
     .group.columns-3 {
       grid-template-columns: minmax(0, 1fr);

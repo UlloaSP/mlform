@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2025 Pablo Ulloa Santin
 
+import type { PrimitiveFieldController } from "../controller-types";
+
 export interface FieldDescriptor {
   component: string;
   props: Record<string, unknown>;
@@ -31,6 +33,7 @@ export interface FieldRenderSpec<TConfig = unknown, TValue = unknown> {
 }
 
 export interface FieldDescriptorContext {
+  formatMessage?: PrimitiveFieldController["formatValidationMessage"];
   fieldId: string;
   state: FieldDescriptorState;
 }

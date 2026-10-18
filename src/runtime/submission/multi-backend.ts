@@ -19,7 +19,8 @@ export interface MultiBackendRunResult {
   submitResult?: SubmitResult;
   reportFetchResults: Record<string, unknown>;
   reportFetchErrors: Record<string, string>;
-  skippedReportIds: string[];
+  /** Reports with no additional fetch attempt, including results already ready after submit. */
+  skippedReportFetchIds: string[];
   error?: unknown;
 }
 
@@ -45,7 +46,7 @@ const normalizeSubmits = (
   return submits;
 };
 
-const skippedReports = (
+const skippedReportFetches = (
   reports: readonly FormController["reports"][number][],
   fetched: Record<string, unknown>,
   failed: Record<string, string>,
@@ -83,7 +84,11 @@ export const executeMultiBackendPipeline = async ({
         submitResult,
         reportFetchResults: fetchState.results,
         reportFetchErrors: fetchState.errors,
-        skippedReportIds: skippedReports(form.reports, fetchState.results, fetchState.errors),
+        skippedReportFetchIds: skippedReportFetches(
+          form.reports,
+          fetchState.results,
+          fetchState.errors,
+        ),
       };
     } catch (error) {
       if (isAbortLikeError(error) || submit.signal?.aborted) {
@@ -100,7 +105,7 @@ export const executeMultiBackendPipeline = async ({
         snapshot,
         reportFetchResults: {},
         reportFetchErrors: {},
-        skippedReportIds: form.reports.map((report) => report.id),
+        skippedReportFetchIds: form.reports.map((report) => report.id),
         error,
       };
       if (!continueOnError) {

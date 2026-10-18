@@ -4,6 +4,7 @@
 import { isAbortLikeError } from "../errors";
 import type { EngineStore, InternalFieldState } from "../state";
 import type {
+  ValidationMessageResolver,
   FieldDefinition,
   FieldValidationResult,
   FormOperation,
@@ -39,6 +40,7 @@ type CreateFieldValidatorOptions = {
   getFormOperation: () => FormOperation;
   getSubmissionStatus: () => FormSubmissionStatus;
   commitState: FieldStateCommitter;
+  formatMessage?: ValidationMessageResolver;
 };
 
 export const createFieldValidator = ({
@@ -50,6 +52,7 @@ export const createFieldValidator = ({
   getFormOperation,
   getSubmissionStatus,
   commitState,
+  formatMessage,
 }: CreateFieldValidatorOptions): FieldValidator => {
   let activeAbortController: AbortController | null = null;
   let activeValidationRunId = 0;
@@ -80,6 +83,7 @@ export const createFieldValidator = ({
         values,
         submitCount,
         flags,
+        formatMessage,
       );
 
       activeAbortController?.abort("validation-restarted");
@@ -129,6 +133,7 @@ export const createFieldValidator = ({
             values,
             submitCount,
             validationVersion,
+            formatMessage,
             signal: abortController?.signal,
           });
           validationErrors = isPromiseLike(validationResult)
