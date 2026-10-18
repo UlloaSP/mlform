@@ -97,7 +97,7 @@
     "coverage": "vp test run --coverage",
     "ci": "vp check && vp run typecheck && vp test run && vp build && vp run check:bundle && vp run test:package && vp run check:playground",
     "playground": "vp build && vp run playground#dev",
-    "check:playground": "vp run playground#test:unit && vp run playground#test:mlform-api && vp run playground#build && vp run playground#test:e2e",
+    "check:playground": "vp run playground#typecheck && vp run playground#test:unit && vp run playground#test:mlform-api && vp run playground#build && vp run playground#test:e2e",
     "check:bundle": "tsx scripts/check-bundle-size.ts",
     "test:package": "tsx scripts/test-package-consumer.ts",
     "prepare": "vp config"

@@ -19,17 +19,16 @@
   color: inherit;
   font-size: 0.82rem;
   font-weight: 700;
-  font-family: var(--brand-font-mono);
+  font-family: var(--mlf-font-family-mono);
   font-feature-settings: "calt" 0;
 }
 
 .app-preview-viewport {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 0.65rem;
-  background: #fff;
-  box-shadow: 0 18px 42px rgba(25, 21, 56, 0.25);
+  border: 1px solid var(--mlf-color-border-strong);
+  border-radius: var(--mlf-radius-lg);
+  background: var(--mlf-color-bg);
 }
 
 .app-preview-frame {
@@ -41,12 +40,11 @@
   transform-origin: top left;
 }
 
-.preview-page body[data-mode="dark"] {
-  background: #0b0b10;
-}
-
 .preview-stage {
   min-height: 100dvh;
+  background: var(--mlf-color-bg);
+  color: var(--mlf-color-text);
+  font-family: var(--mlf-font-family-body);
 }
 
 .preview-stage.is-fixed-layout,

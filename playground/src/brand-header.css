@@ -1,21 +1,21 @@
 .app-brand-header {
-  position: absolute;
-  inset: 1rem 1.25rem auto 5rem;
-  height: 3rem;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  height: var(--app-header-height);
+  padding: 1rem 1.25rem calc(var(--app-header-height) - 4rem) 5rem;
+  background: var(--mlf-color-bg);
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.app-brand-header .mlform-brand {
-  font-size: 1.625rem;
+html:has(.app-brand-header) {
+  scroll-padding-top: calc(var(--app-header-height) + 0.75rem);
 }
 
-.app-brand-context {
-  font-family: var(--brand-font-mono);
-  font-feature-settings: "calt" 0;
-  font-size: 0.75rem;
-  opacity: 0.7;
+.app-brand-header .mlform-brand {
+  font-size: 1.625rem;
 }
 
 .app-brand-header nav {
@@ -32,7 +32,7 @@
 }
 
 .app-brand-header a:focus-visible {
-  outline: 2px solid #ff6a1a;
+  outline: 2px solid var(--mlf-color-text);
   outline-offset: 4px;
 }
 
@@ -48,5 +48,20 @@
   .app-brand-header .mlform-brand {
     gap: 0.35rem;
     font-size: 1.5rem;
+  }
+}
+
+.app-menu-resources {
+  display: none;
+}
+@media (max-width: 620px) {
+  .app-menu-resources {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0.35rem;
+  }
+  .app-menu-resources a {
+    color: inherit;
+    text-underline-offset: 0.25em;
   }
 }

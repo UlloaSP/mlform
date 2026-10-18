@@ -3,15 +3,15 @@
     {
       "id": "urea-nitrogen",
       "kind": "series",
-      "label": "Nitrógeno ureico (BUN)",
-      "description": "Introduce las mediciones originales en mg/dL; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "label": "Blood urea nitrogen (BUN)",
+      "description": "Enter the original measurements in mg/dL; at least one is required. Aggregates are calculated automatically. Non-negative values are accepted without a clinical upper limit.",
       "required": true,
       "minPoints": 1,
       "columns": [
         {
           "id": "value",
           "kind": "number",
-          "label": "Valor",
+          "label": "Value",
           "unit": "mg/dL",
           "step": 1e-08,
           "required": true,
@@ -32,15 +32,15 @@
     {
       "id": "chloride",
       "kind": "series",
-      "label": "Cloro",
-      "description": "Introduce las mediciones originales en mEq/L; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "label": "Chloride",
+      "description": "Enter the original measurements in mEq/L; at least one is required. Aggregates are calculated automatically. Non-negative values are accepted without a clinical upper limit.",
       "required": true,
       "minPoints": 1,
       "columns": [
         {
           "id": "value",
           "kind": "number",
-          "label": "Valor",
+          "label": "Value",
           "unit": "mEq/L",
           "step": 1e-08,
           "required": true,
@@ -61,15 +61,15 @@
     {
       "id": "glucose",
       "kind": "series",
-      "label": "Glucosa",
-      "description": "Introduce las mediciones originales en mg/dL; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "label": "Glucose",
+      "description": "Enter the original measurements in mg/dL; at least one is required. Aggregates are calculated automatically. Non-negative values are accepted without a clinical upper limit.",
       "required": true,
       "minPoints": 1,
       "columns": [
         {
           "id": "value",
           "kind": "number",
-          "label": "Valor",
+          "label": "Value",
           "unit": "mg/dL",
           "step": 1e-08,
           "required": true,
@@ -90,15 +90,15 @@
     {
       "id": "potassium",
       "kind": "series",
-      "label": "Potasio",
-      "description": "Introduce las mediciones originales en mEq/L; mínimo 1. Los agregados se calculan automáticamente. Se permiten valores no negativos, sin máximo clínico impuesto.",
+      "label": "Potassium",
+      "description": "Enter the original measurements in mEq/L; at least one is required. Aggregates are calculated automatically. Non-negative values are accepted without a clinical upper limit.",
       "required": true,
       "minPoints": 1,
       "columns": [
         {
           "id": "value",
           "kind": "number",
-          "label": "Valor",
+          "label": "Value",
           "unit": "mEq/L",
           "step": 1e-08,
           "required": true,
@@ -119,15 +119,15 @@
     {
       "id": "blood-pressure",
       "kind": "series",
-      "label": "Presión arterial",
-      "description": "Una fila por lectura, con sistólica y diastólica en mmHg. Se admite una sola lectura; su desviación estándar poblacional es cero.",
+      "label": "Blood pressure",
+      "description": "One row per reading, with systolic and diastolic pressure in mmHg. A single reading is supported; its population standard deviation is zero.",
       "required": true,
       "minPoints": 1,
       "columns": [
         {
           "id": "systolic",
           "kind": "number",
-          "label": "Sistólica",
+          "label": "Systolic",
           "unit": "mmHg",
           "min": 0,
           "step": 1e-08,
@@ -136,7 +136,7 @@
         {
           "id": "diastolic",
           "kind": "number",
-          "label": "Diastólica",
+          "label": "Diastolic",
           "unit": "mmHg",
           "min": 0,
           "step": 1e-08,
@@ -256,17 +256,17 @@
   "reports": [
     {
       "kind": "classifier",
-      "label": "Predicción de hipertensión",
+      "label": "Hypertension prediction",
       "labels": [
-        "Sano",
-        "Hipertenso"
+        "Healthy",
+        "Hypertensive"
       ],
       "mappedTo": {
         "Best BP Minimal": 0
       },
       "showClassProbabilities": true,
       "id": "prediction",
-      "description": "0: Sano. 1: Hipertenso."
+      "description": "0: Healthy. 1: Hypertensive."
     }
   ]
 }

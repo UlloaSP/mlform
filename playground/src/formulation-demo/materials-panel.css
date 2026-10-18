@@ -1,0 +1,199 @@
+.fd-materials-panel,
+.fd-materials-panel * {
+  box-sizing: border-box;
+}
+.fd-materials-panel {
+  display: grid;
+  gap: 1rem;
+}
+.fd-materials-split {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(360px, 1.22fr);
+  align-items: start;
+}
+.fd-material-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--mlf-color-border, #d9dce7) 88%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--mlf-color-surface, #fff) 96%, transparent);
+}
+.fd-material-card.current {
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+.fd-material-heading {
+  margin: 0;
+  text-align: center;
+  font-size: 1.85rem;
+  font-weight: 500;
+}
+.fd-material-sub {
+  margin: 0;
+  text-align: center;
+  color: var(--mlf-color-text-muted, #5f5a87);
+}
+.fd-material-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr 140px;
+}
+.fd-material-label {
+  display: grid;
+  gap: 0.35rem;
+}
+.fd-material-label span {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--mlf-color-text, #2c2847);
+}
+.fd-material-label select,
+.fd-material-label input {
+  width: 100%;
+  min-height: var(--mlf-control-height, 3rem);
+  padding: 0.7rem 0.95rem;
+  border-radius: var(--mlf-input-radius, 12px);
+  border: 1px solid var(--mlf-color-border, #d9dce7);
+  background: var(--mlf-color-surface, #fff);
+  color: var(--mlf-color-text, #2c2847);
+  font: inherit;
+}
+.fd-material-add {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.72rem 1rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: var(--mlf-color-accent, #5f5f63);
+  color: var(--mlf-color-text-inverse, #fff);
+  cursor: pointer;
+}
+.fd-material-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.fd-material-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.fd-material-badge.good {
+  background: var(--mlf-color-surface-muted, #e8f8e9);
+  color: var(--mlf-color-success, #16702a);
+}
+.fd-material-badge.warn {
+  background: var(--mlf-color-surface-muted, #fff4d7);
+  color: var(--mlf-color-warning, #8f5a00);
+}
+.fd-material-badge.bad {
+  background: var(--mlf-color-danger-soft, rgba(239, 64, 73, 0.16));
+  color: var(--mlf-color-danger, #b21f28);
+}
+.fd-material-danger {
+  border: 1px solid currentColor;
+  border-radius: 0.4rem;
+  background: var(--mlf-color-surface, #fff);
+  color: var(--mlf-color-danger, #b21f28);
+  padding: 0.72rem 0.95rem;
+  cursor: pointer;
+}
+.fd-material-list {
+  display: grid;
+  gap: 0.8rem;
+  max-height: 34rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+.fd-material-row {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0.9rem;
+  border-radius: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--mlf-color-border, #d9dce7) 88%, transparent);
+}
+.fd-material-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+.fd-material-name {
+  flex: 1;
+  text-align: center;
+  color: var(--mlf-color-text, #2c2847);
+}
+.fd-material-remove {
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--mlf-color-text-muted, #5f5a87);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.45rem;
+}
+.fd-material-remove:hover {
+  background: var(--mlf-color-hover-surface, rgba(95, 90, 135, 0.1));
+  color: var(--mlf-color-text, #2c2847);
+}
+.fd-material-controls {
+  display: grid;
+  gap: 0.9rem;
+  align-items: center;
+  grid-template-columns: 1fr 112px;
+}
+.fd-material-range {
+  width: 100%;
+  accent-color: var(--mlf-color-accent, #8f8cd2);
+}
+.fd-material-mini {
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+}
+.fd-material-mini input {
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--mlf-color-border, #d9dce7);
+  background: var(--mlf-color-surface, #fff);
+  color: var(--mlf-color-text, #2c2847);
+}
+.fd-material-mini span {
+  font-size: 0.84rem;
+  color: var(--mlf-color-text-muted, #5f5a87);
+}
+.fd-material-empty {
+  padding: 0.9rem 1rem;
+  border-radius: 0.8rem;
+  border: 1px dashed var(--mlf-color-border, #d9dce7);
+  text-align: center;
+  color: var(--mlf-color-text-muted, #5f5a87);
+}
+@media (max-width: 860px) {
+  .fd-materials-split,
+  .fd-material-grid,
+  .fd-material-controls {
+    grid-template-columns: 1fr;
+  }
+  .fd-material-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.fd-material-error {
+  margin: 0;
+  color: var(--mlf-color-danger);
+  font-size: 0.875rem;
+}

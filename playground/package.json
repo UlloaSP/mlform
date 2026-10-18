@@ -6,17 +6,27 @@
   "scripts": {
     "dev": "vp dev --host 127.0.0.1 --port 10001 --strictPort",
     "build": "vp build",
-    "test:mlform-api": "node scripts/smoke-mlform-api.mjs",
-    "test:unit": "node --test tests/unit/*.test.js",
+    "test:mlform-api": "node scripts/smoke-mlform-api.ts",
+    "test:unit": "node --test tests/unit/*.test.ts",
     "test:e2e": "playwright test",
-    "preview": "vp preview"
+    "preview": "vp preview",
+    "typecheck": "vp exec tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-javascript": "6.2.5",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.14",
+    "@lezer/highlight": "1.2.5",
+    "lit": "3.3.3",
     "mlform": "workspace:*",
+    "sucrase": "3.35.1",
     "zod": "4.6.5"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
+    "@types/jsdom": "^30.0.0",
     "jsdom": "^30.0.1",
     "vite": "npm:@voidzero-dev/vite-plus-core@latest"
   }

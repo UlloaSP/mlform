@@ -1,0 +1,7 @@
+@font-face {
+  font-family: "Quicksand";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("/fonts/quicksand-variable.ttf") format("truetype");
+}

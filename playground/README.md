@@ -1,6 +1,6 @@
 # MLForm playground
 
-Vite playground for the public `mlform` API. This private workspace package uses the library built from the repository root through `workspace:*`.
+TypeScript playground for the public `mlform` API. This private workspace package uses the library built from the repository root through `workspace:*`.
 
 Part of [eshkra](https://eshkra.dev). Branding follows the [shared MLform identity](../brand/README.md); form themes remain selectable independently.
 
@@ -9,14 +9,46 @@ Part of [eshkra](https://eshkra.dev). Branding follows the [shared MLform identi
 - `M3DISEEN`: custom formulation interface connected to the five public A2022 models, with real source examples and explicit partial errors when an upstream model is unavailable.
 - `Lab2pressure/lite` (`/#lab2pressure-lite`): M3DISEEN-style interface for the real `Best BP Minimal` model. Four laboratory series and paired blood-pressure readings produce its exact 16 named inputs. Inference runs locally in the browser.
 - `DoseTailor` (`/#dosetailor`): [Tacrolimus DoseTailor](https://dosetailor.com/tacrolimusv1) inputs and predictions, starting at Load Example with its original examples, field options, level prediction, optimal-dose recommendation and dose-level curve. Uses MLForm field primitives and the real public API.
-- `Field combos`: built-in field combinations.
-- `Series`: split view with editable series of 1, 2, 3 and 4 columns, schema and 35 calculated outputs. Expand the clinical example to see all 114 inputs for `Mejor Toda Bioquimica PA`.
+- `Editor` (`/#code-lab`): editable TypeScript and an interactive MLForm preview, with resizable panels and four code positions.
+- `Field combos`: 150 independent cases covering all 12 built-in field kinds: valid values, required and optional empties, constraint failures, disabled and read-only controls, conditional visibility, and series cells and aggregates. Errors are visible on load; each case can be edited independently.
 - `Stacked`: stacked layout with collapsible sections.
 - `Split`: split layout with internal scrolling.
 - `Wizard`: wizard layout with final reports.
 - `Tabs`: tabbed layout.
 
-The Series examples keep aggregate summaries hidden in the form and expose help through field descriptions. Standard deviations use `ddof: 1`; quartiles use linear interpolation. The clinical classifier response is simulated.
+The menu groups M3DISEEN, Lab2pressure/lite and DoseTailor under **Examples**; Stacked, Split, Wizard and Tabs under **Layouts**; Field combos under **Debug**; and the editor under **Code**.
+
+The four multi-column series in Field combos produce 35 aggregates. Lab values and weight history show live summaries; blood pressure and monitoring keep theirs hidden. Standard deviations use `ddof: 1`; quartiles use linear interpolation. Additional series demonstrate row limits, cell validation, missing measurements and insufficient aggregate data.
+
+The playground interface and examples use English.
+
+The initial design is `eshkra` with the `default` recipe and the system's light/dark appearance.
+The options menu provides ten themes, four recipes and explicit light/dark overrides; saved
+preferences win over defaults. Device previews preserve field values, unfinished numeric input,
+decimal spelling and Series rows when switching between the page and an iframe. Runtime draft
+restoration clears submitted results, so submit again after that switch to refresh predictions.
+
+## Code workspace
+
+Open **Editor** from the floating menu's **Code** group. The split fills the
+available viewport below the header. Choose a **Code example**: a basic prediction, grouped fields, split layout, tabs, a wizard, series aggregates, or choices with mappings and conditional fields. Every example is editable and includes a local transport that produces actual regressor or classifier reports without a backend. The render updates automatically
+after a short pause in typing. **Ctrl/Cmd + Enter** or **Rerun preview** reruns it immediately.
+Each execution creates a fresh form;
+moving or resizing the panels does not. Syntax errors keep the last valid preview visible.
+Choose left, right, top or bottom for the code. Drag the divider or focus it and use the arrow
+keys; Enter restores equal sizes. Tab leaves the editor. **Reset example** restores the selected example. Selecting another example replaces the editor content; Undo can recover the previous code.
+
+The selected example, code, panel position and size are saved in this browser and survive switching demos or device
+previews. Themes and recipes follow the floating menu; an explicit `designSystem` in your
+`mountForm` options takes precedence. Switching device previews reruns the saved code.
+
+The editor runs TypeScript without type checking. It supports imports from `mlform`, its public
+package surfaces, `lit` and `zod`, and provides `#form` as the mounting container. Other npm
+packages, local project files and Node APIs are not available. Syntax and execution errors
+appear in the preview panel. Code executes in a sandboxed iframe without access to the parent
+page or its storage; network calls still depend on the destination's CORS policy. Custom
+hosting must serve public assets with the CORS headers included in `public/_headers` so that
+this opaque-origin iframe can load its modules and fonts.
 
 ## Commands
 
@@ -35,9 +67,11 @@ vp build
 vp run check:playground
 ```
 
-Browser tests start their own server on port `10002` and mock remote predictions. For individual checks, use `vp run playground#test:unit`, `vp run playground#test:mlform-api`, `vp run playground#test:e2e`, or `vp run playground#build`. To serve the production build with its API proxies, use `vp run playground#preview`.
+Browser tests start their own server on port `10002` and mock remote predictions. The app, Worker, configuration, scripts and tests use strict TypeScript. Run `vp run playground#typecheck` to check them. For individual checks, use `vp run playground#test:unit`, `vp run playground#test:mlform-api`, `vp run playground#test:e2e`, or `vp run playground#build`. To serve the production build with its API proxies, use `vp run playground#preview`.
 
 Custom reports use `defineMLFormPlugin` from `mlform/view` and the public `plugins` option of `mountForm`/`createFormView`. Import `mountForm` from `mlform/kit` and `createFormView` from `mlform/view`.
+
+The floating menu and device preview use the same design system as the current form. `M3DISEEN` and `DoseTailor` are available as themes in every demo, using their original lavender palettes and a locally served Quicksand font under the SIL Open Font License (`public/fonts/quicksand-OFL.txt`). Both include dark adaptations. The initial theme remains `eshkra`; saved preferences take precedence.
 
 M3DISEEN uses `createPrimitiveAdapter` from `mlform/kit` to keep fields and its report in stable interface slots. Its `custom` layout node declares the fields managed by the materials panel.
 
