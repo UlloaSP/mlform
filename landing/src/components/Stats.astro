@@ -1,0 +1,65 @@
+---
+import Icon from "./Icon.astro";
+import { getStats } from "../lib/build-stats";
+import { formatCount } from "../lib/stats";
+import { links } from "../data/site";
+
+const stats = await getStats();
+// Live numbers come from npm and GitHub at build time and again in the browser.
+// A missing number keeps a plain link instead of inventing a value.
+const live = [
+  {
+    key: "downloads",
+    icon: "download",
+    href: links.npm,
+    value: stats.downloads === null ? null : formatCount(stats.downloads),
+    label: "downloads last month",
+    fallback: "Downloads on npm",
+  },
+  {
+    key: "stars",
+    icon: "star",
+    href: links.github,
+    value: stats.stars === null ? null : formatCount(stats.stars),
+    label: "GitHub stars",
+    fallback: "Stars on GitHub",
+  },
+  {
+    key: "version",
+    icon: "tag",
+    href: `${links.npm}?activeTab=versions`,
+    value: stats.version === null ? null : `v${stats.version}`,
+    label: "latest on npm",
+    fallback: "Latest version on npm",
+  },
+] as const;
+---
+
+<section class="stats" aria-label="Project numbers">
+  <ul class="stats-inner wrap mono">
+    {live.map(({ key, icon, href, value, label, fallback }) => (
+      <li data-stat={key} data-label={label}>
+        <a href={href}>
+          <Icon name={icon} size={18} />
+          <strong>{value}</strong>
+          <span data-label>{value === null ? fallback : label}</span>
+        </a>
+      </li>
+    ))}
+    <li>
+      <strong>12</strong> input kinds
+    </li>
+    <li>
+      <strong>4</strong> layouts
+    </li>
+    <li>
+      <a href={`${links.github}/blob/main/LICENSE`}>
+        <Icon name="scale" size={18} />
+        <strong>MIT</strong> licensed
+      </a>
+    </li>
+  </ul>
+</section>
+<script>
+  import "../scripts/stats";
+</script>

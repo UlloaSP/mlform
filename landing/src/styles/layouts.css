@@ -1,0 +1,117 @@
+/* The four layouts side by side, then groups and sections with numbered marks. */
+/*
+ * A bento of natural-height captures. The column ratio makes the stacked form as tall as wizard
+ * and tabs together (both 600px captures), so no window is padded to fill its cell.
+ */
+.layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 648fr) minmax(0, 544fr);
+  grid-template-areas:
+    "stacked wizard"
+    "stacked tabs"
+    "split split";
+  gap: 1.5rem;
+  margin: 3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.layout-stacked {
+  grid-area: stacked;
+}
+.layout-wizard {
+  grid-area: wizard;
+}
+.layout-tabs {
+  grid-area: tabs;
+}
+.layout-split {
+  grid-area: split;
+}
+.layout-grid .window-bar {
+  justify-content: space-between;
+}
+.layout-grid .window-bar code {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.compose {
+  display: grid;
+  grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+  margin-top: clamp(4rem, 8vw, 6rem);
+}
+.compose h3 {
+  font-size: clamp(1.75rem, 3vw, 2.375rem);
+  font-weight: 700;
+  font-stretch: 104%;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.compose p {
+  margin-top: 1rem;
+  color: var(--text-2);
+}
+.legend {
+  display: grid;
+  gap: 0.875rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.legend li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+.legend li > span:last-child {
+  display: grid;
+  font-size: 0.8125rem;
+}
+.legend small {
+  color: var(--text-3);
+  font-size: 0.8125rem;
+}
+.marker {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--ember-ink);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+@media (prefers-color-scheme: dark) {
+  .marker {
+    background: var(--ember);
+    color: #0b0b10;
+  }
+}
+/* Numbered marks on the capture match the legend markers. */
+.compose .mark {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  translate: calc(-100% - 0.375rem) -15%;
+  font-size: 0.75rem;
+}
+/* Numbered marks sit in the window margin, beside what they point at. */
+.compose .window {
+  overflow: visible;
+  margin-left: 1.75rem;
+}
+@media (max-width: 56rem) {
+  .layout-grid,
+  .compose {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .layout-grid {
+    grid-template-areas: "stacked" "wizard" "tabs" "split";
+  }
+}

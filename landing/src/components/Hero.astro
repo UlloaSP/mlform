@@ -1,0 +1,88 @@
+---
+import { Image } from "astro:assets";
+import mark from "../../../brand/mlform.png";
+import Icon from "./Icon.astro";
+import Shot from "./Shot.astro";
+import { marks } from "../data/captures";
+import { install, links } from "../data/site";
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-inner wrap">
+    <Image
+      src={mark}
+      alt=""
+      width={112}
+      densities={[1, 2]}
+      loading="eager"
+      fetchpriority="high"
+      class="hero-mark"
+    />
+    <h1 id="hero-title">
+      Give your model <span class="accent">an interface.</span>
+    </h1>
+    <p class="lede">
+      Describe inputs and reports in one TypeScript schema. MLForm renders an accessible form,
+      validates every value and sends your model exactly the payload it expects.
+    </p>
+    <div class="hero-actions">
+      <a class="button" href={links.playground}>
+        Open the playground <Icon name="arrow-up-right" size={14} />
+      </a>
+      <a class="button ghost" href={links.quickStart}>
+        Read the docs
+      </a>
+    </div>
+    <div class="install mono">
+      <span class="prompt" aria-hidden="true">
+        $
+      </span>
+      <code>{install}</code>
+      <button class="copy" type="button" data-copy={install} aria-label="Copy install command">
+        <Icon name="copy" size={15} />
+      </button>
+      <span class="copy-status" role="status"></span>
+    </div>
+  </div>
+  <figure class="stage wrap">
+    <div class="plate">
+      <div class="window">
+        <div class="window-bar">
+          <span class="dots" aria-hidden="true">
+            <i></i>
+            <i></i>
+            <i></i>
+          </span>
+          <span class="window-title mono">
+            mountForm(container, &#123; schema, layout, transport &#125;)
+          </span>
+        </div>
+        <Shot
+          name="hero"
+          title="A weather-station form"
+          alt="A weather-station form: temperature, humidity and wind speed in three columns, a sensor location dropdown, and a forecast section where both reports show their descriptions: a 22.66 °C next-hour estimate and a 92% stable classification."
+          sizes="(max-width: 76rem) 94vw, 70rem"
+          eager
+          marks={marks("hero", ["number", "category", "regressor", "classifier"])}
+        />
+      </div>
+    </div>
+    <figcaption>
+      Real MLForm components with the eshkra theme. Predictions come from a local example transport.
+    </figcaption>
+  </figure>
+</section>
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    const status = button.parentElement!.querySelector(".copy-status")!;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy!);
+        status.textContent = "Copied";
+      } catch {
+        status.textContent = "Select the command to copy it";
+      }
+      window.setTimeout(() => (status.textContent = ""), 2000);
+    });
+  }
+</script>

@@ -1,0 +1,157 @@
+/* Input specimens on a dotted bench: a balanced grid, then the two kinds that shape model data. */
+.inputs {
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0) 0 0 / 24px 24px,
+    var(--bg-subtle);
+}
+.specimens {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Each tile stretches to its row, so captures of different heights still line up as a set. */
+.specimen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+.specimen.tall {
+  grid-row: span 2;
+}
+.specimen-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.625rem;
+  min-height: 1.75rem;
+  padding: 0 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+/* The capture is the field frame itself; the radius trims its square corners. */
+.card {
+  overflow: hidden;
+  border-radius: 13px;
+  background: var(--surface);
+  box-shadow:
+    0 14px 30px -22px rgb(0 0 0 / 0.45),
+    0 1px 2px rgb(0 0 0 / 0.04);
+}
+.feature {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--border-strong);
+}
+.feature.reverse {
+  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+}
+.feature.reverse .feature-copy {
+  order: 1;
+}
+.feature h3 {
+  margin-top: 1rem;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.feature p {
+  margin-top: 0.75rem;
+  color: var(--text-2);
+}
+.feature .text-link {
+  margin-top: 1rem;
+}
+.feature > .card {
+  max-width: 40rem;
+}
+.onehot-visual {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 34rem;
+}
+/* The submitted columns, read straight from the capture's transport request. */
+.flags {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 13px;
+  background: var(--surface);
+  font-size: 0.9375rem;
+}
+.flags caption {
+  padding: 0 0 0.5rem 0.25rem;
+  color: var(--ember-ink);
+  font-size: 0.75rem;
+  text-align: left;
+}
+.flags th,
+.flags td {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.flags thead th {
+  color: var(--text-3);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.flags tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.flags tbody th {
+  font-weight: 600;
+}
+.flags td:last-child {
+  width: 4rem;
+  text-align: right;
+  color: var(--text-3);
+}
+.flags tr.on {
+  background: color-mix(in oklab, var(--ember) 12%, transparent);
+}
+.flags tr.on td:last-child {
+  color: var(--ember-ink);
+  font-weight: 700;
+}
+@media (max-width: 64rem) {
+  .specimens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 56rem) {
+  .feature,
+  .feature.reverse {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .feature.reverse .feature-copy {
+    order: 0;
+  }
+}
+@media (max-width: 40rem) {
+  .specimens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .specimen.tall {
+    grid-row: auto;
+  }
+  .flags {
+    font-size: 0.875rem;
+  }
+  .flags th,
+  .flags td {
+    padding-inline: 0.625rem;
+  }
+}

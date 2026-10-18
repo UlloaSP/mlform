@@ -12,6 +12,7 @@ const toolIgnorePatterns = [
   "node_modules/**",
   "dist/**",
   "docs/**",
+  "landing/**",
   "coverage/**",
   "output/**",
   "playground/node_modules/**",

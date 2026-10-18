@@ -1,0 +1,17 @@
+[
+  {
+    "label": "Clear",
+    "target": "weather_clear",
+    "value": 0
+  },
+  {
+    "label": "Cloudy",
+    "target": "weather_cloudy",
+    "value": 0
+  },
+  {
+    "label": "Rain",
+    "target": "weather_rain",
+    "value": 1
+  }
+]

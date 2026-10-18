@@ -1,0 +1,71 @@
+---
+import CodeTabs from "./CodeTabs.astro";
+import Icon from "./Icon.astro";
+import Shot from "./Shot.astro";
+import { links } from "../data/site";
+// The capture script runs these exact modules in the playground before taking the screenshot.
+import fieldCode from "../../../playground/scripts/landing/wind-direction.ts?raw";
+import chartCode from "../../../playground/scripts/landing/forecast-chart.ts?raw";
+import pluginCode from "../../../playground/scripts/landing/weather-plugin.ts?raw";
+
+const files = [
+  { title: "wind-direction.ts", code: fieldCode.trimEnd() },
+  { title: "forecast-chart.ts", code: chartCode.trimEnd() },
+  { title: "weather-plugin.ts", code: pluginCode.trimEnd() },
+];
+const steps = [
+  {
+    api: "defineFieldDefinition",
+    text: "A new input with its own element. Kinds that reuse a built-in widget only need defineFieldKind.",
+  },
+  { api: "defineReportKind", text: "A new result view, here an SVG chart drawn from the payload." },
+  {
+    api: "defineMLFormPlugin",
+    text: "Bundles both kinds for mountForm({ plugins, primitiveRegistry }).",
+  },
+];
+---
+
+<section class="section plugins" id="plugins" aria-labelledby="plugins-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="plugins-title">Add your own kinds.</h2>
+      <p>
+        When your model needs an input or a result MLForm doesn't ship, define it once. Plugin kinds
+        use the same normalization, validation, serialization and rendering as built-ins.
+      </p>
+    </header>
+    <div class="plate plugin-visual">
+      <div class="plugin-code">
+        <CodeTabs label="Plugin files" files={files} />
+      </div>
+      <div class="window plugin-shot">
+        <Shot
+          name="plugin"
+          title="A custom field and a custom chart report"
+          alt="The custom wind direction field as a compass of eight points with SW selected, and the custom forecast report as a line chart of the next six hours: 22.7, 23.4, 24.1, 23.8, 23.0 and 22.2 degrees."
+          sizes="(max-width: 64rem) 92vw, 30rem"
+        />
+      </div>
+    </div>
+    <ol class="steps">
+      {steps.map(({ api, text }) => (
+        <li>
+          <code class="mono">{api}</code>
+          <span>{text}</span>
+        </li>
+      ))}
+    </ol>
+    <div class="feature-links">
+      <a class="text-link" href={links.customFields}>
+        Custom fields <Icon name="arrow-up-right" size={14} />
+      </a>
+      <a class="text-link" href={links.customRenderers}>
+        Custom renderers <Icon name="arrow-up-right" size={14} />
+      </a>
+      <a class="text-link" href={links.customReports}>
+        Custom reports <Icon name="arrow-up-right" size={14} />
+      </a>
+    </div>
+  </div>
+</section>

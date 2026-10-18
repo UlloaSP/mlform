@@ -1,0 +1,26 @@
+---
+import { Code } from "astro:components";
+interface Props {
+  title: string;
+  code: string;
+}
+const { title, code } = Astro.props;
+---
+
+<figure class="code-window">
+  <figcaption class="window-bar">
+    <span class="dots" aria-hidden="true">
+      <i></i>
+      <i></i>
+      <i></i>
+    </span>
+    <span class="window-title mono">{title}</span>
+  </figcaption>
+  <Code
+    code={code}
+    lang="ts"
+    themes={{ light: "github-light-default", dark: "github-dark-default" }}
+    defaultColor="light"
+    class="code"
+  />
+</figure>

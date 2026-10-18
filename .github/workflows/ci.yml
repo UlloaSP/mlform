@@ -1,6 +1,13 @@
 name: CI & Publish
 
 on:
+  workflow_dispatch:
+    inputs:
+      deploy_sites:
+        description: "Deploy landing, docs and playground from main without an npm release"
+        required: false
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -131,11 +138,39 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  build-landing:
+    name: Build Landing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: ${{ env.DOCS_NODE_VERSION }}
+          cache: true
+
+      - name: Install landing dependencies
+        working-directory: ./landing
+        run: vp install --frozen-lockfile
+
+      - name: Check and build landing
+        working-directory: ./landing
+        run: vp run check:format && vp run build
+
+      - name: Upload landing artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-build
+          path: ./landing/dist/
+          if-no-files-found: error
+          retention-days: 30
+
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [lint-and-format, type-check, test, build-docs]
-    if: always() && needs.lint-and-format.result == 'success' && needs.type-check.result == 'success' && needs.test.result == 'success' && (needs.build-docs.result == 'success' || needs.build-docs.result == 'skipped')
+    needs: [lint-and-format, type-check, test, build-docs, build-landing]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -170,7 +205,7 @@ jobs:
     name: Publish to npm (main only)
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.ref_name == 'main' && github.repository_owner == 'UlloaSP'
+    if: github.ref_name == 'main' && github.repository_owner == 'UlloaSP' && github.event_name != 'workflow_dispatch'
     permissions:
       contents: write
       id-token: write
@@ -306,15 +341,21 @@ jobs:
   deploy-sites:
     name: Deploy ${{ matrix.site }}
     runs-on: ubuntu-latest
-    needs: [publish-npm]
-    if: needs.publish-npm.outputs.published == 'true'
+    needs: [build, publish-npm]
+    if: always() && needs.build.result == 'success' && github.repository_owner == 'UlloaSP' && (needs.publish-npm.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && inputs.deploy_sites && github.ref_name == 'main'))
     strategy:
       fail-fast: false
       matrix:
-        site: [docs, playground]
+        include:
+          - site: docs
+            url: https://docs.mlform.eshkra.dev
+          - site: playground
+            url: https://playground.mlform.eshkra.dev
+          - site: landing
+            url: https://mlform.eshkra.dev
     environment:
       name: ${{ matrix.site }}
-      url: https://${{ matrix.site }}.mlform.eshkra.dev
+      url: ${{ matrix.url }}
     permissions:
       contents: read
     concurrency:

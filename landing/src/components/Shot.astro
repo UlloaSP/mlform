@@ -1,0 +1,31 @@
+---
+import ThemeImage from "./ThemeImage.astro";
+import { capture, type Mark } from "../data/captures";
+interface Props {
+  name: string;
+  title: string;
+  alt: string;
+  sizes?: string;
+  eager?: boolean;
+  marks?: Mark[];
+}
+const { name, title, alt, sizes, eager, marks = [] } = Astro.props;
+const light = capture(name, "light");
+const dark = capture(name, "dark");
+---
+
+<button
+  class="shot"
+  type="button"
+  data-zoom
+  data-title={title}
+  data-width={light.width / 2}
+  aria-label={`Enlarge: ${title}`}
+>
+  <ThemeImage light={light} dark={dark} alt={alt} sizes={sizes} eager={eager} />
+  {marks.map(({ label, x, y }) => (
+    <span class="mark mono" style={`left: ${x * 100}%; top: ${y * 100}%`} aria-hidden="true">
+      {label}
+    </span>
+  ))}
+</button>

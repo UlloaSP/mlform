@@ -44,6 +44,8 @@ Schema use the same contract.
 
 `render.content` can return `text`, `metric`, `kv`, `list`, `table`, `badge`, `notice`, or `json` nodes. The built-in declarative renderer handles the normal layout for you.
 
+Use `render.mount` when the result needs its own DOM, such as an SVG chart. MLForm calls it with the report `element`, the parsed `payload`, the normalized `report`, and an abort `signal`, and mounts again when the report updates. Return a cleanup function when the renderer attaches listeners or timers. `content` is ignored for kinds that define `mount`. The element inherits the design tokens, so `var(--mlf-color-accent)` follows the active theme.
+
 If `resolve` throws, MLForm marks only that report as `error`; the form submission can still complete for other reports.
 
 Fetch-backed reports receive `request.reportContext` with the report `id`, resolved `mappedTo` target, backend, `modelValues`, `displayValues`, submit `meta`, and raw output. Use it instead of normalizing ids yourself:

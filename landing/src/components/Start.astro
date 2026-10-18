@@ -1,0 +1,66 @@
+---
+import Icon from "./Icon.astro";
+import { links } from "../data/site";
+
+const layers = [
+  {
+    path: "mlform",
+    title: "Complete kit",
+    text: "Mount a finished form with layout, theme and lifecycle.",
+    code: "mountForm(element, { schema, transport })",
+    href: links.quickStart,
+  },
+  {
+    path: "mlform/primitives",
+    title: "Web Components",
+    text: "Render the built-in elements inside your own shell.",
+    code: "mountPrimitiveForm(element, form, options)",
+    href: `${links.docs}primitives/overview/`,
+  },
+  {
+    path: "mlform/runtime",
+    title: "Headless runtime",
+    text: "Keep state, validation and submission. Draw your own UI.",
+    code: "createForm({ schema, registry, transport })",
+    href: `${links.docs}runtime/overview/`,
+  },
+];
+const resources = [
+  { title: "Documentation", text: "Guides and concepts", href: links.docs },
+  { title: "Playground", text: "Every field and layout, live", href: links.playground },
+  { title: "API reference", text: "Package exports", href: links.api },
+  { title: "npm", text: "mlform", href: links.npm },
+  { title: "GitHub", text: "Source, issues, releases", href: links.github },
+];
+---
+
+<section class="section start" id="start" aria-labelledby="start-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="start-title">Use as much as you need.</h2>
+      <p>Take the whole kit, or keep the rules and bring your own interface.</p>
+    </header>
+    <ul class="layers">
+      {layers.map(({ path, title, text, code, href }) => (
+        <li>
+          <code class="mono path">{path}</code>
+          <a href={href}>{title}</a>
+          <span>{text}</span>
+          {/* Focusable because narrow screens scroll the call instead of breaking it. */}
+          <code class="mono call" tabindex="0">
+            {code}
+          </code>
+        </li>
+      ))}
+    </ul>
+    <nav class="resources" aria-label="Resources">
+      {resources.map(({ title, text, href }) => (
+        <a href={href}>
+          <strong>{title}</strong>
+          <span>{text}</span>
+          <Icon name="arrow-up-right" size={16} />
+        </a>
+      ))}
+    </nav>
+  </div>
+</section>

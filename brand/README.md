@@ -12,7 +12,8 @@ Keep `mlform` unchanged in package names, imports, commands and URLs. Use the st
 
 Link roles:
 
-- Brand and package homepage: <https://eshkra.dev>.
+- Product and package homepage: <https://mlform.eshkra.dev/>.
+- Parent brand: <https://eshkra.dev/>.
 - Documentation: <https://docs.mlform.eshkra.dev/>.
 - Source and issues: <https://github.com/UlloaSP/mlform> and its issue tracker.
 - Package: <https://www.npmjs.com/package/mlform>.

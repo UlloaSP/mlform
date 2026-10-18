@@ -1,0 +1,99 @@
+---
+import Icon from "./Icon.astro";
+import Shot from "./Shot.astro";
+import { specimens } from "../data/inputs";
+import onehot from "../data/onehot.json";
+import { links } from "../data/site";
+const tile = "(max-width: 40rem) 92vw, (max-width: 64rem) 46vw, 24rem";
+const selected = onehot.find(({ value }) => value === 1)?.label;
+---
+
+<section class="section inputs" id="inputs" aria-labelledby="inputs-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="inputs-title">Every input a model needs.</h2>
+      <p>Twelve field kinds. Each one validates, formats and serializes its own value.</p>
+      <a class="text-link" href={links.playgroundFields}>
+        Try them in the playground <Icon name="arrow-up-right" size={14} />
+      </a>
+    </header>
+    <ul class="specimens">
+      {specimens.map(({ capture, kind, note, tall, alt }) => (
+        <li class:list={["specimen", { tall }]}>
+          <p class="specimen-label">
+            <code class="kind mono">{kind}</code>
+            {note && <span>{note}</span>}
+          </p>
+          <div class="card">
+            <Shot name={capture} title={`${kind} field`} alt={alt} sizes={tile} />
+          </div>
+        </li>
+      ))}
+    </ul>
+    <div class="feature">
+      <div class="feature-copy">
+        <code class="kind mono">series</code>
+        <h3>Tables of typed rows.</h3>
+        <p>
+          Add and remove rows with their own columns and validation. Aggregations such as mean,
+          minimum and maximum are computed and mapped to your model.
+        </p>
+        <a class="text-link" href={`${links.docs}examples/series/`}>
+          Series example <Icon name="arrow-up-right" size={14} />
+        </a>
+      </div>
+      <div class="card">
+        <Shot
+          name="series"
+          title="series field"
+          alt="A temperature history table with three dated rows, an Add point button and mean 22, minimum 21 and maximum 23."
+          sizes="(max-width: 64rem) 92vw, 40rem"
+        />
+      </div>
+    </div>
+    <div class="feature reverse">
+      <div class="feature-copy">
+        <code class="kind mono">onehot-category</code>
+        <h3>One choice, one column per option.</h3>
+        <p>
+          People pick a label. Your model receives a 0/1 column for every option, named by its{" "}
+          <code class="mono">mappedTo</code>. The selected option sends 1, the others 0.
+        </p>
+        <a class="text-link" href={links.onehot}>
+          One-hot reference <Icon name="arrow-up-right" size={14} />
+        </a>
+      </div>
+      <div class="onehot-visual">
+        <div class="card">
+          <Shot
+            name="onehot"
+            title="onehot-category field"
+            alt={`A weather condition dropdown set to ${selected}.`}
+            sizes="(max-width: 64rem) 92vw, 30rem"
+          />
+        </div>
+        <table class="flags">
+          <caption class="mono">The transport receives</caption>
+          <thead>
+            <tr>
+              <th scope="col">Option</th>
+              <th class="mono" scope="col">
+                mappedTo
+              </th>
+              <th scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {onehot.map(({ label, target, value }) => (
+              <tr class:list={{ on: value === 1 }}>
+                <th scope="row">{label}</th>
+                <td class="mono">{target}</td>
+                <td class="mono">{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

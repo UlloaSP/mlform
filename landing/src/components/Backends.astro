@@ -1,0 +1,95 @@
+---
+import CodeWindow from "./CodeWindow.astro";
+import Icon from "./Icon.astro";
+import Shot from "./Shot.astro";
+import { links } from "../data/site";
+
+const code = `const transport = createFanoutTransport({
+  targets: ["forecast", "alerts"],
+  // clients: your own HTTP or SDK calls
+  submit: (backend, request) => clients[backend].predict(request),
+  merge: (outcomes) => ({
+    reports: outcomes.flatMap((outcome) =>
+      outcome.status === "fulfilled" ? outcome.value.reports : [],
+    ),
+  }),
+});
+
+const reports = [
+  { id: "forecast", kind: "regressor", mappedTo: { forecast: "estimate" } },
+  { id: "alert", kind: "classifier", mappedTo: { alerts: "condition" } },
+];`;
+const branches = [
+  { backend: "forecast", target: "estimate", report: "Forecast model", kind: "regressor" },
+  { backend: "alerts", target: "condition", report: "Alert model", kind: "classifier" },
+];
+---
+
+<section class="section backends" id="backends" aria-labelledby="backends-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="backends-title">One form. Several models.</h2>
+      <p>
+        Send the same inputs to more than one backend. Every report names the backend and the target
+        it reads, so a result never lands in the wrong place.
+      </p>
+    </header>
+
+    <ol class="flow" aria-label="How one submission reaches two backends">
+      <li class="node">
+        <small class="mono">form</small>
+        <strong>temperature, humidity</strong>
+      </li>
+      <li class="node hub">
+        <small class="mono">transport</small>
+        <strong class="mono">createFanoutTransport</strong>
+      </li>
+      {branches.map(({ backend, target, report, kind }) => (
+        <li class="branch">
+          <span class="node">
+            <small class="mono">backend</small>
+            <strong class="mono">"{backend}"</strong>
+          </span>
+          <span class="edge mono">mappedTo "{target}"</span>
+          <span class="node report">
+            <small class="mono">{kind}</small>
+            <strong>{report}</strong>
+          </span>
+        </li>
+      ))}
+    </ol>
+
+    <div class="backend-panels">
+      <div class="window">
+        <Shot
+          name="backends"
+          title="Two backends, two reports"
+          alt="Shared temperature and humidity inputs feed two reports: a forecast model showing 22.66 °C and an alert model showing 96% normal."
+          sizes="(max-width: 64rem) 92vw, 36rem"
+        />
+      </div>
+      <div class="backend-code">
+        <CodeWindow title="backends.ts" code={code} />
+        <ul class="facts">
+          <li>
+            <code class="mono">collect</code> keeps every backend's result by default;{" "}
+            <code class="mono">fail-fast</code> cancels the rest after the first failure.
+          </li>
+          <li>
+            <code class="mono">executeMultiBackendPipeline</code> returns results and errors per
+            backend.
+          </li>
+          <li>Requests, retries and authentication stay in your own clients.</li>
+        </ul>
+        <div class="feature-links">
+          <a class="text-link" href={links.backends}>
+            Backend contract <Icon name="arrow-up-right" size={14} />
+          </a>
+          <a class="text-link" href={links.transports}>
+            Transports <Icon name="arrow-up-right" size={14} />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

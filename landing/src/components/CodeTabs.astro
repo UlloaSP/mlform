@@ -1,0 +1,92 @@
+---
+import { Code } from "astro:components";
+interface Props {
+  label: string;
+  files: { title: string; code: string }[];
+}
+const { label, files } = Astro.props;
+const id = (kind: string, index: number) =>
+  `${label.toLowerCase().replace(/\W+/g, "-")}-${kind}-${index}`;
+---
+
+<figure class="code-window code-tabs" data-code-tabs>
+  <div class="window-bar">
+    <span class="dots" aria-hidden="true">
+      <i></i>
+      <i></i>
+      <i></i>
+    </span>
+    <div class="file-tabs" role="tablist" aria-label={label}>
+      {files.map(({ title }, index) => (
+        <button
+          class="file-tab mono"
+          type="button"
+          role="tab"
+          id={id("tab", index)}
+          aria-controls={id("panel", index)}
+          aria-selected={index === 0 ? "true" : "false"}
+          tabindex={index === 0 ? 0 : -1}
+        >
+          {title}
+        </button>
+      ))}
+    </div>
+  </div>
+  {files.map(({ code }, index) => (
+    <div
+      class="file-panel"
+      role="tabpanel"
+      id={id("panel", index)}
+      aria-labelledby={id("tab", index)}
+      hidden={index !== 0}
+    >
+      <Code
+        code={code}
+        lang="ts"
+        themes={{ light: "github-light-default", dark: "github-dark-default" }}
+        defaultColor="light"
+        class="code"
+      />
+    </div>
+  ))}
+</figure>
+<script>
+  // Tabs follow the WAI-ARIA pattern: arrow keys move between files, Home and End jump.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-code-tabs]")) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (next: HTMLButtonElement) => {
+      for (const tab of tabs) {
+        const selected = tab === next;
+        tab.setAttribute("aria-selected", `${selected}`);
+        tab.tabIndex = selected ? 0 : -1;
+        root.querySelector<HTMLElement>(`#${tab.getAttribute("aria-controls")}`)!.hidden =
+          !selected;
+      }
+    };
+    for (const [index, tab] of tabs.entries()) {
+      tab.addEventListener("click", () => select(tab));
+      tab.addEventListener("keydown", (event) => {
+        const offset = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+        const target =
+          event.key === "Home"
+            ? tabs[0]
+            : event.key === "End"
+              ? tabs.at(-1)
+              : offset === undefined
+                ? undefined
+                : tabs[(index + offset + tabs.length) % tabs.length];
+        if (!target) return;
+        event.preventDefault();
+        select(target);
+        target.focus();
+      });
+    }
+  }
+</script>
+<noscript>
+  <style>
+    .file-panel[hidden] {
+      display: block;
+    }
+  </style>
+</noscript>
